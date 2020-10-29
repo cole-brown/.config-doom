@@ -180,4 +180,11 @@
 
        :config
        ;;literate
-       (default +bindings +smartparens))
+       (default +bindings +smartparens)
+
+       :spy
+       zero                ; spy/zero:   Must be first. spy/require, spy/provide, strings...
+       file                ; spy/file:   For helpful path/file/dir functions.
+       jerky               ; spy/jerky:  For key/value tree.
+       system              ; spy/system: For one-to-many config-to-computers setup.
+       )

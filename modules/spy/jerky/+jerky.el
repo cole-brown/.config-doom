@@ -9,6 +9,7 @@
 
 (require 's)
 (require 'dash)
+(spy/require :spy 'zero 'strings)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
@@ -16,6 +17,7 @@
 ;; Consts & Vars
 ;;------------------------------------------------------------------------------
 
+;; TODO: Change this to a hash table?
 (defvar jerky//kvs '()
   "A recursive key-value store, basically. An alist of alists (of et ceteras).
   Maybe some values thrown in there somewhere; I don't know.
@@ -39,65 +41,28 @@ I'm not your mother.
 ")
 
 
+(defcustom jerky/custom:keys/separator "/"
+  "Jerky keys will be split/joined using this character.
+
+E.g.: (jerky/get 'my/key :path \"to/dir\")
+  The key path used would be: '(my key path to dir)
+")
+
+
 ;;------------------------------------------------------------------------------
 ;; Keys Functions
 ;;------------------------------------------------------------------------------
 
-(defun jerky//keys/path-field-cons (&rest args)
-  "Turn args into a cons of key path and final key.
-
-(jerky/keys \"a.b\" \"c\")
-  -> ((a b) . c)
-"
-  (let ((keys '())
-        (strings '())
-        last-key)
-    (dolist (arg args)
-      ;; Push string args to strings, turn non-strings into strings.
-      (cond ((stringp arg)
-             (push arg strings))
-
-            ;; symbol->string: drop keyword prefix if exists.
-            ((symbolp arg)
-             (push (s-chop-prefix ":" (symbol-name arg)) strings))
-
-            ;; function->string:
-            ((functionp arg)
-             (push (funcall arg) strings))
-
-            ;; fail
-            (t
-             (error (concat "%s: Can't convert '%S' to string for conversion "
-                            "of keys into key list.")
-                    "jerky/keys"
-                    arg))))
-
-    ;; Now we have strings. They are in backwards order. They need to be turned
-    ;; into a final dotted string so we can then break it apart into final key
-    ;; list... One of the args could've been a compond key - e.g. "jeff.key".
-    (dolist (name
-             (s-split "[.]" (s-join "." (nreverse strings))))
-
-      ;; Make symbols out of the key strings.
-      (push (intern name) keys))
-
-    ;; Now we have a backwards list... again.
-    ;; Turn it into a cons of:
-    ;;   - path: forwards list of all but last key
-    ;;   - key: the last key
-    (setq last-key (car keys))
-    (cons (nreverse (cdr keys))
-          last-key)))
-;; (jerky/keys "a.b" "c")
-;; (jerky/keys :base "a.b" "c")
+(defalias 'jerky//keys/symbol->str 'spy/string/symbol-name->str
+  "Convert a symbol to a string. Removes ':' from keywords.")
 
 
 (defun jerky//keys/normalize (&rest args)
   "Turn args into a list of key symbols.
 
-(jerky//keys/normalize \"a.b\" \"c\")
+(jerky//keys/normalize \"a/b\" \"c\")
   -> (a b c)
-(jerky//keys/normalize \"a.b\" c)
+(jerky//keys/normalize \"a/b\" c)
   -> (a b c)
 (jerky//keys/normalize \"a\" b c)
   -> (a b c)
@@ -111,7 +76,7 @@ I'm not your mother.
 
             ;; symbol->string: drop keyword prefix if exists.
             ((symbolp arg)
-             (push (s-chop-prefix ":" (symbol-name arg)) strings))
+             (push (jerky//keys/symbol->str arg) strings))
 
             ;; function->string:
             ((functionp arg)
@@ -121,22 +86,27 @@ I'm not your mother.
             (t
              (error (concat "%s: Can't convert '%S' to string for conversion "
                             "of keys into key list.")
-                    "jerky/keys"
+                    "jerky//keys/normalize"
                     arg))))
 
     ;; Now we have strings. They are in backwards order. They need to be turned
-    ;; into a final dotted string so we can then break it apart into final key
-    ;; list... One of the args could've been a compond key - e.g. "jeff.key".
-    (dolist (name (s-split "[.]" (s-join "." (nreverse strings))))
-
+    ;; into a final separated string so we can then break it apart into final key
+    ;; list... One of the args could've been a compond key - e.g. "jeff/key".
+    (dolist (name
+             ;; Make a regex which is "literally this character" for split.
+             (s-split (concat "["
+                              jerky/custom:keys/separator
+                              "]")
+                      (s-join jerky/custom:keys/separator
+                              (nreverse strings))))
       ;; Make symbols out of the key strings.
       (push (intern name) keys))
 
     ;; Now we have a backwards list... again.
     ;; Turn it into a forwards list.
     (nreverse keys)))
-;; (jerky//keys/normalize "a.b" "c")
-;; (jerky//keys/normalize :base "a.b" "c")
+;; (jerky//keys/normalize "a/b" "c")
+;; (jerky//keys/normalize :base "a/b" "c")
 
 
 (defun jerky//keys/desired? (key)

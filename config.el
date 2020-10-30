@@ -96,6 +96,26 @@
 
 
 ;;------------------------------------------------------------------------------
+;; yasnippet
+;;------------------------------------------------------------------------------
+
+;; Do yasnippet setup after doom loads it.
+(after! yasnippet
+  ;; Also indent the rest if indenting non-first, non-empty lines.
+  (when yas-indent-line
+    (setq yas-also-auto-indent-first-line t
+          yas-also-indent-empty-lines t))
+
+  ;; Allow snippet inside of snippets. Snippet inception.
+  (setq yas-triggers-in-field t))
+
+;; Don't let emacs stuff a newline into snippet files. Sometimes I want the
+;; snippet flush up with what's below it.
+(add-hook! snippet-mode
+  (setq require-final-newline nil))
+
+
+;;------------------------------------------------------------------------------
 ;; Settings
 ;;------------------------------------------------------------------------------
 

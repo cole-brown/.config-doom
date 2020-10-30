@@ -68,7 +68,12 @@
        dired             ; making dired pretty [functional]
        electric          ; smarter, keyword-based electric-indent
        ;;ibuffer         ; interactive buffer management
-       undo              ; persistent, smarter undo for your inevitable mistakes
+
+       ;; [2020-10-30] Undo keeps messing me up, and I've had files lose big
+       ;;    chunks to accidental "new to evil mode and forgot I wasn't in
+       ;;    insert state" typing.
+       ;;undo              ; persistent, smarter undo for your inevitable mistakes
+
        vc                ; version-control and Emacs, sitting in a tree
 
        :term

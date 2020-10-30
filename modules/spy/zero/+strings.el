@@ -160,13 +160,14 @@ Finally, it join prefixes string and inputs hash string with
 ;; Symbols
 ;;------------------------------------------------------------------------------
 
-(defun spy/string/symbol-name->str (symbol)
+(defun spy/string/symbol->str (symbol)
   "Converts a symbol name to a string. Removes \":\" from keyword symbols."
   (replace-regexp-in-string ":" ""
                             (symbol-name symbol)))
-;; (spy/string/symbol-name->str 'jeff)
-;; (spy/string/symbol-name->str :jeff)
-
+;; (spy/string/symbol->str 'jeff)
+;; (spy/string/symbol->str :jeff)
+;; (let ((x 'jeff)) (spy/string/symbol->str x))
+;; (let* ((jeff "geoff") (x 'jeff)) (spy/string/symbol->str x))
 
 ;;------------------------------------------------------------------------------
 ;; The End.

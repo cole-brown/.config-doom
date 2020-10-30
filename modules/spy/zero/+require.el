@@ -16,14 +16,14 @@
 ;; Duplicate Functions
 ;;------------------------------------------------------------------------------
 
-(defun spy//provide/symbol-name->str (symbol)
-  "A copy of spy/zero/+strings.el's `spy/string/symbol-name->str', since we must
+(defun spy//provide/symbol->str (symbol)
+  "A copy of spy/zero/+strings.el's `spy/string/symbol->str', since we must
 be loaded first.
 "
   (replace-regexp-in-string ":" ""
                             (symbol-name symbol)))
-;; (spy//provide/symbol-name->str 'jeff)
-;; (spy//provide/symbol-name->str :jeff)
+;; (spy//provide/symbol->str 'jeff)
+;; (spy//provide/symbol->str :jeff)
 
 
 ;;------------------------------------------------------------------------------
@@ -65,15 +65,15 @@ symbol-name: 'spy/mad-science/transmogrifier'
            ;; Non-inputs:
            (final-name nil)
            (separator "/"))
-       (setq final-name (concat (spy//provide/symbol-name->str ,mod-name)
+       (setq final-name (concat (spy//provide/symbol->str ,mod-name)
                                 separator
-                                (spy//provide/symbol-name->str ,feature-name)))
+                                (spy//provide/symbol->str ,feature-name)))
        (when (not (null ,sub-names))
          (dolist (sub ,sub-names final-name)
            (setq final-name
                  (concat final-name
                          separator
-                         (spy//provide/symbol-name->str sub)))))
+                         (spy//provide/symbol->str sub)))))
 
        ;; Create/return the symbol in the obarray and provide the feature by
        ;; that name.
@@ -124,15 +124,15 @@ Examples:
            ;; Non-inputs:
            (final-name nil)
            (separator "/"))
-       (setq final-name (concat (spy//provide/symbol-name->str ,mod-name)
+       (setq final-name (concat (spy//provide/symbol->str ,mod-name)
                                 separator
-                                (spy//provide/symbol-name->str ,feature-name)))
+                                (spy//provide/symbol->str ,feature-name)))
        (when (not (null ,sub-names))
          (dolist (sub ,sub-names final-name)
            (setq final-name
                  (concat final-name
                          separator
-                         (spy//provide/symbol-name->str sub)))))
+                         (spy//provide/symbol->str sub)))))
 
        ;; Create/return the symbol in the obarray and require the feature by
        ;; that symbol in that filepath.

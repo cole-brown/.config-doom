@@ -14,7 +14,7 @@
 ;; Go get our Secrets if we have the system set up for it.
 (if-let* ((hash (jerky/get :system 'hash))
           (id   (jerky/get :system 'secret 'identities hash))
-          (dir  (jerky/get :system :path :secrets id))
+          (dir  (jerky/get :system :path :secret id))
           (file (spy/path/to-file dir "init")) ; No ".el"; want compiled too.
           (name (concat file ".el")))
 
@@ -40,4 +40,9 @@
 
   ;; Else no hash or id or dir found...
   ;; TODO: warning? quiet? use mis or something?
-  (message "No secrets for this system (%s)." id))
+  (message "No secrets for this system:")
+  (message "   hash: %s" hash)
+  (message "     id: %s" id)
+  (message "    dir: %s" dir)
+  (message "   file: %s" file)
+  (message "   name: %s" name))

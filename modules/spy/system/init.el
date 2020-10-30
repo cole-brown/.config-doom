@@ -27,7 +27,7 @@
            :value "Namespace for House & Home"
            :docstr "Homework, Side-Projects, Personal Notes, etc...")
 
-(jerky/set :secrets ;; System Namespace
+(jerky/set :secret ;; System Namespace
            'name
            :value "Namespace for the Confidential"
            :docstr "You've seen this, so... Now I have to kill you, I guess?")

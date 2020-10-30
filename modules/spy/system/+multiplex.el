@@ -69,6 +69,9 @@ on the UNIQUE-ID of the system and the ROOT path.
 (let* ((hash "ab48e5-886ff0")
        (id   (concat "home/2017/desk::" hash)))
 
+  ;; (jerky/get :system 'secret 'identities hash))
+  ;; (jerky/get :system :path :secret id))
+
   (jerky/set :system
              'secret
              'identities

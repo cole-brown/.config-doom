@@ -12,9 +12,9 @@
 ;;------------------------------------------------------------------------------
 
 ;; Go get our Secrets if we have the system set up for it.
-(if-let* ((hash (jerky/get :system 'hash))
-          (id   (jerky/get :system 'secret 'identities hash))
-          (dir  (jerky/get :system :path :secret id))
+(if-let* ((hash (jerky/get "system/hash"))
+          (id   (jerky/get (list "system/secret/identities" hash)))
+          (dir  (jerky/get (list "system/path/secret" id)))
           (file (spy/path/to-file dir "init")) ; No ".el"; want compiled too.
           (name (concat file ".el")))
 

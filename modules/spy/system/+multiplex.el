@@ -46,8 +46,8 @@ on the UNIQUE-ID of the system and the ROOT path.
 ;; "Where the hell am I?", obviously.
 ;; Or maybe "Who the hell am I?"...
 
-(jerky/set :system
-           'hash
+(jerky/set "system/hash"
+           ;; default namespace
            :value (spy/system/hash)
            :docstr "Pretty hash of /current/ system-name and system-type.")
 
@@ -72,20 +72,14 @@ on the UNIQUE-ID of the system and the ROOT path.
   ;; (jerky/get :system 'secret 'identities hash))
   ;; (jerky/get :system :path :secret id))
 
-  (jerky/set :system
-             'secret
-             'identities
-             hash
+  (jerky/set (list "system/secret/identities" hash)
              :value id
              :docstr "Home desktop PC built in 2017.")
 
   ;; Have to set path per-system since work comps have restrictions on where
   ;; things can be, and home comps tend to have a random number of hard drives
   ;; just wherever.
-  (jerky/set :system
-             :path
-             :secret
-             id
+  (jerky/set (list "system/path/secret" id)
              :value  (spy/system/path "~/.config/spydez/secret/emacs/doom" id)
              :docstr "Home desktop PC built in 2017."))
 

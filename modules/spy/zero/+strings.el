@@ -169,6 +169,37 @@ Finally, it join prefixes string and inputs hash string with
 ;; (let ((x 'jeff)) (spy/string/symbol->str x))
 ;; (let* ((jeff "geoff") (x 'jeff)) (spy/string/symbol->str x))
 
+
+(defun spy/string/symbol/normalize (&rest inputs)
+  "For each item in INPUTS:
+  - If it's a strings, use the string.
+  - If it's a symbol, use the symbol's name via `spy/string/symbol->str'.
+
+Returns a list of strings.
+"
+  (let ((output nil))
+    (dolist (item inputs output)
+      ;; String? Direct to output.
+      (cond ((stringp item)
+             (push item output))
+
+            ;; Funcs are annoying. E.g.:
+            ;;   (spy/string/symbol/normalize 'org-mode)
+            ;; I wanted it to stringify the symbol but turns out that's
+            ;; a function. Removing the function calls for now.
+            ;; ;; Bound func or lambda? Call it for string.
+            ;; ((or (fboundp item)
+            ;;      (functionp item))
+            ;;  (push (funcall item) output))
+
+            ;; Symbol? Use its name.
+            ((symbolp item)
+             (push (spy/string/symbol->str item) output))))
+    ;; `push' pushes to the front of the list, so reverse it for result.
+    (nreverse output)))
+;; (spy/string/symbol/normalize "Test/ing" 'jeff :jeff)
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

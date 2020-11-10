@@ -30,9 +30,18 @@
 
 
 ;;------------------------------------------------------------------------------
-;; System UID
+;; Multiple systems (computers) able to use this same Doom Config.
 ;;------------------------------------------------------------------------------
 
 ;; Always load `multiplex' unless specifically removed.
 (unless (featurep! -multiplex)
    (load! "+multiplex"))
+
+
+;;------------------------------------------------------------------------------
+;; Config/Load Helpers.
+;;------------------------------------------------------------------------------
+
+;; Always load `config' unless specifically removed.
+(unless (featurep! -config)
+   (load! "+config"))

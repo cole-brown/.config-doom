@@ -8,6 +8,30 @@
 ;; spy/path
 ;;------------------------------------------------------------------------------
 
+
+(defun spy//path/append (parent next)
+  "Append NEXT element as-is to parent, adding dir separator between them if
+needed.
+"
+  (if (null parent)
+      next
+    (concat (file-name-as-directory parent) next)))
+;; (spy//path/append nil "jeff")
+;; (spy//path/append "jeff" "jill")
+;; (spy//path/append "jeff/" "jill")
+
+
+(defun spy/path/join (&rest path)
+  "Combines PATH elements together into a path platform-agnostically.
+
+(spy/path/rel \"jeff\" \"jill.el\")
+  ->\"jeff/jill.el\"
+"
+  (-reduce #'spy//path/append path))
+;; (spy/path/join "jeff" "jill")
+;; (spy/path/join "jeff")
+
+
 (defun spy/path/to-file (parent &rest path)
   "Given a base dir, and a &rest of e.g. ('path/to' 'dir'
 'with-file' 'file.txt'), will return full /file/ path in

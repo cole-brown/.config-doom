@@ -85,48 +85,48 @@ symbol-name: 'spy/mad-science/transmogrifier'
 ;; features
 
 
-(defmacro spy/require (module feature &rest extras)
-  "Creates the feature name from MODULE, FEATURE, EXTRAS, then `requires' it.
+(defmacro spy/require (category module &rest extras)
+  "Creates the module name from CATEGORY, MODULE, EXTRAS, then `requires' it.
 
-MODULE should be a keyword. FEATURE and EXTRA can be keywords or
+CATEGORY should be a keyword. MODULE and EXTRA can be keywords or
 normal symbol-names.
 
 Symbol values are ignored. The symbol names themselves are used
-to construct the final feature symbol name. \":\" is discarded
+to construct the final module symbol name. \":\" is discarded
 from the front of keyword symbols.
 
-The feature is expected to be in the file described by the feature name generated.
+The module is expected to be in the file described by the module name generated.
 
 Examples:
 
-(spy/require :spy path) will require the feature:
+(spy/require :spy path) will require the module:
   - symbol:  spy/path
   - path:   'spy/path'
 
-(spy/require :spy mad-science transmogrifier) will require the feature:
+(spy/require :spy mad-science transmogrifier) will require the module:
   - symbol:  spy/mad-science/transmogrifier
   - path:   'spy/mad-science/transmogrifier'
 "
   (declare (indent defun))
 
-  (when (not (keywordp module))
-    (error "Module must be a keyword symbol. Got: %s" module))
+  (when (not (keywordp category))
+    (error "Category must be a keyword symbol. Got: %s" category))
 
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mod-name     (make-symbol "temp-mod-name"))
-        (feature-name (make-symbol "temp-feature-name"))
-        (sub-names    (make-symbol "temp-sub-names")))
+  (let ((cat-name  (make-symbol "temp-cat-name"))
+        (mod-name  (make-symbol "temp-mod-name"))
+        (sub-names (make-symbol "temp-sub-names")))
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
     ;; Eval inputs once.
-    `(let ((,mod-name ,module)
-           (,feature-name ,feature)
+    `(let ((,cat-name ,category)
+           (,mod-name ,module)
            (,sub-names (list ,@extras))
            ;; Non-inputs:
            (final-name nil)
            (separator "/"))
-       (setq final-name (concat (spy//provide/symbol->str ,mod-name)
+       (setq final-name (concat (spy//provide/symbol->str ,cat-name)
                                 separator
-                                (spy//provide/symbol->str ,feature-name)))
+                                (spy//provide/symbol->str ,mod-name)))
        (when (not (null ,sub-names))
          (dolist (sub ,sub-names final-name)
            (setq final-name
@@ -134,7 +134,7 @@ Examples:
                          separator
                          (spy//provide/symbol->str sub)))))
 
-       ;; Create/return the symbol in the obarray and require the feature by
+       ;; Create/return the symbol in the obarray and require the module by
        ;; that symbol in that filepath.
        (require (intern final-name) final-name))))
 ;; (featurep 'jeff/test/zero)

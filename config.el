@@ -12,16 +12,23 @@
 
 (spy/require :spy 'jerky)
 (spy/require :spy 'path)
+(spy/require :spy 'config)
 
 
 ;;------------------------------------------------------------------------------
-;; Hello, my name is...
+;; Config Setup.
 ;;------------------------------------------------------------------------------
 
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets.
-(setq user-full-name "Cole Brown"
-      user-mail-address "code@brown.dev")
+;; Our config files for different bits of emacs/doom/packages are in the
+;; config sub-dir.
+(spy/config.root/set "config")
+
+
+;;------------------------------------------------------------------------------
+;; Cole Brown, Multi-pass.
+;;------------------------------------------------------------------------------
+
+(spy/config 'identity)
 
 ;; TODO: need to change whatever snipped doom uses for new .el files. My github
 ;; username is not my computer username.
@@ -31,60 +38,21 @@
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 
-;; TODO: Add these?
-;;   C-d for backwards delete char
-;;   movement keys for in insert mode?
-;;   search, reverse search
-;;
-;; TODO: REMOVE!!!
-;;   Redo is mean. I'm too used to Emacs's ring and using C-r for reverse search.
-
-;; explanation of map!
-;; http://github.com/hlissner/doom-emacs/issues/814#issuecomment-414051945
-(map!
- ;; :normal, :visual states of evil
- ;; (not :motion, :emacs, :insert, :operator-pending)
- :nv "h" nil  ; was: 'evil-backward-char
- :nv "j" nil  ; was: 'evil-forward-char
- :nv "k" nil  ; was: 'evil-next-line
- :nv "l" nil  ; was 'evil-previous-line
-
- ;; Rebind to Dvorak-friendly, WASD-style keys.
- ;; Blows up some evil/vim commands, I'm sure, but hjkl is awkward as fuck.
- :nv "h" 'evil-backward-char
- :nv "n" 'evil-forward-char
- :nv "t" 'evil-next-line
- :nv "c" 'evil-previous-line)
+(spy/config 'keybinds)
 
 
 ;;------------------------------------------------------------------------------
 ;; Look & Feel
 ;;------------------------------------------------------------------------------
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;;
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-;;(setq doom-font (font-spec :family "Cascadia Code PL" :size 12 :weight 'semi-light))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
-;; TODO: Switch to Zenburn once I'm comfortable with Doom...
+(spy/config 'ui)
 
 
 ;;------------------------------------------------------------------------------
 ;; Org-Mode & Its Legions
 ;;------------------------------------------------------------------------------
+
+;; (load! (spy/path/to-file "config/org-mode.el"))
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!

@@ -1,0 +1,34 @@
+# -*- mode: snippet -*-
+# contributor: Cole Brown <code@brown.dev>
+# name: spy-ert: emacs unit test (ert-deftest)
+# key: spy-ert
+# --
+
+;;------------------------------------------------------------------------------
+;; Test: ${1:`(let ((string yas-selected-text))
+                 (if (string-match (rx (syntax open-parenthesis)
+                                        "defun"
+                                        (one-or-more whitespace)
+                                        (group
+                                         (one-or-more graphic)))
+                                    string)
+                    (match-string 1 string)
+                  "<func being tested"))`}
+;;------------------------------------------------------------------------------
+
+;; `(first (split-string yas-selected-text "\n"))`
+(ert-deftest spotify-ert/$1 ()
+  "Test that \`$1' ${3:<does something>}.
+"
+  (spotify-ert/${2:`(string-trim-right (buffer-name) "-ert[.]el")`}/setup)
+
+  ;; <maybe tests here>
+
+  (spotify-ert/util/with-json spotify-connect-ert/data/player-status-in-full
+
+    ;; <maybe tests here>
+    $0
+
+    )
+
+  (spotify-ert/$2/teardown))

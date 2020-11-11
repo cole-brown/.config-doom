@@ -30,3 +30,20 @@
 (setq doom-theme 'doom-one)
 
 ;; TODO: Switch to Zenburn once I'm comfortable with Doom...
+
+
+;;------------------------------------------------------------------------------
+;; Cursor
+;;------------------------------------------------------------------------------
+
+(blink-cursor-mode 1)
+(setq blink-cursor-interval 0.75) ; default is 0.5 seconds
+
+
+;;------------------------------------------------------------------------------
+;; Lines
+;;------------------------------------------------------------------------------
+
+;;This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)

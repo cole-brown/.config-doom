@@ -1,6 +1,18 @@
 ;;; config/keybinds.el -*- lexical-binding: t; -*-
 
 ;;------------------------------------------------------------------------------
+;; Useful Keys I've Found So Far...
+;;------------------------------------------------------------------------------
+
+;; s - snipe - a two char search & goto.
+;; o - insert line below point and go into insert mode there.
+;; e - forward to word end
+;; u - undo
+;; - - previous line that isn't blank
+;; a - append - switch to insert mode just after point.
+
+
+;;------------------------------------------------------------------------------
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 

@@ -66,7 +66,14 @@
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 
+;; Changes to Emacs/Evil keybinds.
 (spy/config 'keybinds)
+
+;; Changes to Evil, Evil Settings, etc.
+(spy/config 'evil)
+
+;; My additions to a new entry in the SPC leader.
+(spy/config 'spy 'keybinds)
 
 
 ;;------------------------------------------------------------------------------

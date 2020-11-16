@@ -188,9 +188,17 @@
        (default +bindings +smartparens)
 
        :spy
-       zero                ; spy/zero:   Must be first. spy/require, spy/provide, strings...
-       file                ; spy/file:   For helpful path/file/dir functions.
-       jerky               ; spy/jerky:  For key/value tree.
-       system              ; spy/system: For one-to-many config-to-computers setup.
-       secret              ; spy/secret: For per-system things, secret keys, etc.
+       ;; Functions and Helpers
+       zero                ; spy/zero:     Must be first. spy/require, spy/provide, strings...
+       file                ; spy/file:     For helpful path/file/dir functions.
+       buffer              ; spy/buffer:   Buffer, line, point, etc functions.
+       datetime            ; spy/datetime: For dates, times, datetimes, timedates...
+
+       ;; Has to Be Ready Before Init/Config Begins in Earnest.
+       jerky               ; spy/jerky:   For key/value tree.
+
+       ;; System Setup Init
+       system              ; spy/system:  For one-to-many config-to-computers setup.
+       io                  ; spy/io:      Input and output stuff (e.g. inserting signatures).
+       secret              ; spy/secret:  For per-system things, secret keys, etc.
        )

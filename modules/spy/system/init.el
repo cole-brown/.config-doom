@@ -45,3 +45,7 @@
 ;; Always load `config' unless specifically removed.
 (unless (featurep! -config)
    (load! "+config"))
+
+;; Always load `package' unless specifically removed.
+(unless (featurep! -package)
+   (load! "+package"))

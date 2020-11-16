@@ -1,4 +1,4 @@
-;;; spy/system/+config.el -*- mode: emacs-lisp; lexical-binding: t; -*-
+;;; spy/system/+package.el -*- lexical-binding: t; -*-
 
 (spy/require :spy 'zero 'strings)
 (spy/require :spy 'path)
@@ -9,32 +9,32 @@
 ;; Set Root.
 ;;------------------------------------------------------------------------------
 
-(defconst spy//config.jerky.key "path/doom/config/root")
+(defconst spy//package.jerky.key "path/doom/package/root")
 
 
-(defun spy/config.root/set (path)
-  "Set the root path (can be relative) that `spy/config' will use.
+(defun spy/package.root/set (path)
+  "Set the root path (can be relative) that `spy/package' will use.
 "
-  (jerky/set spy//config.jerky.key
+  (jerky/set spy//package.jerky.key
              :value path
-             :docstr "Root (can be relative) path for `spy/config'."))
+             :docstr "Root (can be relative) path for `spy/package'."))
 
 
 ;;------------------------------------------------------------------------------
 ;; Load Files During Config
 ;;------------------------------------------------------------------------------
 
-(defmacro spy/config (&rest path)
+(defmacro spy/package (&rest path)
   "Creates a relative filepath from PATH elements then looks under jerky key
-\"path/doom/config/root\" for the (relative) root to that path.
+\"path/doom/package/root\" for the (relative) root to that path.
 
 PATH can be made up of strings or symbols.
 
 For example:
-  (jerky/set \"path/doom/config/root\" :value \"config\")
-  (spy/config \"jeff\" \"jill\")
+  (jerky/set \"path/doom/package/root\" :value \"package\")
+  (spy/package \"jeff\" \"jill\")
 
-This will load file: \"config/jeff/jill.el(c)\"
+This will load file: \"package/jeff/jill.el(c)\"
 "
   (declare (indent defun))
 
@@ -44,27 +44,27 @@ This will load file: \"config/jeff/jill.el(c)\"
     ;; Eval inputs once.
     `(let* ((,path-input (spy/string/symbol/normalize ,@path))
             ;; Non-inputs:
-            (root        (jerky/get "path/doom/config/root"))
+            (root        (jerky/get "path/doom/package/root"))
             (final-name  (apply #'spy/path/join root ,path-input))
-            (config-name (apply #'spy/string/concat "/" ,path-input)))
+            (package-name (apply #'spy/string/concat "/" ,path-input)))
 
        ;; Say something...
-       (if (string= final-name config-name)
+       (if (string= final-name package-name)
            ;; Say what we're loading.
-           (message "spy/config loading '%s'..."
-                    config-name)
+           (message "spy/package loading '%s'..."
+                    package-name)
 
          ;; Say what and where.
-         (message "spy/config loading '%s'...\n   %s"
-                  config-name final-name))
+         (message "spy/package loading '%s'...\n   %s"
+                  package-name final-name))
 
        ;; Use Doom's `load!' to load the file.
        (load! final-name))))
-;; (spy/config 'jeff 'org-mode)
-;; (spy/config 'identity)
+;; (spy/package 'jeff 'org-mode)
+;; (spy/package 'identity)
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'config)
+(spy/provide :spy 'package)

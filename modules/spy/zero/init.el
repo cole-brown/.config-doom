@@ -21,7 +21,18 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Load The Rest
+;; Set up a Thing...
+;;------------------------------------------------------------------------------
+
+(defgroup spy/group nil
+  "General group namespace for the defcustoms in my emacs init."
+  :prefix "spy/"
+  ;; not really sure where to stick it
+  :group 'convenience)
+
+
+;;------------------------------------------------------------------------------
+;; ...Load The Rest
 ;;------------------------------------------------------------------------------
 
 ;; Always load `require' unless specifically removed.

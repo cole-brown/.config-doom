@@ -4,21 +4,31 @@
 ;;--                             Path Functions                               --
 ;;---------------------------------/mnt/hello-----------------------------------
 
+(spy/require :spy 'zero 'strings)
+
+
 ;;------------------------------------------------------------------------------
 ;; spy/path
 ;;------------------------------------------------------------------------------
 
 
-(defun spy//path/append (parent next)
+(defun _s//path/append (parent next)
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
+
+NEXT is normalized via `spy/string/symbol/normalize', so keywords or symbol
+names can be used as well as strings.
 "
-  (if (null parent)
-      next
-    (concat (file-name-as-directory parent) next)))
-;; (spy//path/append nil "jeff")
-;; (spy//path/append "jeff" "jill")
-;; (spy//path/append "jeff/" "jill")
+  ;; Use next's string value, or symbol name.
+  (let ((next (car (spy/string/symbol/normalize next))))
+    (if (null parent)
+        next
+      (concat (file-name-as-directory parent) next))))
+;; (_s//path/append nil "jeff")
+;; (spy/string/symbol/normalize "jill")
+;; (_s//path/append "jeff" "jill")
+;; (_s//path/append "jeff/" "jill")
+;; (_s//path/append "jeff/" :jill)
 
 
 (defun spy/path/join (&rest path)
@@ -27,7 +37,7 @@ needed.
 (spy/path/rel \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\"
 "
-  (-reduce #'spy//path/append path))
+  (-reduce #'_s//path/append path))
 ;; (spy/path/join "jeff" "jill")
 ;; (spy/path/join "jeff")
 
@@ -36,16 +46,11 @@ needed.
   "Given a base dir, and a &rest of e.g. ('path/to' 'dir'
 'with-file' 'file.txt'), will return full /file/ path in
 platform-agnostic manner. Does not 'fix' any `path' components;
-they are expected to be valid."
-  ;; fully qualify base as start of return value
-  (let ((out-path (expand-file-name "" parent)))
-    (dolist (component path out-path)
-      ;; For each component of path supplied, concat it to the result.
-      ;; `concat' is correct; see manual entry "Directory Names":
-      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Directory-Names.html#Directory-Names
-      (setq out-path (concat (file-name-as-directory out-path) ;; assume we had a dir all along?
-                             component)) ;; and add the next component on
-      )))
+they are expected to be valid.
+"
+  (apply #'spy/path/join
+         (expand-file-name "" parent)
+         path))
 ;; (spy/path/to-file "~" "personal" "something.exe" "zort.txt")
 
 
@@ -62,7 +67,6 @@ valid."
 (defun spy/path/to-relative (&optional path root)
   "Given a possibly absolute PATH, try to trim out ROOT. If both
 nil, returns file name."
-  (interactive)
   (let ((path (or path (buffer-file-name)))
         (root (or root "")))
     (s-replace (file-name-as-directory  ;; make sure to have an ending slash

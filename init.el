@@ -150,7 +150,7 @@
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       org               ; organize your plain life in plain text
+       (org +journal +roam); organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
@@ -187,15 +187,20 @@
        ;;literate
        (default +bindings +smartparens)
 
+       :mis ; My output helper code.
+       code                ; mis/code:     Code-related output help.
+
        :spy
        ;; Functions and Helpers
        zero                ; spy/zero:     Must be first. spy/require, spy/provide, strings...
        file                ; spy/file:     For helpful path/file/dir functions.
        buffer              ; spy/buffer:   Buffer, line, point, etc functions.
-       datetime            ; spy/datetime: For dates, times, datetimes, timedates...
+       hook                ; spy/hook:     Hook helper macros/functions.
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
        jerky               ; spy/jerky:   For key/value tree.
+       ;; Has to Be After jerky:
+       datetime            ; spy/datetime: For dates, times, datetimes, timedates...
 
        ;; System Setup Init
        system              ; spy/system:  For one-to-many config-to-computers setup.

@@ -6,7 +6,7 @@
 ;; `Align-Regex' helper function idea came from this nice chap:
 ;; http://pragmaticemacs.com/emacs/aligning-text/
 
-(defun spy/align-before (start end text)
+(defun smd/align-before (start end text)
   "Align columns by whitespace before TEXT. E.g. with text \"+=\" and region:
   Jeff.Jet(jeff.it).onClick += OnJeffClick;
   Jeff.Jet(jefferson.it).onClick += OnJeffersonClick;
@@ -30,7 +30,7 @@ indicated by START and END.
                   1 1 nil)))
 
 
-(defun spy/align-after (start end text)
+(defun smd/align-after (start end text)
   "Align columns by whitespace after TEXT. E.g. with text \"+=\" and region:
   Jeff.Jet(jeff.it).onClick += OnJeffClick;
   Jeff.Jet(jefferson.it).onClick += OnJeffersonClick;
@@ -65,13 +65,13 @@ indicated by START and END.
 ;;
 ;; This is actually the inverse of fill-paragraph. Takes a multi-line paragraph
 ;; and makes it into a single line of text.
-(defun spy/fill/paragraph/unfill ()
+(defun smd/fill/paragraph/unfill ()
   (interactive)
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
 
 
-(defun spy//fill/paragraph/fn-for-mode ()
+(defun _s//fill/paragraph/fn-for-mode ()
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill hydra. Separated the 'get func' out here so I can see if
 in a mode with a special fill for hydra hinting."
@@ -101,14 +101,14 @@ in a mode with a special fill for hydra hinting."
    (t #'fill-paragraph)))
 
 
-(defun spy/fill/paragraph/per-mode (&optional justify)
+(defun smd/fill/paragraph/per-mode (&optional justify)
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
   (interactive)
-  (funcall (spy//fill/paragraph/fn-for-mode) justify))
+  (funcall (_s//fill/paragraph/fn-for-mode) justify))
 
 
-(defun spy/fill/region/single-line (&optional justify)
+(defun smd/fill/region/single-line (&optional justify)
   "Grab start/end of current line and call `fill-region'. i.e.
 \"'Fill Region' on just this line, please.\""
   (interactive)
@@ -122,8 +122,8 @@ the fill prefix-map."
 ;; Manual Unicode Box Drawing Hydra
 ;;------------------------------------------------------------------------------
 
-;; Wanted this to be `spy//hydra/art.box' but then hydra fucks up the names...
-;; Turns the body into `spy//hydra/art\\\.box/body'.
+;; Wanted this to be `_s//hydra/art.box' but then hydra fucks up the names...
+;; Turns the body into `_s//hydra/art\\\.box/body'.
 ;; Also I forgot how many functions hydra spews out. Fucks up my namespace.
 ;;
 ;; Also also: Pink hydra gets fucked up sometimes. Evil thinks it's in charge
@@ -161,7 +161,7 @@ _p_: ?p?  _u_: ?u?
 ;; acceptable? Still could do overwrite instead of insert when applicable.
 
 
-(defun spy/art.box/draw ()
+(defun smd/art.box/draw ()
   "`spy' namespaced function to get into the box drawing hydra.
 "
   (interactive)
@@ -193,8 +193,8 @@ _p_: ?p?  _u_: ?u?
        ;;-------------------
        (:prefix ("a" . "Alignment")
 
-        :desc "spy:   Align Before"    "a" #'spy/align-before
-        :desc "spy:   Align After"     "o" #'spy/align-after
+        :desc "spy:   Align Before"    "a" #'smd/align-before
+        :desc "spy:   Align After"     "o" #'smd/align-after
         :desc "emacs: Align Regex"     ";" #'align-regexp
         :desc "emacs: C-u Align Regex" "q" (lambda () (interactive)
                                              (setq current-prefix-arg '(4))
@@ -210,19 +210,19 @@ _p_: ?p?  _u_: ?u?
         ;; Regions
         :desc "Region"              "r" #'fill-region
         :desc "Region as Paragraph" "a" #'fill-region-as-paragraph
-        :desc "Line"                "l" #'spy/fill/region/single-line
+        :desc "Line"                "l" #'smd/fill/region/single-line
 
         ;; Paragraphs
-        :desc (if (eq (spy//fill/paragraph/fn-for-mode) #'fill-paragraph)
+        :desc (if (eq (_s//fill/paragraph/fn-for-mode) #'fill-paragraph)
                   "Default Fill ¶"
                 "Mode-Aware Fill ¶")
-                              "p" #'spy/fill/paragraph/per-mode
+                              "p" #'smd/fill/paragraph/per-mode
         :desc "Individual ¶"  "i" #'fill-individual-paragraphs
         :desc "Non-Uniform ¶" "n" #'fill-nonuniform-paragraphs
         :desc "Default ¶"     "d" #'fill-paragraph
 
         ;; Unfill
-        :desc "Unfill ¶"      "u" #'spy/fill/paragraph/unfill)
+        :desc "Unfill ¶"      "u" #'smd/fill/paragraph/unfill)
 
 
        ;;-------------------
@@ -258,6 +258,6 @@ _p_: ?p?  _u_: ?u?
        ;; Box Drawning
        ;;-------------------
        ;; Using a blue hydra so it stays in the transient map.
-       :desc "Unicode Box"                  "b" #'spy/art.box/draw
+       :desc "Unicode Box"                  "b" #'smd/art.box/draw
 
        ))

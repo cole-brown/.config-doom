@@ -330,28 +330,31 @@ If QUIET is non-nil, don't output messages/warnings.
 "
   (let ((strings '()) ; List for processing args.
         (key  nil))   ; Final keypath string built from `strings'.
-(cond ((stringp args)
-	(setq strings (list args)))
-	((listp args)
-    (dolist (arg args)
-      ;; Push string args to strings, turn non-strings into strings.
-      (cond ((stringp arg)
-             (push arg strings))
+    ;; If just a string, turn into our `strings' list.
+    (cond ((stringp args)
+           (setq strings (list args)))
 
-            ;; symbol->string: drop keyword prefix if exists.
-            ((symbolp arg)
-             (push (jerky//key/symbol->str arg) strings))
+          ;; If a list, turn each item into a string and push to the `strings' list.
+          ((listp args)
+           (dolist (arg (-flatten args)) ; Just want one level of list.
+             ;; Push string args to strings, turn non-strings into strings.
+             (cond ((stringp arg)
+                    (push arg strings))
 
-            ;; function->string:
-            ((functionp arg)
-             (push (funcall arg) strings))
+                   ;; symbol->string: drop keyword prefix if exists.
+                   ((symbolp arg)
+                    (push (jerky//key/symbol->str arg) strings))
 
-            ;; fail
-            (t
-             (error (concat "%s: Can't convert '%S' to string for conversion "
-                            "of keys into key list.")
-                    "jerky//key/normalize"
-                    arg))))))
+                   ;; function->string:
+                   ((functionp arg)
+                    (push (funcall arg) strings))
+
+                   ;; fail
+                   (t
+                    (error (concat "%s: Can't convert '%S' to string for conversion "
+                                   "of keys into key list.")
+                           "jerky//key/normalize"
+                           arg))))))
 
     ;; Now we have strings. They are in backwards order. They need to be turned
     ;; into a final separated string.
@@ -360,6 +363,7 @@ If QUIET is non-nil, don't output messages/warnings.
 
     ;; Return the full key string.
     key))
+;; (jerky//key/normalize "a/b")
 ;; (jerky//key/normalize "a/b" "c")
 ;; (jerky//key/normalize :base "a/b" "c")
 

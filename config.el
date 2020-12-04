@@ -41,6 +41,19 @@
 (spy/require :spy 'jerky)
 (spy/require :spy 'path)
 (spy/require :spy 'config)
+(spy/require :spy 'package)
+
+
+;; NOTE: My functions are named thusly:
+;;   - "spy/<name>": A "public" function.
+;;   - "_s//<name>": A "private" function - I don't want 'em all polluting the
+;;                   auto-complete, help, etc for "spy/".
+;;   - "smd/<name>": aka "spy cmd"
+;;                   A "public" and also /interactive/ function.
+
+
+;; TODO: a readme...
+;;   - func naming scheme
 
 
 ;;------------------------------------------------------------------------------
@@ -65,6 +78,8 @@
 ;;------------------------------------------------------------------------------
 ;; Keybinds
 ;;------------------------------------------------------------------------------
+
+;; (spy/package 'hercules)
 
 ;; Changes to Emacs/Evil keybinds.
 (spy/config 'keybinds)

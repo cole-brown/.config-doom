@@ -17,6 +17,8 @@
 (spy/require :spy 'buffer 'point)
 (spy/require :spy 'datetime 'format)
 
+(require 'mis/code/comment)
+
 
 ;;------------------------------------------------------------------------------
 ;; Set-Up Signatures in Jerky
@@ -123,7 +125,7 @@ NAMESPACE is used with SIGNATURE to get a sig from `_//signature/get'.
 ;; Signatures - TODOs
 ;;------------------------------------------------------------------------------
 
-(defun spy/signature.todo/insert ()
+(defun smd/signature.todo/insert ()
   "DWIM function for TODO signatures/comments.
 
 Takes '(spy signature todo) and uses as-is, or adds comment
@@ -150,9 +152,9 @@ characters to it, as appropriate for where point is and what's around it.
 
 
 (defun spy/signature.todo (&optional timestamp comment namespace)
-  "Returns a TODO signature.
+  "Returns a 'TODO'-related signature.
 
-Optionally adds a TIMESTAMP if non-nil to spy/signature/todo.
+Optionally adds a TIMESTAMP (if non-nil) to the signature.
 
 Optionally returns the signature commented out if COMMENT is non-nil.
 "
@@ -163,69 +165,30 @@ Optionally returns the signature commented out if COMMENT is non-nil.
     (when timestamp
       (setq sig (concat sig
                         " "
-                        (format-time-string
-                         spy/datetime/format/org-inactive-derivative))))
+                        (spy/datetime/string.get 'org-inactive))))
 
     (when comment
       ;; Append ':' and wrap sig with comment characters.
-      (setq sig (mis/comment/wrap (concat sig ":"))))))
+      (setq sig (mis/comment/wrap (concat sig ":"))))
+
+    ;; return it
+    sig))
 ;; (spy/signature.todo)
 ;; (spy/signature.todo t)
 ;; (spy/signature.todo t t)
 
 
-
-;; TODO
-;; TODO: Finish this
-;; TODO
-
-;; TODO: call this in a config!
-;; (spy/io/signatures/create "⚶" user-full-name)
-
-
-
-;;------------------------------------------------------------------------------
-;; Signatures - Insert, Search...
-;;------------------------------------------------------------------------------
-
-;; Org-Mode Signature: For easy marking of "this here is my inserted note"
-(defun spy/signature/insert (signature)
-  "Inserts a signature. Choose from a few options."
-  (interactive (list
-    ;; Arg 0: signature type
-    (completing-read
-     ;; Prompt:
-     "Insert Signature: "
-
-     ;; Shown list.
-     (spy/signature/options)
-
-     ;; No predicate to limit above (shown list).
-     ;; TODO: limit to short/char if not at EOL?
-     nil
-
-     ;; Set to 'confirm if want confirmation of non-list entry.
-     ;; But right now I think deny all not on list via `true'.
-     t
-
-     ;; Deprecated.
-     nil
-
-     ;; Get our own separate history for this command.
-     'spy/signature/insert/history
-
-     ;; default user input value
-     nil)))
-
-  (unless (null signature)
-    ;; now insert the chosen at point
-    (insert signature)))
-
 ;;------------------------------------------------------------------------------
 ;; Signatures - Search...
 ;;------------------------------------------------------------------------------
 
-(defun spy/signature/search (signature)
+
+(defvar _s//signature/search/history nil
+  "Just a bucket to hold history for sig commands to keep
+  segregated from general history.")
+
+
+(defun smd/signature/search (signature)
   "Choose a signature and then search for it via `isearch-forward'."
   (interactive (list
     ;; Arg 0: signature type
@@ -237,7 +200,6 @@ Optionally returns the signature commented out if COMMENT is non-nil.
      (spy/signature/options)
 
      ;; No predicate to limit above (shown list).
-     ;; TODO: limit to short/char if not at EOL?
      nil
 
      ;; Set to 'confirm if want confirmation of non-list entry.
@@ -248,7 +210,7 @@ Optionally returns the signature commented out if COMMENT is non-nil.
      nil
 
      ;; Get our own separate history for this command.
-     'spy/signature/insert/history
+     '_s//signature/search/history
 
      ;; default user input value
      nil)))

@@ -15,19 +15,19 @@
 ;; Interactive: Insert Timestamp
 ;;--------------------
 
-(defun spy/timestamp/iso-8601.insert ()
+(defun smd/timestamp/iso-8601.insert ()
   "Produces and inserts a full ISO 8601 format timestamp (with ' '
 date/time separator) of current time.
 "
   (interactive)
-  (insert (spy/datetime.iso-8601/get.string 'yyyy-mm-dd_hh-mm-ss)))
+  (insert (spy/datetime/string.get '(iso-8601 yyyy-mm-dd_hh-mm-ss))))
 
 
-(defun spy/timestamp/org.insert ()
+(defun smd/timestamp/org.insert ()
   "Produces and inserts a timestamp of [yyyy-mm-dd], similar to
 inactive ORG timestamp."
   (interactive)
-  (insert (spy/datetime/get.string 'org-inactive)))
+  (insert (spy/datetime/string.get 'org-inactive)))
 
 
 
@@ -36,7 +36,7 @@ inactive ORG timestamp."
 ;;--------------------
 
 ;; Was used in an old weekly-status template
-(defun spy/datetime/next-friday (format)
+(defun spy/timestamp/next-friday (format)
   "Returns a string of next Friday's date formatted to the
 spy/datetime/timestamp FORMAT string.
 "

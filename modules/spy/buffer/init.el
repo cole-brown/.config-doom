@@ -10,3 +10,7 @@
    (load! "+point"))
 (unless (featurep! -line)
    (load! "+line"))
+(unless (featurep! -search)
+   (load! "+search"))
+(unless (featurep! -name)
+   (load! "+name"))

@@ -14,7 +14,7 @@
 (defun smd/buffer/search.header (string &optional max-chars)
   "Searches for STRING in the first MAX-CHARS of the buffer.
 
-If MAX-CHARS is nil, use `_s//buffer/search-header/boundry'.
+If MAX-CHARS is nil, use `_s//buffer/search.header/boundry'.
 "
   (interactive "s")
   (search-forward
@@ -23,7 +23,7 @@ If MAX-CHARS is nil, use `_s//buffer/search-header/boundry'.
 
      ;; search boundry (characters/buffer position)
      (or max-chars
-         _s//buffer/search-header/boundry)
+         _s//buffer/search.header/boundry)
 
      ;; NOERROR:
      ;; - nil/default: fail w/ error msg

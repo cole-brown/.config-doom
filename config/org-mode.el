@@ -284,6 +284,20 @@
                             ".logbook.org")
              :docstr "`org-journal-file-format' for :work")
 
+  ;;---
+  ;; Domain Switcher
+  ;;---
+  (defmacro _s//org.journal/namespaced (namespace &rest body)
+    "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
+    `(let ((org-journal-file-format ,(jerky/get '(org-journal file format)
+                                                :namespace namespace))
+           (org-journal-dir ,(jerky/get '(path org journal)
+                                        :namespace namespace)))
+      ,@body
+    ))
+  ;; (_s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
+  ;; (_s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+
 
   ;; ;;--------------------
   ;; :custom
@@ -333,6 +347,61 @@
   ;; configuration
   ;;--------------------
 
+  ;; Insert :work journal shortcuts if appropriate.
+  (when (jerky/namespace/has :work)
+    ;; Add to Doom Leader...
+    (map! :leader
+          ;; :normal, :visual states of evil
+          ;; (not :motion, :emacs, :insert, :operator-pending)
+
+          ;; Add namespace-aware org-journal stuff to the org-journal doom keymap.
+          (:when (featurep! :lang org +journal)
+           (:prefix "n" ;; notes
+            (:prefix "j" ;; ("j" . "journal")
+             :desc ":work - New Entry"           "w j" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-entry)))
+             :desc ":work - New Scheduled Entry" "w J" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+             :desc ":work - Visit Journal"       "w v" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
+             :desc ":work - Search Forever"      "w s" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-search-forever))))))))
+
+  ;; Insert :home journal shortcuts if appropriate.
+  (when (jerky/namespace/has :home)
+    ;; Add to Doom Leader...
+    (map! :leader
+          ;; :normal, :visual states of evil
+          ;; (not :motion, :emacs, :insert, :operator-pending)
+
+          ;; Add namespace-aware org-journal stuff to the org-journal doom keymap.
+          (:when (featurep! :lang org +journal)
+           (:prefix "n" ;; notes
+            (:prefix "j" ;; journal
+             :desc ":home - New Entry"           "h j" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-entry)))
+             :desc ":home - New Scheduled Entry" "h J" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+             :desc ":home - Visit Journal"       "h v" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
+             :desc ":home - Search Forever"      "h s" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-search-forever))))))))
   )
 
 

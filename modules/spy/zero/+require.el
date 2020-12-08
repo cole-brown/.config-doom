@@ -83,6 +83,11 @@ symbol-name: 'spy/mad-science/transmogrifier'
 ;; (featurep 'jeff/test/zero)
 ;; jeff/test/zero
 ;; features
+;; (featurep 'jeff/test/one)
+;; (provide 'jeff/test/one)
+;; (featurep 'jeff/test/one)
+;; jeff/test/one
+;; features
 
 
 (defmacro spy/require (category module &rest extras)

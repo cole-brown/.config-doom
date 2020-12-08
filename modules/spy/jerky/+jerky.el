@@ -246,6 +246,14 @@ used/allowed.
 ;; (jerky/namespace/create :foo :title "hello there" :docstr "jeff" :fallbacks '(a b c))
 
 
+
+(defun jerky/namespace/has (namespace)
+  "Returns t if namespace is present in `jerky/custom.namespace/default'.
+"
+  (not (null (assoc namespace jerky//namespaces))))
+;; (jerky/namespace/has :jeff)
+
+
 (defun jerky//namespace/ordered (namespace &optional quiet)
   "Gets a namespace & its fallbacks.
 

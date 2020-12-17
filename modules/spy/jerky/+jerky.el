@@ -466,12 +466,12 @@ If nothing found at KEY, return will be nil.
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and any options.
-  (-let (((args kwargs) (spy/lisp/func.args keys-and-options
-                                            :namespace :field))
-         (getter nil)
-         (key (jerky//key/normalize args))
-         ;; dash-let's plist match pattern to non-keys in ARGS.
-         ((&plist :namespace namespace :field field) kwargs))
+  (-let* (((args kwargs) (spy/lisp/func.args keys-and-options
+                                             :namespace :field))
+          (getter nil)
+          (key (jerky//key/normalize args))
+          ;; dash-let's plist match pattern to non-keys in ARGS.
+          ((&plist :namespace namespace :field field) kwargs))
 
     ;; Check field... is it a known value?
     (cond ((memq field '(:namespace :value :docstr))

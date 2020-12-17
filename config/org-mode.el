@@ -267,7 +267,7 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :home
-             :value (concat (spy/datetime/format.get '(iso-8601 short))
+             :value (concat (spy/datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'notebook' not quickest to
                             ;; auto-complete to. Find better.
                             ".notebook.org")
@@ -278,7 +278,7 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :work
-             :value (concat (spy/datetime/format.get '(iso-8601 short))
+             :value (concat (spy/datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'logbook' not quickest to
                             ;; auto-complete to. Find better.
                             ".logbook.org")
@@ -322,7 +322,7 @@
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
-                          (concat (spy/datetime/format.get '(iso-8601 short))
+                          (concat (spy/datetime/format.get 'iso-8601 'short)
                                   ", %A"))
   ;; This can be a function if more is wanted. E.g. inserting new header text
   ;; into empty files.
@@ -426,7 +426,7 @@
 
 It uses TITLE and the current timestamp to form a unique title.
 "
-    (let ((timestamp (spy/datetime/string.get '(iso-8601 file)))
+    (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
           (slug (org-roam--title-to-slug title)))
       (format "%s_%s" timestamp slug)))
 

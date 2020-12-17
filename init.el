@@ -193,6 +193,7 @@
        :spy
        ;; Functions and Helpers
        zero                ; spy/zero:     Must be first. spy/require, spy/provide, strings...
+       lisp                ; spy/lisp:     Helpful Elisp stuff.
        file                ; spy/file:     For helpful path/file/dir functions.
        buffer              ; spy/buffer:   Buffer, line, point, etc functions.
        hook                ; spy/hook:     Hook helper macros/functions.

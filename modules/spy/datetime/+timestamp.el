@@ -20,7 +20,7 @@
 date/time separator) of current time.
 "
   (interactive)
-  (insert (spy/datetime/string.get '(iso-8601 yyyy-mm-dd_hh-mm-ss))))
+  (insert (spy/datetime/string.get 'iso-8601 'long)))
 
 
 (defun smd/timestamp/org.insert ()

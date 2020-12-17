@@ -447,12 +447,15 @@ in order and return record from first namespace that has one.
 ;; TODO: change to names like the above funcs for rest of jerky?
 
 
-(defun jerky/get (keys &rest args)
+(defun jerky/get (&rest keys-and-options)
   "Gets a record's value from `jerky//repo'.
 
-KEYS: A list of key strings/symbols/keywords, or a string key.
+Splits KEYS-AND-OPTIONS into keys, and optional keyword arg/value pairs.
 
-This uses keyword ARGS after the KEY. The keywords are:
+KEY: A list of key strings/symbols/keywords, or a string key, or
+a mix. These must come before any of the optional keyword args.
+
+Keyword key/value pairs only exist after the KEYS. The keywords are:
   `:namespace'
      - The namespace to look in, and what fallbacks to use.
   `:field'
@@ -461,14 +464,18 @@ This uses keyword ARGS after the KEY. The keywords are:
 
 If nothing found at KEY, return will be nil.
 "
-  ;; Some shenanigans to do to turn 'args' into key args and plist args.
-  (-let ((getter nil)
-         (key (jerky//key/normalize keys))
+  ;; Some shenanigans to do to turn input into args/kwargs into a key
+  ;; and any options.
+  (-let (((args kwargs) (spy/lisp/func.args keys-and-options
+                                            :namespace :field))
+         (getter nil)
+         (key (jerky//key/normalize args))
          ;; dash-let's plist match pattern to non-keys in ARGS.
-         ((&plist :namespace namespace :field field) args))
+         ((&plist :namespace namespace :field field) kwargs))
 
     ;; Check field... is it a known value?
     (cond ((memq field '(:namespace :value :docstr))
+           ;; Known values are good. Leave them be.
            (ignore))
 
           ;; Be the default.
@@ -604,12 +611,15 @@ To delete the NAMESPACE's value, pass `:jerky//action/delete' as the value.
       (jerky//repo.key/set key plist)))))
 
 
-(defun jerky/set (keys &rest args)
+(defun jerky/set (&rest keys-and-options)
   "Overwrite an existing record or add new record to `jerky//repo'.
 
-KEYS: A list of key strings/symbols/keywords, or a string key.
+Splits KEYS-AND-OPTIONS into keys, and keyword arg/value pairs.
 
-This uses keyword ARGS after the KEY. The keywords are:
+KEY: A list of key strings/symbols/keywords, or a string key, or
+a mix. These must come before any of the keyword args.
+
+Keyword key/value pairs only exist after the KEYS. The keywords are:
   `:value'
   `:docstr'
   `:namespace'
@@ -628,10 +638,14 @@ This uses keyword ARGS after the KEY. The keywords are:
 
 If not provided, they will be nil.
 "
-  ;; Some shenanigans to do to turn 'args' into key args and plist args.
-  (-let ((key (jerky//key/normalize keys))
-         ;; dash-let's plist match pattern to non-keys in ARGS.
-         ((&plist :docstr docstr :value value :namespace namespace) args))
+  ;; Some shenanigans to do to turn input into args/kwargs into a key
+  ;; and values.
+  (-let* (((args kwargs) (spy/lisp/func.args keys-and-options
+                                             :docstr :value :namespace))
+          (getter nil)
+          (key (jerky//key/normalize args))
+          ;; dash-let's plist match pattern to non-keys in ARGS.
+          ((&plist :docstr docstr :value value :namespace namespace) kwargs))
 
     ;; Get/update/create entries, set hash to key in repo.
     (jerky//repo/update key
@@ -640,6 +654,7 @@ If not provided, they will be nil.
                         docstr)))
 ;; (jerky/set '(path to thing) :value "hello there")
 ;; (jerky/set '(:test :jeff) :value "jeffe" :docstr "I am a comment.")
+;; (jerky/set :test "jeff" :value "jeffe overwrite" :docstr "I am not a comment.")
 ;; (jerky/set "test/jeff" :value "jeffe")
 ;; (jerky/set "test/jill" :value "jill")
 

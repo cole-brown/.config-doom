@@ -184,37 +184,6 @@ Optionally returns the signature commented out if COMMENT is non-nil.
 ;; Signatures - General
 ;;------------------------------------------------------------------------------
 
-(defun _s//signature/args (args &rest claims)
-  "Breaks ARGS list down into:
-'(list of args then) :k0 v0 :k1 v1 ... :kn vn
-
-Where `:k0' to `:kn' are keywords in CLAIMS.
-
-Basically: '&rest args &keys k0 k1 ... kn'
-
-Returns a list of lists:
-  (leading-args kwargs)
-"
-  (let ((leading-args nil)
-        (rest-as-keywords nil)
-        (keywords nil))
-    ;; Sort args into args/kwargs.
-    (dolist (arg args)
-      ;; Once we hit the first keyword arg, the rest are always all keywords.
-      (if (not (or rest-as-keywords
-                   (memq arg claims)))
-        ;; Still in the args.
-        (push arg leading-args)
-
-        ;; Rest are keywords.
-        (setq rest-as-keywords t)
-        (push arg keywords)))
-
-    ;; Done processing list, but our lists to return are backwords right now.
-    (list (nreverse leading-args) (nreverse keywords))))
-;; (_s//signature/args '(jeff jefferson :namespace :work) :namespace)
-
-
 (defun spy/signature (&rest args)
   "Gets signature based on ARGS list.
 
@@ -236,7 +205,7 @@ Keywords are:
 "
   ;; Break `args' up into type list and keyword args, then check for any of the
   ;; optional keywords.
-  (-let* (((type keys) (_s//signature/args args :namespace :timestamp :comment))
+  (-let* (((type keys) (spy/lisp/func.args args :namespace :timestamp :comment))
           ((&plist :namespace :timestamp :comment) keys))
 
     ;; First, we need the signature...

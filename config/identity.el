@@ -18,4 +18,4 @@
 ;; Signatures & Marks
 ;;------------------------------------------------------------------------------
 
-(spy/io/signatures/create "⚶" user-full-name)
+(spy/signature/create "⚶" user-full-name)

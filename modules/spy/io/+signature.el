@@ -34,16 +34,16 @@
 ;; Too tall, but nice: ⛧ ⚶
 ;; Right height, but eh... ok: § ▀
 
-(defun spy/io/signatures/create (sigil name)
+(defun spy/signature/create (sigil name)
   "Create signatures and save them into jerky under 'signature' root key.
 "
   ;;--------------------------
   ;; Identities To Use When Signing
   ;;--------------------------
 
-  (jerky/set 'signature 'id 'sigil
+  (jerky/set "signature/id/sigil"
              :namespace :default
-             :value sigil
+             :value "⚶"
              :docstr "Short 1-char signature for notes, comments...")
 
   ;; Could have multiple, but would make searching harder...
@@ -52,7 +52,7 @@
   ;;            :value benchwarmer
   ;;            :docstr "Short 1-char signature for notes, comments...")
 
-  (jerky/set 'signature 'id 'name
+  (jerky/set "signature/id/name"
              :namespace :default
              :value name
              :docstr "Name for use in signatures.")
@@ -61,12 +61,12 @@
   ;; Full Signatures
   ;;--------------------------
 
-  (jerky/set 'signature 'sigil 'note
+  (jerky/set "signature/sigil/note"
              :namespace :default
              :value (concat sigil ":")
              :docstr "Short signature for prefixing note lines.")
 
-  (jerky/set 'signature 'name 'sign
+  (jerky/set "signature/name/sign"
              :namespace :default
              :value (concat "-" name)
              :docstr "Name for use in signatures.")
@@ -82,7 +82,7 @@
   ;; TODOs, Fancy Bookmarks, and Such
   ;;--------------------------
 
-  (jerky/set 'signature 'sigil 'todo
+  (jerky/set "signature/sigil/todo"
              :namespace :default
              :value (concat sigil "-TODO-" sigil)
              :docstr "Long signature for postfixing note lines or as last line of note block."))
@@ -93,7 +93,7 @@
 ;; Helpers.
 ;;------------------------------------------------------------------------------
 
-(defun _//signature/get (signature &optional namespace)
+(defun _s//signature/get (signature &optional namespace)
   "Figure out what SIGNATURE is and return it or nil.
 NAMESPACE is used with SIGNATURE to try to get something from jerky.
 "
@@ -104,11 +104,11 @@ NAMESPACE is used with SIGNATURE to try to get something from jerky.
     nil))
 
 
-(defun _//signature/insert (signature &optional namespace)
+(defun _s//signature/insert (signature &optional namespace)
   "Figure out what SIGNATURE is and insert it at point.
-NAMESPACE is used with SIGNATURE to get a sig from `_//signature/get'.
+NAMESPACE is used with SIGNATURE to get a sig from `_s//signature/get'.
 "
-  (if-let ((sig (_//signature/get signature namespace)))
+  (if-let ((sig (_s//signature/get signature namespace)))
       ;; We found something in jerky - use it.
       (insert sig)
 
@@ -125,30 +125,32 @@ NAMESPACE is used with SIGNATURE to get a sig from `_//signature/get'.
 ;; Signatures - TODOs
 ;;------------------------------------------------------------------------------
 
-(defun smd/signature.todo/insert ()
-  "DWIM function for TODO signatures/comments.
-
-Takes '(spy signature todo) and uses as-is, or adds comment
-characters to it, as appropriate for where point is and what's around it.
-"
-  (interactive)
-  (cond
-   ;; Just sig str if in string.
-   ((spy/point/inside-string-p)
-    spy/signature/todo)
-
-   ;; Just sig str if in comment.
-   ((spy/point/inside-comment-p)
-    spy/signature/todo)
-
-   ;; Empty line? insert indented comment.
-   ((spy/point/current-line-empty-p)
-    (comment-indent)
-    (spy/signature/todo/comment))
-
-   ;; Default... IDK. Just sig str?
-   (t
-    spy/signature/todo)))
+;; TODO: Remove? Don't think it's being used anywhere.
+;; (defun spy/signature.todo/dwim ()
+;;   "DWIM function for TODO signatures/comments.
+;;
+;; Takes '(spy signature todo) and uses as-is, or adds comment
+;; characters to it, as appropriate for where point is and what's around it.
+;;
+;; Returns a string.
+;; "
+;;   (cond
+;;    ;; Just sig str if in string.
+;;    ((spy/point/inside-string-p)
+;;     (_s//signature/get '(signature sigil todo)))
+;;
+;;    ;; Just sig str if in comment.
+;;    ((spy/point/inside-comment-p)
+;;     (_s//signature/get '(signature sigil todo)))
+;;
+;;    ;; Empty line? insert indented comment.
+;;    ((spy/point/current-line-empty-p)
+;;     (comment-indent)
+;;     (spy/signature.todo 't 't))
+;;
+;;    ;; Default... IDK. Just sig str?
+;;    (t
+;;     (_s//signature/get '(signature sigil todo)))))
 
 
 (defun spy/signature.todo (&optional timestamp comment namespace)
@@ -159,7 +161,7 @@ Optionally adds a TIMESTAMP (if non-nil) to the signature.
 Optionally returns the signature commented out if COMMENT is non-nil.
 "
   ;; First, we need the signature...
-  (let ((sig (_//signature/get '(signature sigil todo) namespace)))
+  (let ((sig (_s//signature/get '(signature sigil todo) namespace)))
     ;; Add timestamp if desired.
     ;; Add it first - commenting could append to end.
     (when timestamp
@@ -179,6 +181,91 @@ Optionally returns the signature commented out if COMMENT is non-nil.
 
 
 ;;------------------------------------------------------------------------------
+;; Signatures - General
+;;------------------------------------------------------------------------------
+
+(defun _s//signature/args (args &rest claims)
+  "Breaks ARGS list down into:
+'(list of args then) :k0 v0 :k1 v1 ... :kn vn
+
+Where `:k0' to `:kn' are keywords in CLAIMS.
+
+Basically: '&rest args &keys k0 k1 ... kn'
+
+Returns a list of lists:
+  (leading-args kwargs)
+"
+  (let ((leading-args nil)
+        (rest-as-keywords nil)
+        (keywords nil))
+    ;; Sort args into args/kwargs.
+    (dolist (arg args)
+      ;; Once we hit the first keyword arg, the rest are always all keywords.
+      (if (not (or rest-as-keywords
+                   (memq arg claims)))
+        ;; Still in the args.
+        (push arg leading-args)
+
+        ;; Rest are keywords.
+        (setq rest-as-keywords t)
+        (push arg keywords)))
+
+    ;; Done processing list, but our lists to return are backwords right now.
+    (list (nreverse leading-args) (nreverse keywords))))
+;; (_s//signature/args '(jeff jefferson :namespace :work) :namespace)
+
+
+(defun spy/signature (&rest args)
+  "Gets signature based on ARGS list.
+
+Signature type is expected before keyword args, if any keywords are used.
+For example:
+(spy/signature 'id 'sigil :namespace :work)
+
+Keywords are:
+  - :types - following args are:
+    - 'sigil or 'name
+    - 'id, 'sigil, 'name, 'note, 'todo...
+
+  - OPTIONAL:
+    - :namespace - namespace to use for `jerky/get'
+    - :timestamp - if non-nil, append `org-inactive' from `spy/datetime'.
+    - :comment   - if non-nil, wrap signature in comment characters if deemed
+                   appropriate to major mode and point's position (aka ask
+                   `mis/comment/wrap').
+"
+  ;; Break `args' up into type list and keyword args, then check for any of the
+  ;; optional keywords.
+  (-let* (((type keys) (_s//signature/args args :namespace :timestamp :comment))
+          ((&plist :namespace :timestamp :comment) keys))
+
+    ;; First, we need the signature...
+    (let ((sig (_s//signature/get (list 'signature type) namespace)))
+      ;; Add timestamp if desired.
+      ;; Add it first - commenting could append to end.
+      (when timestamp
+        (setq sig (concat sig
+                          " "
+                          (spy/datetime/string.get 'org-inactive))))
+
+      (when comment
+        ;; Append ':' and wrap sig with comment characters if necessary.
+        (setq sig (mis/comment/wrap (concat sig ":"))))
+
+      ;; Return it.
+      sig)))
+;; (spy/signature 'id 'sigil)
+;; (spy/signature 'sigil 'todo :namespace :work)
+;; (spy/signature 'sigil 'todo :timestamp t :comment t)
+
+    ;; TODO: Finish this, using spy/signature.todo as a guide.
+    ;; TODO: delete spy/signature.todo - this covers all.
+    ;; TODO: get back to putting signatures into spy/keybinds.
+    ;;(message "t: %s, kwargs: %s -> n: %s, t: %s, c: %s"
+    ;;         type keys namespace timestamp comment)))
+
+
+;;------------------------------------------------------------------------------
 ;; Signatures - Search...
 ;;------------------------------------------------------------------------------
 
@@ -187,6 +274,8 @@ Optionally returns the signature commented out if COMMENT is non-nil.
   "Just a bucket to hold history for sig commands to keep
   segregated from general history.")
 
+
+;; TODO: spy/signature/options function?
 
 (defun smd/signature/search (signature)
   "Choose a signature and then search for it via `isearch-forward'."

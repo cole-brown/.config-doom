@@ -260,4 +260,33 @@ _p_: ?p?  _u_: ?u?
        ;; Using a blue hydra so it stays in the transient map.
        :desc "Unicode Box"                  "b" #'smd/art.box/draw
 
-       ))
+       ;;-------------------
+       ;; Signatures
+       ;;-------------------
+       ;; (:prefix ("s" . "Signatures")
+       ;;  ;; Insert Signatures:
+       ;;  :desc (concat "TODO: "
+       ;;                )
+
+       ;;        ""
+
+       ;;  :desc "TODO: "                       ""
+       ;;  :desc "TODO: "                       ""
+       ;;  :desc "TODO: "                       ""
+       ;;  :desc ""                       ""
+       ;;  :desc ""                       ""
+
+       ;;  ;; Emacs
+       ;;  :desc "Characters"                  "c" #'transpose-chars
+       ;;  :desc "Words"                       "w" #'transpose-words
+       ;;  :desc "Lines"                       "l" #'transpose-lines
+       ;;  :desc "Sentences"                   "s" #'transpose-sentences
+       ;;  :desc "Paragraphs"                  "p" #'transpose-paragraphs
+       ;;  :desc "S-Expressions"               "x" #'transpose-sexps
+
+       ;;  ;; Org-Mode
+       ;;  :desc "Org-Mode Words"              "o" #'org-transpose-words
+       ;;  :desc "Org-Mode Elements"           "e" #'org-transpose-element
+       ;;  :desc "Org-Mode Table"              "t" #'org-table-transpose-table-at-point)
+
+      ))

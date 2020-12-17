@@ -265,7 +265,7 @@
   ;;---
   ;; "Home" Domain
   ;;---
-  (jerky/set '(org-journal file format)
+  (jerky/set 'org-journal 'file 'format
              :namespace :home
              :value (concat (spy/datetime/format.get '(iso-8601 short))
                             ;; TODO: 'notebook' not quickest to
@@ -276,7 +276,7 @@
   ;;---
   ;; "Work" Domain
   ;;---
-  (jerky/set '(org-journal file format)
+  (jerky/set 'org-journal 'file 'format
              :namespace :work
              :value (concat (spy/datetime/format.get '(iso-8601 short))
                             ;; TODO: 'logbook' not quickest to
@@ -289,9 +289,9 @@
   ;;---
   (defmacro _s//org.journal/namespaced (namespace &rest body)
     "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
-    `(let ((org-journal-file-format ,(jerky/get '(org-journal file format)
+    `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
                                                 :namespace namespace))
-           (org-journal-dir ,(jerky/get '(path org journal)
+           (org-journal-dir ,(jerky/get 'path 'org 'journal
                                         :namespace namespace)))
       ,@body
     ))
@@ -317,8 +317,8 @@
   ;; This is only the path to the default namespace, so multi-namespace
   ;; shenanigans have to constantly mess with this, I think?
   (customize-set-variable 'org-journal-dir
-                          (jerky/get '(path org journal)
-                                     :namespace (jerky/get '(system namespace))))
+                          (jerky/get 'path 'org 'journal
+                                     :namespace (jerky/get 'system 'namespace)))
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
@@ -340,8 +340,8 @@
   ;; so we'll go to this:
   ;;   - betterer:  yyyy-mm-dd.journal.org
   (customize-set-variable 'org-journal-file-format
-                          (jerky/get '(org-journal file format)
-                                     :namespace (jerky/get '(system namespace))))
+                          (jerky/get 'org-journal 'file 'format
+                                     :namespace (jerky/get 'system 'namespace)))
 
   ;;--------------------
   ;; configuration
@@ -442,7 +442,7 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; Every org file within this directory tree root is part of
   ;; the org-roam ecosystem.
   (customize-set-variable 'org-roam-directory
-                          (jerky/get '(path lily)))
+                          (jerky/get 'path 'lily))
 
   (customize-set-variable 'org-roam-buffer
                           (spy/buffer/special-name "lily" nil :info))

@@ -30,14 +30,14 @@ Returns string from `format-time-string'.
   "Returns a datetime format string by NAME - a string/symbol or list of such.
 Prepends '(datetime format) to the NAME.
 "
-  (jerky/get (list 'datetime 'format name)))
+  (jerky/get 'datetime 'format name))
 
 
 (defun spy/datetime/format.set (name value docstr)
   "Sets a datetime format string by NAME.
 Prepends '(datetime format) to the NAME.
 "
-  (jerky/set (list 'datetime 'format name)
+  (jerky/set 'datetime 'format name
              :value value
              :docstr docstr))
 

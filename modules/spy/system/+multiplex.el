@@ -72,7 +72,7 @@ on the UNIQUE-ID of the system and the ROOT path.
   ;; (jerky/get :system 'secret 'identities hash))
   ;; (jerky/get :system :path :secret id))
 
-  (jerky/set "system/secret/identities"
+  (jerky/set "system/secret/identities" hash
              :value id
              :docstr "Home desktop PC built in 2017.")
 

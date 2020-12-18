@@ -13,17 +13,17 @@
 ;;------------------------------------------------------------------------------
 
 ;; Default fallback is ok.
-(jerky/namespace/create :work ;; System Namespace
+(jerky/namespace/create :work ;; Work Namespace
            :title "Namespace for the Job"
            :docstr "Work/Job-related variables.")
 
 ;; Default fallback is ok.
-(jerky/namespace/create :home ;; System Namespace
+(jerky/namespace/create :home ;; Home Namespace
            :title "Namespace for House & Home"
            :docstr "Homework, Side-Projects, Personal Notes, etc...")
 
 ;; Default fallback is ok.
-(jerky/namespace/create :secret ;; System Namespace
+(jerky/namespace/create :secret ;; Secret Namespace
            :title "Namespace for the Confidential"
            :docstr "You've seen this, so... Now I have to kill you, I guess?"
            :fallbacks :jerky/namespace/no-fallback)
@@ -31,7 +31,7 @@
 
 ;; Default system namespace - can overwrite during system multiplex init.
 (jerky/set "system/namespace"
- :secret ;; System Namespace
+           :secret ;; System Namespace
            :title "Namespace for the Confidential"
            :docstr "You've seen this, so... Now I have to kill you, I guess?"
            :fallbacks :jerky/namespace/no-fallback)

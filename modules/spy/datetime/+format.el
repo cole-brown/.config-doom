@@ -35,8 +35,8 @@ Returns string from `format-time-string'.
      (format-time-string (spy/datetime/format.get name) time zone)))
 
 
-(defun spy/datetime/format.get (name)
-  "Returns a datetime format string by NAME - a string/symbol or list of such.
+(defun spy/datetime/format.get (&rest name)
+  "Returns a datetime format string by NAME - strings, symbols or list of such.
 Prepends '(datetime format) to the NAME.
 "
   (jerky/get 'datetime 'format name))

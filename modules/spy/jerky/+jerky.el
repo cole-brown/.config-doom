@@ -149,7 +149,7 @@ added. Namespaces must exist before keys can be added to them.
 ;; (jerky//namespace.entry/get :jeff)
 
 
-(defun jerky//namespace.entry/set (namespace title docstr &rest fallback)
+(defun jerky//namespace.entry/set (namespace title docstr fallbacks)
   "Creates or overwrites a namespace entry in `jerky//namespaces'.
 "
   ;; Error checks.
@@ -164,7 +164,7 @@ added. Namespaces must exist before keys can be added to them.
            namespace))
 
   (let ((verified-fallbacks nil))
-    (dolist (fb-ns (-non-nil fallback))
+    (dolist (fb-ns (-non-nil fallbacks))
       (cond ((eq fb-ns :jerky/namespace/no-fallback)
              (push fb-ns verified-fallbacks))
 
@@ -173,7 +173,7 @@ added. Namespaces must exist before keys can be added to them.
                             "FALLBACK must be a keyword: %s")
                     fb-ns))
 
-            ((not (jerky//namespace/get fb-ns 'quiet))
+            ((not (jerky//namespace/ordered fb-ns 'quiet))
              (error (concat "jerky//namespace.entry/set: "
                             "FALLBACK must be an existing namespace: %s")
                     fb-ns))
@@ -237,14 +237,17 @@ If fallbacks is `:jerky/namespace/no-fallback', no fallbacks will be
 used/allowed.
 "
   ;; dash-let's plist match pattern to non-keys in ARGS.
-  (-let (((&plist :docstr docstr :title title :fallbacks fallbacks) args))
+  (-let* (((&plist :docstr docstr :title title :fallbacks fallbacks) args)
+          ;; Make fallbacks a flat list of inputs or the default.
+          (fallbacks (-flatten (or fallbacks
+                                   jerky/custom.namespace/default))))
 
     ;; Set new entry.
     (jerky//namespace/set
      ;; Make new entry from provided args.
      (jerky//namespace.entry/set namespace title docstr fallbacks))))
 ;; (jerky/namespace/create :foo :title "hello there" :docstr "jeff" :fallbacks '(a b c))
-
+;; (jerky/namespace/create :foo :title "hello there" :docstr "jeff")
 
 
 (defun jerky/namespace/has (namespace)
@@ -264,16 +267,19 @@ If QUIET is non-nil, don't output messages/warnings.
   (let ((entry (assoc namespace jerky//namespaces))
         (namespaces nil)
         (stop? nil))
+
+    ;; No entry at all? Default to default.
     (when (null entry)
       (unless quiet
         (warn "%s: No namespace found for: %s. Using default: %s"
-              "jerky//namespace/get"
+              "jerky//namespace/ordered"
               namespace
               jerky/custom.namespace/default))
+
       (setq entry (assoc jerky/custom.namespace/default jerky//namespaces))
       (when (null entry)
         (unless quiet
-          (warn (concat "jerky//namespace/get: No default namespace "
+          (warn (concat "jerky//namespace/ordered: No default namespace "
                         "found in namespaces!: %s. Where'd it go? %s")
                 jerky/custom.namespace/default
                 jerky//namespaces))
@@ -315,6 +321,7 @@ If QUIET is non-nil, don't output messages/warnings.
     ;; Return list of namespaces to check.
     namespaces))
 ;; (jerky//namespace/ordered :default)
+;; (jerky//namespace/ordered :work)
 ;; (jerky//namespace/ordered :jeff)
 
 
@@ -507,6 +514,8 @@ If nothing found at KEY, return will be nil.
 ;; (jerky/get 'path 'to 'thing)
 ;; (jerky/get :test :jeff)
 ;; (jerky/get :test :jill)
+;; (jerky/get '(signature id sigil))
+;; (jerky/get '(signature id sigil) :namespace :work)
 
 
 ;;------------------------------------------------------------------------------

@@ -102,6 +102,8 @@ NAMESPACE is used with SIGNATURE to try to get something from jerky.
       jerky
     ;; Else, no other place to look right now.
     nil))
+;; (_s//signature/get '(signature id sigil) :work)
+;; (jerky/get '(signature id sigil) :work)
 
 
 (defun _s//signature/insert (signature &optional namespace)
@@ -153,28 +155,29 @@ NAMESPACE is used with SIGNATURE to get a sig from `_s//signature/get'.
 ;;     (_s//signature/get '(signature sigil todo)))))
 
 
-(defun spy/signature.todo (&optional timestamp comment namespace)
-  "Returns a 'TODO'-related signature.
-
-Optionally adds a TIMESTAMP (if non-nil) to the signature.
-
-Optionally returns the signature commented out if COMMENT is non-nil.
-"
-  ;; First, we need the signature...
-  (let ((sig (_s//signature/get '(signature sigil todo) namespace)))
-    ;; Add timestamp if desired.
-    ;; Add it first - commenting could append to end.
-    (when timestamp
-      (setq sig (concat sig
-                        " "
-                        (spy/datetime/string.get 'org-inactive))))
-
-    (when comment
-      ;; Append ':' and wrap sig with comment characters.
-      (setq sig (mis/comment/wrap (concat sig ":"))))
-
-    ;; return it
-    sig))
+;; spy/signature can do everything this does - don't need.
+;; (defun spy/signature.todo (&optional timestamp comment namespace)
+;;   "Returns a 'TODO'-related signature.
+;;
+;; Optionally adds a TIMESTAMP (if non-nil) to the signature.
+;;
+;; Optionally returns the signature commented out if COMMENT is non-nil.
+;; "
+;;   ;; First, we need the signature...
+;;   (let ((sig (_s//signature/get '(signature sigil todo) namespace)))
+;;     ;; Add timestamp if desired.
+;;     ;; Add it first - commenting could append to end.
+;;     (when timestamp
+;;       (setq sig (concat sig
+;;                         " "
+;;                         (spy/datetime/string.get 'org-inactive))))
+;;
+;;     (when comment
+;;       ;; Append ':' and wrap sig with comment characters.
+;;       (setq sig (mis/comment/wrap (concat sig ":"))))
+;;
+;;     ;; return it
+;;     sig))
 ;; (spy/signature.todo)
 ;; (spy/signature.todo t)
 ;; (spy/signature.todo t t)

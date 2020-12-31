@@ -1,0 +1,19 @@
+#+TITLE: Make-It-So TODOs
+
+mis/message: Output to *Messages*
+mis/string:  Return formatted/propertized string
+
+
+(mis/message "Hello there.")
+
+(mis/message (mis/face 'face)
+             "Hello there.")
+
+(mis/message (mis/boxed "Hi"))
+
+(mis/message (mis/settings my//settings)
+             my//long-message)
+
+(mis/message ("Hello there...")
+             :newline
+             (mis/indent "Hi."))

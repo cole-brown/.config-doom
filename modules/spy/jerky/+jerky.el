@@ -246,8 +246,8 @@ used/allowed.
     (jerky//namespace/set
      ;; Make new entry from provided args.
      (jerky//namespace.entry/set namespace title docstr fallbacks))))
-;; (jerky/namespace/create :foo :title "hello there" :docstr "jeff" :fallbacks '(a b c))
-;; (jerky/namespace/create :foo :title "hello there" :docstr "jeff")
+;; (jerky/namespace/create :the-namespace :title "hello there" :docstr "jeff" :fallbacks '(a b c))
+;; (jerky/namespace/create :the-namespace :title "hello there" :docstr "jeff")
 
 
 (defun jerky/namespace/has (namespace)
@@ -473,7 +473,7 @@ If nothing found at KEY, return will be nil.
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and any options.
-  (-let* (((args kwargs) (spy/lisp/func.args keys-and-options
+  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
                                              :namespace :field))
           (getter nil)
           (key (jerky//key/normalize args))
@@ -649,7 +649,7 @@ If not provided, they will be nil.
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and values.
-  (-let* (((args kwargs) (spy/lisp/func.args keys-and-options
+  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
                                              :docstr :value :namespace))
           (getter nil)
           (key (jerky//key/normalize args))
@@ -672,9 +672,77 @@ If not provided, they will be nil.
 ;; Searching the Repo.
 ;;------------------------------------------------------------------------------
 
-;; todo: use maphash to walk over all the entries.
-;; maphash takes a function w/ 2 args for calling for every record:
-;;   (key value)
+(defun jerky//search/filter (search-key &optional namespace)
+  "Walks jerky//repo and returns anything that matches (potentially partial)
+SEARCH-KEY and (optional) NAMESPACE.
+
+KEYS /must/ be normalized already!
+
+If NAMESPACE is nil, all namespaces will be matched.
+
+Returns list of results or nil.
+
+Result format is: '(full-key-str namespace-keyword value)
+
+Note that this is /not/ an alist, as the same key (differing namespaces)
+can exist multiple times.
+"
+  (let ((results nil))
+    ;; Maphash's function must take only: key and value.
+    (maphash (lambda (key value)
+               (when (and (stringp key)
+                          (s-starts-with? search-key key))
+                 ;; Matched key; get record from 'value'.
+                 (if-let ((records (jerky//repo.record/get value)))
+                     (dolist (rec records)
+                       ;; Check namespace if needed; add rec if matches.
+                       (when (or (null namespace)
+                                 (eq namespace (jerky//record.namespace/get rec)))
+                         (push (list key
+                                     (jerky//record.namespace/get rec)
+                                     (jerky//record.value/get rec))
+                               results))))))
+             jerky//repo)
+
+    ;; Return whatever we found.
+    results))
+;; (jerky//search/filter "signature/id")
+;; (jerky//search/filter "signature/id" :work)
+
+
+(defun jerky/has (&rest keys-and-options)
+  "Returns a list of keys/options for any keys that match the partial or
+complete key path in KEYS-AND-OPTIONS.
+
+Splits KEYS-AND-OPTIONS into keys, and optional keyword arg/value pairs.
+
+KEY: A list of key strings/symbols/keywords, or a string key, or
+a mix. These must come before any of the optional keyword args.
+
+Keyword key/value pairs only exist after the KEYS. The keywords are:
+  `:namespace'
+     - The namespace to look in, and what fallbacks to use.
+
+Returns: alist of keys/namespaces or nil
+
+Example:
+  - KEYS-AND-OPTIONS: \"path/to\"
+  '((:work \"path/to/jeff\")
+    (:default \"path/to/jill\"))
+"
+  ;; Some shenanigans to do to turn input into args/kwargs into a key
+  ;; and a namespace.
+  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
+                                             :namespace))
+          (partial-key (jerky//key/normalize args))
+          ;; dash-let's plist match pattern to non-keys in ARGS.
+          ((&plist :namespace namespace) kwargs))
+
+    ;; Now we can search & filter.
+    (jerky//search/filter partial-key namespace)))
+;; (jerky/has 'signature 'id)
+;; (jerky/has "signature/id")
+;; (jerky/has 'signature 'id :namespace :work)
 
 
 ;;------------------------------------------------------------------------------

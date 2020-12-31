@@ -152,7 +152,7 @@
   ;; configuration
   ;;--------------------
 
-   ;; Put .org.txt into the mode list for org-mode. Useful for org-mode files in
+  ;; Put .org.txt into the mode list for org-mode. Useful for org-mode files in
   ;; dropbox - dropbox website/app doesn't know how to read ".org", but it can
   ;; do ".txt".
   (add-to-list 'auto-mode-alist '("\\.org.txt$" . org-mode))
@@ -226,7 +226,7 @@
   ;;     (set-face-foreground 'org-level-8 zenburn-yellow-2)
   ;;     ;; and after 8 it repeats from 1
   ;;     )
-    )
+  )
 
 
 ;;---------------------
@@ -293,8 +293,8 @@
                                                 :namespace namespace))
            (org-journal-dir ,(jerky/get 'path 'org 'journal
                                         :namespace namespace)))
-      ,@body
-    ))
+       ,@body
+       ))
   ;; (_s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
   ;; (_s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
 
@@ -358,22 +358,25 @@
           (:when (featurep! :lang org +journal)
            (:prefix "n" ;; notes
             (:prefix "j" ;; ("j" . "journal")
-             :desc ":work - New Entry"           "w j" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry)))
-             :desc ":work - New Scheduled Entry" "w J" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
-             :desc ":work - Visit Journal"       "w v" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-             :desc ":work - Search Forever"      "w s" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-search-forever))))))))
+             ;; Work namespaced commands.
+             (:prefix ("w" . ":work journal")
+
+              :desc ":work - New Entry"           "j" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :work
+                                                        (funcall-interactively #'org-journal-new-entry)))
+              :desc ":work - New Scheduled Entry" "J" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :work
+                                                        (funcall-interactively #'org-journal-new-scheduled-entry)))
+              :desc ":work - Visit Journal"       "v" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :work
+                                                        (funcall-interactively #'org-journal-open-current-journal-file)))
+              :desc ":work - Search Forever"      "s" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :work
+                                                        (funcall-interactively #'org-journal-search-forever)))))))))
 
   ;; Insert :home journal shortcuts if appropriate.
   (when (jerky/namespace/has :home)
@@ -386,22 +389,24 @@
           (:when (featurep! :lang org +journal)
            (:prefix "n" ;; notes
             (:prefix "j" ;; journal
-             :desc ":home - New Entry"           "h j" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry)))
-             :desc ":home - New Scheduled Entry" "h J" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
-             :desc ":home - Visit Journal"       "h v" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-             :desc ":home - Search Forever"      "h s" (cmd!
-                                                        (_s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-search-forever))))))))
+             ;; Home namespaced commands.
+             (:prefix ("h" . ":home journal")
+              :desc ":home - New Entry"           "j" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :home
+                                                        (funcall-interactively #'org-journal-new-entry)))
+              :desc ":home - New Scheduled Entry" "J" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :home
+                                                        (funcall-interactively #'org-journal-new-scheduled-entry)))
+              :desc ":home - Visit Journal"       "v" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :home
+                                                        (funcall-interactively #'org-journal-open-current-journal-file)))
+              :desc ":home - Search Forever"      "s" (cmd!
+                                                       (_s//org.journal/namespaced
+                                                        :home
+                                                        (funcall-interactively #'org-journal-search-forever)))))))))
   )
 
 
@@ -421,7 +426,7 @@
   :init
   ;;--------------------
 
-   (defun _s//org-roam/file-name/timestamp-title (title)
+  (defun _s//org-roam/file-name/timestamp-title (title)
     "Return a file name (without extension) for new files.
 
 It uses TITLE and the current timestamp to form a unique title.

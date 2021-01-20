@@ -34,7 +34,7 @@ names can be used as well as strings.
 (defun spy/path/join (&rest path)
   "Combines PATH elements together into a path platform-agnostically.
 
-(spy/path/rel \"jeff\" \"jill.el\")
+(spy/path/join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\"
 "
   (-reduce #'_s//path/append path))

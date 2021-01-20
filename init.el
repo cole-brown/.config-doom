@@ -188,7 +188,7 @@
        (default +bindings +smartparens)
 
        :mis ; My output helper code.
-       code                ; mis/code:     Code-related output help.
+       init                ; mis/init:     Include all of mis.
 
        :spy
        ;; Functions and Helpers

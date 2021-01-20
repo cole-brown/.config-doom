@@ -17,7 +17,7 @@
 (spy/require :spy 'buffer 'point)
 (spy/require :spy 'datetime 'format)
 
-(require 'mis/code/comment)
+(require 'mis)
 
 
 ;;------------------------------------------------------------------------------

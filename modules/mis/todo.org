@@ -17,3 +17,54 @@ mis/string:  Return formatted/propertized string
 (mis/message ("Hello there...")
              :newline
              (mis/indent "Hi."))
+
+
+
+* params / style / whatever
+
+For something like mis/comment/line...
+
+How do I do params?
+
+explicit?
+plist?
+Expect them as mis calls like mis/message?
+
+(mis/comment/line nil 20 nil nil "-")
+(mis/comment/line :width 20 :string "-")
+(mis/comment/line (mis/width 20) (mis/string "-"))
+
+** What does mis calls do anyways?
+
+(mis/comment/line (mis/width 20) (mis/string "-"))
+
+becomes...
+
+plist?
+  (mis/comment/line
+      '(:mis t
+        :style '(:width 20)
+        :content '(:string "-")
+      )
+  )
+
+alist?
+  (mis/comment/line
+      '((:mis t)
+        (:style (:width 20))
+        (:content (:string "-"))
+      )
+  )
+
+
+recursive one...
+  '(:mis :root
+    :style (...)
+    :content (
+        :string "Hello "
+        :complex (:mis :something
+                  :style (...)
+                  :string "there")
+        :string "."
+    )
+)

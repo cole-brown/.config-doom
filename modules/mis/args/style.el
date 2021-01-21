@@ -53,6 +53,19 @@ situation in the calling code.
   (-m//style/set :width width mlist))
 
 
+(defun mis/style/width.indented (width &optional mlist)
+  "Sets a style width. Returns an mlist.
+
+This differs from `mis/style/width' in that the point's `(current-column)' is used
+as the line-indention amount required and is subtracted from the allowed width.
+
+This is the same as calling both `mis/style/width' and `mis/style/indent' (with
+point's `(current-column)').
+"
+  (-m//style/set :width width :indent (current-column) mlist))
+;; (mis/style/width.indented 80)
+
+
 (defun mis/style/margin (margin &optional mlist)
   "Sets a style margin. Returns an mlist.
 "

@@ -16,18 +16,18 @@
 ;;------------------
 ;; Internal Functions
 ;;------------------
-;(-m//require 'internal 'mlist)
+(-m//require 'internal 'mlist)
 
 ;;------------------
 ;; Args / Sections
 ;;------------------
-;(-m//require 'args 'string)
-;(-m//require 'args 'style)
+(-m//require 'args 'string)
+(-m//require 'args 'style)
 
 ;;------------------
 ;; Code-Related Things
 ;;------------------
-;(-m//require 'code 'comment)
+(-m//require 'code 'comment)
 
 
 (provide 'mis)

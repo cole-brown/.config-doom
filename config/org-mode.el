@@ -70,6 +70,9 @@
   ;; Doom or someone already sets this to org-directory/"notes.org".
   ;; (org-default-notes-file (spy/path/to-file org-directory "notes.org"))
 
+  (customize-set-variable 'org-startup-folded t
+                          "Change org back to opening a file with all the headers collapsed.")
+
   (customize-set-variable 'org-log-done t
                           "auto-timestamp when TODOs are turned to DONE state")
 

@@ -285,7 +285,7 @@ If MLIST's SECTION has no KEY, returns DEFAULT.
 (defun -m//section/set (key value section mlist valid-keys)
   "Set a value for KEY in this MLIST's SECTION.
 "
-  (let ((mlist (-m//mlist/ensure.section section mlist)))
+ (let ((mlist (-m//mlist/ensure.section section mlist)))
     (if (-m//input/invalid? key valid-keys)
         :mis/error
 
@@ -335,6 +335,10 @@ Returns first match if there are matches found.
 Returns DEFAULT if no matches and default is not nil.
 Else returns `:mis/error'.
 "
+  (when (-m//input/invalid? key valid-keys)
+    ;; TODO: Would be nice to have more info than just `:mis/error'.
+    :mis/error)
+
   (-let* ((results (-m//mlists/get.all key section mlists valid-keys))
           (first (nth 0 results)))
     ;; Leave `:mis/nil' default alone - the caller wants to know the difference

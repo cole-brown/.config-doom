@@ -6,13 +6,20 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defconst -m//path/root ".."
+(defconst -m//path/root
+  ;; Our parent directory.
+  (file-name-directory
+   ;; Strip slash out so we can go up a dir...
+   (directory-file-name
+    ;; Start with the directory of this file.
+    (file-name-directory load-file-name)))
   "The root of mis' elisp should be a directory up.")
 
 
 (defvar -m//load/features '()
   "Mis (internal) features that have been loaded by `-m//load'.")
 ;; (setq -m//load/features '())
+
 
 ;;------------------------------------------------------------------------------
 ;; Path Helpers
@@ -129,7 +136,6 @@ NEXT and PARENT are expected to be strings.
 
 (defun -m//provide (&rest name)
   "Record NAME as having been provided."
-  (message "-m//provide: %S" name)
   (unless (apply #'-m//provided? name)
     (push (apply #'-m//load/name name) -m//load/features)))
 
@@ -147,8 +153,9 @@ This is for loading done internally in mis.
          (path (apply #'-m//path/get normal)))
     (condition-case-unless-debug e
         (let (file-name-handler-alist)
+          ;(load path nil))
           (load path nil 'nomessage))
-      (error "mis fail loading: %s (%S); error: %S" path name e))))
+    (error "mis fail loading: %s (%S); error: %S" path name e))))
 ;; (-m//load 'test 'something)
 
 

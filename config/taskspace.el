@@ -1,0 +1,159 @@
+;;; config/spy/taskspace.el -*- lexical-binding: t; -*-
+
+
+;;------------------------------------------------------------------------------
+;; Jerky Directory Local Variables
+;;------------------------------------------------------------------------------
+
+(require 'taskspace)
+
+
+;;------------------------------------------------------------------------------
+;; Taskspace Helper Functions
+;;------------------------------------------------------------------------------
+
+(defun -s//taskspace/generate (group taskname taskpath)
+  "NOTE: Could be redefined later for more group-specific
+details, so check e.g. secrets init for a redef. Or 'C-h f
+-s//taskspace/generate' and see what file it's defined in."
+  ;; Format:
+  ;; header snippet key
+  ;;
+  ;; taskname
+  ;; taskpath
+  ;;
+  ;; 'mkdir cmd'
+  ;;
+  ;; fancy box to separate this stuff from start of normal notes
+  (format (concat "%s\n" ;; header
+                  "\n"
+                  "#+TASKSPACE: %s\n" ;; taskpath
+                  "%s\n" ;; taskname
+                  "\n"
+                  "%s\n" ;; mkdir
+                  "\n"
+                  "%s\n" ;; fancy box top
+                  "%s\n" ;; fancy box middle
+                  "%s\n" ;; fancy box bottom
+                  "\n\n")
+          "spy-header"
+          taskpath
+          taskname
+          (format "mkdir ~/temp/%s" taskname)
+          "     ┌┬┬┬──────────────────────────────────────────────────────────────┬┬┬┐"
+          "     ├┼┼┤                             ...                              ├┼┼┤"
+          "     └┴┴┴──────────────────────────────────────────────────────────────┴┴┴┘"
+          ))
+;; (spydez/taskspace/generate "" "")
+
+
+;;------------------------------------------------------------------------------
+;; Taskspace Config
+;;------------------------------------------------------------------------------
+
+(after! taskspace
+  ;;------------------------------
+  ;; Configuration
+  ;;------------------------------
+
+  ;;---
+  ;; General (Non-Per-Domain) Config...
+  ;;---
+
+  (taskspace/keybind/doom)
+
+  ;;---
+  ;; "Home" Domain
+  ;;---
+  (let* ((group :home) ; taskspace "group" == jerky "namespace"
+         (group-str (spy/string/symbol->str group)))
+
+    ;; Add taskspace paths to jerky for info.
+    (jerky/set 'path 'taskspace 'notes
+               :namespace group
+               :value (spy/path/to-dir
+                       (jerky/get 'path 'lily :namespace group)
+                       "taskspace"
+                       (spy/string/symbol->str group))
+               :docstr (format "directory for %s taskspace notes" group-str))
+    (jerky/set 'path 'taskspace 'root
+               :namespace group
+               :value (jerky/get 'path 'taskspace :namespace group)
+               :docstr (format "directory for %s taskspace data/files" group-str))
+
+    ;; Alias our function here in case we want to redefine it later.
+    ;; We'll just have to redefine it instead of edit the taskspace settings again.
+    (defalias '-s//taskspace/generate.home '-s//taskspace/generate)
+
+    ;; And create our `:home' group custom settings.
+    (defvar -s//taskspace/custom.home
+      '((:type/notes      :noteless)
+        (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
+        (:dir/tasks (jerky/get 'path 'taskspace 'notes :namespace group))
+        (:dir/notes (jerky/get 'path 'taskspace 'root :namespace group))
+        (:file/new/generate ((".projectile" "") ;; projectile: empty file
+                             ;; notes.org: setup with org header snippet
+                             ;; ready to go
+                             ((taskspace//config :group :file/notes)
+                              -s/taskspace/generate.home))))
+      "Custom settings for my `:home' taskspace group.")
+
+  ;; Set a dir-local-var for home taskspace folders.
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'taskspace 'root :namespace group))
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'taskspace 'notes :namespace group)))
+  ;; /"Home" Domain
+
+
+  ;;---
+  ;; "Work" Domain
+  ;;---
+  (let* ((group :work) ; taskspace "group" == jerky "namespace"
+         (group-str (spy/string/symbol->str group)))
+
+    ;; Add taskspace paths to jerky for info.
+    (jerky/set 'path 'taskspace 'notes
+               :namespace group
+               :value (spy/path/to-dir
+                       (jerky/get 'path 'lily :namespace group)
+                       "taskspace"
+                       (spy/string/symbol->str group))
+               :docstr (format "directory for %s taskspace notes" group-str))
+    (jerky/set 'path 'taskspace 'root
+               :namespace group
+               :value (jerky/get 'path 'taskspace :namespace group)
+               :docstr (format "directory for %s taskspace data/files" group-str))
+
+    ;; Alias our function here in case we want to redefine it later.
+    ;; We'll just have to redefine it instead of edit the taskspace settings again.
+    (defalias '-s//taskspace/generate.work '-s//taskspace/generate)
+
+    ;; And create our `:work' group custom settings.
+    (defvar -s//taskspace/custom.work
+      '((:type/notes      :noteless)
+        (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
+        (:dir/tasks (jerky/get 'path 'taskspace 'notes :namespace group))
+        (:dir/notes (jerky/get 'path 'taskspace 'root :namespace group))
+        (:file/new/generate ((".projectile" "") ;; projectile: empty file
+                             ;; notes.org: setup with org header snippet
+                             ;; ready to go
+                             ((taskspace//config :group :file/notes)
+                              -s/taskspace/generate.work))))
+      "Custom settings for my `:work' taskspace group.")
+
+  ;; Set a dir-local-var for home taskspace folders.
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'taskspace 'root :namespace group))
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'taskspace 'notes :namespace group)))
+
+
+  ;;------------------------------
+  ;; Groups
+  ;;------------------------------
+
+  (customize-set-variable 'taskspace/groups
+                          '((:work    "Work Taskspace" -s//taskspace/custom.work)
+                            (:home    "Home Taskspace" -s//taskspace/custom.home)
+                            (:default "Defaults"       taskspace/group/default))))

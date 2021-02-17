@@ -7,9 +7,18 @@
 ;; s - snipe - a two char search & goto.
 ;; o - insert line below point and go into insert mode there.
 ;; e - forward to word end
+;; b - backward to word begin
 ;; u - undo
 ;; - - previous line that isn't blank
+;; i - insert - switch to insert mode at/before point.
 ;; a - append - switch to insert mode just after point.
+;; f - snipe - 1 character forward search
+;; s - snipe - 2 character forward search
+;; ; - repeat forwards
+;; , - repeat backwards
+;; ] SPC - insert newline below
+;; [ SPC - insert newline above
+;; Y - yank - yank to end of line
 
 
 ;;------------------------------------------------------------------------------

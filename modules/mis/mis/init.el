@@ -29,5 +29,10 @@
 ;;------------------
 (-m//require 'code 'comment)
 
+;;------------------
+;; Messages
+;;------------------
+(-m//require 'mis 'message)
+
 
 (provide 'mis)

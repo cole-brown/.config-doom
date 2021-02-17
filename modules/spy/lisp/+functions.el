@@ -16,7 +16,7 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Imports
+;; Functions for argument parsing.
 ;;------------------------------------------------------------------------------
 
 (defun spy/lisp/func.args (args &rest claims)
@@ -76,3 +76,5 @@ Returns a list of lists:
     ;; Done processing list, but our lists to return are backwords right now.
     (list (nreverse leading-args) (nreverse keywords))))
 ;; (spy/lisp/func.args '(jeff jefferson :namespace :work) :namespace)
+;; (spy/lisp/func.args '(jeff jefferson :namespace nil :value 42) :namespace :value)
+;; (spy/lisp/func.args (-flatten '(jeff jefferson :namespace nil :value 42)) :namespace :value)

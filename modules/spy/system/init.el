@@ -28,10 +28,9 @@
            :docstr "You've seen this, so... Now I have to kill you, I guess?"
            :fallbacks :jerky/namespace/no-fallback)
 
-
 ;; Default system namespace - can overwrite during system multiplex init.
-(jerky/set "system/namespace"
-           :secret ;; System Namespace
+(jerky/set "namespace/system"
+           :default ;; System Namespace
            :title "Namespace for the Confidential"
            :docstr "You've seen this, so... Now I have to kill you, I guess?"
            :fallbacks :jerky/namespace/no-fallback)

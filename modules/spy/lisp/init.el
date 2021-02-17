@@ -7,3 +7,5 @@
 ;; Always load unless specifically removed.
 (unless (featurep! -functions)
    (load! "+functions"))
+(unless (featurep! -types)
+   (load! "+types"))

@@ -6,6 +6,8 @@
 (spy/require :spy 'jerky)
 (spy/require :spy 'path)
 
+(require 'mis/message)
+
 
 ;;------------------------------------------------------------------------------
 ;; Configure Secrets
@@ -30,19 +32,24 @@
           ((not (file-exists-p name))
            (warning "Secrets %s for this system (%s) does not exist: %s"
                     "init.el file"
-                    id name))
+                    id file))
 
           ;; File exists; load it...
           (t
-           (message "Loading %s secrets...\n   %s" id name)
+           (mis/init/message "Loading %s secrets...\n   %s" id name)
            ;; TODO: no message? use mis or something?
            (load file)))
 
   ;; Else no hash or id or dir found...
   ;; TODO: warning? quiet? use mis or something?
-  (message "No secrets for this system:")
-  (message "   hash: %s" hash)
-  (message "     id: %s" id)
-  (message "    dir: %s" dir)
-  (message "   file: %s" file)
-  (message "   name: %s" name))
+  (mis/init/message (concat "No secrets for this system:\n"
+                            "   hash: %s\n"
+                            "     id: %s\n"
+                            "    dir: %s\n"
+                            "   file: %s\n"
+                            "   name: %s\n")
+                    hash
+                    id
+                    dir
+                    file
+                    name))

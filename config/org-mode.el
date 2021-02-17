@@ -1,4 +1,4 @@
-;;; config/org-mode.el -*- lexical-binding: t; -*-
+;;; cconfig/org-mode.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -37,7 +37,7 @@
 ;;--------------------
 ;; Org-Mode Set-Up
 ;;--------------------
-(use-package! org-mode
+(use-package! org
   ;;--------------------
   :init
   ;;--------------------
@@ -69,9 +69,10 @@
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
   ;; (org-default-notes-file (spy/path/to-file org-directory "notes.org"))
-
+  ;;   (mis/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
+  (mis/init/message "config for org vars... >org-startup-folded: %S" org-startup-folded)
 
   (customize-set-variable 'org-log-done t
                           "auto-timestamp when TODOs are turned to DONE state")
@@ -132,6 +133,13 @@
   (customize-set-variable 'org-cycle-separator-lines 0
                           "Hide extra newlines between (sub)trees")
 
+  ;; Hide extra newlines between (sub)trees.
+  ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
+  ;; Really useful because I tend to like the bonus whitespace for visually
+  ;; separating one tree from the next...
+  (customize-set-variable 'org-cycle-separator-lines 0
+                          "Hide /all/ extra newlines between (sub)trees.")
+
   ;; Doom already has good abbrevs.
   ;; ;; [[link:tag]] becomes something else.
   ;; ;; e.g.: [[google:test]] becomes link:
@@ -188,7 +196,7 @@
   ;;               :after #'spy/advice/org-indent/prefix-munger)
 
   ;; Easy paste of e.g. URLs.
-  (defun smd/org/clipboard/link ()
+  (defun smd/org/yank/here ()
     (interactive)
     (insert "[[")
     (yank)
@@ -257,9 +265,8 @@
 ;; Org-Journal
 ;;------------------------------------------------------------------------------
 
-;; TODO: setup journal
 (use-package! org-journal
-  ;; :after org
+  :after org
 
   ;;--------------------
   :init
@@ -321,7 +328,7 @@
   ;; shenanigans have to constantly mess with this, I think?
   (customize-set-variable 'org-journal-dir
                           (jerky/get 'path 'org 'journal
-                                     :namespace (jerky/get 'system 'namespace)))
+                                     :namespace (jerky/get 'namespace 'system)))
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
@@ -344,79 +351,100 @@
   ;;   - betterer:  yyyy-mm-dd.journal.org
   (customize-set-variable 'org-journal-file-format
                           (jerky/get 'org-journal 'file 'format
-                                     :namespace (jerky/get 'system 'namespace)))
-
-  ;; Hide extra newlines between (sub)trees.
-  ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
-  ;; Really useful because I tend to like the bonus whitespace for visually
-  ;; separating one tree from the next...
-  (customize-set-variable 'org-cycle-separator-lines 0
-                          "Hide /all/ extra newlines between (sub)trees.")
+                                     :namespace (jerky/get 'namespace 'system)))
 
   ;;--------------------
   ;; configuration
   ;;--------------------
 
-  ;; Insert :work journal shortcuts if appropriate.
+
   (when (jerky/namespace/has :work)
-    ;; Add to Doom Leader...
-    (map! :leader
-          ;; :normal, :visual states of evil
-          ;; (not :motion, :emacs, :insert, :operator-pending)
+    ;; Add `:home' namespaced org-journal stuff.
+    (when (featurep! :lang org +journal)
+      ;; Insert :work dir local variable(s).
+      (jerky/dlv/set nil
+                     (jerky/get 'path 'org 'journal :namespace :work)
+                     'org-journal-mode
+                     'org-journal-dir
+                     :namespace :work
+                     :value (jerky/get 'path 'org 'journal :namespace :work)
+                     :docstr "org-journal's :work directory"
+                     :dlv 'full)
+      ;; (jerky/dlv/set nil
+      ;;                (jerky/get 'path 'taskspace :namespace :work)
+      ;;                'taskspace-mode
+      ;;                'org-journal-dir
+      ;;                :namespace :work
+      ;;                :value (jerky/get 'path 'org 'journal :namespace :work)
+      ;;                :docstr "org-journal's :work directory"
+      ;;                :dlv 'full)
 
-          ;; Add namespace-aware org-journal stuff to the org-journal doom keymap.
-          (:when (featurep! :lang org +journal)
-           (:prefix "n" ;; notes
-            (:prefix "j" ;; ("j" . "journal")
-             ;; Work namespaced commands.
-             (:prefix ("w" . ":work journal")
+      ;; Insert :work journal shortcuts if appropriate.
+      ;; Add to Doom Leader...
+      (map! :leader
+            ;; :normal, :visual states of evil
+            ;; (not :motion, :emacs, :insert, :operator-pending)
+            (:prefix "n" ;; notes
+             (:prefix "j" ;; ("j" . "journal")
+              ;; Work namespaced commands.
+              (:prefix ("w" . ":work journal")
 
-              :desc ":work - New Entry"           "j" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :work
-                                                        (funcall-interactively #'org-journal-new-entry)))
-              :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :work
-                                                        (funcall-interactively #'org-journal-new-scheduled-entry)))
-              :desc ":work - Visit Journal"       "v" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :work
-                                                        (funcall-interactively #'org-journal-open-current-journal-file)))
-              :desc ":work - Search Forever"      "s" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :work
-                                                        (funcall-interactively #'org-journal-search-forever)))))))))
+               :desc ":work - New Entry"           "j" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :work
+                                                         (funcall-interactively #'org-journal-new-entry)))
+               :desc ":work - New Scheduled Entry" "J" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :work
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+               :desc ":work - Visit Journal"       "v" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :work
+                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
+               :desc ":work - Search Forever"      "s" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :work
+                                                         (funcall-interactively #'org-journal-search-forever)))))))))
 
   ;; Insert :home journal shortcuts if appropriate.
   (when (jerky/namespace/has :home)
-    ;; Add to Doom Leader...
-    (map! :leader
-          ;; :normal, :visual states of evil
-          ;; (not :motion, :emacs, :insert, :operator-pending)
+    ;; Add `:home' namespaced org-journal stuff.
+    (when (featurep! :lang org +journal)
+      ;; Insert :home dir local variable(s).
+      (jerky/dlv/set nil
+                     (jerky/get 'path 'org 'journal :namespace :home)
+                     'org-journal-mode
+                     'org-journal-dir
+                     :namespace :home
+                     :value (jerky/get 'path 'org 'journal :namespace :home)
+                     :docstr "org-journal's :home directory"
+                     :dlv 'full)
 
-          ;; Add namespace-aware org-journal stuff to the org-journal doom keymap.
-          (:when (featurep! :lang org +journal)
-           (:prefix "n" ;; notes
-            (:prefix "j" ;; journal
-             ;; Home namespaced commands.
-             (:prefix ("h" . ":home journal")
-              :desc ":home - New Entry"           "j" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :home
-                                                        (funcall-interactively #'org-journal-new-entry)))
-              :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :home
-                                                        (funcall-interactively #'org-journal-new-scheduled-entry)))
-              :desc ":home - Visit Journal"       "v" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :home
-                                                        (funcall-interactively #'org-journal-open-current-journal-file)))
-              :desc ":home - Search Forever"      "s" (cmd!
-                                                       (_s//org.journal/namespaced
-                                                        :home
-                                                        (funcall-interactively #'org-journal-search-forever)))))))))
+      ;; Insert :work journal shortcuts if appropriate.
+      ;; Add to Doom Leader...
+      (map! :leader
+            ;; :normal, :visual states of evil
+            ;; (not :motion, :emacs, :insert, :operator-pending)
+            (:prefix "n" ;; notes
+             (:prefix "j" ;; journal
+              ;; Home namespaced commands.
+              (:prefix ("h" . ":home journal")
+               :desc ":home - New Entry"           "j" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-entry)))
+               :desc ":home - New Scheduled Entry" "J" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+               :desc ":home - Visit Journal"       "v" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
+               :desc ":home - Search Forever"      "s" (cmd!
+                                                        (_s//org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-search-forever)))))))))
   )
 
 
@@ -425,40 +453,40 @@
 ;;------------------------------------------------------------------------------
 
 ;;---------------------
-;; Org-Roam
+;; Org-Roam Funcs
 ;;---------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
-(use-package! org-roam
-  ;; :after org
-
-  ;;--------------------
-  :init
-  ;;--------------------
-
-  (defun _s//org-roam/file-name/timestamp-title (title)
-    "Return a file name (without extension) for new files.
+(defun _s//org-roam/file-name/timestamp-title (title)
+  "Return a file name (without extension) for new files.
 
 It uses TITLE and the current timestamp to form a unique title.
 "
-    (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
-          (slug (org-roam--title-to-slug title)))
-      (format "%s_%s" timestamp slug)))
+  (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
+        (slug (org-roam--title-to-slug title)))
+    (format "%s_%s" timestamp slug)))
 
 
-  ;;--------------------
-  :config
-  ;;--------------------
+;;---
+;; NOTE!
+;;---
+;; This must be before Doom's org-roam packages' `use-package' `:config' section!
+;; ---
+;; Doom's .emacs.d/modules/lang/org/contrib/roam.el wants org-roam to be in a
+;; subdirectory of `org-directory', so they do a lot to try to make that happen
+;; and the only out is to put this in early...
+;;---
+;; Every org file within this directory tree root is part of
+;; the org-roam ecosystem.
+;; So: everything in lily.
+(customize-set-variable 'org-roam-directory
+                        (jerky/get 'path 'lily))
 
-  ;;--------------------
-  ;; customization
-  ;;--------------------
 
-  ;; Every org file within this directory tree root is part of
-  ;; the org-roam ecosystem.
-  (customize-set-variable 'org-roam-directory
-                          (jerky/get 'path 'lily))
-
+;;--------------------
+;; Org-Roam
+;;--------------------
+(after! org-roam
   (customize-set-variable 'org-roam-buffer
                           (spy/buffer/special-name "lily" nil :info))
 
@@ -468,24 +496,17 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; (org-roam-filename-noconfirm t)
   ;; (org-roam-file-name-function #'spy/org-roam/file-name/timestamp-title)
 
-  ;; ;; If 'right isn't desirable:
-  ;; ;; (org-roam-position 'left)
-  ;;
-  ;; ;; What % of total frame width to use.
-  ;; ;; (org-roam-buffer-width 0.4)
-  ;;
-  ;; ;; By default, links are inserted with the title as the link description. This
-  ;; ;; can make them hard to distinguish from external links. If you wish, you may
-  ;; ;; choose add special indicators for Org-roam links by tweaking
-  ;; ;; this, for example:
-  ;; ;; (org-roam-link-title-format "R:%s")
+  ;; If 'right isn't desirable:
+  ;; (org-roam-position 'left)
 
+  ;; What % of total frame width to use.
+  ;; (org-roam-buffer-width 0.4)
 
-  ;;--------------------
-  ;; configuration
-  ;;--------------------
-
-  )
+  ;; By default, links are inserted with the title as the link description. This
+  ;; can make them hard to distinguish from external links. If you wish, you may
+  ;; choose add special indicators for Org-roam links by tweaking
+  ;; this, for example:
+  (customize-set-variable 'org-roam-link-title-format "r://%s"))
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(
@@ -573,7 +594,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;            ;;     https://www.unicode.org/charts/PDF/U25A0.pdf
 ;;            ;;   - ❍ - ...idk, what other people used at reddit thread.
 ;;            ;;   - ▽ - 25BD white down-pointing triangle
-;;            ;;   - ◎ - 25CE bullseye
+;;            ;;   - ◎ - 25CE BULLSEYE
 ;;            ;;   - ☯ - 262F yin-yang
 ;;            ))
 ;;    (prettify-symbols-mode 1))

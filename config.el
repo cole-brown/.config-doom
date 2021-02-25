@@ -46,7 +46,7 @@
 
 ;; NOTE: My functions are named thusly:
 ;;   - "spy/<name>": A "public" function.
-;;   - "_s//<name>": A "private" function - I don't want 'em all polluting the
+;;   - "-s//<name>": A "private" function - I don't want 'em all polluting the
 ;;                   auto-complete, help, etc for "spy/".
 ;;   - "smd/<name>": aka "spy cmd"
 ;;                   A "public" and also /interactive/ function.
@@ -56,12 +56,19 @@
 ;;   - func naming scheme
 
 ;;------------------------------------------------------------------------------
-;; Config Setup.
+;; Config Set-Up.
 ;;------------------------------------------------------------------------------
 
 ;; Our config files for different bits of emacs/doom/packages are in the
 ;; config sub-dir.
 (spy/config.root/set "config")
+
+
+;;------------------------------------------------------------------------------
+;; Emacs Set-Up.
+;;------------------------------------------------------------------------------
+
+(spy/config 'daemons)
 
 
 ;;------------------------------------------------------------------------------
@@ -89,6 +96,9 @@
 ;; My additions to a new entry in the SPC leader.
 (spy/config 'spy 'keybinds)
 
+;; Get rid of some Doom functionality...
+(spy/config 'parenthesis)
+
 
 ;;------------------------------------------------------------------------------
 ;; Look & Feel
@@ -110,3 +120,10 @@
 ;;------------------------------------------------------------------------------
 
 (spy/config 'yasnippet)
+
+
+;;------------------------------------------------------------------------------
+;; Programming & Stuff
+;;------------------------------------------------------------------------------
+
+(spy/config 'code)

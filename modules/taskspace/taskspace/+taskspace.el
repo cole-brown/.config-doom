@@ -514,7 +514,7 @@ Can return nil.
 "
   ;; Group entry is: (keyword/symbol display-name settings)
   ;; Return only settings, or just nil if assoc/nth don't find anything.
-  (let ((settings (nth 2 (assoc group taskspace/groups))))
+  (let ((settings (-t//group/settings group)))
     (cond ((listp settings)
            ;; (message "list. returning.")
            settings)
@@ -553,12 +553,12 @@ Returns assoc value if found (key's full entry in SETTINGS alist).
 "
   (cons
    ;; Display string first, since that's what `completing-read' shows to user.
-   (concat (format "%-10s" (nth 0 group-assoc))
+   (concat (format "%-10s" (-t//group/symbol group-assoc))
            " - "
-           (nth 1 group-assoc))
+           (-t//group/display-name group-assoc))
    ;; Group symbol second so we can get back to it from user's choice of display
    ;; strings.
-   (nth 0 group-assoc)))
+   (-t//group/symbol group-assoc)))
 ;; (-t//prompt/group/name '(:default "Jeff!" taskspace/group/default))
 
 
@@ -590,9 +590,9 @@ via `-t//prompt/group' for which to use.
 
 AUTO can be a few things:
   - nil: No automatically trying to guess group unless there is only one non-default.
-  - dlv: -t//group/auto
+  - dlv: -t//group/dlv
   - current: -t//group/current
-  - auto: -t//group/get
+  - auto: -t//group/auto
     - Combines `dlv' and `current', preferring `dlv'.
 
 Returns group symbol (aka 0th element of entry in `taskspace/groups').
@@ -618,7 +618,7 @@ Returns group symbol (aka 0th element of entry in `taskspace/groups').
    ;; 2) No luck on the auto-group... Check the groups and prompt as needed.
    (let ((groups-sans-default
           ;; Filter down to just non-defaults...
-          (-filter (lambda (group) (not (eq (nth 0 group) :default)))
+          (-filter (lambda (group) (not (eq (-t//group/symbol group) :default)))
                    taskspace/groups)))
      ;; Just one group? Return it.
      (cond ((= (length groups-sans-default) 1)
@@ -632,26 +632,21 @@ Returns group symbol (aka 0th element of entry in `taskspace/groups').
            ;; 0 or less groups.
            (t
             ;; Try to use the default, I guess...
-            (assoc :default taskspace/groups))))))
+            (-t//group :default))))))
 ;; (-t//prompt/group)
-
 
 ;;------------------------------
 ;; Prompt: Task Name (Description)
 ;;------------------------------
-
 (defun -t//prompt/name (group)
   "Prompt in minibuffer for input, read and format to string, then return.
 "
   ;; Replace all whitespace with hyphens.
-  (s-replace-regexp (rx (* whitespace))
+  (s-replace-regexp (rx (one-or-more whitespace))
                     "-"
-                    ;; `read-minibuffer' returns a "lisp object", so
-                    ;; format to string just in case.
-                    (format "%s"
-                            (read-minibuffer
-                             (format "New `%s` Task Desc.: "
-                                     (-t//group/display-name group))))))
+                    (read-from-minibuffer
+                     (format "New `%s` Task Desc.: "
+                             (-t//group/display-name group)))))
 
 
 ;;------------------------------
@@ -850,25 +845,52 @@ Prefers the auto-group."
 ;; Group Getters
 ;;------------------------------
 
-(defun -t//group/symbol (group-entry)
-  "Given GROUP-ENTRY list (assoc from `taskspace/groups'), returns group's symbol."
-  (nth 0 group-entry))
+(defun -t//group (group)
+  "Returns the `assoc' from `taskspace/groups' for GROUP.
+
+If GROUP is a list, assume it is already the assoc list and return it.
+If GROUP is a symbol, get the assoc and then return it.
+"
+  (if (symbolp group)
+      (assoc group taskspace/groups)
+    ;; It's not a symbol... assume it's a list, which we assume is the
+    ;; `taskspace/groups' alist, and return it.
+    group))
+;; (-t//group :default)
+;; (-t//group '(:default "Defaults" taskspace/group/default))
+
+
+(defun -t//group/symbol (group)
+  "Given GROUP symbol/list, returns group's symbol.
+
+GROUP should be return value from `-t/group' (assoc from `taskspace/groups').
+"
+  (nth 0 (-t//group group)))
 ;; (-t//group/symbol '(:default "Taskspace of Default" this-dne))
 
 
-(defun -t//group/display-name (group-entry)
-  "Given GROUP-ENTRY list (assoc from `taskspace/groups'), returns group's display name."
-  (if (null (nth 1 group-entry))
-      (symbol-name (-t//group/symbol group-entry))
-    (nth 1 group-entry)))
+(defun -t//group/display-name (group)
+  "Given GROUP symbol/list, returns group's display name.
+
+GROUP should be return value from `-t/group' (assoc from `taskspace/groups').
+"
+  (let ((group-list (-t//group group)))
+    (if (null (nth 1 group-list))
+        (symbol-name (-t//group/symbol group-list))
+      (nth 1 group-list))))
 ;; (-t//group/display-name '(:default "Taskspace of Default" this-dne))
 ;; (-t//group/display-name '(:default nil this-dne))
+;; (-t//group/display-name :default)
 
 
-(defun -t//group/settings (group-entry)
-  "Given GROUP-ENTRY list (assoc from `taskspace/groups'), returns group's settings."
-  (nth 2 group-entry))
+(defun -t//group/settings (group)
+  "Given GROUP symbol/list, returns group's settings.
+
+GROUP should be return value from `-t/group' (assoc from `taskspace/groups').
+"
+  (nth 2 (-t//group group)))
 ;; (-t//group/settings '(:default "Taskspace of Default" this-dne))
+;; (-t//group/settings :default)
 
 
 ;;------------------------------
@@ -1129,7 +1151,7 @@ unused description.
              (-t//config group :dir/notes))
     (make-directory (-t//config group :dir/notes)))
 
-         ;; Get today's date.
+  ;; Get today's date.
   (let* ((date (-t//naming/get/date group date-arg))
          ;; Get today's dirs.
          (date-dirs (-t//dir/list/date group date))
@@ -1140,8 +1162,9 @@ unused description.
          (dir-name (-t//naming/make group date number description))
          (dir-full-path (expand-file-name dir-name (-t//config group :dir/tasks))))
 
-    ;; (message "create-dir: %s %s %s %s" date date-dirs number dir-name)
+    (message "create-dir: %s %s %s %s" date date-dirs number dir-name)
 
+    (message "create dir: %s" dir-full-path)
     ;; Only create if:
     ;;   - valid description input and
     ;;   - no dupes or accidental double creates
@@ -1149,8 +1172,9 @@ unused description.
     ;;     works right)
     (when (and (-t//naming/verify group description)
                (not (some (lambda (x) (-t//dir= group
-                                                      description x
-                                                      'description))
+                                                description
+                                                x
+                                                'description))
                           date-dirs))
                (not (file-exists-p dir-full-path)))
 
@@ -1165,7 +1189,7 @@ unused description.
       (if (file-exists-p dir-full-path)
           dir-full-path
         nil))))
-;; (-t//dir/create :home "testcreate" nil)
+;; (-t//dir/create :work "testcreate" nil)
 
 
 (defun -t//dir= (group name dir part)
@@ -1509,7 +1533,7 @@ Else:
   (interactive (list current-prefix-arg))
 
   ;; Try to get group from context.
-  (let ((group (-t//group/get t))
+  (let ((group (-t//group/auto t))
         task-dir-shortcut
         task-msg-shortcut)
 
@@ -1679,7 +1703,7 @@ If in a file or sub-dir of the task dir, go to the task's dir.
 "
   (interactive)
 
-  (let* ((group (or (-t//group/get t)
+  (let* ((group (or (-t//group/auto t)
                     (-t//prompt/group 'auto t)))
          (taskpath (-t//org/keyword/get
                     (-t//config group :dir/tasks/org/keyword))))

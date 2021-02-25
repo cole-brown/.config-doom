@@ -87,22 +87,24 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
 
     ;; And create our `:home' group custom settings.
     (defvar -s//taskspace/custom.home
-      '((:type/notes      :noteless)
+      `((:type/notes      :noteless)
         (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
-        (:dir/tasks (jerky/get 'path 'taskspace 'notes :namespace group))
-        (:dir/notes (jerky/get 'path 'taskspace 'root :namespace group))
+        (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
+        (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
         (:file/new/generate ((".projectile" "") ;; projectile: empty file
                              ;; notes.org: setup with org header snippet
                              ;; ready to go
-                             ((taskspace//config :group :file/notes)
-                              -s/taskspace/generate.home))))
+                             ((-t//config :group :file/notes)
+                              -s//taskspace/generate.home))))
       "Custom settings for my `:home' taskspace group.")
 
   ;; Set a dir-local-var for home taskspace folders.
   (taskspace/group/dlv group
                        (jerky/get 'path 'taskspace 'root :namespace group))
   (taskspace/group/dlv group
-                       (jerky/get 'path 'taskspace 'notes :namespace group)))
+                       (jerky/get 'path 'taskspace 'notes :namespace group))
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'org 'journal :namespace group)))
   ;; /"Home" Domain
 
 
@@ -131,22 +133,24 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
 
     ;; And create our `:work' group custom settings.
     (defvar -s//taskspace/custom.work
-      '((:type/notes      :noteless)
+      `((:type/notes      :noteless)
         (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
-        (:dir/tasks (jerky/get 'path 'taskspace 'notes :namespace group))
-        (:dir/notes (jerky/get 'path 'taskspace 'root :namespace group))
+        (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
+        (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
         (:file/new/generate ((".projectile" "") ;; projectile: empty file
                              ;; notes.org: setup with org header snippet
                              ;; ready to go
-                             ((taskspace//config :group :file/notes)
-                              -s/taskspace/generate.work))))
+                             ((-t//config :group :file/notes)
+                              -s//taskspace/generate.work))))
       "Custom settings for my `:work' taskspace group.")
 
   ;; Set a dir-local-var for home taskspace folders.
   (taskspace/group/dlv group
                        (jerky/get 'path 'taskspace 'root :namespace group))
   (taskspace/group/dlv group
-                       (jerky/get 'path 'taskspace 'notes :namespace group)))
+                       (jerky/get 'path 'taskspace 'notes :namespace group))
+  (taskspace/group/dlv group
+                       (jerky/get 'path 'org 'journal :namespace group)))
 
 
   ;;------------------------------

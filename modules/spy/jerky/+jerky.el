@@ -129,14 +129,10 @@ If not provided, their value will be nil.
         parsed
 
       ;; Look for extra kwargs.
-      (message "Extra kwargs... %S" extra-kwargs)
-      (message "kwargs: %S" kwargs)
       (dolist (key extra-kwargs)
-        (message "  - %S -> %S" key (plist-get kwargs key))
         ;; Add key and value (nil default) to output.
         (push (plist-get kwargs key) parsed)
-        (push key parsed)
-        (message "    - parsed: %S" parsed)))
+        (push key parsed)))
 
     parsed))
 ;; (jerky//parse '(foo bar baz :namespace qux :value 1))
@@ -459,6 +455,15 @@ If QUIET is non-nil, don't output messages/warnings.
 ;; (jerky//key/normalize "a/b")
 ;; (jerky//key/normalize "a/b" "c")
 ;; (jerky//key/normalize :base "a/b" "c")
+
+
+(defun jerky/key.str (&rest keys)
+  "Returns the jerky key string obtained by combining & normalizing the ARGS."
+  (jerky//key/normalize keys))
+;; (jerky/key.str "a/b")
+;; (jerky/key.str 'a :b)
+;; (jerky/key.str "a/b" "c")
+;; (jerky/key.str :base "a/b" "c")
 
 
 ;;------------------------------------------------------------------------------

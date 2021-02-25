@@ -75,7 +75,7 @@ indicated by START and END.
     (fill-paragraph nil)))
 
 
-(defun _s//fill/paragraph/fn-for-mode ()
+(defun -s//fill/paragraph/fn-for-mode ()
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill hydra. Separated the 'get func' out here so I can see if
 in a mode with a special fill for hydra hinting."
@@ -109,7 +109,7 @@ in a mode with a special fill for hydra hinting."
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
   (interactive)
-  (funcall (_s//fill/paragraph/fn-for-mode) justify))
+  (funcall (-s//fill/paragraph/fn-for-mode) justify))
 
 
 (defun smd/fill/region/single-line (&optional justify)
@@ -126,8 +126,8 @@ the fill prefix-map."
 ;; Manual Unicode Box Drawing Hydra
 ;;------------------------------------------------------------------------------
 
-;; Wanted this to be `_s//hydra/art.box' but then hydra fucks up the names...
-;; Turns the body into `_s//hydra/art\\\.box/body'.
+;; Wanted this to be `-s//hydra/art.box' but then hydra fucks up the names...
+;; Turns the body into `-s//hydra/art\\\.box/body'.
 ;; Also I forgot how many functions hydra spews out. Fucks up my namespace.
 ;;
 ;; Also also: Pink hydra gets fucked up sometimes. Evil thinks it's in charge
@@ -216,7 +216,7 @@ _p_: ?p?  _u_: ?u?
         :desc "Line"                "l" #'smd/fill/region/single-line
 
         ;; Paragraphs
-        :desc (if (eq (_s//fill/paragraph/fn-for-mode) #'fill-paragraph)
+        :desc (if (eq (-s//fill/paragraph/fn-for-mode) #'fill-paragraph)
                   "Default Fill ¶"
                 "Mode-Aware Fill ¶")
         "p" #'smd/fill/paragraph/per-mode

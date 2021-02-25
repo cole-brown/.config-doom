@@ -25,6 +25,30 @@
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 
+;;-----------------------------
+;; Projectile
+;;-----------------------------
+
+;; BUG: Doom bug right now: I have no projectile mode map even though this
+;; exists in modules/config/default/+emacs-bindings.el:
+;;   (setq persp-keymap-prefix (kbd "C-c w"))
+;;   (after! projectile
+;;     (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+;; persp just gets "C-c p"... and "C-c w" is... undefined?!
+;; Oh. Those are the non-evil bindings. evil bindings are in:
+;; modules/config/default/+evil-bindings.el and... just don't have projectile's
+;; find/replace in project. :|
+(when (featurep 'projectile)
+  (map! :leader
+        (:prefix "p" ;; add to "project" prefix
+         :desc "Replace in project"          "/"  #'projectile-replace
+         :desc "Replace in project (regex)"  "\\" #'projectile-replace-regexp)))
+
+
+;;-----------------------------
+;; Movement
+;;-----------------------------
+
 ;; TODO: Add these?
 ;;   C-d for backwards delete char
 ;;   movement keys for in insert mode?

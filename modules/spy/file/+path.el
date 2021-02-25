@@ -12,7 +12,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(defun _s//path/append (parent next)
+(defun -s//path/append (parent next)
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
@@ -24,11 +24,11 @@ names can be used as well as strings.
     (if (null parent)
         next
       (concat (file-name-as-directory parent) next))))
-;; (_s//path/append nil "jeff")
+;; (-s//path/append nil "jeff")
 ;; (spy/string/symbol/normalize "jill")
-;; (_s//path/append "jeff" "jill")
-;; (_s//path/append "jeff/" "jill")
-;; (_s//path/append "jeff/" :jill)
+;; (-s//path/append "jeff" "jill")
+;; (-s//path/append "jeff/" "jill")
+;; (-s//path/append "jeff/" :jill)
 
 
 (defun spy/path/join (&rest path)
@@ -37,7 +37,7 @@ names can be used as well as strings.
 (spy/path/join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\"
 "
-  (-reduce #'_s//path/append path))
+  (-reduce #'-s//path/append path))
 ;; (spy/path/join "jeff" "jill")
 ;; (spy/path/join "jeff")
 
@@ -84,16 +84,16 @@ nil, returns file name."
 (defun spy/path/translate (from to dir)
   "Translates a path style, e.g. from Windows to WSL.
 
-FROM and TO should be one of: (:win :wsl :linux)
+FROM and TO should be one of: (:windows :wsl :linux)
 DIR should be a string.
 
-For `:win' -> `:wsl':
+For `:windows' -> `:wsl':
   - Translates '<drive>:' to '/mnt/<drive>'.
   - Translates '\\' to '/'.
 "
   (let ((trans dir))
-          ;; Translate: :win -> :wsl
-    (cond ((and (eq from :win)
+          ;; Translate: :windows -> :wsl
+    (cond ((and (eq from :windows)
                 (eq to   :wsl))
            (let ((drive nil)
                  (path nil))
@@ -109,12 +109,16 @@ For `:win' -> `:wsl':
                                string-end)
                            dir)
              (setq drive (downcase (match-string 1 dir))
-                   path (match-string 2 dir)
-                   trans (concat "/mnt/" drive path))))
+                   path (match-string 2 dir))
+             (setq trans (concat "/mnt/"
+                                 drive
+                                 (replace-regexp-in-string (rx "\\")
+                                                           "/"
+                                                           path)))))
 
-          ;; Translate: :win -> :wsl
+          ;; Translate: :windows -> :wsl
           ((and (eq from :wsl)
-                (eq to   :win))
+                (eq to   :windows))
            ;; Replace '/mnt/<drive>' with '<drive>:'.
            (let ((drive nil)
                  (path nil))
@@ -148,8 +152,60 @@ For `:win' -> `:wsl':
 
     ;; Return the translation.
     trans))
-;; (spy/path/translate :win :wsl "D:/path/to/somewhere.txt")
-;; (spy/path/translate :wsl :win "/mnt/d/path/to/somewhere.txt")
+;; (spy/path/translate :windows :wsl "D:/path/to/somewhere.txt")
+;; (spy/path/translate :windows :wsl "D:/path/to/somewhere.txt")
+;; (spy/path/translate :wsl :windows "/mnt/d/path/to/somewhere.txt")
+
+
+(defun -s//path/type (path)
+  "Tries to guess a path type.
+
+Returns:
+   :wsl     - Linux path to a windows drive?
+   :windows - Windows path?
+   :linix   - Linux path?
+"
+  ;; Start guessing...
+  ;; If it has a backslash, it's probably windows.
+  (cond ((s-contains? "\\" path)
+         :windows)
+
+        ;; Does it start with a drive-letter and colon?
+        ;; Probably windows.
+        ((string-match (rx string-start
+                           letter
+                           ":")
+                       path)
+         :windows)
+
+        ((string-match (rx string-start
+                           "/mnt/"
+                           letter
+                           "/")
+                       path)
+         :wsl)
+
+        (t
+         :linux)))
+
+
+(defun smd/path/translate (path)
+  "Tries to auto-guess source/dest path types and then translate the path."
+  (interactive "sPath: ")
+  (let* ((source (-s//path/type path))
+         (dest (if (eq source :windows)
+                   ;; WSL should work for translating to Linux too?
+                   :wsl
+                 :windows))
+         (translated (spy/path/translate source
+                            dest
+                            path)))
+    ;; Copy to kill-ring...
+    (kill-new translated)
+    ;; Return it.
+    translated))
+;; (smd/path/translate "D:/")
+
 
 ;;------------------------------------------------------------------------------
 ;; The End.

@@ -9,13 +9,13 @@
 ;; Set Root.
 ;;------------------------------------------------------------------------------
 
-(defconst _s//package.jerky.key "path/doom/package/root")
+(defconst -s//package.jerky.key "path/doom/package/root")
 
 
 (defun spy/package.root/set (path)
   "Set the root path (can be relative) that `spy/package' will use.
 "
-  (jerky/set _s//package.jerky.key
+  (jerky/set -s//package.jerky.key
              :value path
              :docstr "Root (can be relative) path for `spy/package'."))
 

@@ -309,14 +309,10 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
 
 If not provided, they will be nil.
 "
-  (message "class: %S, directory: %S, mode: %S, symbol: %S, keys-and-options: %S"
-           class directory mode symbol keys-and-options)
   (-let* ((parsed (jerky//parse keys-and-options :dlv :quiet))
           ((&plist :key :namespace :value :docstr :dlv :quiet) parsed)
           (key-dlv (jerky//dlv/dlv.key namespace class symbol quiet))
           mode-dlv)
-    (message "key: %S, namespace: %S, value: %S, docstr: %S, dlv: %S, quiet: %S"
-             key namespace value docstr dlv quiet)
 
     (if (not (and (jerky//dlv/verify.dir directory quiet)
                   (or (null namespace)

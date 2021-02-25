@@ -14,3 +14,7 @@
    (load! "+search"))
 (unless (featurep! -name)
    (load! "+name"))
+(unless (featurep! -delete)
+   (load! "+delete"))
+(unless (featurep! -manage)
+   (load! "+manage"))

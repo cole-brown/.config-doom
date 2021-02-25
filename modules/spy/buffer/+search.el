@@ -4,7 +4,7 @@
 ;; Constants
 ;;------------------------------------------------------------------------------
 
-(defconst _s//buffer/search.header/boundry 1000
+(defconst -s//buffer/search.header/boundry 1000
   "Buffer position boundry for `smd/buffer/search.header'.")
 
 ;;------------------------------------------------------------------------------
@@ -14,7 +14,7 @@
 (defun smd/buffer/search.header (string &optional max-chars)
   "Searches for STRING in the first MAX-CHARS of the buffer.
 
-If MAX-CHARS is nil, use `_s//buffer/search.header/boundry'.
+If MAX-CHARS is nil, use `-s//buffer/search.header/boundry'.
 "
   (interactive "s")
   (search-forward
@@ -23,7 +23,7 @@ If MAX-CHARS is nil, use `_s//buffer/search.header/boundry'.
 
      ;; search boundry (characters/buffer position)
      (or max-chars
-         _s//buffer/search.header/boundry)
+         -s//buffer/search.header/boundry)
 
      ;; NOERROR:
      ;; - nil/default: fail w/ error msg

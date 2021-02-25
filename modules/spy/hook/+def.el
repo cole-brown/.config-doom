@@ -12,11 +12,11 @@
 ;; from here:
 ;; https://www.reddit.com/r/emacs/comments/1m7fqv/avoid_lambda_in_hooks_use_defun_instead/cc83axz/
 (defmacro spy/hook/defun-and-hooker (hook-var options &rest body)
-  "Macro that `defun's a function called '_s//hook/<hook-name>'
+  "Macro that `defun's a function called '-s//hook/<hook-name>'
 and adds the hook function to HOOK-VAR.
 
 OPTIONS is a plist of optional vars:
-  :name     - Hook function will be named '_s//hook/<name>'.
+  :name     - Hook function will be named '-s//hook/<name>'.
               If no `:name', name will be set to `(symbol-name HOOK-VAR)'.
 
   :quiet    - Do not output 'Running hook' message.
@@ -41,7 +41,7 @@ BODY is the code to run in the hook.
                    :file _m//file
                    :docstr _m//docstr)
            (eval options))
-          (_m//hook-name (concat "_s//hook/"
+          (_m//hook-name (concat "-s//hook/"
                                   (if _m//name
                                       _m//name
                                     ;; Remove "-hook"?
@@ -63,7 +63,7 @@ BODY is the code to run in the hook.
               ,@body)
        (add-hook ',_m//hook #',_m//hook-fn ',_m//postpend))))
 ;; (setq test-hook nil)
-;; (makunbound _s//hook/test)
+;; (makunbound -s//hook/test)
 ;; (spy/hook/defun-and-hooker test-hook nil (message "Hello there."))
 ;; (spy/hook/defun-and-hooker test-hook nil (message "Hello there."))
 ;; test-hook
@@ -76,10 +76,10 @@ BODY is the code to run in the hook.
 
 
 (defmacro spy/hook/defun (hook-var options &rest body)
-  "Macro that `defun's a function called '_s//hook/<hook-name>'.
+  "Macro that `defun's a function called '-s//hook/<hook-name>'.
 
 OPTIONS is a plist of optional vars:
-  :name     - Hook function should be named '_s//hook/<name>'.
+  :name     - Hook function should be named '-s//hook/<name>'.
               If no `:name', name will be set to `(symbol-name HOOK-VAR)'
               minus any '-hook' suffix.
 
@@ -105,7 +105,7 @@ Use this over `spy/hook/defun-and-hooker' only in cases where you aren't
                    :file _m//file
                    :docstr _m//docstr)
            (eval options))
-          (_m//hook-name (concat "_s//hook/"
+          (_m//hook-name (concat "-s//hook/"
                                  (if _m//name
                                      _m//name
                                    ;; Remove "-hook"?
@@ -127,12 +127,12 @@ Use this over `spy/hook/defun-and-hooker' only in cases where you aren't
     ))
 ;; (setq test-hook nil)
 ;; (spy/hook/defun test-hook nil (message "Hello there."))
-;; (add-hook 'test-hook '_s//hook/test)
+;; (add-hook 'test-hook '-s//hook/test)
 ;; test-hook
 ;; (run-hooks 'test-hook)
 ;; (setq test-hook nil)
 ;; (spy/hook/defun test-hook '(:name "captain-hook" :file "here") (message "hi."))
-;; (add-hook 'test-hook '_s//hook/captain)
+;; (add-hook 'test-hook '-s//hook/captain)
 ;; test-hook
 ;; (run-hooks 'test-hook)
 

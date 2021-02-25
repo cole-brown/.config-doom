@@ -9,13 +9,13 @@
 ;; Set Root.
 ;;------------------------------------------------------------------------------
 
-(defconst _s//config.jerky.key "path/doom/config/root")
+(defconst -s//config.jerky.key "path/doom/config/root")
 
 
 (defun spy/config.root/set (path)
   "Set the root path (can be relative) that `spy/config' will use.
 "
-  (jerky/set _s//config.jerky.key
+  (jerky/set -s//config.jerky.key
              :value path
              :docstr "Root (can be relative) path for `spy/config'."))
 

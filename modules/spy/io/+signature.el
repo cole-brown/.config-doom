@@ -57,7 +57,7 @@ ARGS should be sig's type, followed by keyword pairs:
   (not (null (apply #'jerky/has 'signature args))))
 
 
-(defun _s//signature/insert (signature &optional namespace)
+(defun -s//signature/insert (signature &optional namespace)
   "Figure out what SIGNATURE is and insert it at point.
 NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
 "
@@ -206,7 +206,7 @@ Sets evil to insert mode.
 ;;------------------------------------------------------------------------------
 
 
-(defvar _s//signature/search/history nil
+(defvar -s//signature/search/history nil
   "Just a bucket to hold history for sig commands to keep
   segregated from general history.")
 
@@ -235,7 +235,7 @@ Sets evil to insert mode.
      nil
 
      ;; Get our own separate history for this command.
-     '_s//signature/search/history
+     '-s//signature/search/history
 
      ;; default user input value
      nil)))

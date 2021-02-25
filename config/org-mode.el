@@ -56,7 +56,7 @@
   ;;--------------------
 
   ;; Connect my hooks up.
-  ((org-mode . _s//hook/org/jump-to-now-target))
+  ((org-mode . -s//hook/org/jump-to-now-target))
 
 
   ;;--------------------
@@ -72,7 +72,6 @@
   ;;   (mis/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
-  (mis/init/message "config for org vars... >org-startup-folded: %S" org-startup-folded)
 
   (customize-set-variable 'org-log-done t
                           "auto-timestamp when TODOs are turned to DONE state")
@@ -91,7 +90,66 @@
   ;; ;; Note 1: This changes how it /looks/, not how the raw text is formatted.
   ;; ;; Note 2: This also hides leading stars for headlines.
 
-  ;; TODO: Are Doom's todo sequences good?
+  ;; Adjust sequences to be more nicer...
+
+  (let ((wrap "[]")
+        ;; (wrap "「」")
+        )
+    (setq org-todo-keywords
+          `((sequence  ;; Big Words sequence.
+             ,(-s//org/todo.keyword "TODO"    wrap "t")  ; A task that needs doing & is ready to do
+             ,(-s//org/todo.keyword "PROJECT" wrap "p")  ; A project, which usually contains other tasks
+             ,(-s//org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
+             ,(-s//org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
+             ,(-s//org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
+             "|"
+             ,(-s//org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
+             ,(-s//org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
+             ,(-s//org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
+             ,(-s//org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
+            (sequence ;; Checkboxes sequence.
+             ,(-s//org/todo.keyword " " wrap "T")    ; A task that needs doing
+             ,(-s//org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
+             ;; ,(-s//org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
+             ;; ,(-s//org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
+             ,(-s//org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
+             ,(-s//org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
+             "|"
+             ,(-s//org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
+             ,(-s//org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
+             ,(-s//org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
+             ,(-s//org/todo.keyword "÷" wrap "K" 'notes)))      ; Task was cancelled, aborted, or is no longer applicable.
+
+          ;; And set some faces for these. strings.
+          org-todo-keyword-faces
+          (list (list (-s//org/todo.keyword "TODO" wrap) 'warning 'bold)
+                (cons (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
+
+                (cons (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
+                (cons (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
+
+                (cons (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
+                (cons (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+                (cons (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
+                (cons (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
+                (cons (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
+
+                (cons (-s//org/todo.keyword "DONE" wrap)    'org-done)
+                (cons (-s//org/todo.keyword "X" wrap)       'org-done)
+                (cons (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
+                (cons (-s//org/todo.keyword "X" wrap)       'org-done)
+                (cons (-s//org/todo.keyword "FAILURE" wrap) 'org-done)
+                (cons (-s//org/todo.keyword "✘" wrap)       'org-done)
+                (cons (-s//org/todo.keyword "KILLED" wrap)  'org-done)
+                (cons (-s//org/todo.keyword "÷" wrap)       'org-done)))
+
+    ;; I guess this guy is covered by `hl-todo' instead of `org'?
+    ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
+    ;; ...but `hl-todo' cannot do things that start/end with non-letters...
+    ;; So yay.
+    )
+
+  ;; Old sequences:
   ;; ;; TODO sequence to pop up shortcuts to on running `C-c C-t' on a headline
   ;; ;;   (n) - n key will be shortcut into this state
   ;; ;;    @  - timestamp on enter
@@ -195,16 +253,14 @@
   ;;   (advice-add 'org-indent--compute-prefixes
   ;;               :after #'spy/advice/org-indent/prefix-munger)
 
-  ;; Easy paste of e.g. URLs.
-  (defun smd/org/yank/here ()
-    (interactive)
-    (insert "[[")
-    (yank)
-    (insert "][here]]"))
-
   ;; Map some things for org-mode.
-  (map! :map evil-org-mode-map
-        :desc "Paste as 'here' link." :n "p" #'smd/org/clipboard/link)
+  (map! :after org
+        :map org-mode-map
+        :localleader
+        ;; :map evil-org-mode-map
+        :prefix "l" ;; links
+        :desc "Link as 'here'." "h" #'smd/org/here.link
+        :desc "Paste as 'here' link." "p" #'smd/org/here.yank)
 
   ;; TODO: Do I want this again?
   ;; ;; 'C-c <tab>' to show headings only (no top parent notes, no
@@ -297,7 +353,7 @@
   ;;---
   ;; Domain Switcher
   ;;---
-  (defmacro _s//org.journal/namespaced (namespace &rest body)
+  (defmacro -s//org.journal/namespaced (namespace &rest body)
     "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
     `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
                                                 :namespace namespace))
@@ -305,8 +361,8 @@
                                         :namespace namespace)))
        ,@body
        ))
-  ;; (_s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-  ;; (_s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+  ;; (-s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
+  ;; (-s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
 
 
   ;; ;;--------------------
@@ -390,21 +446,21 @@
               (:prefix ("w" . ":work journal")
 
                :desc ":work - New Entry"           "j" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :work
-                                                         (funcall-interactively #'org-journal-new-entry)))
+                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :work
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
                :desc ":work - Visit Journal"       "v" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :work
                                                          (funcall-interactively #'org-journal-open-current-journal-file)))
                :desc ":work - Search Forever"      "s" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :work
-                                                         (funcall-interactively #'org-journal-search-forever)))))))))
+                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
 
   ;; Insert :home journal shortcuts if appropriate.
   (when (jerky/namespace/has :home)
@@ -420,7 +476,7 @@
                      :docstr "org-journal's :home directory"
                      :dlv 'full)
 
-      ;; Insert :work journal shortcuts if appropriate.
+      ;; Insert :home journal shortcuts if appropriate.
       ;; Add to Doom Leader...
       (map! :leader
             ;; :normal, :visual states of evil
@@ -430,21 +486,21 @@
               ;; Home namespaced commands.
               (:prefix ("h" . ":home journal")
                :desc ":home - New Entry"           "j" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :home
-                                                         (funcall-interactively #'org-journal-new-entry)))
+                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry)))
+                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
                :desc ":home - Visit Journal"       "v" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :home
                                                          (funcall-interactively #'org-journal-open-current-journal-file)))
                :desc ":home - Search Forever"      "s" (cmd!
-                                                        (_s//org.journal/namespaced
+                                                        (-s//org.journal/namespaced
                                                          :home
-                                                         (funcall-interactively #'org-journal-search-forever)))))))))
+                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
   )
 
 
@@ -457,7 +513,7 @@
 ;;---------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
-(defun _s//org-roam/file-name/timestamp-title (title)
+(defun -s//org-roam/file-name/timestamp-title (title)
   "Return a file name (without extension) for new files.
 
 It uses TITLE and the current timestamp to form a unique title.
@@ -465,6 +521,16 @@ It uses TITLE and the current timestamp to form a unique title.
   (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
         (slug (org-roam--title-to-slug title)))
     (format "%s_%s" timestamp slug)))
+
+
+(defun -s//org-roam/buffer/deactivate ()
+  "Like `org-roam-buffer-deactivate' but don't delete the window."
+  (interactive)
+
+  (setq org-roam-last-window (get-buffer-window))
+  ;; (delete-window (get-buffer-window org-roam-buffer)
+  ;; (kill-buffer org-roam-buffer)
+  )
 
 
 ;;---
@@ -506,7 +572,22 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; can make them hard to distinguish from external links. If you wish, you may
   ;; choose add special indicators for Org-roam links by tweaking
   ;; this, for example:
-  (customize-set-variable 'org-roam-link-title-format "r://%s"))
+  (customize-set-variable 'org-roam-link-title-format "r://%s")
+
+  ;; `right' (default) is probably correct? But trying out `bottom'.
+  (customize-set-variable 'org-roam-buffer-position 'bottom)
+
+  (map! :leader
+        :prefix "nr" ;; notes -> roam
+        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
+        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate)
+  (map! :after org
+        :map org-mode-map
+        :localleader
+        :prefix "m" ;; org-roam is... 'm' here instead of 'r'.
+        ;; and copy the above 'map!':
+        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
+        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate))
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(

@@ -87,7 +87,15 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
 ;;
 ;; Too tall, but nice: ⛧ ⚶
 ;; Right height, but eh... ok: § ▀
-
+;; ▌
+;; ┣━
+;; ╠═╣
+;; With Colons?
+;; ╠:
+;; ♫:
+;; ♯:
+;; §:
+;; ▀:
 (defun spy/signature/create (sigil name)
   "Create signatures and save them into jerky under 'signature' root key.
 "
@@ -97,7 +105,7 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
 
   (spy/signature/set 'id 'sigil
                      :namespace :default
-                     :value "⚶"
+                     :value sigil
                      :docstr "Short 1-char signature for notes, comments...")
 
   ;; Could have multiple, but would make searching harder...
@@ -140,7 +148,7 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
                      :namespace :default
                      :value (concat sigil "-TODO-" sigil)
                      :docstr "Long signature for postfixing note lines or as last line of note block."))
-
+;; (spy/signature/create)
 
 ;;------------------------------------------------------------------------------
 ;; Signatures - General

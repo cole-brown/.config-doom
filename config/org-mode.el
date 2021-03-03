@@ -556,6 +556,11 @@ It uses TITLE and the current timestamp to form a unique title.
   (customize-set-variable 'org-roam-buffer
                           (spy/buffer/special-name "lily" nil :info))
 
+  ;; Doom is a little pesky about keeping the org-roam buffer open.
+  ;; It even does it when you close a file and an org buffer is in any visible frame.
+  (customize-set-variable '+org-roam-open-buffer-on-find-file
+                          nil)
+
   ;; TODO: Do I want/need these?
   ;; ;; Org-Roam filenames need to be uniquely named, but name doesn't matter much?
   ;; ;; Or so they say... So they can just gen file names from the current time.

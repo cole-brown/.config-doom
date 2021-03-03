@@ -87,6 +87,33 @@ E.g.: (jerky/get 'my/key :path \"to/dir\")
 
 
 ;;------------------------------------------------------------------------------
+;; Debugging
+;;------------------------------------------------------------------------------
+
+(defvar jerky//debugging nil
+  "Debug flag.")
+
+
+(defun jerky//debug/toggle ()
+  "Toggle debugging for jerky."
+  (interactive)
+  (setq jerky//debugging (not jerky//debugging))
+  (message "jerky//debugging: %s"
+           (if jerky//debugging
+               "enabled"
+             "disabled")))
+
+
+(defun jerky//debug (func msg &rest args)
+  "Print out a debug message if debugging."
+  (when jerky//debugging
+    (apply #'message
+           (concat func ": " msg)
+           args)))
+;; (jerky//debug "test")
+
+
+;;------------------------------------------------------------------------------
 ;; Helpers
 ;;------------------------------------------------------------------------------
 
@@ -391,7 +418,7 @@ If QUIET is non-nil, don't output messages/warnings.
                 (push fb-ns namespaces))))))
 
     ;; Return list of namespaces to check.
-    namespaces))
+    (nreverse namespaces)))
 ;; (jerky//namespace/ordered :default)
 ;; (jerky//namespace/ordered :work)
 ;; (jerky//namespace/ordered :jeff)
@@ -600,7 +627,12 @@ If nothing found at KEY, return will be nil.
           (getter nil)
           (key (jerky//key/normalize args))
           ;; dash-let's plist match pattern to non-keys in ARGS.
-          ((&plist :namespace namespace :field field) kwargs))
+          ((&plist :namespace namespace :field field) kwargs)
+          (dbg.func "jerky/get"))
+
+    (jerky//debug dbg.func "args: %s" args)
+    (jerky//debug dbg.func "kwargs: %s" kwargs)
+    (jerky//debug dbg.func "namespace: %s, key: %s" namespace key)
 
     ;; Check field... is it a known value?
     (cond ((memq field '(:namespace :value :docstr :dlv :directory :class))
@@ -638,6 +670,10 @@ If nothing found at KEY, return will be nil.
 
 
     ;; Ok... Get namespaced... whatever they asked for.
+    (when jerky//debugging
+      (jerky//debug dbg.func
+                    "ordered namespaces: %s"
+                    (jerky//namespace/ordered namespace 'quiet)))
     (funcall getter
              ;; Filter all down to the namespace we want.
              (jerky//repo.record.namespace/get
@@ -649,6 +685,7 @@ If nothing found at KEY, return will be nil.
 ;; (jerky/get :test :jill)
 ;; (jerky/get '(signature id sigil))
 ;; (jerky/get '(signature id sigil) :namespace :work)
+;; (jerky/get '(signature id email) :namespace :work)
 
 
 ;;------------------------------------------------------------------------------

@@ -45,10 +45,12 @@
   ;; Define org-mode hooks.
   (spy/hook/defun org-mode-hook
     '(:name "org/jump-to-now-target"
-      :file "doom/config/org-mode.el"
+      :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
       :quiet t)
-    (smd/buffer/search.header "[[--now"))
+    (smd/buffer/search.header "[[--now")
+
+    (setq yas-indent-line 'fixed))
 
 
   ;;--------------------

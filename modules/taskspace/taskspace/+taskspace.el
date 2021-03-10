@@ -356,10 +356,10 @@ multiple taskspaces.
 ;; Variables
 ;;------------------------------------------------------------------------------
 
-(defvar taskspace/dlv.var/group nil
+(defvar taskspace//dlv.var/group nil
   "This should always be nil unless used via directory-local-variables.
 
-It should only be set via `taskspace/dlv/group'")
+It should only be set via `taskspace/group/dlv'")
 
 
 ;;------------------------------------------------------------------------------
@@ -719,11 +719,12 @@ This sets the automatic group for that dir (and sub-dirs) to GROUP."
       (jerky/dlv/set nil        ; let it auto-create
                      directory
                      nil        ; Set for global mode.
-                     'taskspace/dlv.var/group
+                     'taskspace//dlv.var/group
                      :namespace jerky/custom.namespace/default ; default namespace
                      :value group
                      :docstr "Taskspace's Auto-Group for this directory."
-                     :dlv 'full)
+                     :dlv 'full
+                     :safe t)
     (error (concat "%s: Requires `jerky' and `jerky/dlv' features/packages;"
                    "didn't find them. %s %s")
            "taskspace/group/dlv"
@@ -738,8 +739,8 @@ This will return it's value or nil."
   ;; Cannot use `condition-case-unless-debug' here... it just doesn't catch
   ;; `void-variable' signal.
   (condition-case nil
-      taskspace/dlv/group
-    ;; `taskspace/dlv/group' does not exist; return nil.
+      taskspace//dlv.var/group
+    ;; `taskspace//dlv.var/group' does not exist; return nil.
     (void-variable nil)
     ;; Generic error signal...?
     ;; (error nil)

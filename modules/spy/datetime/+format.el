@@ -33,6 +33,7 @@ Returns string from `format-time-string'.
    (-let* (((name kwargs) (spy/lisp/func.args args :time :zone))
           ((&plist :time :zone) kwargs))
      (format-time-string (spy/datetime/format.get name) time zone)))
+;; (spy/datetime/string.get 'iso-8601 'long)
 
 
 (defun spy/datetime/format.get (&rest name)

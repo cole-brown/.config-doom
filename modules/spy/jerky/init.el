@@ -21,9 +21,9 @@
 ;; Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load `jerky' unless specifically removed.
-(unless (featurep! -jerky)
-  (load! "+jerky"))
+;; TODO: Remove plus from these required ones?
+(load! "+debug")
+(load! "+jerky")
 
 ;; Always load `dlv' unless specifically removed.
 (unless (featurep! -dlv)

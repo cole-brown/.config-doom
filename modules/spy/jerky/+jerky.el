@@ -10,6 +10,7 @@
 (require 's)
 (require 'dash)
 (spy/require :spy 'zero 'strings)
+(spy/require :spy 'jerky 'debug)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
@@ -87,43 +88,18 @@ E.g.: (jerky/get 'my/key :path \"to/dir\")
 
 
 ;;------------------------------------------------------------------------------
-;; Debugging
-;;------------------------------------------------------------------------------
-
-(defvar jerky//debugging nil
-  "Debug flag.")
-
-
-(defun jerky//debug/toggle ()
-  "Toggle debugging for jerky."
-  (interactive)
-  (setq jerky//debugging (not jerky//debugging))
-  (message "jerky//debugging: %s"
-           (if jerky//debugging
-               "enabled"
-             "disabled")))
-
-
-(defun jerky//debug (func msg &rest args)
-  "Print out a debug message if debugging."
-  (when jerky//debugging
-    (apply #'message
-           (concat func ": " msg)
-           args)))
-;; (jerky//debug "test")
-
-
-;;------------------------------------------------------------------------------
 ;; Helpers
 ;;------------------------------------------------------------------------------
 
-(defun jerky//parse (args-list &rest extra-kwargs)
+(defun jerky//parse (args-list keywords &rest extra-keywords)
   "Splits ARGS-LIST into keys, and keyword arg/value pairs.
 
 KEY: A list of key strings/symbols/keywords, or a string key, or
 a mix. These must come before any of the keyword args.
 
-Keyword key/value pairs only exist after the KEYS. The keywords are:
+Keyword key/value pairs only exist after the KEYS. The keywords can be defined
+by passing in a list of KEYWORDS '(:value :fallback), or passing `t' for the
+defaults, which are:
   `:value'
   `:docstr'
   `:namespace'
@@ -140,30 +116,46 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
 `:value'
   The argument after :value will be stored as the value.
 
-If EXTRA-KWARGS are supplied, will prepend them to the usual returned plist.
+If EXTRA-KEYWORDS are supplied, will prepend them to the usual returned plist.
 
-Returns a plist of:
-  (:key key :namespace namespace :value value :docstr docstr)
-If not provided, their value will be nil.
+Returns a 2-tuple list of:
+  - jerky key parsed
+  - plist of keys/values parsed.
+
+If a keyword is requested but doesn't exist in the keys, their value in the
+output will be nil.
 "
-  (-let* (((args kwargs) (spy/lisp/func.args (-flatten args-list)
-                                             :docstr :value :namespace))
-          (key (jerky//key/normalize args))
-          ;; dash-let's plist match pattern to non-keys in ARGS.
-          ((&plist :docstr :value :namespace) kwargs)
-          (parsed (list :key key :namespace namespace :value value :docstr docstr)))
-    (if (null extra-kwargs)
-        parsed
+  (-let* ((keywords (cond ((null keywords)   ; Must be supplied something.
+                           (error "jerky//parse: keywords cannot be null: %S" keywords))
+                          ((listp keywords)  ; Given list? Use it.
+                           keywords)
+                          (t                 ; Use the defaults.
+                           ;; Backwards so they'll end up forwards.
+                           '(:docstr :value :namespace))))
+          ((args kwargs) (apply #'spy/lisp/func.args
+                                args-list
+                                keywords))
+          parsed)
 
-      ;; Look for extra kwargs.
-      (dolist (key extra-kwargs)
+    ;; If extra keywords, add first so they're at the end of the plist.
+    (when (not (null extra-keywords))
+      ;; Look for extra keywords.
+      (dolist (key extra-keywords)
         ;; Add key and value (nil default) to output.
         (push (plist-get kwargs key) parsed)
         (push key parsed)))
 
-    parsed))
-;; (jerky//parse '(foo bar baz :namespace qux :value 1))
-;; (jerky//parse '(foo bar baz :namespace qux :value 1 :baz "hello") :baz :DNE)
+    ;; Now look for the usual keywords...
+    (dolist (key keywords)
+        ;; Add key and value (nil default) to output.
+        (push (plist-get kwargs key) parsed)
+        (push key parsed))
+
+    ;; And build our tuple output.
+    (list (jerky//key/normalize args) parsed)))
+;; (jerky//parse '(foo bar baz :namespace qux :value 1) t)
+;; (jerky//parse '(foo bar baz :namespace qux :value 1 :baz "hello") t :baz :DNE)
+;; (jerky//parse '(foo bar baz :namespace nil :value 1) t)
 
 
 ;;------------------------------------------------------------------------------
@@ -442,46 +434,49 @@ If QUIET is non-nil, don't output messages/warnings.
 (jerky//key/normalize '(\"a\" b c))
   -> a/b/c
 "
-  (let ((strings '()) ; List for processing args.
-        (key  nil))   ; Final keypath string built from `strings'.
-    ;; If just a string, turn into our `strings' list.
-    (cond ((stringp args)
-           (setq strings (list args)))
+  (if (null args)
+      nil
+    (let ((strings '()) ; List for processing args.
+          (key  nil))   ; Final keypath string built from `strings'.
+      ;; If just a string, turn into our `strings' list.
+      (cond ((stringp args)
+             (setq strings (list args)))
 
-          ;; If a list, turn each item into a string and push to the `strings' list.
-          ((listp args)
-           (dolist (arg (-flatten args)) ; Just want one level of list.
-             ;; Push string args to strings, turn non-strings into strings.
-             (cond ((stringp arg)
-                    (push arg strings))
+            ;; If a list, turn each item into a string and push to the `strings' list.
+            ((listp args)
+             (dolist (arg (-flatten args)) ; Just want one level of list.
+               ;; Push string args to strings, turn non-strings into strings.
+               (cond ((stringp arg)
+                      (push arg strings))
 
-                   ;; symbol->string: drop keyword prefix if exists.
-                   ((symbolp arg)
-                    (push (jerky//key/symbol->str arg) strings))
+                     ;; symbol->string: drop keyword prefix if exists.
+                     ((symbolp arg)
+                      (push (jerky//key/symbol->str arg) strings))
 
-                   ;; function->string:
-                   ((functionp arg)
-                    (push (funcall arg) strings))
+                     ;; function->string:
+                     ((functionp arg)
+                      (push (funcall arg) strings))
 
-                   ;; fail
-                   (t
-                    (if quiet
-                        nil
-                      (error (concat "%s: Can't convert '%S' to string for conversion "
-                                     "of keys into key list.")
-                             "jerky//key/normalize"
-                             arg)))))))
+                     ;; fail
+                     (t
+                      (if quiet
+                          nil
+                        (error (concat "%s: Can't convert '%S' to string for conversion "
+                                       "of keys into key list.")
+                               "jerky//key/normalize"
+                               arg)))))))
 
-    ;; Now we have strings. They are in backwards order. They need to be turned
-    ;; into a final separated string.
-    (setq key (s-join jerky/custom.key/separator
-                      (nreverse strings)))
+      ;; Now we have strings. They are in backwards order. They need to be turned
+      ;; into a final separated string.
+      (setq key (s-join jerky/custom.key/separator
+                        (nreverse strings)))
 
-    ;; Return the full key string.
-    key))
+      ;; Return the full key string.
+      key)))
 ;; (jerky//key/normalize "a/b")
 ;; (jerky//key/normalize "a/b" "c")
 ;; (jerky//key/normalize :base "a/b" "c")
+;; (jerky//key/normalize nil)
 
 
 (defun jerky/key.str (&rest keys)
@@ -620,17 +615,15 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
 
 If nothing found at KEY, return will be nil.
 "
-  ;; Some shenanigans to do to turn input into args/kwargs into a key
-  ;; and any options.
-  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
-                                             :namespace :field))
+  ;; Some shenanigans to do to turn input into key/kwargs,
+  ;; then kwargs into options.
+  (-let* (((key kwargs) (jerky//parse keys-and-options
+                                       '(:namespace :field)))
           (getter nil)
-          (key (jerky//key/normalize args))
-          ;; dash-let's plist match pattern to non-keys in ARGS.
           ((&plist :namespace namespace :field field) kwargs)
           (dbg.func "jerky/get"))
 
-    (jerky//debug dbg.func "args: %s" args)
+    (jerky//debug dbg.func "key: %s" key)
     (jerky//debug dbg.func "kwargs: %s" kwargs)
     (jerky//debug dbg.func "namespace: %s, key: %s" namespace key)
 
@@ -849,10 +842,8 @@ If not provided, they will be nil.
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and values.
-  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
-                                             :docstr :value :namespace
-                                             :dlv :directory :class))
-          (key (jerky//key/normalize args))
+  (-let* (((key kwargs) (jerky//parse keys-and-options t
+                                       :dlv :directory :class))
           ;; dash-let's plist match pattern to non-keys in ARGS.
           ((&plist :docstr :value :namespace :dlv :directory :class) kwargs))
 
@@ -935,12 +926,15 @@ Example:
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and a namespace.
-  (-let* (((args kwargs) (spy/lisp/func.args (-flatten keys-and-options)
-                                             :namespace))
-          (partial-key (jerky//key/normalize args))
+  (-let* (((partial-key kwargs) (jerky//parse keys-and-options '(:namespace)))
           ;; dash-let's plist match pattern to non-keys in ARGS.
           ((&plist :namespace namespace) kwargs))
 
+    (jerky//debug "jerky/has" "keys-and-options: %S" keys-and-options)
+    (jerky//debug "jerky/has" "  -> key:    %S" partial-key)
+    (jerky//debug "jerky/has" "  -> kwargs: %S" kwargs)
+    (jerky//debug "jerky/has" "partial-key: %S" partial-key)
+    (jerky//debug "jerky/has" "namespace:   %S" namespace)
     ;; Now we can search & filter.
     (jerky//search/filter partial-key namespace)))
 ;; (jerky/has 'signature 'id)

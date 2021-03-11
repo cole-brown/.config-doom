@@ -37,7 +37,13 @@
 If QUIET is not nil, signals error. Else returns nil on error.
 Returns t on success.
 "
-  (cond ((not (file-name-absolute-p dir))
+  (cond ((null dir)
+         (if quiet
+             nil
+           (error "%s: Cannot verify `nil' directory: %S"
+                  "jerky//dlv/verify.dir" dir)))
+
+        ((not (file-name-absolute-p dir))
          (if quiet
              nil
            (error "%s: Directory path must be absolute. %s"

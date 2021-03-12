@@ -44,7 +44,8 @@ And it must have FILE in <dir>.
                         id dir)
                (warn "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
                      "directory"
-                     id dir))
+                     id dir)
+               nil)
 
               ;; Does dir even exist?
               ((not (file-directory-p dir))
@@ -53,7 +54,8 @@ And it must have FILE in <dir>.
                         id dir)
                (warn "Secrets %s for this system (%s) do not exist: %s"
                      "directory"
-                     id dir))
+                     id dir)
+               nil)
 
               ;; What about the filepath?
               ;; Add ".el" for actual file check.
@@ -63,7 +65,8 @@ And it must have FILE in <dir>.
                         id path)
                (warn "Secrets %s for this system (%s) does not exist: %s"
                      "file"
-                     id path))
+                     id path)
+               nil)
 
               ;; File exists; load it...
               (t
@@ -85,7 +88,67 @@ And it must have FILE in <dir>.
                       id
                       dir
                       path
-                      name)))
+                      name))
+  nil)
+
+
+(defun spy//secret/load.path (&rest path)
+  "Attempts to load file rooted at jerky key:
+  - 'system 'path 'secret 'emacs
+
+Appends PATH (do not include '.el[c]' in the last, filename, component).
+"
+  (if-let* ((hash (jerky/get 'system 'hash))
+            (id   (jerky/get 'system 'secret 'identities hash))
+            (root (jerky/get 'system 'path 'secret 'emacs))
+            (filepath (apply #'spy/path/to-file root path)) ; No ".el"; want compiled too.
+            (name (concat filepath ".el")))
+
+      ;; We got all the vars from jerky, so check for existance now.
+      ;;    Do we have valid-ish data to check?
+      (cond ((or (null filepath)
+                 (not (stringp filepath)))
+             (mis/init/message "%s: Cannot load path; it is not a string: %s"
+                               'spy//secret/load
+                               filepath)
+             (warn "%s: Cannot load path; it is not a string: %s"
+                   'spy//secret/load
+                   filepath)
+             nil)
+
+            ;; Does file even exist?
+            ;; Add ".el" for actual file check.
+            ((not (file-exists-p name))
+             (mis/init/message "%s: Cannot load path; it does not exist: %s"
+                               'spy//secret/load
+                               name)
+             ;; Don't warn; some just don't exist.
+             ;; (warn "%s: Cannot load path; it does not exist: %s"
+             ;;       'spy//secret/load
+             ;;       name)
+             nil)
+
+            ;; File exists; load it...
+            (t
+             (mis/init/message "Loading secrets file...\n    %s" name)
+             (load filepath)))
+
+  ;; Else no hash or id or dir found...
+  ;; TODO: warning? quiet? use mis or something?
+  (mis/init/message (concat "%s: No secret '%S' for this system:\n"
+                            "   hash: %s\n"
+                            "     id: %s\n"
+                            "   root: %s\n"
+                            "   path: %s\n"
+                            "   name: %s\n")
+                    'spy//secret/load
+                    path
+                    hash
+                    id
+                    root
+                    filepath
+                    name))
+  nil)
 
 
 ;;------------------------------------------------------------------------------

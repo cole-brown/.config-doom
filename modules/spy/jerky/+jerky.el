@@ -416,6 +416,24 @@ If QUIET is non-nil, don't output messages/warnings.
 ;; (jerky//namespace/ordered :jeff)
 
 
+(defun jerky/namespace.get ()
+  "Looks for a namespace to use.
+
+Checks/returns first to be non-nil of:
+  - `jerky//dlv/namespace.local' if jerky DLV is in use.
+  - Jerky key: 'namespace 'system
+  - `jerky/custom.namespace/default'
+"
+  (if (and (featurep 'jerky/dlv)
+              (not (null jerky//dlv/namespace.local)))
+      jerky//dlv/namespace.local
+
+    (if-let ((system (jerky/get 'namespace 'system)))
+        system
+      jerky/custom.namespace/default)))
+;; (jerky/namespace.get)
+
+
 ;;------------------------------------------------------------------------------
 ;; Key Functions
 ;;------------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 ;; Auto-Namespacing
 ;;------------------------------------------------------------------------------
 
-(defvar jerky/dlv/namespace nil
+(defvar jerky//dlv/namespace.local nil
   "Directory Local Variable for holding the directory's namespace.")
 
 (defvar jerky//dlv/uid.next 0
@@ -447,11 +447,11 @@ If not provided, they will be nil.
 (defun jerky/dlv/namespace.set (directory namespace)
   "Sets the DIRECTORY's local namespace."
   (if (not (jerky/namespace/has namespace))
-      (error "jerky/dlv/namespace: No known namespace called '%s'" namespace)
+      (error "jerky/dlv/namespace.set: No known namespace called '%s'" namespace)
     (jerky/dlv/set nil
                    directory
                    nil
-                   'jerky/dlv/namespace
+                   'jerky//dlv/namespace.local
                    ;:namespace namespace
                    :value namespace
                    :docstr (format "Jerky's default namespace for directory '%s'"
@@ -462,11 +462,11 @@ If not provided, they will be nil.
 ;;   -> "d:/home/spydez/.lily.d/logbook/work/"
 ;; (jerky/dlv/namespace.set "d:/home/spydez/.lily.d/logbook/work/" :work)
 ;; Looks ok I think?..
-;;   -> (:key "dlv/17/jerky/dlv/namespace"
+;;   -> (:key "dlv/17/jerky//dlv/namespace.local"
 ;;       :record ((:default
 ;;                 :work
 ;;                 "Jerky's default namespace for directory 'd:/home/spydez/.lily.d/logbook/work/'"
-;;                 ("d:/home/spydez/.lily.d/logbook/work/" dlv/17/jerky/dlv/namespace))))
+;;                 ("d:/home/spydez/.lily.d/logbook/work/" dlv/17/jerky//dlv/namespace.local))))
 ;; Basic, normal record (default namespace, "jill" value, no docstr):
 ;;  -> (:key "test/jill"
 ;;           :record ((:default

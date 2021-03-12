@@ -1,6 +1,6 @@
 # -*- mode: snippet -*-
 # contributor: Cole Brown <git@spydez.com>
-# name: spy/header: new file.org header
+# name: header: new file.org header
 # key: header
 # notes: Double time stamps were being inserted. Found reason:
 #   "This happens because org-insert-time-stamp inserts a time stamp (like the
@@ -17,6 +17,6 @@
                             (concat (file-name-extension file-name) "." (file-name-sans-extension file-name))
                           file-name)))`}
 #+AUTHOR:      ${2:Cole Brown}
-#+EMAIL:       ${3:`(spy/signature/get 'email (jerky/dlv/namespace))`}
+#+EMAIL:       ${3:`(spy/signature/get 'email (jerky/namespace.get))`}
 #+DATE:        ${4:`(spy/datetime/string.get 'org-inactive)`}
 $0

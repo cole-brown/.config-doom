@@ -179,6 +179,8 @@ If there is a :comment/adjustment in the MLIST(S), pass it to
 
 If there is a :style/width in the MLIST(S), use it as the full width of the
 line; otherwise use `fill-column'.
+
+If there is a :string/indent in the MLIST(S), use that as the indention amount.
 "
   (-let* ((line-fill (-m//style/first :border mlists "-"))
           ((prefix postfix) (-m//comment/adjustments
@@ -195,7 +197,6 @@ line; otherwise use `fill-column'.
               (= (length line-fill) 0))
       (error "mis/comment/line: Cannot build line without a string: '%s'"
              line-fill))
-
     ;; Build the line.
     (mis/string/trim.if (concat
                          indent-str
@@ -208,10 +209,11 @@ line; otherwise use `fill-column'.
 
                          ;; Third: Comment postfix.
                          postfix)
-                        mlists))
+                        mlists)))
 ;; (mis/comment/line)
 ;; (insert (mis/comment/line))
 ;; (apply #'mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent auto))))
+;; (apply #'mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent 4)))
 
 
 (defun mis/comment/header (&rest mlists)
@@ -227,7 +229,6 @@ Otherwise leave the title empty.
 
 See `mis/comment/line' and `mis/comment/wrap' for the rest of the :mis options.
 "
-  (apply #'mis/comment/line mlists))
   ;; First Line: Separator
   (concat (apply #'mis/comment/line mlists)
           "\n"
@@ -236,29 +237,12 @@ See `mis/comment/line' and `mis/comment/wrap' for the rest of the :mis options.
           (apply #'mis/comment/wrap (-m//string/first :string mlists "")
                             mlists)
           ;; TODO: Have wrap able to box? Or make mis/comment/box?
-          ;; nth 0 comment-parts)
-          ;; itle-prefix
-          ;; itle
-          ;; ; Pad-right to full width if we have a comment postfix.
-          ;; if (null (nth 1 comment-parts))
-          ;;    ;; No padding; no postfix if its null.
-          ;;    ""
-          ;;  ;; Else let's build the right padding and tack the postfix on here.
-          ;;  (concat
-          ;;   (make-string
-          ;;    (- width
-          ;;       (length title-prefix)
-          ;;       (length title))
-          ;;    ?\s)
-          ;;   (nth 1 comment-parts)))
           "\n"
 
           ;; Third Line: Separator
           (apply #'mis/comment/line mlists)))
 ;; (mis/comment/header)
 ;; (mis/comment/header (mis/string/string "") (mis/string/indent 'auto))
-
-
 
 
 ;;------------------------------------------------------------------------------

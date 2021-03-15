@@ -11,12 +11,16 @@
 #   - erikstokes - https://emacs.stackexchange.com/a/13219
 # Can also see what we can change about `C-c C-e #'.
 # --
-#+TITLE:       ${1:`(capitalize
-                      (let ((file-name (file-name-nondirectory (file-name-sans-extension (buffer-file-name)))))
-                        (if (string= (file-name-extension file-name) "notes")
-                            (concat (file-name-extension file-name) "." (file-name-sans-extension file-name))
-                          file-name)))`}
+#+TITLE:       ${1:`(let ((file-name (file-name-nondirectory (file-name-sans-extension (buffer-file-name)))))
+                      (if (string= (file-name-extension file-name) "notes")
+                          (concat
+                           (capitalize (file-name-extension file-name))
+                           "."
+                           (mapconcat #'capitalize
+                                      (split-string (file-name-sans-extension file-name) "_")
+                                      "_"))
+                        (capitalize file-name)))`}
 #+AUTHOR:      ${2:Cole Brown}
-#+EMAIL:       ${3:`(spy/signature/get 'email (jerky/namespace.get))`}
+#+EMAIL:       ${3:`(spy/signature/get 'id 'email :namespace (jerky/namespace.get))`}
 #+DATE:        ${4:`(spy/datetime/string.get 'org-inactive)`}
 $0

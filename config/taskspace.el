@@ -6,6 +6,7 @@
 ;;------------------------------------------------------------------------------
 
 (require 'taskspace)
+(spy/require :spy 'path)
 
 
 ;;------------------------------------------------------------------------------
@@ -28,6 +29,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
   (format (concat "%s\n" ;; header
                   "\n"
                   "#+TASKSPACE: %s\n" ;; taskpath
+                  "             %s\n" ;; translated path
                   "%s\n" ;; taskname
                   "\n"
                   "%s\n" ;; mkdir
@@ -36,10 +38,11 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                   "%s\n" ;; fancy box middle
                   "%s\n" ;; fancy box bottom
                   "\n\n")
-          "spy-header"
+          "header" ;; yasnippet
           taskpath
+          (spy/path/translate :windows :wsl taskspath)
           taskname
-          (format "mkdir ~/temp/%s" taskname)
+          (format "mkdir ~/00-cole-temp/%s" taskname)
           "     ┌┬┬┬──────────────────────────────────────────────────────────────┬┬┬┐"
           "     ├┼┼┤                             ...                              ├┼┼┤"
           "     └┴┴┴──────────────────────────────────────────────────────────────┴┴┴┘"
@@ -98,13 +101,16 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                               -s//taskspace/generate.home))))
       "Custom settings for my `:home' taskspace group.")
 
-  ;; Set a dir-local-var for home taskspace folders.
-  (taskspace/group/dlv group
-                       (jerky/get 'path 'taskspace 'root :namespace group))
-  (taskspace/group/dlv group
-                       (jerky/get 'path 'taskspace 'notes :namespace group))
-  (taskspace/group/dlv group
-                       (jerky/get 'path 'org 'journal :namespace group)))
+    ;; Set an over-arching taskspace DLV for whole work dir.
+    (taskspace/group/dlv group
+                         (jerky/get 'path 'taskspace 'root :namespace group))
+    ;; Set a dir-local-var for home taskspace folders.
+    (taskspace/group/dlv group
+                         (jerky/get 'path 'taskspace 'notes :namespace group))
+    (taskspace/group/dlv group
+                         (jerky/get 'path 'org 'journal :namespace group))
+
+    )
   ;; /"Home" Domain
 
 

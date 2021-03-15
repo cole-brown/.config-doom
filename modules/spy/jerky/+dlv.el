@@ -69,6 +69,7 @@ Returns t on success.
 ;; (jerky//dlv/verify.dir "c:/absolute/path/")
 ;; Good:
 ;; (jerky//dlv/verify.dir user-emacs-directory)
+;; (jerky//dlv/verify.dir "~/")
 
 
 (defun jerky//dlv/verify.namespace (namespace &optional quiet)

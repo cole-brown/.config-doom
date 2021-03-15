@@ -92,9 +92,10 @@ Returns an mlist.
 (defun mis/string/trim.if (string mlists)
   "Trim STRING if there is a :string/trim set in MLISTS.
 "
-  (if (-m//return/invalid? (-m//string/first :trim mlists t) t)
+  (if (-m//return/invalid? (-m//string/first :trim mlists :mis/nil) '(:mis/nil))
       string
     (string-trim string)))
+;; (message "trimmed? '%s'" (mis/string/trim.if "    hello there     " nil))
 
 
 (defun -m//string/indent.amount (mlists)
@@ -109,13 +110,17 @@ integer -> integer
            (current-column))
 
           ((eq indent 'auto)
-           ;; Fun fact: No way to just ask "what will/should the indent be"...
-           ;; ...so... Do the fucking indent in an excursion so it doesn't
-           ;; stick. -_- Then figure out the indent.
-           (save-excursion
-             (indent-according-to-mode)
-             (beginning-of-line-text)
-             (current-column)))
+           (error "-m//string/indent.amount: `auto' not supported until it gets properly figured out.")
+           ;; ;; Fun fact: No way to just ask "what will/should the indent be"...
+           ;; ;; ...so... We have to actually indent in order to figure out how
+           ;; ;; much indention we need?
+           ;; ;; ...and then we have to undo our change?
+           ;; ;; That sounds terrible.
+           ;; (save-excursion  ;; <- Does not save/restore buffer contents; so cannot use that...
+           ;;   (indent-according-to-mode)
+           ;;   (beginning-of-line-text)
+           ;;   (current-column))
+           )
 
           ((integerp indent)
            indent)

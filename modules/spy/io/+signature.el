@@ -30,7 +30,7 @@
 ARGS should be sig's type, optionally followed by `:namespace' and a namespace
 symbol if desired.
 "
-  (jerky/get 'signature args))
+  (apply #'jerky/get 'signature args))
 ;; (spy/signature/get 'id 'sigil :namespace :work)
 ;; (jerky/get '(signature id sigil) :work)
 
@@ -43,10 +43,10 @@ ARGS should be sig's type, followed by keyword pairs:
   - optional: :namespace <namespace>
   - optional: :docstr <docstr>
 "
- (jerky/set 'signature args))
+ (apply #'jerky/set 'signature args))
 ;; (spy/signature/set 'id 'hail :value "hi")
 ;; (spy/signature/get 'id 'hail)
-
+;; (spy/signature/get 'id 'email :namespace :home)
 
 (defun spy/signature/exists (&rest args)
   "Returns non-nil if one or more signatures defined by ARGS exist.

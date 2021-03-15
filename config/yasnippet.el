@@ -9,8 +9,8 @@
 ;;--------------------
 
 ;; Don't override if it was set in e.g. secrets init or system init or something.
-(when (null (jerky/get "emacs/snippets"))
-  (jerky/set "emacs/snippets"
+(when (null (jerky/get 'emacs 'snippets))
+  (jerky/set 'emacs 'snippets
              :value (spy/path/to-dir doom-private-dir "snippets")
              :docstr "Default path to snippets in doom private dir."))
 
@@ -29,7 +29,7 @@
   ;; Allow snippet inside of snippets. Snippet inception.
   (setq yas-triggers-in-field t)
 
-  (when-let ((dir/snippets (jerky/get "emacs/snippets")))
+  (when-let ((dir/snippets (jerky/get 'emacs 'snippets)))
     (add-to-list 'yas-snippet-dirs dir/snippets))
 
   ;; TODO [2020-10-30]: Do I need this? It's probably bound somewhere else in

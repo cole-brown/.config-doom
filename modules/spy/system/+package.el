@@ -44,7 +44,7 @@ This will load file: \"package/jeff/jill.el(c)\"
     ;; Eval inputs once.
     `(let* ((,path-input (spy/string/symbol/normalize ,@path))
             ;; Non-inputs:
-            (root        (jerky/get "path/doom/package/root"))
+            (root        (jerky/get -s//package.jerky.key))
             (final-name  (apply #'spy/path/join root ,path-input))
             (package-name (apply #'spy/string/concat "/" ,path-input)))
 

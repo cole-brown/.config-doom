@@ -32,7 +32,7 @@ Returns string from `format-time-string'.
 "
    (-let* (((name kwargs) (spy/lisp/func.args args :time :zone))
           ((&plist :time :zone) kwargs))
-     (format-time-string (spy/datetime/format.get name) time zone)))
+     (format-time-string (apply #'spy/datetime/format.get name) time zone)))
 ;; (spy/datetime/string.get 'iso-8601 'long)
 
 
@@ -40,7 +40,7 @@ Returns string from `format-time-string'.
   "Returns a datetime format string by NAME - strings, symbols or list of such.
 Prepends '(datetime format) to the NAME.
 "
-  (jerky/get 'datetime 'format name))
+  (apply #'jerky/get 'datetime 'format name))
 
 
 (defun spy/datetime/format.set (&rest args)
@@ -55,11 +55,7 @@ Keywords are:
   :value  - datetime format string
   :docstr - documentation string
 "
-  (-let* (((name kwargs) (spy/lisp/func.args args :value :docstr))
-          ((&plist :value :docstr) kwargs))
-    (jerky/set 'datetime 'format name
-               :value value
-               :docstr docstr)))
+  (apply #'jerky/set 'datetime 'format args))
 
 
 ;;------------------------------------------------------------------------------

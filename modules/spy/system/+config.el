@@ -18,6 +18,7 @@
   (jerky/set -s//config.jerky.key
              :value path
              :docstr "Root (can be relative) path for `spy/config'."))
+;; (spy/config.root/set "config")
 
 
 ;;------------------------------------------------------------------------------
@@ -44,7 +45,7 @@ This will load file: \"config/jeff/jill.el(c)\"
     ;; Eval inputs once.
     `(let* ((,path-input (spy/string/symbol/normalize ,@path))
             ;; Non-inputs:
-            (root        (jerky/get "path/doom/config/root"))
+            (root        (jerky/get -s//config.jerky.key))
             (final-name  (apply #'spy/path/join root ,path-input))
             (config-name (apply #'spy/string/concat "/" ,path-input)))
 

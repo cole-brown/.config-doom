@@ -324,8 +324,9 @@ Returns list of nil(s) if no KEY or SECTION found.
 
     ;; Return `results', be it nil or actually filled with some value(s).
     results))
-;; (-m//mlists/get.all :padding :style '((:mis t :string (:mis :string :trim t))) '(:padding :width))
-;; (-m//mlists/get.all :trim :string '(:mis t :string (:mis :string :trim :mis/nil)) '(:trim :string))
+;; (-m//mlists/get.all :padding :style '((:mis t :string '((:mis :string :trim t)))) '(:padding :width))
+;; (-m//mlists/get.all :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string))
+;; (-m//mlists/get.all :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
 
 
 (defun -m//mlists/get.first (key section mlists valid-keys &optional default)
@@ -366,7 +367,8 @@ Else returns `:mis/error'.
 ;; (-m//mlists/get.first :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string) t)
 ;; This should return the default " "
 ;; (-m//mlists/get.first :padding :style '((:mis t :string (:mis :string :trim :mis/nil))) '(:padding :width) " ")
-
+;; This should return 'existing
+;; (-m//mlists/get.first :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
 
 ;;------------------------------------------------------------------------------
 ;; The End.

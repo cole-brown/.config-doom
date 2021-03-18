@@ -41,7 +41,7 @@ situation in the calling code.
   (-m//mlists/get.first key :style mlists -m//styles default))
 ;; (-m//style/first :border '((:mis t :string (:mis :string :trim t))) :mis/nil)
 ;; (-m//style/first :border '((:mis t :string (:mis :string :trim t))) " ")
-
+;; (-m//style/first :border '((:mis t :style (:mis :style :border "x"))) "error dude")
 
 ;;------------------------------------------------------------------------------
 ;; Field Setters
@@ -63,7 +63,8 @@ situation in the calling code.
   "Sets a style border. Returns an mlist.
 "
   (-m//style/set :border border mlist))
-
+;; (mis/style/border "x")
+;;   -> (:mis t :style (:mis :style :border "x"))
 
 (defun mis/style/padding (padding &optional mlist)
   "Sets a style padding. Returns an mlist.

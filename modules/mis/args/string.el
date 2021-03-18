@@ -38,10 +38,10 @@ Use `:mis/nil', `:mis/error', etc for DEFAULT if you have a \"nil is valid\"
 situation in the calling code.
 "
   (-m//mlists/get.first key :string mlists -m//strings default))
-;; (-m//string/first :trim '(:mis t :string (:mis :string :trim :mis/nil)) nil)
-;; (-m//string/first :trim '(:mis t :string (:mis :string :trim :mis/nil)) t)
+;; (-m//string/first :trim '((:mis t :string (:mis :string :trim :mis/nil))) nil)
+;; (-m//string/first :trim '((:mis t :string (:mis :string :trim :mis/nil))) t)
 ;; (-m//mlists/get.first :trim :string '(:mis t :string (:mis :string :trim :mis/nil)) -m//strings t)
-;; (-m//string/first :indent '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent auto))) 0)
+;; (-m//string/first :indent (list (mis/string/indent 'existing)) "error dude")
 
 
 ;;------------------------------------------------------------------------------
@@ -63,26 +63,40 @@ situation in the calling code.
 (defun mis/string/indent (indent &optional mlist)
   "Sets indent type/amount to INDENT.
 
-Supports:
-  - 'fixed
-  - 'auto
-  - integer
+INDENT supported can be:
+  'fixed    -> Indent an amount according to (current-column) return value.
+  'existing -> Do not create indention; use (current-column) as indent amount.
+               Useful for telling mis that you're already indented this much.
+  integer   -> Indent according to integer's value.
+
+Disabled for now:
+  'auto     -> (indent-according-to-mode)
 
 Returns an mlist.
 "
-  (unless (or (memq indent '(fixed auto))
-              (integerp indent))
-    ;; TODO: error out? Return mis error? IDK?
-    (error "%S: indent must be: 'auto, 'fixed, or an integer. Got: %S"
-           "mis/string/indent"
-           indent))
+  (cond ((memq indent '(auto))  ;; disabled-for-now list
+         (error "%S: `auto' is not currently supported for indentation."
+                "mis/string/indent"))
 
-  (-m//string/set :indent indent
-                  mlist))
+        ;; Supported Symbols
+        ((memq indent '(fixed existing auto))
+         (-m//string/set :indent indent mlist))
+
+        ;; Supported Type: Integers
+        ((integerp indent)
+          (-m//string/set :indent indent mlist))
+
+        ;; Default Case: Error out.
+        (t
+         (error "%S: indent must be: %s. Got: %S"
+                "mis/string/indent"
+                "'auto, 'fixed, 'existing or an integer"
+                indent))))
 ;; (mis/string/indent 42)
 ;; (mis/string/indent 'fixed)
 ;; (mis/string/indent 'auto)
 ;; (mis/string/indent t)
+;; (mis/string/indent 'existing)
 
 
 ;;------------------------------------------------------------------------------
@@ -101,14 +115,21 @@ Returns an mlist.
 (defun -m//string/indent.amount (mlists)
   "Get indent amount.
 
-'fixed  -> (current-column)
-'auto   -> (indent-according-to-mode)
-integer -> integer
+Indent can be:
+  'fixed    -> indent to (current-column)
+  'existing -> do not indent; use (current-column) as indent amount.
+  integer   -> integer
+
+Disabled for now:
+  'auto    -> (indent-according-to-mode)
 "
   (let ((indent (-m//string/first :indent mlists 0)))
-    (cond ((eq indent 'fixed)
+    ;; `fixed' and `existing' both return current column for the amount; they differ
+    ;; in `-m//string/indent.get'.
+    (cond ((memq indent '(fixed existing))
            (current-column))
 
+          ;; Auto is disabled for now...
           ((eq indent 'auto)
            (error "-m//string/indent.amount: `auto' not supported until it gets properly figured out.")
            ;; ;; Fun fact: No way to just ask "what will/should the indent be"...
@@ -122,25 +143,38 @@ integer -> integer
            ;;   (current-column))
            )
 
+          ;; And an integer is just its value.
           ((integerp indent)
            indent)
 
-          ;; (-m//string/indent.amount (mis/string/indent 'auto))
-
           (t
            0))))
-;; (-m//string/indent.amount (mis/string/indent 'auto))
+;; (-m//string/indent.amount (list (mis/string/indent 'auto)))
+;; (-m//string/indent.amount (list (mis/string/indent 'fixed)))
+;; (-m//string/indent.amount (list (mis/string/indent 'existing)))
+;; (-m//string/first :indent (list (mis/string/indent 'existing) 0))
 
 
 (defun -m//string/indent.get (mlists)
   "Get indent amount and return a string of that width.
 
-'fixed  -> (current-column)
-'auto   -> (indent-according-to-mode)
-integer -> integer
+Indent can be:
+  'fixed    -> Indent to according to (current-column).
+               So, if current column is 4, returns string \"    \".
+  'existing -> Do not indent; use (current-column) as indent amount.
+               This will always return an empty string.
+  integer   -> Indent the amount of the integer.
+
+Disabled for now:
+  'auto     -> Indent according to the mode's indentation:
+               (indent-according-to-mode)
 "
-  (make-string (-m//string/indent.amount mlists) ?\s))
-;; (-m//string/indent.amount (mis/string/indent 'auto))
+  (if (eq (-m//string/first :indent  mlists :mis/nil) 'existing)
+      ""
+    (make-string (-m//string/indent.amount mlists) ?\s)))
+;; (-m//string/indent.get (list (mis/string/indent 'auto)))
+;; (-m//string/indent.get (list (mis/string/indent 'existing)))
+;; (-m//string/indent.get (list (mis/string/indent 'fixed)))
 
 
 (defun mis/string/newline (mlists)

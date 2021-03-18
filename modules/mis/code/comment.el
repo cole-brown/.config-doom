@@ -146,9 +146,17 @@ Defaults to trimming the string; override with a :string/trim of
   (-m//comment/unless
     (-let* (((prefix postfix) (-m//comment/adjustments
                                (-m//comment/first :adjustment mlists :mis/nil)))
-            (comment (s-join (-m//style/first :padding mlists " ")
-                             (list prefix (format "%s" comment) postfix))))
-      (mis/string/trim.if comment mlists))))
+            (indent-str (-m//string/indent.get mlists)))
+      (concat
+       ;; Always indent - will be an empty string if none wanted.
+       indent-str
+       ;; Trim if asked for. Don't trim the indent string though.
+       (mis/string/trim.if
+        ;; Build our comment from the mlist and pre/postfixes.
+        (s-join (-m//style/first :padding mlists " ")
+                             (list prefix (format "%s" comment) postfix))
+
+        mlists)))))
 ;; (mis/comment/wrap "foo")
 ;; (-m//return/invalid? (-m//string/first :trim '(:mis t :string (:mis :string :trim :mis/nil)) t) t)
 ;; (mis/comment/wrap "foo" (mis/string/trim :mis/nil))
@@ -157,6 +165,8 @@ Defaults to trimming the string; override with a :string/trim of
 ;; (mis/comment/wrap "")
 ;; (mis/comment/wrap (make-string 3 ?-))
 ;; (mis/comment/wrap (make-string 3 ?-))
+;; (mis/comment/wrap (make-string 3 ?-) (mis/string/indent 'existing))
+;; (mis/comment/wrap (make-string 3 ?-) (mis/string/indent 'fixed))
 
 
 ;;------------------------------------------------------------------------------
@@ -212,8 +222,9 @@ If there is a :string/indent in the MLIST(S), use that as the indention amount.
                         mlists)))
 ;; (mis/comment/line)
 ;; (insert (mis/comment/line))
-;; (apply #'mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent auto))))
-;; (apply #'mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent 4)))
+;; (mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent auto))))
+;; (mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent 4)))
+;; (mis/comment/line (mis/string/string nil) (mis/string/indent 'existing))
 
 
 (defun mis/comment/header (&rest mlists)
@@ -243,6 +254,7 @@ See `mis/comment/line' and `mis/comment/wrap' for the rest of the :mis options.
           (apply #'mis/comment/line mlists)))
 ;; (mis/comment/header)
 ;; (mis/comment/header (mis/string/string "") (mis/string/indent 'auto))
+;; (mis/comment/header (mis/string/string "") (mis/string/indent 'existing))
 
 
 ;;------------------------------------------------------------------------------

@@ -4,4 +4,4 @@
 # key: spy-lg
 # --
 
-`(mis/comment/header (mis/string/string yas-selected-text) (mis/string/indent 'auto))`
+`(mis/comment/header (mis/string/string yas-selected-text) (mis/string/indent 'existing))`

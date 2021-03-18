@@ -116,7 +116,8 @@ defaults, which are:
 `:value'
   The argument after :value will be stored as the value.
 
-If EXTRA-KEYWORDS are supplied, will prepend them to the usual returned plist.
+If EXTRA-KEYWORDS are supplied, will apppend them to the end of the
+usual returned plist.
 
 Returns a 2-tuple list of:
   - jerky key parsed
@@ -156,6 +157,7 @@ output will be nil.
 ;; (jerky//parse '(foo bar baz :namespace qux :value 1) t)
 ;; (jerky//parse '(foo bar baz :namespace qux :value 1 :baz "hello") t :baz :DNE)
 ;; (jerky//parse '(foo bar baz :namespace nil :value 1) t)
+;; (jerky//parse '(foo (bar baz) :namespace nil :value 1) t)
 
 
 ;;------------------------------------------------------------------------------

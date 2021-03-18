@@ -40,7 +40,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                   "\n\n")
           "header" ;; yasnippet
           taskpath
-          (spy/path/translate :windows :wsl taskspath)
+          (spy/path/translate :windows :wsl taskpath)
           taskname
           (format "mkdir ~/00-cole-temp/%s" taskname)
           "     ┌┬┬┬──────────────────────────────────────────────────────────────┬┬┬┐"

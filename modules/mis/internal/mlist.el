@@ -28,6 +28,31 @@
   "Valid mis section keywords for mlists."
   )
 
+;; TODO: move the non-mlist stuff to a different internal file.
+(defconst -m//const/flags
+  '(:mis/nil
+    :mis/error)
+  "Super special mis constants. Not very special. Used to indicate mis returned
+a nil (to be ignored) as opposed to mis returing a nil value from a user input
+(to be used).")
+
+
+;;------------------------------------------------------------------------------
+;; Logic
+;;------------------------------------------------------------------------------
+
+(defun -m//or (&rest input)
+  "Acts like `or' but treats `:mis/error' and `:mis/nil' as nil."
+  (-some #'identity
+         (-filter
+          (lambda (x)
+            (if (memq x -m//const/flags)
+                nil
+              x))
+          input)))
+;; (-m//or :mis/nil t)
+;; (-m//or :mis/nil nil :mis/error "hello")
+
 
 ;;------------------------------------------------------------------------------
 ;; Predicates
@@ -279,6 +304,8 @@ If MLIST's SECTION has no KEY, returns DEFAULT.
                          default)))
 ;; (-m//mlist/get.section :string (-m//mlist/ensure.section :string nil))
 ;; (-m//mlist/get.section :string nil)
+;; (-m//section/get :string :string (mis/string/trim t) '(:string :trim :indent :align))
+;; (-m//section/get :string :string (mis/string/string "  testing     ") '(:string :trim :indent :align))
 
 
 ;; TODO: macro for: (setq x (-m//section/set key value x))
@@ -318,8 +345,8 @@ Returns list of nil(s) if no KEY or SECTION found.
         (value nil))
     ;; Check all mlists, saving any values we find for the section & key.
     (dolist (mlist mlists)
-      (setq value (-m//section/get key section mlist valid-keys))
-      (unless (-m//return/invalid? value)
+      (setq value (-m//section/get key section mlist valid-keys :mis/nil))
+      (unless (-m//return/invalid? value '(:mis/nil))
         (push value results)))
 
     ;; Return `results', be it nil or actually filled with some value(s).
@@ -327,6 +354,7 @@ Returns list of nil(s) if no KEY or SECTION found.
 ;; (-m//mlists/get.all :padding :style '((:mis t :string '((:mis :string :trim t)))) '(:padding :width))
 ;; (-m//mlists/get.all :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string))
 ;; (-m//mlists/get.all :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
+;; (-m//mlists/get.all :string :string (list (mis/string/string "  testing     ") (mis/string/trim t)) '(:string :trim :indent :align))
 
 
 (defun -m//mlists/get.first (key section mlists valid-keys &optional default)
@@ -369,6 +397,9 @@ Else returns `:mis/error'.
 ;; (-m//mlists/get.first :padding :style '((:mis t :string (:mis :string :trim :mis/nil))) '(:padding :width) " ")
 ;; This should return 'existing
 ;; (-m//mlists/get.first :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
+;; I want the string...
+;; (-m//mlists/get.first :string :string (list (mis/string/string "  testing     ") (mis/string/trim t)) '(:string :trim :indent :align))
+
 
 ;;------------------------------------------------------------------------------
 ;; The End.

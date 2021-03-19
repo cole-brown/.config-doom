@@ -4,4 +4,6 @@
 # key: spy-lg
 # --
 
-`(mis/comment/header (mis/string/string yas-selected-text) (mis/string/indent 'existing))`
+`(mis/comment/line (mis/string/indent 'existing))`
+`(mis/comment/wrap "" (mis/string/indent 'existing) (mis/string/trim t))` ${1:$$(yas-selected-text)}$0
+`(mis/comment/line (mis/string/indent 'existing))`

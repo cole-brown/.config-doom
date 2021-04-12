@@ -187,8 +187,9 @@
        ;;literate
        (default +bindings +smartparens)
 
-       :mis ; My output helper code.
-       mis                 ; mis/init:     Include all of mis.
+       :output ; My output helper code.
+       mis0                 ; mis v0:     Actually more like v6, but eh.
+       ; mis                  ; mis:        The Final Mis For Sure™.
 
        :taskspace
        taskspace

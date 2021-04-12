@@ -188,6 +188,79 @@ indentation is desired, provide nil.
           (-m//string/indent.get mlists)))
 
 
+(defun -m//line/width (mlists)
+  "Returns the allowed max width of the line.
+
+Width is either:
+  1) An explicitly set width in the MLISTS.
+  2) Calculated by max line width (`fill-column') minus border, indents, etc."
+  (let ((explicit-width (-m//style/first :width mlists :mis/nil)))
+    (if (-m//return/invalid? explicit-width '(:mis/nil))
+        (- fill-column
+           ;; TODO: Need to get the actual border string...
+           ;; Think I'll need a thing in the mlists that's for building as we go?
+           ;; Save the built :border strings there?
+           ;; (length (-m//style/first :border mlists))
+           (-m//string/indent.amount mlists))
+      explicit-width)))
+;; (-m//line/width nil)
+
+
+(defun -m//string/get (mlists)
+  "Get string (aligned, trimmed, etc) from MLISTS."
+  (mis/string/trim.if (-m//string/first :string mlists "") mlists))
+;; (-m//string/get (list (mis/string/string "  testing     ") (mis/string/trim t)))
+;; (-m//string/get (list (mis/string/string "  testing     ")))
+
+
+
+
+;;------------------------------------------------------------------------------
+;; String Output
+;;------------------------------------------------------------------------------
+
+(defun mis//out.string/trim.get (mout)
+  "Get :string/trim from MOUT list.
+
+Returns :mis/nil if none."
+  (-m//out/entry.get :trim mout))
+
+
+(defun mis//out.string/trim.set (value mout)
+  "Set :string/trim to VALUE in MOUT list.
+
+Returns updated MOUT list."
+  (-m//out/entry.set :trim value mout))
+
+
+(defun mis//out.string/string.get (mout)
+  "Get :string/string from MOUT list.
+
+Returns :mis/nil if none."
+  (-m//out/entry.get :string mout))
+
+
+(defun mis//out.string/string.set (value mout)
+  "Set :string/string to VALUE in MOUT list.
+
+Returns updated MOUT list."
+  (-m//out/entry.set :string value mout))
+
+
+(defun mis//out.string/indent.get (mout)
+  "Get :string/indent from MOUT list.
+
+Returns :mis/nil if none."
+  (-m//out/entry.get :indent mout))
+
+
+(defun mis//out.string/indent.set (value mout)
+  "Set :string/indent to VALUE in MOUT list.
+
+Returns updated MOUT list."
+  (-m//out/entry.set :indent value mout))
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

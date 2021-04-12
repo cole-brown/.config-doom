@@ -5,6 +5,7 @@
 ;;------------------------------------------------------------------------------
 
 (-m//require 'internal 'mlist)
+(-m//provide 'internal 'debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -19,8 +20,7 @@
 (defconst -m//comment/adjustment.default
   ;; pycodestyle E265: block comments should start with '# '.
   '(
-    ;; `python-mode' now uses "# " as comment-start, so this is no longer needed.
-    ;; (python-mode " ")
+    (python-mode " ")
     ) ;; "# " as comment start for e.g. "# ---" instead of "#---".
   "Adjustments to `comment-start'/`comment-stop' per mode.
 e.g. python-mode can ask for a space after it's comment characters to ensure
@@ -96,7 +96,9 @@ Returns a list of (comment-start-str comment-end-str)
             (when with-adjustments
                 (nth 1 (assoc major-mode
                               -m//comment/adjustment.default))))
-           (pad-more (comment-add nil)))
+           (pad-more (1+ (comment-add nil))))
+
+      (comment-normalize-vars)
 
       ;;---
       ;; Return a list of: (prefix postfix)
@@ -106,23 +108,25 @@ Returns a list of (comment-start-str comment-end-str)
        ;; Prefix
        ;;---
        ;; Combine comment start string with optional adjustment string.
-       (concat
-        (string-trim-right
+       (string-trim-left
+        (concat
          ;; Use empty string if no comment-right for current major mode.
-         (or (comment-padright comment-start pad-more)
-             ""))
-        adjustment)
+         (if comment-start
+             (s-repeat pad-more comment-start)
+           ""))
+         adjustment)
 
        ;;---
        ;; Postfix
        ;;---
        ;; Combine optional comment end string with optional adjustment string.
-       (concat
-        adjustment
-        (string-trim-left
-         ;; Use empty string if no comment-left for current major mode.
-         (or (comment-padleft comment-end pad-more)
-             "")))))))
+       (string-trim-right
+        (concat
+         adjustment
+          ;; Use empty string if no comment-left for current major mode.
+         (if comment-end
+             (s-repeat pad-more comment-end)
+           "")))))))
 ;; (-m//comment/adjustments)
 ;; (nth 0 (-m//comment/adjustments))
 ;; (nth 1 (-m//comment/adjustments))
@@ -148,21 +152,38 @@ Defaults to trimming the string; override with a :string/trim of
 "
   (-m//comment/unless
     (-let* (((prefix postfix) (-m//comment/adjustments
-                               (-m//comment/first :adjustment mlists :mis/nil)))
+                                (-m//comment/first :adjustment mlists t)))
             (indent-str (-m//string/indent.get mlists)))
+      ;; If we've been asked to box the comment, mirror the prefix.
+      (if (and (not (-m//return/invalid?
+                     (-m//style/first :boxed mlists nil)))
+               (or (null postfix)
+                   (string-empty-p postfix)))
+          (setq postfix prefix))
+      (message "mlists: %S" mlists)
+      (message "boxed: %S" (-m//style/first :boxed mlists nil))
+      (message "boxed? %s, no postfix? %s->\n  do boxing? %s\n    ->pre/post: ('%s' '%s')"
+               (not (-m//return/invalid?
+                     (-m//style/first :boxed mlists nil)))
+               (null postfix)
+               (and (not (-m//return/invalid?
+                          (-m//style/first :boxed mlists nil)))
+                    (null postfix))
+               prefix postfix)
+
       (concat
        ;; Always indent - will be an empty string if none wanted.
        indent-str
        ;; Trim if asked for. Don't trim the indent string though.
        (mis/string/trim.if
         ;; Build our comment from the mlist and pre/postfixes.
-        (s-join (-m//style/first :padding mlists " ")
+        (s-join (-m//style/first :padding mlists "")
                 (list prefix
                       (format "%s" (-m//or comment ""))
                       postfix))
-
         mlists)))))
 ;; (mis/comment/wrap "foo")
+;; (mis/comment/wrap "foo" (mis/style/padding " "))
 ;; (-m//return/invalid? (-m//string/first :trim '(:mis t :string (:mis :string :trim :mis/nil)) t) t)
 ;; (mis/comment/wrap "foo" (mis/string/trim :mis/nil))
 ;; (mis/comment/wrap "foo" (mis/string/trim t))
@@ -173,6 +194,9 @@ Defaults to trimming the string; override with a :string/trim of
 ;; (mis/comment/wrap (make-string 3 ?-) (mis/string/trim t))
 ;; (mis/comment/wrap (make-string 3 ?-) (mis/string/indent 'existing))
 ;; (mis/comment/wrap (make-string 3 ?-) (mis/string/indent 'fixed))
+;; (mis/comment/wrap (-m//style/align " foo " (list (mis/style/align :center) (mis/style/padding "-"))))
+;; (mis/comment/wrap (-m//style/align " foo " (list (mis/style/align :center) (mis/style/padding "-"))))
+;; (mis/comment/wrap "foo" (mis/style/boxed t))
 
 
 ;;------------------------------------------------------------------------------
@@ -200,20 +224,61 @@ If there is a :string/indent in the MLIST(S), use that as the indention amount.
 "
   (-let* ((line-fill (-m//style/first :border mlists "-"))
           ((prefix postfix) (-m//comment/adjustments
-                             (-m//comment/first :adjustment mlists :mis/nil)))
+                             (-m//comment/first :adjustment mlists t)))
           (indent-amt (-m//string/indent.amount mlists))
           (indent-str (-m//string/indent.get mlists))
           ;; Final Width: Full width minus comment pre/postfixes.
-          (width (- (-m//style/first :border mlists fill-column)
+          ;; TODO: Make this just (width (-m//line/width ??? mlists))
+          (width (- (-m//line/width nil)
+                    (-m//style/first :border mlists 0)
                     indent-amt
                     (+ (length prefix)
                        (length postfix)))))
+
+    (mis//when-debugging
+     (mis//debug "mis/comment/line"
+                 (concat "width: %d <- (- line-width(%d) border(%d) indent(%d) "
+                         "prefix(%d) postfix(%d))")
+                 width
+                 (-m//line/width nil)
+                 (-m//style/first :border mlists 0)
+                 indent-amt
+                 (length prefix)
+                 (length postfix)))
+
     ;; This would divide by zero or some other less helpful error.
     (when (or (null line-fill)
               (= (length line-fill) 0))
       (error "mis/comment/line: Cannot build line without a string: '%s'"
              line-fill))
+
     ;; Build the line.
+    (mis//when-debugging
+      (let* ((dbg-fill-len (/ width (length line-fill)))
+             (dbg-fill (s-repeat dbg-fill-len line-fill))
+             (dbg-line (concat
+                        indent-str
+                        prefix
+                        dbg-fill
+                        postfix)))
+        (mis//debug "mis/comment/line"
+                    "width: %d, line-file: '%s', line-fill-len: %d"
+                    width
+                    line-fill
+                    dbg-fill-len)
+        (mis//debug "mis/comment/line"
+                    "   fill: ..... '%s'"
+                    dbg-fill)
+        (mis//debug "mis/comment/line"
+                    "   line: '%s'"
+                    dbg-line)
+        (mis//debug "mis/comment/line"
+                    "trimmed: '%s'"
+                    (mis/string/trim.if dbg-line mlists))
+        (mis//debug "mis/comment/line"
+                    "trimmed length: %d"
+                    (length (mis/string/trim.if dbg-line mlists)))))
+
     (mis/string/trim.if (concat
                          indent-str
                          ;; First: Comment prefix.
@@ -229,9 +294,14 @@ If there is a :string/indent in the MLIST(S), use that as the indention amount.
 ;; (mis/comment/line)
 ;; (insert (mis/comment/line))
 ;; (mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent auto))))
-;; (mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent 4)))
+;; (mis/comment/line '((:mis t :string (:mis :string :string nil)) (:mis t :string (:mis :string :indent 4))))
 ;; (mis/comment/line (mis/string/string nil) (mis/string/indent 'existing))
 ;; (mis/comment/line (mis/string/indent 'existing))
+;; (mis/comment/line (mis/string/indent 4))
+;;   -> "    ;;--------------------------------------------------------------------------"
+;; (mis/comment/line)
+;;   -> ";;------------------------------------------------------------------------------"
+
 
 
 (defun mis/comment/header (&rest mlists)
@@ -262,6 +332,24 @@ See `mis/comment/line' and `mis/comment/wrap' for the rest of the :mis options.
 ;; (mis/comment/header)
 ;; (mis/comment/header (mis/string/string "") (mis/string/indent 'auto))
 ;; (mis/comment/header (mis/string/string "") (mis/string/indent 'existing))
+
+
+;;------------------------------------------------------------------------------
+;; Comment Output
+;;------------------------------------------------------------------------------
+
+(defun mis//out.comment/adjustment.get (mout)
+  "Get :comment/adjustment from MOUT list.
+
+Returns :mis/nil if none."
+  (-m//out/entry.get :adjustment mout))
+
+
+(defun mis//out.comment/adjustment.set (value mout)
+  "Set :comment/adjustment to VALUE in MOUT list.
+
+Returns updated MOUT list."
+  (-m//out/entry.set :adjustment value mout))
 
 
 ;;------------------------------------------------------------------------------

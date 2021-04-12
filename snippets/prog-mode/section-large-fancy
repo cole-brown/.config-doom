@@ -4,6 +4,12 @@
 # key: spy-fan
 # --
 
-${1:`(mis/comment/center/build "(will center on exit)" nil mis/center/char/padding)`$(when yas/moving-away-p (mis/comment/center/build yas-text nil mis/center/char/padding))}
-${2:`(mis/comment/center/build (or yas-selected-text "(will center on exit)"))`$(when yas/moving-away-p (mis/comment/center/build yas-text))}
-${3:`(mis/comment/center/build "(will center on exit)" nil mis/center/char/padding)`$(when yas/moving-away-p (mis/comment/center/build yas-text nil mis/center/char/padding))}
+${1:Will do its thing on exit.$(when yas/moving-away-p (if yas-text
+     (mis/comment/wrap (-m//style/align yas-text (list (mis/style/align :center) (mis/style/padding "-")))
+                       (mis/style/boxed t) (mis/string/indent 'existing) (mis/string/trim t))
+   (mis/comment/line (mis/string/indent 'existing) (mis/string/trim t))))}
+${2:Title Here$(when yas/moving-away-p (mis/comment/wrap (-m//style/align yas-text (list (mis/style/align :center))) (mis/style/boxed t)))}
+${3:-- Will do its thing on exit. --$(when yas/moving-away-p (if yas-text
+     (mis/comment/wrap (-m//style/align yas-text (list (mis/style/align :center) (mis/style/padding "-")))
+                       (mis/style/boxed t) (mis/string/indent 'existing) (mis/string/trim t))
+   (mis/comment/line (mis/string/indent 'existing) (mis/string/trim t))))}

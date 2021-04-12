@@ -4,6 +4,6 @@
 # key: spy-md
 # --
 
-`(mis/comment/wrap (make-string 30 ?-) t "" t)`
-`(mis/comment/wrap "" t)` `yas-selected-text`$0
-`(mis/comment/wrap (make-string 30 ?-) t "" t)`
+`(mis/comment/wrap (make-string 30 ?-) (mis/string/trim t))`
+`(mis/comment/wrap "" (mis/string/trim t))` ${0:`yas-selected-text`}
+`(mis/comment/wrap (make-string 30 ?-) (mis/string/trim t))`

@@ -5,5 +5,5 @@
 # --
 
 `(mis/comment/wrap (make-string 3 ?-) (mis/string/trim t))`
-`(mis/comment/wrap yas-selected-text (mis/string/trim t))` $0
+`(mis/comment/wrap "" (mis/string/trim t))` ${0:`yas-selected-text`}
 `(mis/comment/wrap (make-string 3 ?-) (mis/string/trim t))`

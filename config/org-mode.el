@@ -71,7 +71,7 @@
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
   ;; (org-default-notes-file (spy/path/to-file org-directory "notes.org"))
-  ;;   (mis/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
+  ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
 

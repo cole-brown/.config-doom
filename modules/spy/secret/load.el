@@ -8,7 +8,7 @@
 (spy/require :spy 'jerky)
 (spy/require :spy 'path)
 
-(require 'mis/message)
+(require 'mis0/message)
 
 
 ;;------------------------------------------------------------------------------
@@ -70,25 +70,25 @@ And it must have FILE in <dir>.
 
               ;; File exists; load it...
               (t
-               (mis/init/message "Loading %s secrets...\n   %s" id name)
+               (mis0/init/message "Loading %s secrets...\n   %s" id name)
                (message "SECRETS IS LOADING... %S" path )
-               ;; TODO: no message? use mis or something?
+               ;; TODO: no message? use mis0 or something?
                (load path))))
 
     ;; Else no hash or id or dir found...
-    ;; TODO: warning? quiet? use mis or something?
-    (mis/init/message (concat "No secret '%s' for this system:\n"
-                              "   hash: %s\n"
-                              "     id: %s\n"
-                              "    dir: %s\n"
-                              "   path: %s\n"
-                              "   name: %s\n")
-                      key
-                      hash
-                      id
-                      dir
-                      path
-                      name))
+    ;; TODO: warning? quiet? use mis0 or something?
+    (mis0/init/message (concat "No secret '%s' for this system:\n"
+                               "   hash: %s\n"
+                               "     id: %s\n"
+                               "    dir: %s\n"
+                               "   path: %s\n"
+                               "   name: %s\n")
+                       key
+                       hash
+                       id
+                       dir
+                       path
+                       name))
   nil)
 
 
@@ -108,9 +108,9 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
       ;;    Do we have valid-ish data to check?
       (cond ((or (null filepath)
                  (not (stringp filepath)))
-             (mis/init/message "%s: Cannot load path; it is not a string: %s"
-                               'spy//secret/load
-                               filepath)
+             (mis0/init/message "%s: Cannot load path; it is not a string: %s"
+                                'spy//secret/load
+                                filepath)
              (warn "%s: Cannot load path; it is not a string: %s"
                    'spy//secret/load
                    filepath)
@@ -119,9 +119,9 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
             ;; Does file even exist?
             ;; Add ".el" for actual file check.
             ((not (file-exists-p name))
-             (mis/init/message "%s: Cannot load path; it does not exist: %s"
-                               'spy//secret/load
-                               name)
+             (mis0/init/message "%s: Cannot load path; it does not exist: %s"
+                                'spy//secret/load
+                                name)
              ;; Don't warn; some just don't exist.
              ;; (warn "%s: Cannot load path; it does not exist: %s"
              ;;       'spy//secret/load
@@ -130,24 +130,24 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
 
             ;; File exists; load it...
             (t
-             (mis/init/message "Loading secrets file...\n    %s" name)
+             (mis0/init/message "Loading secrets file...\n    %s" name)
              (load filepath)))
 
-  ;; Else no hash or id or dir found...
-  ;; TODO: warning? quiet? use mis or something?
-  (mis/init/message (concat "%s: No secret '%S' for this system:\n"
-                            "   hash: %s\n"
-                            "     id: %s\n"
-                            "   root: %s\n"
-                            "   path: %s\n"
-                            "   name: %s\n")
-                    'spy//secret/load
-                    path
-                    hash
-                    id
-                    root
-                    filepath
-                    name))
+    ;; Else no hash or id or dir found...
+    ;; TODO: warning? quiet? use mis0 or something?
+    (mis0/init/message (concat "%s: No secret '%S' for this system:\n"
+                               "   hash: %s\n"
+                               "     id: %s\n"
+                               "   root: %s\n"
+                               "   path: %s\n"
+                               "   name: %s\n")
+                       'spy//secret/load
+                       path
+                       hash
+                       id
+                       root
+                       filepath
+                       name))
   nil)
 
 

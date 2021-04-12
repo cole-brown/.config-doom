@@ -4,6 +4,6 @@
 # key: spy-lg
 # --
 
-${1:$(mis/comment/line (mis/string/indent 'existing) (mis/string/trim t))}
-`(mis/comment/wrap "" (mis/string/indent 'existing) (mis/string/trim t))` $1
-${1:$(mis/comment/line (mis/string/indent 'existing) (mis/string/trim t))}$0
+${1:$(mis0/comment/line (mis0/string/indent 'existing) (mis0/string/trim t))}
+`(mis0/comment/wrap "" (mis0/string/indent 'existing) (mis0/string/trim t))` $1
+${1:$(mis0/comment/line (mis0/string/indent 'existing) (mis0/string/trim t))}$0

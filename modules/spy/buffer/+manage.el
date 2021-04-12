@@ -44,7 +44,7 @@ If ARG is not a string, assume it's a buffer and try to kill it's process and it
 directly."
 
   (cond ((null arg)
-         (mis/warning nil nil
+         (mis0/warning nil nil
                       "spy/buffer/kill.special: Cannot kill; null arg."))
 
         ((and (symbolp arg)

@@ -8,7 +8,7 @@
 (spy/require :spy 'jerky)
 (spy/require :spy 'path)
 
-(require 'mis/message)
+(require 'mis0/message)
 
 
 ;;------------------------------------------------------------------------------

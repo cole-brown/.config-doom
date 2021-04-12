@@ -4,6 +4,6 @@
 # key: spy-sm
 # --
 
-`(mis/comment/wrap (make-string 3 ?-) (mis/string/trim t))`
-`(mis/comment/wrap "" (mis/string/trim t))` ${0:`yas-selected-text`}
-`(mis/comment/wrap (make-string 3 ?-) (mis/string/trim t))`
+`(mis0/comment/wrap (make-string 3 ?-) (mis0/string/trim t))`
+`(mis0/comment/wrap "" (mis0/string/trim t))` ${0:`yas-selected-text`}
+`(mis0/comment/wrap (make-string 3 ?-) (mis0/string/trim t))`

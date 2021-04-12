@@ -17,7 +17,7 @@
 (spy/require :spy 'buffer 'point)
 (spy/require :spy 'datetime 'format)
 
-(require 'mis)
+(require 'mis0)
 
 
 ;;------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ Keywords are:
     - :timestamp - if non-nil, append `org-inactive' from `spy/datetime'.
     - :comment   - if non-nil, wrap signature in comment characters if deemed
                    appropriate to major mode and point's position (aka ask
-                   `mis/comment/wrap').
+                   `mis0/comment/wrap').
 "
   ;; Break `args' up into type list and keyword args, then check for any of the
   ;; optional keywords.
@@ -189,7 +189,7 @@ Keywords are:
 
       (when comment
         ;; Append ':' and wrap sig with comment characters if necessary.
-        (setq sig (mis/comment/wrap (concat sig ":"))))
+        (setq sig (mis0/comment/wrap (concat sig ":"))))
 
       ;; Return it.
       sig)))

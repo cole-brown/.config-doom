@@ -1,4 +1,4 @@
-;;; mis/helpers/load.el -*- lexical-binding: t; -*-
+;;; mis0/helpers/load.el -*- lexical-binding: t; -*-
 
 (require 'dash)
 
@@ -13,11 +13,11 @@
    (directory-file-name
     ;; Start with the directory of this file.
     (file-name-directory load-file-name)))
-  "The root of mis' elisp should be a directory up.")
+  "The root of mis0' elisp should be a directory up.")
 
 
 (defvar -m//load/features '()
-  "Mis (internal) features that have been loaded by `-m//load'.")
+  "Mis0 (internal) features that have been loaded by `-m//load'.")
 ;; (setq -m//load/features '())
 
 
@@ -113,7 +113,7 @@ NEXT and PARENT are expected to be strings.
 ;;------------------------------------------------------------------------------
 
 (defun -m//load/name (&rest name)
-  "Convert symbols into a mis load name string."
+  "Convert symbols into a mis0 load name string."
   (-m//path/join (-map
                   #'-m//string/normalize.all
                   (-flatten name))))
@@ -143,10 +143,10 @@ NEXT and PARENT are expected to be strings.
 (defun -m//load (&rest load-name)
   "Load a file relative to `-m//path/root' based on LOAD-NAME strings/symbols.
 
-For example, to load \"mis/code/comment.el[c]\":
+For example, to load \"mis0/code/comment.el[c]\":
    (-m//load 'code 'comment)
 
-This is for loading done internally in mis.
+This is for loading done internally in mis0.
 "
   (let* ((normal (apply #'-m//string/normalize.all load-name))
          (name (apply #'-m//load/name normal))
@@ -155,7 +155,7 @@ This is for loading done internally in mis.
         (let (file-name-handler-alist)
           ;(load path nil))
           (load path nil 'nomessage))
-    (error "mis fail loading: %s (%S); error: %S" path name e))))
+    (error "mis0 fail loading: %s (%S); error: %S" path name e))))
 ;; (-m//load 'test 'something)
 
 

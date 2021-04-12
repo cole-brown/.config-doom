@@ -1,4 +1,4 @@
-;;; mis/internal/valid.el -*- lexical-binding: t; -*-
+;;; mis0/internal/valid.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -6,7 +6,7 @@
 ;;------------------------------------------------------------------------------
 
 (defun -m//or (&rest input)
-  "Acts like `or' but treats `:mis/error' and `:mis/nil' as nil."
+  "Acts like `or' but treats `:mis0/error' and `:mis0/nil' as nil."
   (-some #'identity
          (-filter
           (lambda (x)
@@ -14,8 +14,8 @@
                 nil
               x))
           input)))
-;; (-m//or :mis/nil t)
-;; (-m//or :mis/nil nil :mis/error "hello")
+;; (-m//or :mis0/nil t)
+;; (-m//or :mis0/nil nil :mis0/error "hello")
 
 
 ;;------------------------------------------------------------------------------
@@ -24,11 +24,11 @@
 
 (defun -m//input/invalid? (input valids)
   "Returns t if INPUT is not a member of valids, or if INPUT is a special case
-  like `:mis/error'."
+  like `:mis0/error'."
 
   (cond
    ;; Special case invalid?
-   ((eq input :mis/error)
+   ((eq input :mis0/error)
     t)
 
    ;; Member of specified valids?
@@ -42,8 +42,8 @@
 
 
 (defun -m//return/error->nil (input)
-  "Converts INPUT of `:mis/error' to nil. Leaves other inputs alone."
-  (if (eq input :mis/error)
+  "Converts INPUT of `:mis0/error' to nil. Leaves other inputs alone."
+  (if (eq input :mis0/error)
       nil
     input))
 
@@ -51,13 +51,13 @@
 (defun -m//return/invalid? (values &optional invalids)
   "Returns t if any VALUES are considered \"invalid\".
 
-`:mis/error' is always considered invalid; any other invalids (e.g. `nil',
-`:mis/nil') should be provided in INVALIDS as a list.
-  - For convenience, an INVALIDS of `t' means `nil' and `:mis/nil' are invalid.
+`:mis0/error' is always considered invalid; any other invalids (e.g. `nil',
+`:mis0/nil') should be provided in INVALIDS as a list.
+  - For convenience, an INVALIDS of `t' means `nil' and `:mis0/nil' are invalid.
 "
   ;; Convert shortcut invalids into the nil&niller list.
   (let ((invalids (if (eq invalids t)
-                      '(nil :mis/nil)
+                      '(nil :mis0/nil)
                     invalids))
         ;; Allow for either a list or a value by turning the latter into a list.
         ;; Watch out for the friendly neighborhood list/value Schrodenger's nil.
@@ -70,22 +70,22 @@
         (-any? (lambda (val)
                  "Check for values that are invalid."
                  (or (memq val invalids)
-                     (eq val :mis/error)))
+                     (eq val :mis0/error)))
                values)
 
-      ;; Else only `:mis/error' is invalid.
+      ;; Else only `:mis0/error' is invalid.
       (-any? (lambda (val)
                "Check that values are not invalid."
-               (eq val :mis/error))
+               (eq val :mis0/error))
              values))))
 ;; (-m//return/invalid? '(jeff))
 ;; (-m//return/invalid? 'jeff)
-;; (-m//return/invalid? '(:mis/error))
-;; (-m//return/invalid? :mis/error)
-;; (-m//return/invalid? '(nil :mis/error 'jeff))
+;; (-m//return/invalid? '(:mis0/error))
+;; (-m//return/invalid? :mis0/error)
+;; (-m//return/invalid? '(nil :mis0/error 'jeff))
 ;; (-m//return/invalid? '("" 'jeff))
 ;; (-m//return/invalid? '(nil 'jeff) t) ;; nil is invalid
-;; (-m//return/invalid? '(:mis/nil 'jeff) t) ;; :mis/nil is invalid
+;; (-m//return/invalid? '(:mis0/nil 'jeff) t) ;; :mis0/nil is invalid
 
 
 ;;------------------------------------------------------------------------------

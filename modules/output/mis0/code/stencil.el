@@ -1,4 +1,4 @@
-;;; mis/code/stencil.el -*- lexical-binding: t; -*-
+;;; mis0/code/stencil.el -*- lexical-binding: t; -*-
 
 
 ;;----------------------------------------HELP!
@@ -96,9 +96,9 @@ Overwrites anything in the region of START, END if they are not equal.
 ;; Main Function
 ;;------------------------------------------------------------------------------
 
-(defun mis/stencil (&optional prefix)
-   "Expand a mis/snippet in place, offers a pop-up a list of choices if no stencil
-found at point (using `mis/custom.stencil/functions/prompt').
+(defun mis0/stencil (&optional prefix)
+   "Expand a mis0/snippet in place, offers a pop-up a list of choices if no stencil
+found at point (using `mis0/custom.stencil/functions/prompt').
 
 With PREFIX argument... TODO: do something?
 "
@@ -120,6 +120,6 @@ With PREFIX argument... TODO: do something?
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; provide to mis and to everyone
+;; provide to mis0 and to everyone
 (-m//provide 'code 'stencil)
-(provide 'mis/code/stencil)
+(provide 'mis0/code/stencil)

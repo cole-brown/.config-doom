@@ -1,15 +1,15 @@
-;;; mis/args/+mlist.el -*- lexical-binding: t; -*-
+;;; mis0/args/+mlist.el -*- lexical-binding: t; -*-
 
-;; General Layout of a MisList (mlist):
+;; General Layout of a Mis0List (mlist):
 ;;
 ;; It is a recursive plist.
 ;;
 ;; Example:
-;;    '(:mis :root
+;;    '(:mis0 :root
 ;;      :style (...)
 ;;      :content (
 ;;          :string "Hello "
-;;          :complex (:mis :something
+;;          :complex (:mis0 :something
 ;;                    :style (...)
 ;;                    :string "there")
 ;;          :string "."
@@ -24,10 +24,10 @@
 ;;------------------------------------------------------------------------------
 
 (defconst -m//sections
-  '(:mis
+  '(:mis0
     :style
     :string)
-  "Valid mis section keywords for mlists."
+  "Valid mis0 section keywords for mlists."
   )
 
 
@@ -36,12 +36,12 @@
 ;;------------------------------------------------------------------------------
 
 (defun -m//mlist/valid? (mlist)
-  "Returns t if MLIST is a mis-plist (aka 'mlist'), else nil.
+  "Returns t if MLIST is a mis0-plist (aka 'mlist'), else nil.
 "
-  ;; `mlist' exists and has a `:mis' key? Good enough.
+  ;; `mlist' exists and has a `:mis0' key? Good enough.
   (and (not (null mlist))
        (listp mlist)
-       (not (null (plist-member mlist :mis)))))
+       (not (null (plist-member mlist :mis0)))))
 
 
 (defun -m//mlist/valid.key? (key)
@@ -82,11 +82,11 @@
 
 (defun -m//mlist/ensure (mlist &optional type)
   "Creates and returns an empty mlist if MLIST doesn't exist already.
-If MLIST is something, but is not a valid mlist, returns `:mis/error'.
+If MLIST is something, but is not a valid mlist, returns `:mis0/error'.
 "
   ;; Return a basic mlist if given nil.
   (cond ((eq mlist nil)
-         (list :mis (or type t)))
+         (list :mis0 (or type t)))
 
         ;; Return the input if it's already a valid list.
         ((-m//mlist/valid? mlist)
@@ -94,7 +94,7 @@ If MLIST is something, but is not a valid mlist, returns `:mis/error'.
 
         ;; Otherwise error.
         (t
-         :mis/error)))
+         :mis0/error)))
 ;; (-m//mlist/ensure nil)
 ;; (-m//mlist/ensure nil 'jeff)
 
@@ -103,7 +103,7 @@ If MLIST is something, but is not a valid mlist, returns `:mis/error'.
   "Creates and returns an empty mlist with an empty SECTION if MLIST doesn't
 exist already. If MLIST is a valid mlist, ensures that SECTION exists (creates
 empty one if necessary). If MLIST is something, but is not a valid mlist,
-returns `:mis/error'.
+returns `:mis0/error'.
 "
   (let ((mlist (-m//mlist/ensure mlist type)))
     ;; Return an mlist if given a valid one.
@@ -117,24 +117,24 @@ returns `:mis/error'.
                         (-m//mlist/ensure nil section))))
 
           ;; Otherwise error.
-          ((eq mlist :mis/error)
-           :mis/error)
+          ((eq mlist :mis0/error)
+           :mis0/error)
           (t
-           :mis/error))))
+           :mis0/error))))
 
 
 (defun -m//mlist/get.value (key mlist &optional default)
   "Get a value from this MLIST based on KEY.
 
-Checks that MLIST is an mlist, and that KEY is a valid mis key first;
-returns `:mis/error' if not.
+Checks that MLIST is an mlist, and that KEY is a valid mis0 key first;
+returns `:mis0/error' if not.
 
 Tries to get KEY value from MLIST next; returns DEFAULT if unable.
 "
   (if (or (not (-m//mlist/valid? mlist))
           (not (-m//mlist/valid.key? key)))
       ;; Return error value because we don't have valid inputs.
-      :mis/error
+      :mis0/error
 
     ;; Valid inputs! Get or default.
     (or (plist-get mlist key)
@@ -144,13 +144,13 @@ Tries to get KEY value from MLIST next; returns DEFAULT if unable.
 (defun -m//mlist/set.value (key value mlist)
   "Set a value in this mlist.
 
-Checks that MLIST is an mlist, and that KEY is a valid mis key first;
-returns `:mis/error' if not.
+Checks that MLIST is an mlist, and that KEY is a valid mis0 key first;
+returns `:mis0/error' if not.
 "
   (if (or (not (-m//mlist/valid? mlist))
           (not (-m//mlist/valid.key? key)))
       ;; Return error value because we don't have valid inputs.
-      :mis/error
+      :mis0/error
 
     ;; Valid key and list; insert value.
     (plist-put mlist key value)))
@@ -159,15 +159,15 @@ returns `:mis/error' if not.
 (defun -m//mlist/get.section (section mlist &optional default)
   "Get a section from this MLIST based on SECTION.
 
-Checks that MLIST is an mlist, and that SECTION is a valid mis section first;
-returns `:mis/error' if not.
+Checks that MLIST is an mlist, and that SECTION is a valid mis0 section first;
+returns `:mis0/error' if not.
 
 Tries to get SECTION value from MLIST next; returns DEFAULT if unable.
 "
   (if (or (not (-m//mlist/valid? mlist))
           (not (-m//mlist/valid.section? section)))
       ;; Return error value because we don't have valid inputs.
-      :mis/error
+      :mis0/error
 
     ;; Valid inputs! Get or default.
     (-m//mlist/get.value section mlist default)))
@@ -176,14 +176,14 @@ Tries to get SECTION value from MLIST next; returns DEFAULT if unable.
 (defun -m//mlist/set.section (section value mlist)
   "Set the SECTION to the VALUE in this MLIST.
 
-Checks that MLIST is an mlist, and that SECTION is a valid mis section first;
-returns `:mis/error' if not.
+Checks that MLIST is an mlist, and that SECTION is a valid mis0 section first;
+returns `:mis0/error' if not.
 "
   (let ((mlist (-m//mlist/ensure.section section mlist)))
     (if (or (not (-m//mlist/valid? mlist))
             (not (-m//mlist/valid.section? section)))
         ;; Return error value because we don't have valid inputs.
-        :mis/error
+        :mis0/error
 
       ;; Valid section and list; insert value.
       (plist-put mlist section value))))
@@ -197,15 +197,15 @@ returns `:mis/error' if not.
 (defun -m//section/get (key section mlist valid-keys &optional default)
   "Get KEY's value from this mlist's SECTION.
 
-Checks that MLIST is an mlist, and that KEY is a valid mis key (using
-VALID-KEYS) first; returns `:mis/error' if not.
+Checks that MLIST is an mlist, and that KEY is a valid mis0 key (using
+VALID-KEYS) first; returns `:mis0/error' if not.
 
 If MLIST has no SECTION, returns DEFAULT.
 
 If MLIST's SECTION has no KEY, returns DEFAULT.
 "
   (if (-m//input/invalid? key valid-keys)
-      :mis/error
+      :mis0/error
 
     ;; Get key from the section mlist.
     (-m//mlist/get.value key
@@ -215,8 +215,8 @@ If MLIST's SECTION has no KEY, returns DEFAULT.
                          default)))
 ;; (-m//mlist/get.section :string (-m//mlist/ensure.section :string nil))
 ;; (-m//mlist/get.section :string nil)
-;; (-m//section/get :string :string (mis/string/trim t) '(:string :trim :indent :align))
-;; (-m//section/get :string :string (mis/string/string "  testing     ") '(:string :trim :indent :align))
+;; (-m//section/get :string :string (mis0/string/trim t) '(:string :trim :indent :align))
+;; (-m//section/get :string :string (mis0/string/string "  testing     ") '(:string :trim :indent :align))
 
 
 ;; TODO: macro for: (setq x (-m//section/set key value x))
@@ -225,13 +225,13 @@ If MLIST's SECTION has no KEY, returns DEFAULT.
 "
  (let ((mlist (-m//mlist/ensure.section section mlist)))
     (if (-m//input/invalid? key valid-keys)
-        :mis/error
+        :mis0/error
 
       (if-let* ((m-section (-m//mlist/get.section section mlist))
                 (result (-m//mlist/set.value key value m-section)))
           (if (-m//return/invalid? (list m-section result))
               ;; Error out; couldn't get style or set value or something...
-              :mis/error
+              :mis0/error
 
             ;; Ok; Set the style section in the base mlist.
             (-m//mlist/set.section section
@@ -239,7 +239,7 @@ If MLIST's SECTION has no KEY, returns DEFAULT.
                                    mlist))
 
         ;; No section found or result from set value?
-        :mis/error))))
+        :mis0/error))))
 ;; (-m//section/set :trim t :string nil '(:trim :string))
 
 
@@ -256,16 +256,16 @@ Returns list of nil(s) if no KEY or SECTION found.
         (value nil))
     ;; Check all mlists, saving any values we find for the section & key.
     (dolist (mlist mlists)
-      (setq value (-m//section/get key section mlist valid-keys :mis/nil))
-      (unless (-m//return/invalid? value '(:mis/nil))
+      (setq value (-m//section/get key section mlist valid-keys :mis0/nil))
+      (unless (-m//return/invalid? value '(:mis0/nil))
         (push value results)))
 
     ;; Return `results', be it nil or actually filled with some value(s).
     results))
-;; (-m//mlists/get.all :padding :style '((:mis t :string '((:mis :string :trim t)))) '(:padding :width))
-;; (-m//mlists/get.all :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string))
-;; (-m//mlists/get.all :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
-;; (-m//mlists/get.all :string :string (list (mis/string/string "  testing     ") (mis/string/trim t)) '(:string :trim :indent :align))
+;; (-m//mlists/get.all :padding :style '((:mis0 t :string '((:mis0 :string :trim t)))) '(:padding :width))
+;; (-m//mlists/get.all :trim :string '((:mis0 t :string (:mis0 :string :trim :mis0/nil))) '(:trim :string))
+;; (-m//mlists/get.all :indent :string (list (mis0/string/string nil) (mis0/string/indent 'existing)) '(:trim :string :indent))
+;; (-m//mlists/get.all :string :string (list (mis0/string/string "  testing     ") (mis0/string/trim t)) '(:string :trim :indent :align))
 
 
 (defun -m//mlists/get.first (key section mlists valid-keys &optional default)
@@ -273,21 +273,21 @@ Returns list of nil(s) if no KEY or SECTION found.
 
 Returns first match if there are matches found.
 Returns DEFAULT if no matches and default is not nil.
-Else returns `:mis/error'.
+Else returns `:mis0/error'.
 "
   (when (-m//input/invalid? key valid-keys)
-    ;; TODO: Would be nice to have more info than just `:mis/error'.
-    :mis/error)
+    ;; TODO: Would be nice to have more info than just `:mis0/error'.
+    :mis0/error)
 
   (-let* ((results (-m//mlists/get.all key section mlists valid-keys))
           (first (nth 0 results)))
-    ;; Leave `:mis/nil' default alone - the caller wants to know the difference
+    ;; Leave `:mis0/nil' default alone - the caller wants to know the difference
     ;; between "nothing found" and "nil found".
-    (cond ((and (eq default :mis/nil)
+    (cond ((and (eq default :mis0/nil)
                 (null first))
            ;; Yeah, this case is the same, logically, as the next "return
            ;; default when no result", but leave this for its explicitness.
-           :mis/nil)
+           :mis0/nil)
 
           ;; If no first result and default requested, give back the default.
           ((and default
@@ -299,17 +299,17 @@ Else returns `:mis/error'.
            first)
 
           (t
-           :mis/error))))
-;; (-m//mlists/get.first :padding :style '((:mis t :string (:mis :string :trim t))) '(:padding :width) :mis/nil)
-;; These should return `:mis/nil'...
-;; (-m//mlists/get.first :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string) nil)
-;; (-m//mlists/get.first :trim :string '((:mis t :string (:mis :string :trim :mis/nil))) '(:trim :string) t)
+           :mis0/error))))
+;; (-m//mlists/get.first :padding :style '((:mis0 t :string (:mis0 :string :trim t))) '(:padding :width) :mis0/nil)
+;; These should return `:mis0/nil'...
+;; (-m//mlists/get.first :trim :string '((:mis0 t :string (:mis0 :string :trim :mis0/nil))) '(:trim :string) nil)
+;; (-m//mlists/get.first :trim :string '((:mis0 t :string (:mis0 :string :trim :mis0/nil))) '(:trim :string) t)
 ;; This should return the default " "
-;; (-m//mlists/get.first :padding :style '((:mis t :string (:mis :string :trim :mis/nil))) '(:padding :width) " ")
+;; (-m//mlists/get.first :padding :style '((:mis0 t :string (:mis0 :string :trim :mis0/nil))) '(:padding :width) " ")
 ;; This should return 'existing
-;; (-m//mlists/get.first :indent :string (list (mis/string/string nil) (mis/string/indent 'existing)) '(:trim :string :indent))
+;; (-m//mlists/get.first :indent :string (list (mis0/string/string nil) (mis0/string/indent 'existing)) '(:trim :string :indent))
 ;; I want the string...
-;; (-m//mlists/get.first :string :string (list (mis/string/string "  testing     ") (mis/string/trim t)) '(:string :trim :indent :align))
+;; (-m//mlists/get.first :string :string (list (mis0/string/string "  testing     ") (mis0/string/trim t)) '(:string :trim :indent :align))
 
 
 ;;------------------------------------------------------------------------------

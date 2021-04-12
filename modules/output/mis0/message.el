@@ -1,4 +1,4 @@
-;;; mis/init/+message.el -*- lexical-binding: t; -*-
+;;; mis0/init/+message.el -*- lexical-binding: t; -*-
 
 (-m//require 'internal 'mlist)
 
@@ -7,20 +7,20 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defvar -m//init/buffer (generate-new-buffer "mis/init")
-  "Buffer for mis/init messages.")
+(defvar -m//init/buffer (generate-new-buffer "mis0/init")
+  "Buffer for mis0/init messages.")
 
 
 ;;------------------------------------------------------------------------------
 ;; Functions
 ;;------------------------------------------------------------------------------
 
-(defun mis/init/notify (message &rest args)
+(defun mis0/init/notify (message &rest args)
   "Output to `-m//init/buffer' and minibuffer."
-  (minibuffer-message (apply #'mis/init/message message args)))
+  (minibuffer-message (apply #'mis0/init/message message args)))
 
 
-(defun mis/init/message (message &rest args)
+(defun mis0/init/message (message &rest args)
   "Format MESSAGE and ARGS, append as new line in `-m//init/buffer'.
 Returns formatted output."
   (with-current-buffer -m//init/buffer
@@ -35,6 +35,6 @@ Returns formatted output."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; provide to mis and to everyone
+;; provide to mis0 and to everyone
 (-m//provide 'message)
-(provide 'mis/message)
+(provide 'mis0/message)

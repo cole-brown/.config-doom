@@ -587,6 +587,13 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; `right' (default) is probably correct? But trying out `bottom'.
   (customize-set-variable 'org-roam-buffer-position 'bottom)
 
+  ;; Mitigate annoyance of org-roam (on Windows) throwing "Selecting deleted
+  ;; buffer" errors every other time it runs `org-roam-build-cache'.
+  (when (eq system-type 'windows-nt)
+    ;; default value: 'idle-timer
+    (customize-set-variable 'org-roam-db-update-method 'immediate))
+
+
   (map! :leader
         :prefix "nr" ;; notes -> roam
         :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate

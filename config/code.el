@@ -39,6 +39,21 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Auto-Formatting
+;;------------------------------------------------------------------------------
+
+;; Update doom's presets for :format/+onsave's enabled modes.
+(setq +format-on-save-enabled-modes
+      ;; Starting with `not' inverts this list's meaning to "everything except:"
+      '(not emacs-lisp-mode  ; elisp's mechanisms are good enough
+            sql-mode         ; sqlformat is currently broken
+            tex-mode         ; latexindent is broken
+            latex-mode
+            python-mode      ; Don't even want to know what this would do if it has one.
+            csharp-mode))    ; Work has its own formatting style.
+
+
+;;------------------------------------------------------------------------------
 ;; Comments
 ;;------------------------------------------------------------------------------
 

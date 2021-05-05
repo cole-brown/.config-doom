@@ -94,8 +94,9 @@
 
   ;; Adjust sequences to be more nicer...
 
-  (let ((wrap "[]")
-        ;; (wrap "「」")
+  (let ((wrap "├─┤")
+        ;; (wrap "[ ]")
+        ;; (wrap "「 」")
         )
     (setq org-todo-keywords
           `((sequence  ;; Big Words sequence.
@@ -110,7 +111,7 @@
              ,(-s//org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
              ,(-s//org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
             (sequence ;; Checkboxes sequence.
-             ,(-s//org/todo.keyword " " wrap "T")    ; A task that needs doing
+             ,(-s//org/todo.keyword "_" wrap "T")    ; A task that needs doing
              ,(-s//org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
              ;; ,(-s//org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
              ;; ,(-s//org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
@@ -124,7 +125,7 @@
 
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
-          (list (list (-s//org/todo.keyword "TODO" wrap) 'warning 'bold)
+          (list (list (-s//org/todo.keyword "TODO" wrap)    '-s//zenburn/face/org/todo.keyword/todo)
                 (cons (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
                 (cons (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
@@ -136,7 +137,7 @@
                 (cons (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
                 (cons (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-                (cons (-s//org/todo.keyword "DONE" wrap)    'org-done)
+                (list (-s//org/todo.keyword "DONE" wrap)    'org-done '-s//zenburn/face/org/todo.keyword/background)
                 (cons (-s//org/todo.keyword "X" wrap)       'org-done)
                 (cons (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
                 (cons (-s//org/todo.keyword "X" wrap)       'org-done)

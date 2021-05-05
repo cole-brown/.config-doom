@@ -7,13 +7,9 @@
 ;;------------------------------------------------------------------------------
 
 (defconst -m//path/root
-  ;; Our parent directory.
-  (file-name-directory
-   ;; Strip slash out so we can go up a dir...
-   (directory-file-name
-    ;; Start with the directory of this file.
-    (file-name-directory load-file-name)))
-  "The root of mis0' elisp should be a directory up.")
+  ;; The directory of this file.
+  (file-name-directory load-file-name)
+  "The root of mis0' elisp should be this file's directory.")
 
 
 (defvar -m//load/features '()

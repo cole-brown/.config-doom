@@ -61,15 +61,30 @@
 
 ;; Our config files for different bits of emacs/doom/packages are in the
 ;; config sub-dir.
-(spy/config.root/set "config")
+(let* ((file-path-this (if load-in-progress
+                          (file-name-directory load-file-name)
+                        (buffer-file-name)))
+      (directory-this (file-name-directory file-path-this)))
+  (spy/config.root/set (spy/path/join directory-this "config")))
 
 
 ;;------------------------------------------------------------------------------
 ;; Emacs Set-Up.
 ;;------------------------------------------------------------------------------
 
+(spy/config 'emacs)
 (spy/config 'daemons)
 (spy/config 'completion)
+
+
+;;------------------------------------------------------------------------------
+;; Look & Feel
+;;------------------------------------------------------------------------------
+
+(spy/config 'theme 'config)
+(spy/config 'ui)
+(spy/config 'whitespace)
+
 
 ;;------------------------------------------------------------------------------
 ;; Cole Brown, Multi-pass.
@@ -77,7 +92,7 @@
 
 (spy/config 'identity)
 
-;; TODO: need to change whatever snipped doom uses for new .el files. My github
+;; TODO: need to change whatever snippet doom uses for new .el files. My github
 ;; username is not my computer username.
 
 
@@ -98,13 +113,6 @@
 
 ;; Get rid of some Doom functionality...
 (spy/config 'parenthesis)
-
-
-;;------------------------------------------------------------------------------
-;; Look & Feel
-;;------------------------------------------------------------------------------
-
-(spy/config 'ui)
 
 
 ;;------------------------------------------------------------------------------

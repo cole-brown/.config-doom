@@ -10,7 +10,7 @@
 
 ;; Load debug if not undesired...
 (unless (featurep! -debug)
-  (load! "../internal/+debug"))
+  (load! "+debug"))
 
 
 ;;------------------------------------------------------------------------------
@@ -23,7 +23,6 @@
 (-m//require 'internal 'const)
 (-m//require 'internal 'valid)
 (-m//require 'internal 'mlist)
-(-m//require 'internal 'mout)
 
 ;;------------------
 ;; Args / Sections

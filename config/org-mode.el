@@ -125,7 +125,7 @@
 
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
-          (list (list (-s//org/todo.keyword "TODO" wrap)    '-s//zenburn/face/org/todo.keyword/todo)
+          (list (list (-s//org/todo.keyword "TODO" wrap)    'spy/theme.face/org.todo.keyword/todo)
                 (list (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
                 (list (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
@@ -137,14 +137,14 @@
                 (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
                 (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-                (list (-s//org/todo.keyword "DONE" wrap)    'org-done '-s//zenburn/face/org/todo.keyword/background)
-                (list (-s//org/todo.keyword "X" wrap)       'org-done)
-                (list (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
-                (list (-s//org/todo.keyword "X" wrap)       'org-done)
-                (list (-s//org/todo.keyword "FAILURE" wrap) 'org-done '-s//zenburn/face/org/todo.keyword/background)
-                (list (-s//org/todo.keyword "✘" wrap)       'org-done)
-                (list (-s//org/todo.keyword "KILLED" wrap)  'org-done '-s//-s//zenburn/face/org/todo.keyword/background)
-                (list (-s//org/todo.keyword "÷" wrap)       'org-done)))
+                (list (-s//org/todo.keyword "DONE" wrap)    'spy/theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "SUCCESS" wrap) 'spy/theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "FAILURE" wrap) 'spy/theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "✘" wrap)       'spy/theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "KILLED" wrap)  'spy/theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "÷" wrap)       'spy/theme.face/org.todo.keyword/done.bad)))
 
     ;; I guess this guy is covered by `hl-todo' instead of `org'?
     ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)

@@ -18,26 +18,35 @@
                ;; :underline t
                )))
 
-    ;; Why does `defface' end me up with just a bold font - no fg/bg? Because
-    ;; theme has to be loaded already. Changed config/theme/config.el to call
-    ;; `load-theme' in addition to setting variable.
-    (defface -s//zenburn/face/org/todo.keyword/todo
+    (face-spec-set 'spy/theme.face/org.todo.keyword/todo
       (list (cons
              ;; display type
              t
              ;; attributes
-             face-plist))
-      "Face for todo keyword in todo sequence."
-      :group 'doom-zenburn-theme)
+             face-plist)))
 
-    (defface -s//zenburn/face/org/todo.keyword/background
+    (face-spec-set 'spy/theme.face/org.todo.keyword/background
       (list (cons
              ;; display type
              t
              ;; attributes
-             (list :background (doom-color 'bg-alt))))
-      "Face for todo keyword in todo sequence."
-      :group 'doom-zenburn-theme))
+             (list :background (doom-color 'bg-alt)))))
+
+    (face-spec-set 'spy/theme.face/org.todo.keyword/done.good
+      (list (cons
+             ;; display type
+             t
+             ;; attributes
+             (list :background (doom-color 'bg-alt)
+                   :inherit 'org-done))))
+
+    (face-spec-set 'spy/theme.face/org.todo.keyword/done.bad
+      (list (cons
+             ;; display type
+             t
+             ;; attributes
+             (list :background (doom-color 'bg-alt)
+                   :foreground (doom-darken (doom-color 'red-4) 0.1))))))
 
   (custom-theme-set-faces! 'doom-zenburn
     ;;---

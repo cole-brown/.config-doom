@@ -61,11 +61,29 @@
 
 ;; Our config files for different bits of emacs/doom/packages are in the
 ;; config sub-dir.
-(let* ((file-path-this (if load-in-progress
-                          (file-name-directory load-file-name)
-                        (buffer-file-name)))
-      (directory-this (file-name-directory file-path-this)))
-  (spy/config.root/set (spy/path/join directory-this "config")))
+(defun spy/doom/find-user-root ()
+  "Finds the user's base doom dir by walking down from this file's path."
+  (let* ((file-path-this (if load-in-progress
+                             (file-name-directory load-file-name)
+                           (buffer-file-name)))
+         (directory-path (directory-file-name
+                          (file-name-directory file-path-this)))
+         (directory-path-prev "")
+         directory-doom)
+    (while (and directory-path
+                (not (string= directory-path directory-path-prev)))
+      (let ((dirname (file-name-nondirectory directory-path)))
+        (if (or (string= dirname ".doom.d") ;; for: ~/
+                (string= dirname "doom"))   ;; for: ~/.config
+            (setq directory-doom directory-path
+                  directory-path nil)
+          (setq directory-path-prev directory-path
+                directory-path (directory-file-name
+                                (file-name-directory directory-path))))))
+    directory-doom))
+;; (spy/doom/find-user-root)
+
+(spy/config.root/set (spy/path/join (spy/doom/find-user-root) "config"))
 
 
 ;;------------------------------------------------------------------------------

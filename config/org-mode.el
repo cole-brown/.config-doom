@@ -126,25 +126,25 @@
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
           (list (list (-s//org/todo.keyword "TODO" wrap)    '-s//zenburn/face/org/todo.keyword/todo)
-                (cons (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
+                (list (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
-                (cons (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
-                (cons (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
+                (list (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
+                (list (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
 
-                (cons (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
-                (cons (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
-                (cons (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
-                (cons (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
-                (cons (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
+                (list (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
+                (list (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+                (list (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
+                (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
+                (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
                 (list (-s//org/todo.keyword "DONE" wrap)    'org-done '-s//zenburn/face/org/todo.keyword/background)
-                (cons (-s//org/todo.keyword "X" wrap)       'org-done)
-                (cons (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
-                (cons (-s//org/todo.keyword "X" wrap)       'org-done)
-                (cons (-s//org/todo.keyword "FAILURE" wrap) 'org-done)
-                (cons (-s//org/todo.keyword "✘" wrap)       'org-done)
-                (cons (-s//org/todo.keyword "KILLED" wrap)  'org-done)
-                (cons (-s//org/todo.keyword "÷" wrap)       'org-done)))
+                (list (-s//org/todo.keyword "X" wrap)       'org-done)
+                (list (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
+                (list (-s//org/todo.keyword "X" wrap)       'org-done)
+                (list (-s//org/todo.keyword "FAILURE" wrap) 'org-done '-s//zenburn/face/org/todo.keyword/background)
+                (list (-s//org/todo.keyword "✘" wrap)       'org-done)
+                (list (-s//org/todo.keyword "KILLED" wrap)  'org-done '-s//-s//zenburn/face/org/todo.keyword/background)
+                (list (-s//org/todo.keyword "÷" wrap)       'org-done)))
 
     ;; I guess this guy is covered by `hl-todo' instead of `org'?
     ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)

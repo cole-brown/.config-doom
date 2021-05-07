@@ -1,4 +1,4 @@
-;;; cconfig/org-mode.el -*- lexical-binding: t; -*-
+;;; ccconfig/org-mode.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -105,7 +105,9 @@
              ,(-s//org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
              ,(-s//org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
              ,(-s//org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
+             ,(-s//org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
              "|"
+             ,(-s//org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
              ,(-s//org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
              ,(-s//org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
              ,(-s//org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
@@ -117,7 +119,9 @@
              ;; ,(-s//org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
              ,(-s//org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
              ,(-s//org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
+             ,(-s//org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
              "|"
+             ,(-s//org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
              ,(-s//org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
              ,(-s//org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
              ,(-s//org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
@@ -133,6 +137,10 @@
 
                 (list (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
                 (list (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+                (list (-s//org/todo.keyword "INFO" wrap)    'spy/theme.face/org.todo.keyword/info)
+                (list (-s//org/todo.keyword "ⓘ" wrap)       'spy/theme.face/org.todo.keyword/info)
+                (list (-s//org/todo.keyword "─" wrap)       'spy/theme.face/org.todo.keyword/null)
+                (list (-s//org/todo.keyword "∅" wrap)       'spy/theme.face/org.todo.keyword/null)
                 (list (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
                 (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
                 (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)

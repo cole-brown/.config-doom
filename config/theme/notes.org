@@ -4,7 +4,10 @@
 #+DATE:        [2021-05-04]
 
 
-* Doom theme files location
+* ├INFO───┤ Doom theme files location
+:LOGBOOK:
+- State "├INFO───┤"  from              [2021-05-07 Fri 04:20]
+:END:
 
 Doom themes are here:
   - D:\home\spydez\.emacs.d\.local\straight\repos\emacs-doom-themes\themes
@@ -30,6 +33,12 @@ How to customize:
   ;;  `(outline-1 :foreground ,(doom-color 'red))
   ;;  `(outline-2 :background ,(doom-color 'blue)))
 
+
+* ├───────┤ ---> EMPTY <---
+CLOSED: [2021-05-07 Fri 04:22]
+:LOGBOOK:
+- State "├null───┤"  from              [2021-05-07 Fri 04:22]
+:END:
 * org-document-info-keyword - not as dark
 
 #+BEGIN_SRC emacs-lisp

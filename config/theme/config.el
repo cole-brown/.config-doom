@@ -55,6 +55,27 @@
   :group 'doom-themes)
 
 
+(defface spy/theme.face/org.todo.keyword/info
+  (list (cons
+         ;; display type
+         t
+         ;; attributes
+         (list
+          :inherit 'org-done)))
+  "Face for todo keyword in todo sequence."
+  :group 'doom-themes)
+
+(defface spy/theme.face/org.todo.keyword/null
+  (list (cons
+         ;; display type
+         t
+         ;; attributes
+         (list
+          :inherit 'org-done)))
+  "Face for todo keyword in todo sequence."
+  :group 'doom-themes)
+
+
 ;;------------------------------------------------------------------------------
 ;; Set Theme
 ;;------------------------------------------------------------------------------

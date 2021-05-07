@@ -46,7 +46,24 @@
              t
              ;; attributes
              (list :background (doom-color 'bg-alt)
-                   :foreground (doom-darken (doom-color 'red-4) 0.1))))))
+                   :foreground (doom-darken (doom-color 'red-4) 0.1)))))
+
+    (face-spec-set 'spy/theme.face/org.todo.keyword/info
+      (list (cons
+             ;; display type
+             t
+             ;; attributes
+             (list :background (doom-color 'bg-alt)
+                   :foreground (doom-color 'base7)))))
+
+    (face-spec-set 'spy/theme.face/org.todo.keyword/null
+      (list (cons
+             ;; display type
+             t
+             ;; attributes
+             (list :background (doom-color 'bg-alt)
+                   :foreground (doom-color 'base7))))))
+
 
   (custom-theme-set-faces! 'doom-zenburn
     ;;---

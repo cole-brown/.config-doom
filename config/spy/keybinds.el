@@ -1,7 +1,11 @@
 ;;; config/spy/keybinds.el -*- lexical-binding: t; -*-
 
 
+(require 'hydra)
+
+
 (spy/require :spy 'io 'signature)
+(spy/require :config 'spy 'art)
 
 
 ;;------------------------------------------------------------------------------
@@ -122,59 +126,6 @@ the fill prefix-map."
     (fill-region from to justify)))
 
 
-;;------------------------------------------------------------------------------
-;; Manual Unicode Box Drawing Hydra
-;;------------------------------------------------------------------------------
-
-;; Wanted this to be `-s//hydra/art.box' but then hydra fucks up the names...
-;; Turns the body into `-s//hydra/art\\\.box/body'.
-;; Also I forgot how many functions hydra spews out. Fucks up my namespace.
-;;
-;; Also also: Pink hydra gets fucked up sometimes. Evil thinks it's in charge
-;; and the hydra thinks its still running and they hate each other... Especially
-;; if you had the misfortune to only have 'ESC' as your exit.
-(defhydra _//hydra/art-box (:color amaranth ;; default to warn if non-hydra key
-                            ;;:color pink   ;; defaults to not exit unless explicit
-                            ;;:idle 0.75    ;; no help for x seconds
-                            :hint none)     ;; no hint - just docstr)
-  "
-Draw box characters. Left-hand \"Grid\" layout according to Dvorak keyborad.
-_'_: ?'?  _,_: ?,?  _._: ?.?     _g_: ?g?
-_a_: ?a?  _o_: ?o?  _e_: ?e?     _G_: ?G?
-_;_: ?;?  _q_: ?q?  _j_: ?j?
-
-_p_: ?p?  _u_: ?u?
-"
-  ("'" (funcall #'insert "┌") "┌")
-  ("," (funcall #'insert "┬") "┬")
-  ("." (funcall #'insert "┐") "┐")
-  ("a" (funcall #'insert "├") "├")
-  ("o" (funcall #'insert "┼") "┼")
-  ("e" (funcall #'insert "┤") "┤")
-  (";" (funcall #'insert "└") "└")
-  ("q" (funcall #'insert "┴") "┴")
-  ("j" (funcall #'insert "┘") "┘")
-  ("p" (funcall #'insert "─") "─")
-  ("u" (funcall #'insert "│") "│")
-
-  ("G"   nil                 "quit (to insert state)" :color blue)
-  ("g"   (evil-normal-state) "quit (to normal state)" :color blue)
-  ("C-g" (evil-normal-state) "quit (to normal state)" :color blue))
-;; §-TODO-§ [2019-10-21]: instead of just insert, try to insert or overwrite,
-;; and then move in the proper direction? Or does pink hydra make moving around
-;; acceptable? Still could do overwrite instead of insert when applicable.
-
-
-(defun smd/art.box/draw ()
-  "`spy' namespaced function to get into the box drawing hydra.
-"
-  (interactive)
-  (evil-insert 0)
-  (call-interactively #'_//hydra/art-box/body))
-;; ┌────┐
-;; ├────┤
-;; │ hi │
-;; └────┘
 
 
 ;;------------------------------------------------------------------------------
@@ -231,14 +182,8 @@ _p_: ?p?  _u_: ?u?
        ;;------------------------------
        ;; Join
        ;;------------------------------
-       (:prefix ("j" . "Join")
-        ;; Lines (Emacs)
-        :desc "↑ Line (Trim)"                  "c" #'join-line
-        :desc "↓ Line (Trim)"                  "t" (lambda () (interactive) (join-line 1))
+       :desc "Join Lines"    "j" #'spy:join/lines
 
-        ;; Lines (Evil)
-        :desc "↑ Line (Smart Comments): (J)"  "," #'evil-join
-        :desc "↑ Line (As-Is): (g J)"         "<" #'evil-join-whitespace)
 
        ;;------------------------------
        ;; Transpose
@@ -260,8 +205,8 @@ _p_: ?p?  _u_: ?u?
        ;;------------------------------
        ;; Box Drawning
        ;;------------------------------
-       ;; Using a blue hydra so it stays in the transient map.
-       :desc "Unicode Box"                  "b" #'smd/art.box/draw
+       ;; Hydra
+       :desc "Unicode Box"                  "b" #'spy:art.box/draw
 
        ;;------------------------------
        ;; Signatures

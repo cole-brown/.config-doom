@@ -203,6 +203,7 @@
        buffer              ; spy/buffer:   Buffer, line, point, etc functions.
        hook                ; spy/hook:     Hook helper macros/functions.
        org                 ; spy/org:      Org-Mode helpers. Must be after buffer.
+       hydra               ; spy/hydra:    Helpers for Hydra package.
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
        jerky               ; spy/jerky:   For key/value tree.

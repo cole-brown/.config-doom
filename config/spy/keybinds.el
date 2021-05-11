@@ -5,7 +5,7 @@
 
 
 (spy/require :spy 'io 'signature)
-(spy/require :config 'spy 'art)
+(spy/config 'spy 'art)
 
 
 ;;------------------------------------------------------------------------------

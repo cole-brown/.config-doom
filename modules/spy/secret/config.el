@@ -16,7 +16,7 @@
 ;; Load our specific system's config, if we have one.
 ;;------------------------------------------------------------------------------
 
-(spy:/secret/load 'emacs "config")
+(sss:secret/load 'emacs "config")
 
 
 ;;------------------------------------------------------------------------------

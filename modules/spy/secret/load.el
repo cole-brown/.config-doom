@@ -15,7 +15,7 @@
 ;; Secret-Getter
 ;;------------------------------------------------------------------------------
 
-(defun spy:/secret/load (key file)
+(defun sss:secret/load (key file)
   "Load FILE (do not include '.el[c]') from this system's secrets
 directory indicated by KEY, if it has secrets.
 
@@ -33,7 +33,7 @@ And it must have FILE in <dir>.
             (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
             (name (concat path ".el")))
       (progn
-        (message "spy:/secret/load(%S %S) ->\n%S %S %S %S %S" key file hash id dir path name)
+        (message "sss:secret/load(%S %S) ->\n%S %S %S %S %S" key file hash id dir path name)
 
         ;; We got all the vars from jerky, so check for existance now.
         ;;    Do we have valid-ish data to check?
@@ -92,7 +92,7 @@ And it must have FILE in <dir>.
   nil)
 
 
-(defun spy:/secret/load.path (&rest path)
+(defun sss:secret/load.path (&rest path)
   "Attempts to load file rooted at jerky key:
   - 'system 'path 'secret 'emacs
 
@@ -109,10 +109,10 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
       (cond ((or (null filepath)
                  (not (stringp filepath)))
              (mis0/init/message "%s: Cannot load path; it is not a string: %s"
-                                'spy:/secret/load
+                                'sss:secret/load
                                 filepath)
              (warn "%s: Cannot load path; it is not a string: %s"
-                   'spy:/secret/load
+                   'sss:secret/load
                    filepath)
              nil)
 
@@ -120,11 +120,11 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
             ;; Add ".el" for actual file check.
             ((not (file-exists-p name))
              (mis0/init/message "%s: Cannot load path; it does not exist: %s"
-                                'spy:/secret/load
+                                'sss:secret/load
                                 name)
              ;; Don't warn; some just don't exist.
              ;; (warn "%s: Cannot load path; it does not exist: %s"
-             ;;       'spy:/secret/load
+             ;;       'sss:secret/load
              ;;       name)
              nil)
 
@@ -141,7 +141,7 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
                                "   root: %s\n"
                                "   path: %s\n"
                                "   name: %s\n")
-                       'spy:/secret/load
+                       'sss:secret/load
                        path
                        hash
                        id

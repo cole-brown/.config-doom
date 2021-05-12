@@ -85,7 +85,7 @@
   ;;------------------------------
 
   ;; Connect my hooks up.
-  (org-mode . -s//hook/org/whitespace-mode)
+  (org-mode . sss:hook/org/whitespace-mode)
 
 
   ;;------------------------------

@@ -44,12 +44,12 @@ INPUTS can be anything that `format' can deal with as a \"%s\" input type.
 ;; Hashes
 ;;------------------------------------------------------------------------------
 
-(defun -s//hash/input->str (input)
+(defun sss:hash/input->str (input)
   "Converts a single INPUT (string or symbol) into a string.
 "
   (cond ((null input)
          (error "%s: Cannot hash 'nil' INPUT. %s Input: %s"
-                "-s//hash/input->str"
+                "sss:hash/input->str"
                 "Not a string, symbol, or list of strings/symbols."
                 input))
 
@@ -64,11 +64,11 @@ INPUTS can be anything that `format' can deal with as a \"%s\" input type.
          ;; Fallthrough: Bad Input.
          (t
           (error "%s: Don't know what to do with INPUT. %s Input: %s"
-                 "-s//hash/input->str"
+                 "sss:hash/input->str"
                  "Not a string, symbol, or list of strings/symbols?"
                  input))))
-;; (-s//hash/input->str "jeff")
-;; (-s//hash/input->str 'jeff)
+;; (sss:hash/input->str "jeff")
+;; (sss:hash/input->str 'jeff)
 
 
 (defun spy:hash/full (input &optional hash)
@@ -94,11 +94,11 @@ If HASH is nil, this will use the default defined in `spy:hash/default'.
           ;; String or symbol? Turn it into a string.
           ((or (stringp input)
                (symbolp input))
-           (setq input-string (-s//hash/input->str input)))
+           (setq input-string (sss:hash/input->str input)))
 
           ;; A list? Stringify and concat together.
           ((listp input)
-           (setq input-string (mapconcat #'-s//hash/input->str input " ")))
+           (setq input-string (mapconcat #'sss:hash/input->str input " ")))
 
           ;; Fallthrough: Bad Input.
           (t

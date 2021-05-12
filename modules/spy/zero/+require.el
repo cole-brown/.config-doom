@@ -16,7 +16,7 @@
 ;; Duplicate Functions
 ;;------------------------------------------------------------------------------
 
-(defun -s//provide/normalize (input)
+(defun sss:provide/normalize (input)
   "Normalize INPUT to a string. Removes all colons.
 "
   (replace-regexp-in-string
@@ -27,10 +27,10 @@
           input)
          (t
           (error "%s: Don't know how to normalize type of: %S"
-                 "-s//provide/normalize" input)))))
-;; (-s//provide/normalize 'jeff)
-;; (-s//provide/normalize :jeff)
-;; (-s//provide/normalize ":jeff")
+                 "sss:provide/normalize" input)))))
+;; (sss:provide/normalize 'jeff)
+;; (sss:provide/normalize :jeff)
+;; (sss:provide/normalize ":jeff")
 
 
 ;;------------------------------------------------------------------------------
@@ -72,15 +72,15 @@ symbol-name: 'spy:mad-science/transmogrifier'
            ;; Non-inputs:
            (final-name nil)
            (separator "/"))
-       (setq final-name (concat (-s//provide/normalize ,mod-name)
+       (setq final-name (concat (sss:provide/normalize ,mod-name)
                                 separator
-                                (-s//provide/normalize ,feature-name)))
+                                (sss:provide/normalize ,feature-name)))
        (when (not (null ,sub-names))
          (dolist (sub ,sub-names final-name)
            (setq final-name
                  (concat final-name
                          separator
-                         (-s//provide/normalize sub)))))
+                         (sss:provide/normalize sub)))))
 
        ;; Create/return the symbol in the obarray and provide the feature by
        ;; that name.
@@ -136,15 +136,15 @@ Examples:
            ;; Non-inputs:
            (final-name nil)
            (separator "/"))
-       (setq final-name (concat (-s//provide/normalize ,cat-name)
+       (setq final-name (concat (sss:provide/normalize ,cat-name)
                                 separator
-                                (-s//provide/normalize ,mod-name)))
+                                (sss:provide/normalize ,mod-name)))
        (when (not (null ,sub-names))
          (dolist (sub ,sub-names final-name)
            (setq final-name
                  (concat final-name
                          separator
-                         (-s//provide/normalize sub)))))
+                         (sss:provide/normalize sub)))))
 
        ;; Create/return the symbol in the obarray and require the module by
        ;; that symbol in that filepath.

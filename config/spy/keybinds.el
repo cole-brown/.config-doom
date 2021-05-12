@@ -80,7 +80,7 @@ indicated by START and END.
     (fill-paragraph nil)))
 
 
-(defun -s//fill/paragraph/fn-for-mode ()
+(defun sss:fill/paragraph/fn-for-mode ()
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill hydra. Separated the 'get func' out here so I can see if
 in a mode with a special fill for hydra hinting."
@@ -114,7 +114,7 @@ in a mode with a special fill for hydra hinting."
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
   (interactive)
-  (funcall (-s//fill/paragraph/fn-for-mode) justify))
+  (funcall (sss:fill/paragraph/fn-for-mode) justify))
 
 
 (defun smd/fill/region/single-line (&optional justify)
@@ -168,7 +168,7 @@ the fill prefix-map."
         :desc "Line"                "l" #'smd/fill/region/single-line
 
         ;; Paragraphs
-        :desc (if (eq (-s//fill/paragraph/fn-for-mode) #'fill-paragraph)
+        :desc (if (eq (sss:fill/paragraph/fn-for-mode) #'fill-paragraph)
                   "Default Fill ¶"
                 "Mode-Aware Fill ¶")
         "p" #'smd/fill/paragraph/per-mode

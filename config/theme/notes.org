@@ -175,7 +175,7 @@ org-todo-keyword-faces
 (let ((fg (doom-darken (doom-color 'magenta) 0.1))
       (bg (doom-color 'bg-alt)))
   (face-spec-set
-   '-s//zenburn/face/org/todo.keyword/todo
+   'sss:zenburn/face/org/todo.keyword/todo
    `((t  ;; display type
       ;; Attributes plist:
       :foreground ,fg
@@ -204,26 +204,26 @@ org-todo-keyword-faces
 
 (let ((wrap "├─┤"))
   (setq org-todo-keyword-faces
-        (list (list (-s//org/todo.keyword "TODO" wrap)    '-s//zenburn/face/org/todo.keyword/todo)
-              (cons (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
+        (list (list (sss:org/todo.keyword "TODO" wrap)    'sss:zenburn/face/org/todo.keyword/todo)
+              (cons (sss:org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
-              (cons (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
-              (cons (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
+              (cons (sss:org/todo.keyword "CURRENT" wrap) '+org-todo-active)
+              (cons (sss:org/todo.keyword "▶" wrap)       '+org-todo-active)
 
-              (cons (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
-              (cons (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
-              (cons (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
-              (cons (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
-              (cons (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
+              (cons (sss:org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
+              (cons (sss:org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+              (cons (sss:org/todo.keyword "?" wrap)       '+org-todo-onhold)
+              (cons (sss:org/todo.keyword "…" wrap)       '+org-todo-onhold)
+              (cons (sss:org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-              (cons (-s//org/todo.keyword "DONE" wrap)    'org-done)
-              (cons (-s//org/todo.keyword "X" wrap)       'org-done)
-              (cons (-s//org/todo.keyword "SUCCESS" wrap) 'org-done)
-              (cons (-s//org/todo.keyword "X" wrap)       'org-done)
-              (cons (-s//org/todo.keyword "FAILURE" wrap) 'org-done)
-              (cons (-s//org/todo.keyword "✘" wrap)       'org-done)
-              (cons (-s//org/todo.keyword "KILLED" wrap)  'org-done)
-              (cons (-s//org/todo.keyword "÷" wrap)       'org-done))))
+              (cons (sss:org/todo.keyword "DONE" wrap)    'org-done)
+              (cons (sss:org/todo.keyword "X" wrap)       'org-done)
+              (cons (sss:org/todo.keyword "SUCCESS" wrap) 'org-done)
+              (cons (sss:org/todo.keyword "X" wrap)       'org-done)
+              (cons (sss:org/todo.keyword "FAILURE" wrap) 'org-done)
+              (cons (sss:org/todo.keyword "✘" wrap)       'org-done)
+              (cons (sss:org/todo.keyword "KILLED" wrap)  'org-done)
+              (cons (sss:org/todo.keyword "÷" wrap)       'org-done))))
 
 "hello there"
 #+END_SRC

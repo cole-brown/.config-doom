@@ -9,13 +9,13 @@
 ;; Set Root.
 ;;------------------------------------------------------------------------------
 
-(defconst -s//package.jerky.key "path/doom/package/root")
+(defconst sss:package.jerky.key "path/doom/package/root")
 
 
 (defun spy:package.root/set (path)
   "Set the root path (can be relative) that `spy:package' will use.
 "
-  (jerky/set -s//package.jerky.key
+  (jerky/set sss:package.jerky.key
              :value path
              :docstr "Root (can be relative) path for `spy:package'."))
 
@@ -44,7 +44,7 @@ This will load file: \"package/jeff/jill.el(c)\"
     ;; Eval inputs once.
     `(let* ((,path-input (spy:string/symbol/normalize ,@path))
             ;; Non-inputs:
-            (root        (jerky/get -s//package.jerky.key))
+            (root        (jerky/get sss:package.jerky.key))
             (final-name  (apply #'spy:path/join root ,path-input))
             (package-name (apply #'spy:string/concat "/" ,path-input)))
 

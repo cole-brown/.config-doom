@@ -4,7 +4,7 @@
 
 
 ;; http://kitchingroup.cheme.cmu.edu/blog/2013/05/05/Getting-keyword-options-in-org-files/
-(defun -s//org/keywords.get ()
+(defun sss:org/keywords.get ()
   "Parse the buffer and return a cons list of (property . value)
 from lines like:
 #+PROPERTY: value
@@ -12,14 +12,14 @@ from lines like:
   (org-element-map (org-element-parse-buffer 'element) 'keyword
                    (lambda (keyword) (cons (org-element-property :key keyword)
                                            (org-element-property :value keyword)))))
-;; (-s//org/keywords.get)
+;; (sss:org/keywords.get)
 
 
 ;; http://kitchingroup.cheme.cmu.edu/blog/2013/05/05/Getting-keyword-options-in-org-files/
 (defun spy:org/keyword.get (keyword)
   "Get the value of a KEYWORD in the form of #+KEYWORD: value
 "
-  (cdr (assoc keyword (-s//org/keywords.get))))
+  (cdr (assoc keyword (sss:org/keywords.get))))
 ;; (spy:org/keyword.get "TICKET-ID")
 
 
@@ -60,12 +60,12 @@ from lines like:
        ;; Move past keyword to its value.
        (forward-to-word 1)
        ;; Delete old id and replace with new id.
-       (-s//buffer/delete.word 1)
+       (sss:buffer/delete.word 1)
        (insert value)
        ))))
 
 
-(defun -s//org/todo.keyword (word wrap
+(defun sss:org/todo.keyword (word wrap
                                   &optional
                                   key on-enter on-exit-if)
   "Creates an org-todo-keyword with WORD.
@@ -162,14 +162,14 @@ notes.
                          ;; on-exit-if: notes, timestamp, or nothing.
                          exit)))
          keyword-string))))
-;; (-s//org/todo.keyword "bob" "├─┤")
-;; (-s//org/todo.keyword "bob" "[-]"
-;; (-s//org/todo.keyword "bob" "[-]" "b")
-;; (-s//org/todo.keyword "bob" "[-]" "b" 'timestamp)
-;; (-s//org/todo.keyword "bob" "[-]" "b" 'notes)
-;; (-s//org/todo.keyword "bob" "[-]" "b" nil 'notes)
-;; (-s//org/todo.keyword "bob" "[-]" "b" nil 'timestamp)
-;; (-s//org/todo.keyword "bob" "[-]" "b" 'timestamp 'notes)
+;; (sss:org/todo.keyword "bob" "├─┤")
+;; (sss:org/todo.keyword "bob" "[-]"
+;; (sss:org/todo.keyword "bob" "[-]" "b")
+;; (sss:org/todo.keyword "bob" "[-]" "b" 'timestamp)
+;; (sss:org/todo.keyword "bob" "[-]" "b" 'notes)
+;; (sss:org/todo.keyword "bob" "[-]" "b" nil 'notes)
+;; (sss:org/todo.keyword "bob" "[-]" "b" nil 'timestamp)
+;; (sss:org/todo.keyword "bob" "[-]" "b" 'timestamp 'notes)
 
 
 (defun smd/org/convert.todo (skip-bare)
@@ -182,13 +182,13 @@ notes.
      (unless skip-bare
        (let* ((wrap "[]")
               (replacements
-               `(("TODO"      . ,(-s//org/todo.keyword "TODO" wrap))
-                 ("STARTED"   . ,(-s//org/todo.keyword "CURRENT" wrap))
-                 ("WAITING"   . ,(-s//org/todo.keyword "WAITING" wrap))
-                 ("DONE"      . ,(-s//org/todo.keyword "DONE" wrap))
-                 ("SUCCESS"   . ,(-s//org/todo.keyword "SUCCESS" wrap))
-                 ("FAILURE"   . ,(-s//org/todo.keyword "FAILURE" wrap))
-                 ("CANCELLED" . ,(-s//org/todo.keyword "KILLED" wrap)))))
+               `(("TODO"      . ,(sss:org/todo.keyword "TODO" wrap))
+                 ("STARTED"   . ,(sss:org/todo.keyword "CURRENT" wrap))
+                 ("WAITING"   . ,(sss:org/todo.keyword "WAITING" wrap))
+                 ("DONE"      . ,(sss:org/todo.keyword "DONE" wrap))
+                 ("SUCCESS"   . ,(sss:org/todo.keyword "SUCCESS" wrap))
+                 ("FAILURE"   . ,(sss:org/todo.keyword "FAILURE" wrap))
+                 ("CANCELLED" . ,(sss:org/todo.keyword "KILLED" wrap)))))
          (dolist (replacement replacements)
            (funcall-interactively #'query-replace
                                   (car replacement) (cdr replacement)
@@ -198,47 +198,47 @@ notes.
      ;; "[TODO   ]" -> "├TODO───┤"
      (let* ((wrap "[ ]")
             (replacements/old (list
-                               (-s//org/todo.keyword "TODO" wrap)
-                               (-s//org/todo.keyword "PROJECT" wrap)
-                               (-s//org/todo.keyword "CURRENT" wrap)
-                               (-s//org/todo.keyword "WAITING" wrap)
-                               (-s//org/todo.keyword "HOLDING" wrap)
-                               (-s//org/todo.keyword "DONE" wrap)
-                               (-s//org/todo.keyword "SUCCESS" wrap)
-                               (-s//org/todo.keyword "FAILURE" wrap)
-                               (-s//org/todo.keyword "KILLED" wrap)
-                               (-s//org/todo.keyword " " wrap)
-                               (-s//org/todo.keyword "▶" wrap)
-                               (-s//org/todo.keyword "-" wrap)
-                               (-s//org/todo.keyword "?" wrap)
-                               (-s//org/todo.keyword "…" wrap)
-                               (-s//org/todo.keyword "⁈" wrap)
-                               (-s//org/todo.keyword "X" wrap)
-                               (-s//org/todo.keyword "X" wrap)
-                               (-s//org/todo.keyword "✘" wrap)
-                               (-s//org/todo.keyword "÷" wrap))))
+                               (sss:org/todo.keyword "TODO" wrap)
+                               (sss:org/todo.keyword "PROJECT" wrap)
+                               (sss:org/todo.keyword "CURRENT" wrap)
+                               (sss:org/todo.keyword "WAITING" wrap)
+                               (sss:org/todo.keyword "HOLDING" wrap)
+                               (sss:org/todo.keyword "DONE" wrap)
+                               (sss:org/todo.keyword "SUCCESS" wrap)
+                               (sss:org/todo.keyword "FAILURE" wrap)
+                               (sss:org/todo.keyword "KILLED" wrap)
+                               (sss:org/todo.keyword " " wrap)
+                               (sss:org/todo.keyword "▶" wrap)
+                               (sss:org/todo.keyword "-" wrap)
+                               (sss:org/todo.keyword "?" wrap)
+                               (sss:org/todo.keyword "…" wrap)
+                               (sss:org/todo.keyword "⁈" wrap)
+                               (sss:org/todo.keyword "X" wrap)
+                               (sss:org/todo.keyword "X" wrap)
+                               (sss:org/todo.keyword "✘" wrap)
+                               (sss:org/todo.keyword "÷" wrap))))
 
        (let* ((wrap "├─┤")
               (replacements/new (list
-                                 (-s//org/todo.keyword "TODO" wrap)
-                                 (-s//org/todo.keyword "PROJECT" wrap)
-                                 (-s//org/todo.keyword "CURRENT" wrap)
-                                 (-s//org/todo.keyword "WAITING" wrap)
-                                 (-s//org/todo.keyword "HOLDING" wrap)
-                                 (-s//org/todo.keyword "DONE" wrap)
-                                 (-s//org/todo.keyword "SUCCESS" wrap)
-                                 (-s//org/todo.keyword "FAILURE" wrap)
-                                 (-s//org/todo.keyword "KILLED" wrap)
-                                 (-s//org/todo.keyword "_" wrap)
-                                 (-s//org/todo.keyword "▶" wrap)
-                                 (-s//org/todo.keyword "-" wrap)
-                                 (-s//org/todo.keyword "?" wrap)
-                                 (-s//org/todo.keyword "…" wrap)
-                                 (-s//org/todo.keyword "⁈" wrap)
-                                 (-s//org/todo.keyword "X" wrap)
-                                 (-s//org/todo.keyword "X" wrap)
-                                 (-s//org/todo.keyword "✘" wrap)
-                                 (-s//org/todo.keyword "÷" wrap))))
+                                 (sss:org/todo.keyword "TODO" wrap)
+                                 (sss:org/todo.keyword "PROJECT" wrap)
+                                 (sss:org/todo.keyword "CURRENT" wrap)
+                                 (sss:org/todo.keyword "WAITING" wrap)
+                                 (sss:org/todo.keyword "HOLDING" wrap)
+                                 (sss:org/todo.keyword "DONE" wrap)
+                                 (sss:org/todo.keyword "SUCCESS" wrap)
+                                 (sss:org/todo.keyword "FAILURE" wrap)
+                                 (sss:org/todo.keyword "KILLED" wrap)
+                                 (sss:org/todo.keyword "_" wrap)
+                                 (sss:org/todo.keyword "▶" wrap)
+                                 (sss:org/todo.keyword "-" wrap)
+                                 (sss:org/todo.keyword "?" wrap)
+                                 (sss:org/todo.keyword "…" wrap)
+                                 (sss:org/todo.keyword "⁈" wrap)
+                                 (sss:org/todo.keyword "X" wrap)
+                                 (sss:org/todo.keyword "X" wrap)
+                                 (sss:org/todo.keyword "✘" wrap)
+                                 (sss:org/todo.keyword "÷" wrap))))
 
          ;; And... find/replace 'em.
          (dotimes (index (length replacements/new))

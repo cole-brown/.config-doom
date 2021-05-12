@@ -12,7 +12,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(defun -s//lisp/cons? (var)
+(defun sss:lisp/cons? (var)
   "Apparently lists qualify as conses so... fucking lisp, yeah?
 ...and I can't `listp' or `length' a cons because it's not a list...?!?!
 

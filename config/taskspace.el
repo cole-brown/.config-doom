@@ -13,10 +13,10 @@
 ;; Taskspace Helper Functions
 ;;------------------------------------------------------------------------------
 
-(defun -s//taskspace/generate (group taskname taskpath)
+(defun sss:taskspace/generate (group taskname taskpath)
   "NOTE: Could be redefined later for more group-specific
 details, so check e.g. secrets init for a redef. Or 'C-h f
--s//taskspace/generate' and see what file it's defined in."
+sss:taskspace/generate' and see what file it's defined in."
   ;; Format:
   ;; header snippet key
   ;;
@@ -86,10 +86,10 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
 
     ;; Alias our function here in case we want to redefine it later.
     ;; We'll just have to redefine it instead of edit the taskspace settings again.
-    (defalias '-s//taskspace/generate.home '-s//taskspace/generate)
+    (defalias 'sss:taskspace/generate.home 'sss:taskspace/generate)
 
     ;; And create our `:home' group custom settings.
-    (defvar -s//taskspace/custom.home
+    (defvar sss:taskspace/custom.home
       `((:type/notes      :noteless)
         (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
         (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
@@ -98,7 +98,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                              ;; notes.org: setup with org header snippet
                              ;; ready to go
                              ((-t//config :group :file/notes)
-                              -s//taskspace/generate.home))))
+                              sss:taskspace/generate.home))))
       "Custom settings for my `:home' taskspace group.")
 
     ;; Set an over-arching taskspace DLV for whole work dir.
@@ -135,10 +135,10 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
 
     ;; Alias our function here in case we want to redefine it later.
     ;; We'll just have to redefine it instead of edit the taskspace settings again.
-    (defalias '-s//taskspace/generate.work '-s//taskspace/generate)
+    (defalias 'sss:taskspace/generate.work 'sss:taskspace/generate)
 
     ;; And create our `:work' group custom settings.
-    (defvar -s//taskspace/custom.work
+    (defvar sss:taskspace/custom.work
       `((:type/notes      :noteless)
         (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
         (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
@@ -147,7 +147,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                              ;; notes.org: setup with org header snippet
                              ;; ready to go
                              ((-t//config :group :file/notes)
-                              -s//taskspace/generate.work))))
+                              sss:taskspace/generate.work))))
       "Custom settings for my `:work' taskspace group.")
 
   ;; Set a dir-local-var for home taskspace folders.
@@ -164,6 +164,6 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
   ;;------------------------------
 
   (customize-set-variable 'taskspace/groups
-                          '((:work    "Work Taskspace" -s//taskspace/custom.work)
-                            (:home    "Home Taskspace" -s//taskspace/custom.home)
+                          '((:work    "Work Taskspace" sss:taskspace/custom.work)
+                            (:home    "Home Taskspace" sss:taskspace/custom.home)
                             (:default "Defaults"       taskspace/group/default))))

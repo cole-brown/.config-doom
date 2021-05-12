@@ -12,7 +12,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(defun -s//path/append (parent next)
+(defun sss:path/append (parent next)
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
@@ -24,11 +24,11 @@ names can be used as well as strings.
     (if (null parent)
         next
       (concat (file-name-as-directory parent) next))))
-;; (-s//path/append nil "jeff")
+;; (sss:path/append nil "jeff")
 ;; (spy:string/symbol/normalize "jill")
-;; (-s//path/append "jeff" "jill")
-;; (-s//path/append "jeff/" "jill")
-;; (-s//path/append "jeff/" :jill)
+;; (sss:path/append "jeff" "jill")
+;; (sss:path/append "jeff/" "jill")
+;; (sss:path/append "jeff/" :jill)
 
 
 (defun spy:path/join (&rest path)
@@ -37,7 +37,7 @@ names can be used as well as strings.
 (spy:path/join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\"
 "
-  (-reduce #'-s//path/append path))
+  (-reduce #'sss:path/append path))
 ;; (spy:path/join "jeff" "jill")
 ;; (spy:path/join "jeff")
 
@@ -157,7 +157,7 @@ For `:windows' -> `:wsl':
 ;; (spy:path/translate :wsl :windows "/mnt/d/path/to/somewhere.txt")
 
 
-(defun -s//path/type (path)
+(defun sss:path/type (path)
   "Tries to guess a path type.
 
 Returns:
@@ -192,7 +192,7 @@ Returns:
 (defun smd/path/translate (path)
   "Tries to auto-guess source/dest path types and then translate the path."
   (interactive "sPath: ")
-  (let* ((source (-s//path/type path))
+  (let* ((source (sss:path/type path))
          (dest (if (eq source :windows)
                    ;; WSL should work for translating to Linux too?
                    :wsl

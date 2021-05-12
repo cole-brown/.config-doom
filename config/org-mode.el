@@ -58,7 +58,7 @@
   ;;--------------------
 
   ;; Connect my hooks up.
-  ((org-mode . -s//hook/org/jump-to-now-target))
+  ((org-mode . sss:hook/org/jump-to-now-target))
 
 
   ;;--------------------
@@ -100,62 +100,62 @@
         )
     (setq org-todo-keywords
           `((sequence  ;; Big Words sequence.
-             ,(-s//org/todo.keyword "TODO"    wrap "t")  ; A task that needs doing & is ready to do
-             ,(-s//org/todo.keyword "PROJECT" wrap "p")  ; A project, which usually contains other tasks
-             ,(-s//org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
-             ,(-s//org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
-             ,(-s//org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
-             ,(-s//org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
+             ,(sss:org/todo.keyword "TODO"    wrap "t")  ; A task that needs doing & is ready to do
+             ,(sss:org/todo.keyword "PROJECT" wrap "p")  ; A project, which usually contains other tasks
+             ,(sss:org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
+             ,(sss:org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
+             ,(sss:org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
+             ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
              "|"
-             ,(-s//org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
-             ,(-s//org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
-             ,(-s//org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
-             ,(-s//org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
-             ,(-s//org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
+             ,(sss:org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
+             ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
+             ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
+             ,(sss:org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
+             ,(sss:org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
             (sequence ;; Checkboxes sequence.
-             ,(-s//org/todo.keyword "_" wrap "T")    ; A task that needs doing
-             ,(-s//org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
-             ;; ,(-s//org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
-             ;; ,(-s//org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
-             ,(-s//org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
-             ,(-s//org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
-             ,(-s//org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
+             ,(sss:org/todo.keyword "_" wrap "T")    ; A task that needs doing
+             ,(sss:org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
+             ;; ,(sss:org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
+             ;; ,(sss:org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
+             ,(sss:org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
+             ,(sss:org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
+             ,(sss:org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
              "|"
-             ,(-s//org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
-             ,(-s//org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
-             ,(-s//org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
-             ,(-s//org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
-             ,(-s//org/todo.keyword "÷" wrap "K" 'notes)))      ; Task was cancelled, aborted, or is no longer applicable.
+             ,(sss:org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
+             ,(sss:org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
+             ,(sss:org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
+             ,(sss:org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
+             ,(sss:org/todo.keyword "÷" wrap "K" 'notes)))      ; Task was cancelled, aborted, or is no longer applicable.
 
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
-          (list (list (-s//org/todo.keyword "TODO" wrap)    'spy:theme.face/org.todo.keyword/todo)
-                (list (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
+          (list (list (sss:org/todo.keyword "TODO" wrap)    'spy:theme.face/org.todo.keyword/todo)
+                (list (sss:org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
-                (list (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
-                (list (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
+                (list (sss:org/todo.keyword "CURRENT" wrap) '+org-todo-active)
+                (list (sss:org/todo.keyword "▶" wrap)       '+org-todo-active)
 
-                (list (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
-                (list (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
-                (list (-s//org/todo.keyword "INFO" wrap)    'spy:theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "ⓘ" wrap)       'spy:theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "─" wrap)       'spy:theme.face/org.todo.keyword/null)
-                (list (-s//org/todo.keyword "∅" wrap)       'spy:theme.face/org.todo.keyword/null)
-                (list (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
-                (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
-                (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
+                (list (sss:org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+                (list (sss:org/todo.keyword "INFO" wrap)    'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "ⓘ" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "─" wrap)       'spy:theme.face/org.todo.keyword/null)
+                (list (sss:org/todo.keyword "∅" wrap)       'spy:theme.face/org.todo.keyword/null)
+                (list (sss:org/todo.keyword "?" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "…" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-                (list (-s//org/todo.keyword "DONE" wrap)    'spy:theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "SUCCESS" wrap) 'spy:theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "FAILURE" wrap) 'spy:theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "✘" wrap)       'spy:theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "KILLED" wrap)  'spy:theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "÷" wrap)       'spy:theme.face/org.todo.keyword/done.bad)))
+                (list (sss:org/todo.keyword "DONE" wrap)    'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "SUCCESS" wrap) 'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "FAILURE" wrap) 'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "✘" wrap)       'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "KILLED" wrap)  'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "÷" wrap)       'spy:theme.face/org.todo.keyword/done.bad)))
 
     ;; I guess this guy is covered by `hl-todo' instead of `org'?
-    ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
+    ;; (push `(,(sss:org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
     ;; ...but `hl-todo' cannot do things that start/end with non-letters...
     ;; So yay.
     )
@@ -364,7 +364,7 @@
   ;;---
   ;; Domain Switcher
   ;;---
-  (defmacro -s//org.journal/namespaced (namespace &rest body)
+  (defmacro sss:org.journal/namespaced (namespace &rest body)
     "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
     `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
                                                 :namespace namespace))
@@ -372,8 +372,8 @@
                                         :namespace namespace)))
        ,@body
        ))
-  ;; (-s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-  ;; (-s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+  ;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
+  ;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
 
 
   ;; ;;--------------------
@@ -459,19 +459,19 @@
               (:prefix ("w" . ":work journal")
 
                :desc ":work - New Entry"           "j" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :work
                                                          (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :work
                                                          (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
                :desc ":work - Visit Journal"       "v" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :work
                                                          (funcall-interactively #'org-journal-open-current-journal-file)))
                :desc ":work - Search Forever"      "s" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :work
                                                          (funcall-interactively #'org-journal-search-forever nil)))))))))
 
@@ -500,19 +500,19 @@
               ;; Home namespaced commands.
               (:prefix ("h" . ":home journal")
                :desc ":home - New Entry"           "j" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :home
                                                          (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :home
                                                          (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
                :desc ":home - Visit Journal"       "v" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :home
                                                          (funcall-interactively #'org-journal-open-current-journal-file)))
                :desc ":home - Search Forever"      "s" (cmd!
-                                                        (-s//org.journal/namespaced
+                                                        (sss:org.journal/namespaced
                                                          :home
                                                          (funcall-interactively #'org-journal-search-forever nil)))))))))
   )
@@ -527,7 +527,7 @@
 ;;---------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
-(defun -s//org-roam/file-name/timestamp-title (title)
+(defun sss:org-roam/file-name/timestamp-title (title)
   "Return a file name (without extension) for new files.
 
 It uses TITLE and the current timestamp to form a unique title.
@@ -537,7 +537,7 @@ It uses TITLE and the current timestamp to form a unique title.
     (format "%s_%s" timestamp slug)))
 
 
-(defun -s//org-roam/buffer/deactivate ()
+(defun sss:org-roam/buffer/deactivate ()
   "Like `org-roam-buffer-deactivate' but don't delete the window."
   (interactive)
 
@@ -605,14 +605,14 @@ It uses TITLE and the current timestamp to form a unique title.
 
   (map! :leader
         :prefix "nr" ;; notes -> roam
-        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
+        :desc "Kill roam info buffer" "K" #'sss:org-roam/buffer/deactivate
         :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate)
   (map! :after org
         :map org-mode-map
         :localleader
         :prefix "m" ;; org-roam is... 'm' here instead of 'r'.
         ;; and copy the above 'map!':
-        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
+        :desc "Kill roam info buffer" "K" #'sss:org-roam/buffer/deactivate
         :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate))
 
 

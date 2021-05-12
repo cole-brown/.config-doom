@@ -6,6 +6,7 @@
 
 (spy/require :spy 'io 'signature)
 (spy/config 'spy 'art)
+(spy/config 'spy 'join)
 
 
 ;;------------------------------------------------------------------------------
@@ -202,11 +203,13 @@ the fill prefix-map."
         :desc "Org-Mode Elements"           "e" #'org-transpose-element
         :desc "Org-Mode Table"              "t" #'org-table-transpose-table-at-point)
 
+
        ;;------------------------------
        ;; Box Drawning
        ;;------------------------------
        ;; Hydra
        :desc "Unicode Box"                  "b" #'spy:art.box/draw
+
 
        ;;------------------------------
        ;; Signatures
@@ -270,4 +273,10 @@ the fill prefix-map."
        ;;------------------------------
        ;; They are in org-journal's entry in leader. See config/org-mode.el
 
+
+       ;;------------------------------
+       ;; File/Dir Names
+       ;;------------------------------
+       :desc "Copy Buffer's File Name"    "k" #'spy:file-or-dir-name/clipboard
+       :desc "Copy Buffer's Dir Name"    "K" (cmd!! #'spy:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
        ))

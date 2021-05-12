@@ -1,8 +1,8 @@
 ;;; config/code.el -*- lexical-binding: t; -*-
 
 
-(spy/require :spy 'hook 'def)
-(spy/require :spy 'jerky)
+(spy:require :spy 'hook 'def)
+(spy:require :spy 'jerky)
 
 
 ;;------------------------------------------------------------------------------
@@ -92,7 +92,7 @@
                           'symmetric)
 
   ;; Create and add my python-mode hook function to python-mode's hook var.
-  (spy/hook/defun-and-hooker python-mode-hook
+  (spy:hook/defun-and-hooker python-mode-hook
     '(:name "python/settings"
       :file ".doom.d/config/code.el"
       :docstr "Settings for python-mode itself. Non-LSP stuff."

@@ -6,21 +6,21 @@
 
 ;; ;; remap C-a to `smarter-move-beginning-of-line'
 ;; (bind-key [remap move-beginning-of-line]
-;;           'spy/smarter-move-beginning-of-line)
+;;           'spy:smarter-move-beginning-of-line)
 ;;
 ;;
 ;; ;; remap C-a to `smarter-beginning-of-visual-line' in visual-line-mode-map
 ;; (bind-keys :map visual-line-mode-map
 ;;            ;; beginning of line
 ;;            ([remap beginning-of-visual-line]
-;;             . spy/smarter-beginning-of-visual-line)
+;;             . spy:smarter-beginning-of-visual-line)
 ;;            ([remap move-beginning-of-line]
-;;             . spy/smarter-beginning-of-visual-line)
+;;             . spy:smarter-beginning-of-visual-line)
 ;;            ;; end of line
 ;;            ([remap end-of-visual-line]
-;;             . spy/smarter-end-of-visual-line)
+;;             . spy:smarter-end-of-visual-line)
 ;;            ([remap move-end-of-line]
-;;             . spy/smarter-end-of-visual-line))
+;;             . spy:smarter-end-of-visual-line))
 
 
 ;;------------------------------------------------------------------------------
@@ -132,4 +132,4 @@ point reaches the beginning or end of the buffer, stop there.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'buffer 'line)
+(spy:provide :spy 'buffer 'line)

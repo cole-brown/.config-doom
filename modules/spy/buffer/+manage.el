@@ -7,7 +7,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Like `kill-buffer-ask' but no confirmation for unmodified buffers.
-(defun spy/buffer/kill.ask (buffer &optional delete-process)
+(defun spy:buffer/kill.ask (buffer &optional delete-process)
   "Kill BUFFER if confirmed. No confirm given for unmodified
 buffers; just kill.
 
@@ -23,55 +23,55 @@ Returns buffer-name on kill, nil on no kill."
     (prog1
         ;; return name when killed
         (buffer-name buffer)
-      (when delete-process (spy/buffer/process.delete buffer))
+      (when delete-process (spy:buffer/process.delete buffer))
       (kill-buffer buffer))
     ;; else, ret nil when no kill
     nil))
 
 
-(defun spy/buffer/kill.special (arg)
+(defun spy:buffer/kill.special (arg)
   "Kills my special(ly named) buffers, and deletes any process they may have
 running.
 
-If ARG is the symbol `by-regexp', use `spy/buffer/regexp/bookend' to kill
+If ARG is the symbol `by-regexp', use `spy:buffer/regexp/bookend' to kill
 special buffers.
 
-If ARG is a string, the `spy/buffer/regexp/bookend' is checked to see if the
+If ARG is a string, the `spy:buffer/regexp/bookend' is checked to see if the
 stcring/regexp is 'correctly' guarded by them, adding them in if needed. It uses
-`spy/buffer/special-name' with nil priority to add the bookends.
+`spy:buffer/special-name' with nil priority to add the bookends.
 
 If ARG is not a string, assume it's a buffer and try to kill it's process and it
 directly."
 
   (cond ((null arg)
          (mis0/warning nil nil
-                      "spy/buffer/kill.special: Cannot kill; null arg."))
+                      "spy:buffer/kill.special: Cannot kill; null arg."))
 
         ((and (symbolp arg)
               (eq arg 'by-regexp))
          ;; Use our regexp to try to kill them all without confirmation.
-           (spy/buffer/kill.matching spy/buffer/regexp/bookend nil t t t))
+           (spy:buffer/kill.matching spy:buffer/regexp/bookend nil t t t))
 
         ((stringp arg)
          ;; We have a string. Make sure it's formatted as "special-buffer",
          ;; and then try to kill any matching without confirmation.
-         (let ((arg (if (string-match-p spy/buffer/regexp/bookend arg)
+         (let ((arg (if (string-match-p spy:buffer/regexp/bookend arg)
                         arg
-                      (spy/buffer/special-name arg))))
-           (spy/buffer/kill.matching arg nil t t t)))
+                      (spy:buffer/special-name arg))))
+           (spy:buffer/kill.matching arg nil t t t)))
 
         (t
          ;; Else we have a buffer, probably? Go for the kill ourselves.
-         (spy/buffer/process.delete arg)
+         (spy:buffer/process.delete arg)
          (kill-buffer arg))))
-;; (spy/buffer/kill.special 'by-regexp)
-;; (spy/buffer/kill.special (rx word-boundary (1+ printing) word-boundary))
-;; (spy/buffer/kill.special "\\b[[:print:]]+\\b")
-;; (spy/buffer/special-name "\\b[[:print:]]+\\b")
-;; (spy/buffer/kill.special "§- \\b[[:print:]]+\\b -§")
+;; (spy:buffer/kill.special 'by-regexp)
+;; (spy:buffer/kill.special (rx word-boundary (1+ printing) word-boundary))
+;; (spy:buffer/kill.special "\\b[[:print:]]+\\b")
+;; (spy:buffer/special-name "\\b[[:print:]]+\\b")
+;; (spy:buffer/kill.special "§- \\b[[:print:]]+\\b -§")
 
 
-(defun spy/buffer/process.delete (buffer-or-name)
+(defun spy:buffer/process.delete (buffer-or-name)
   "Gets buffer, gets buffer's process (if any), and ends/deletes/kills/SIGKILLs
 it. BUFFER-OR-NAME must be exact."
   (let ((proc (get-buffer-process (get-buffer buffer-or-name))))
@@ -85,7 +85,7 @@ it. BUFFER-OR-NAME must be exact."
 ;;------------------------------------------------------------------------------
 
 ;; §-TODO-§ [2020-02-13]: A "bury-matching in all windows" like
-;; `spy/buffer/kill.matching'?
+;; `spy:buffer/kill.matching'?
 
 ;; I could just grub my meaty hooks into kill-matching-buffers, but... eh.
 ;; I'd probably just forget the function that way.
@@ -136,10 +136,10 @@ Deletes buffer's process (if any) if DELETE-PROCESS is non-nil."
               (progn
                 (push name killed-names)
                 (when delete-process
-                  (spy/buffer/process.delete buffer))
+                  (spy:buffer/process.delete buffer))
                 (kill-buffer buffer))
             ;; ...or probably kill it? Save the name if so.
-            (let ((maybe-kill-name (spy/buffer/kill.ask buffer
+            (let ((maybe-kill-name (spy:buffer/kill.ask buffer
                                                            delete-process)))
               (unless (null maybe-kill-name)
                 (push maybe-kill-name killed-names)))))))
@@ -161,7 +161,7 @@ Deletes buffer's process (if any) if DELETE-PROCESS is non-nil."
                  (length killed-names)
                  regexp
                  killed-names))))))
-;; (spy/buffer/kill.special "§- \\b[[:print:]]+\\b -§")
+;; (spy:buffer/kill.special "§- \\b[[:print:]]+\\b -§")
 ;; (string-match-p "§- \\b[[:print:]]+\\b -§" "§- Kill All The Things! -§")
 ;; (string-match-p "§- \\b[[:print:]]+\\b -§\\b" "§- Kill All The Things! -§")
 ;; (string-match-p "§- [[:print:]]+\\b -§" "§- Kill All The Things! -§")
@@ -170,4 +170,4 @@ Deletes buffer's process (if any) if DELETE-PROCESS is non-nil."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'buffer 'manage)
+(spy:provide :spy 'buffer 'manage)

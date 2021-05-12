@@ -197,21 +197,21 @@
 
        :spy
        ;; Functions and Helpers
-       zero                ; spy/zero:     Must be first. spy/require, spy/provide, strings...
-       lisp                ; spy/lisp:     Helpful Elisp stuff.
-       file                ; spy/file:     For helpful path/file/dir functions.
-       buffer              ; spy/buffer:   Buffer, line, point, etc functions.
-       hook                ; spy/hook:     Hook helper macros/functions.
-       org                 ; spy/org:      Org-Mode helpers. Must be after buffer.
-       hydra               ; spy/hydra:    Helpers for Hydra package.
+       zero                ; spy:zero:     Must be first. spy:require, spy:provide, strings...
+       lisp                ; spy:lisp:     Helpful Elisp stuff.
+       file                ; spy:file:     For helpful path/file/dir functions.
+       buffer              ; spy:buffer:   Buffer, line, point, etc functions.
+       hook                ; spy:hook:     Hook helper macros/functions.
+       org                 ; spy:org:      Org-Mode helpers. Must be after buffer.
+       hydra               ; spy:hydra:    Helpers for Hydra package.
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
-       jerky               ; spy/jerky:   For key/value tree.
+       jerky               ; spy:jerky:   For key/value tree.
        ;; Has to Be After jerky:
-       datetime            ; spy/datetime: For dates, times, datetimes, timedates...
+       datetime            ; spy:datetime: For dates, times, datetimes, timedates...
 
        ;; System Setup Init
-       system              ; spy/system:  For one-to-many config-to-computers setup.
-       io                  ; spy/io:      Input and output stuff (e.g. inserting signatures).
-       secret              ; spy/secret:  For per-system things, secret keys, etc.
+       system              ; spy:system:  For one-to-many config-to-computers setup.
+       io                  ; spy:io:      Input and output stuff (e.g. inserting signatures).
+       secret              ; spy:secret:  For per-system things, secret keys, etc.
        )

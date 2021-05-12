@@ -18,21 +18,21 @@
                ;; :underline t
                )))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/todo
+    (face-spec-set 'spy:theme.face/org.todo.keyword/todo
       (list (cons
              ;; display type
              t
              ;; attributes
              face-plist)))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/background
+    (face-spec-set 'spy:theme.face/org.todo.keyword/background
       (list (cons
              ;; display type
              t
              ;; attributes
              (list :background (doom-color 'bg-alt)))))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/done.good
+    (face-spec-set 'spy:theme.face/org.todo.keyword/done.good
       (list (cons
              ;; display type
              t
@@ -40,7 +40,7 @@
              (list :background (doom-color 'bg-alt)
                    :inherit 'org-done))))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/done.bad
+    (face-spec-set 'spy:theme.face/org.todo.keyword/done.bad
       (list (cons
              ;; display type
              t
@@ -48,7 +48,7 @@
              (list :background (doom-color 'bg-alt)
                    :foreground (doom-darken (doom-color 'red-4) 0.1)))))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/info
+    (face-spec-set 'spy:theme.face/org.todo.keyword/info
       (list (cons
              ;; display type
              t
@@ -56,7 +56,7 @@
              (list :background (doom-color 'bg-alt)
                    :foreground (doom-color 'base7)))))
 
-    (face-spec-set 'spy/theme.face/org.todo.keyword/null
+    (face-spec-set 'spy:theme.face/org.todo.keyword/null
       (list (cons
              ;; display type
              t

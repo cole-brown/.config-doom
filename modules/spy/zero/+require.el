@@ -37,7 +37,7 @@
 ;; Provide / Require
 ;;------------------------------------------------------------------------------
 
-(defmacro spy/provide (module feature &rest extras)
+(defmacro spy:provide (module feature &rest extras)
   "Defines a feature using the power of /namespaces/!
 
 MODULE should be a keyword. FEATURE and EXTRA can be keywords or
@@ -49,11 +49,11 @@ from the front of keyword symbols.
 
 Examples:
 
-(spy/provide :spy path) will provide the feature with symbol-name:
-'spy/path'
+(spy:provide :spy path) will provide the feature with symbol-name:
+'spy:path'
 
-(spy/provide :spy mad-science transmogrifier) will provide the feature with
-symbol-name: 'spy/mad-science/transmogrifier'
+(spy:provide :spy mad-science transmogrifier) will provide the feature with
+symbol-name: 'spy:mad-science/transmogrifier'
 "
   (declare (indent defun))
 
@@ -86,7 +86,7 @@ symbol-name: 'spy/mad-science/transmogrifier'
        ;; that name.
        (provide (intern final-name)))))
 ;; (featurep 'jeff/test/zero)
-;; (spy/provide :jeff 'test 'zero)
+;; (spy:provide :jeff 'test 'zero)
 ;; (featurep 'jeff/test/zero)
 ;; jeff/test/zero
 ;; features
@@ -97,7 +97,7 @@ symbol-name: 'spy/mad-science/transmogrifier'
 ;; features
 
 
-(defmacro spy/require (category module &rest extras)
+(defmacro spy:require (category module &rest extras)
   "Creates the module name from CATEGORY, MODULE, EXTRAS, then `requires' it.
 
 CATEGORY should be a keyword. MODULE and EXTRA can be keywords or
@@ -111,13 +111,13 @@ The module is expected to be in the file described by the module name generated.
 
 Examples:
 
-(spy/require :spy path) will require the module:
-  - symbol:  spy/path
-  - path:   'spy/path'
+(spy:require :spy path) will require the module:
+  - symbol:  spy:path
+  - path:   'spy:path'
 
-(spy/require :spy mad-science transmogrifier) will require the module:
-  - symbol:  spy/mad-science/transmogrifier
-  - path:   'spy/mad-science/transmogrifier'
+(spy:require :spy mad-science transmogrifier) will require the module:
+  - symbol:  spy:mad-science/transmogrifier
+  - path:   'spy:mad-science/transmogrifier'
 "
   (declare (indent defun))
 
@@ -150,7 +150,7 @@ Examples:
        ;; that symbol in that filepath.
        (require (intern final-name) final-name))))
 ;; (featurep 'jeff/test/zero)
-;; (spy/require :jeff 'test 'zero)
+;; (spy:require :jeff 'test 'zero)
 ;; (featurep 'jeff/test/zero)
 ;; jeff/test/zero
 ;; features
@@ -159,5 +159,5 @@ Examples:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'zero 'require)
-(spy/provide :spy 'zero 'provide)
+(spy:provide :spy 'zero 'require)
+(spy:provide :spy 'zero 'provide)

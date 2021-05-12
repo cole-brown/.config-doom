@@ -11,7 +11,7 @@
 ;; Don't override if it was set in e.g. secrets init or system init or something.
 (when (null (jerky/get 'emacs 'snippets))
   (jerky/set 'emacs 'snippets
-             :value (spy/path/to-dir doom-private-dir "snippets")
+             :value (spy:path/to-dir doom-private-dir "snippets")
              :docstr "Default path to snippets in doom private dir."))
 
 

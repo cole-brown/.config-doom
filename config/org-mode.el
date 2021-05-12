@@ -8,12 +8,12 @@
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;;------------------------------------------------------------------------------
 
-(spy/require :spy 'hook 'def)
-(spy/require :spy 'buffer 'search)
-(spy/require :spy 'buffer 'name)
-(spy/require :spy 'path)
-(spy/require :spy 'jerky)
-(spy/provide :spy 'datetime 'format)
+(spy:require :spy 'hook 'def)
+(spy:require :spy 'buffer 'search)
+(spy:require :spy 'buffer 'name)
+(spy:require :spy 'path)
+(spy:require :spy 'jerky)
+(spy:provide :spy 'datetime 'format)
 
 
 ;;------------------------------------------------------------------------------
@@ -43,7 +43,7 @@
   ;;--------------------
 
   ;; Define org-mode hooks.
-  (spy/hook/defun org-mode-hook
+  (spy:hook/defun org-mode-hook
     '(:name "org/jump-to-now-target"
       :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
@@ -70,7 +70,7 @@
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
-  ;; (org-default-notes-file (spy/path/to-file org-directory "notes.org"))
+  ;; (org-default-notes-file (spy:path/to-file org-directory "notes.org"))
   ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
@@ -129,7 +129,7 @@
 
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
-          (list (list (-s//org/todo.keyword "TODO" wrap)    'spy/theme.face/org.todo.keyword/todo)
+          (list (list (-s//org/todo.keyword "TODO" wrap)    'spy:theme.face/org.todo.keyword/todo)
                 (list (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
                 (list (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
@@ -137,22 +137,22 @@
 
                 (list (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
                 (list (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
-                (list (-s//org/todo.keyword "INFO" wrap)    'spy/theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "ⓘ" wrap)       'spy/theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "─" wrap)       'spy/theme.face/org.todo.keyword/null)
-                (list (-s//org/todo.keyword "∅" wrap)       'spy/theme.face/org.todo.keyword/null)
+                (list (-s//org/todo.keyword "INFO" wrap)    'spy:theme.face/org.todo.keyword/info)
+                (list (-s//org/todo.keyword "ⓘ" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (-s//org/todo.keyword "─" wrap)       'spy:theme.face/org.todo.keyword/null)
+                (list (-s//org/todo.keyword "∅" wrap)       'spy:theme.face/org.todo.keyword/null)
                 (list (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
                 (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
                 (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-                (list (-s//org/todo.keyword "DONE" wrap)    'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "SUCCESS" wrap) 'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "FAILURE" wrap) 'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "✘" wrap)       'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "KILLED" wrap)  'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "÷" wrap)       'spy/theme.face/org.todo.keyword/done.bad)))
+                (list (-s//org/todo.keyword "DONE" wrap)    'spy:theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "SUCCESS" wrap) 'spy:theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (-s//org/todo.keyword "FAILURE" wrap) 'spy:theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "✘" wrap)       'spy:theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "KILLED" wrap)  'spy:theme.face/org.todo.keyword/done.bad)
+                (list (-s//org/todo.keyword "÷" wrap)       'spy:theme.face/org.todo.keyword/done.bad)))
 
     ;; I guess this guy is covered by `hl-todo' instead of `org'?
     ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
@@ -224,7 +224,7 @@
   ;; TODO: Not sure if works well with evil.
   ;; ;; Enable Speed Keys as per my speed-commands predicate function.
   ;; (org-use-speed-commands
-  ;;  #'spy/custom/org-mode/speed-commands-p
+  ;;  #'spy:custom/org-mode/speed-commands-p
   ;;  "Allow speed keys when at any headline *, not just beginning of line.")
 
 
@@ -240,7 +240,7 @@
   ;; TODO: whitespace-mode fix for org-mode... still needed?
   ;;   ;; This does double the work on the org-indent-strings array, but meh.
   ;;   (require 'cl-lib)
-  ;;   (defun spy/advice/org-indent/prefix-munger ()
+  ;;   (defun spy:advice/org-indent/prefix-munger ()
   ;;     "Initialize the indentation strings so the motherfucking
   ;; `org-indent-boundary-char' is set with a proper face you god damn
   ;; savages."
@@ -262,7 +262,7 @@
   ;;                   nil 'face 'org-indent)
   ;;               ))))
   ;;   (advice-add 'org-indent--compute-prefixes
-  ;;               :after #'spy/advice/org-indent/prefix-munger)
+  ;;               :after #'spy:advice/org-indent/prefix-munger)
 
   ;; Map some things for org-mode.
   (map! :after org
@@ -323,7 +323,7 @@
 ;;  ;;   https://zzamboni.org/post/my-emacs-configuration-with-commentary/
 ;;  ;; Manual:
 ;;  ;;   https://orgmode.org/manual/Speed-keys.html
-;;  (defun spy/custom/org-mode/speed-commands-p ()
+;;  (defun spy:custom/org-mode/speed-commands-p ()
 ;;    "Allow speed keys when at any headline *, not just beginning of line."
 ;;    (and (looking-at org-outline-regexp) (looking-back "^\**")))
 
@@ -344,7 +344,7 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :home
-             :value (concat (spy/datetime/format.get 'iso-8601 'short)
+             :value (concat (spy:datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'notebook' not quickest to
                             ;; auto-complete to. Find better.
                             ".notebook.org")
@@ -355,7 +355,7 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :work
-             :value (concat (spy/datetime/format.get 'iso-8601 'short)
+             :value (concat (spy:datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'logbook' not quickest to
                             ;; auto-complete to. Find better.
                             ".logbook.org")
@@ -399,7 +399,7 @@
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
-                          (concat (spy/datetime/format.get 'iso-8601 'short)
+                          (concat (spy:datetime/format.get 'iso-8601 'short)
                                   ", %A"))
   ;; This can be a function if more is wanted. E.g. inserting new header text
   ;; into empty files.
@@ -532,7 +532,7 @@
 
 It uses TITLE and the current timestamp to form a unique title.
 "
-  (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
+  (let ((timestamp (spy:datetime/string.get 'iso-8601 'file))
         (slug (org-roam--title-to-slug title)))
     (format "%s_%s" timestamp slug)))
 
@@ -568,7 +568,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;--------------------
 (after! org-roam
   (customize-set-variable 'org-roam-buffer
-                          (spy/buffer/special-name "lily" nil :info))
+                          (spy:buffer/special-name "lily" nil :info))
 
   ;; Doom is a little pesky about keeping the org-roam buffer open.
   ;; It even does it when you close a file and an org buffer is in any visible frame.
@@ -579,7 +579,7 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; ;; Org-Roam filenames need to be uniquely named, but name doesn't matter much?
   ;; ;; Or so they say... So they can just gen file names from the current time.
   ;; (org-roam-filename-noconfirm t)
-  ;; (org-roam-file-name-function #'spy/org-roam/file-name/timestamp-title)
+  ;; (org-roam-file-name-function #'spy:org-roam/file-name/timestamp-title)
 
   ;; If 'right isn't desirable:
   ;; (org-roam-position 'left)
@@ -651,8 +651,8 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;   :demand t
 ;;
 ;;   :custom
-;;   (org-contacts-files (spy/path/to-file
-;;                        (spy/dirky/path :secrets :secrets/org)
+;;   (org-contacts-files (spy:path/to-file
+;;                        (spy:dirky/path :secrets :secrets/org)
 ;;                        "contacts.org"))
 ;;
 ;;   :config
@@ -682,7 +682,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;  ;;   - Con: This doesn't update until point has moved off the line... Possibly
 ;;  ;;     interacting with my highlight row thing/mode?
 ;;  ;; Nice lil search for symbols: http://www.unicode.org/charts/
-;;  (spy/hook/defun org-mode-hook t
+;;  (spy:hook/defun org-mode-hook t
 ;;      nil "checkboxes" "init/config/configure-org-mode.el"
 ;;    "Beautify Org Checkbox Symbol"
 ;;    (setq prettify-symbols-alist
@@ -711,7 +711,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;----------
 ;;  ;; Show list markers with a middle dot instead of the
 ;;  ;; original character.
-;;  (spy/hook/defun org-mode-hook t
+;;  (spy:hook/defun org-mode-hook t
 ;;      nil "simple-list" "init/config/configure-org-mode.el"
 ;;    "Nice up simple lists - replacing hypen with a unicode middle dot."
 ;;    (font-lock-add-keywords

@@ -1,6 +1,6 @@
 ;;; spy/org/keyword.el -*- lexical-binding: t; -*-
 
-(spy/require :spy 'buffer 'delete)
+(spy:require :spy 'buffer 'delete)
 
 
 ;; http://kitchingroup.cheme.cmu.edu/blog/2013/05/05/Getting-keyword-options-in-org-files/
@@ -16,14 +16,14 @@ from lines like:
 
 
 ;; http://kitchingroup.cheme.cmu.edu/blog/2013/05/05/Getting-keyword-options-in-org-files/
-(defun spy/org/keyword.get (keyword)
+(defun spy:org/keyword.get (keyword)
   "Get the value of a KEYWORD in the form of #+KEYWORD: value
 "
   (cdr (assoc keyword (-s//org/keywords.get))))
-;; (spy/org/keyword.get "TICKET-ID")
+;; (spy:org/keyword.get "TICKET-ID")
 
 
-(defun spy/org/keyword.set (keyword value)
+(defun spy:org/keyword.set (keyword value)
   "Get the value of a KEYWORD in the form of #+KEYWORD: value
 "
   ;; Expand to full buffer contents.
@@ -254,4 +254,4 @@ notes.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'org 'keyword)
+(spy:provide :spy 'org 'keyword)

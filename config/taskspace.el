@@ -1,4 +1,4 @@
-;;; config/spy/taskspace.el -*- lexical-binding: t; -*-
+;;; config/spy:taskspace.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -6,7 +6,7 @@
 ;;------------------------------------------------------------------------------
 
 (require 'taskspace)
-(spy/require :spy 'path)
+(spy:require :spy 'path)
 
 
 ;;------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
                   "\n\n")
           "header" ;; yasnippet
           taskpath
-          (spy/path/translate :windows :wsl taskpath)
+          (spy:path/translate :windows :wsl taskpath)
           taskname
           (format "mkdir ~/00-cole-temp/%s" taskname)
           "     ┌┬┬┬──────────────────────────────────────────────────────────────┬┬┬┐"
@@ -69,15 +69,15 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
   ;; "Home" Domain
   ;;---
   (let* ((group :home) ; taskspace "group" == jerky "namespace"
-         (group-str (spy/string/symbol->str group)))
+         (group-str (spy:string/symbol->str group)))
 
     ;; Add taskspace paths to jerky for info.
     (jerky/set 'path 'taskspace 'notes
                :namespace group
-               :value (spy/path/to-dir
+               :value (spy:path/to-dir
                        (jerky/get 'path 'lily :namespace group)
                        "taskspace"
-                       (spy/string/symbol->str group))
+                       (spy:string/symbol->str group))
                :docstr (format "directory for %s taskspace notes" group-str))
     (jerky/set 'path 'taskspace 'root
                :namespace group
@@ -91,7 +91,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
     ;; And create our `:home' group custom settings.
     (defvar -s//taskspace/custom.home
       `((:type/notes      :noteless)
-        (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
+        (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
         (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
         (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
         (:file/new/generate ((".projectile" "") ;; projectile: empty file
@@ -118,15 +118,15 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
   ;; "Work" Domain
   ;;---
   (let* ((group :work) ; taskspace "group" == jerky "namespace"
-         (group-str (spy/string/symbol->str group)))
+         (group-str (spy:string/symbol->str group)))
 
     ;; Add taskspace paths to jerky for info.
     (jerky/set 'path 'taskspace 'notes
                :namespace group
-               :value (spy/path/to-dir
+               :value (spy:path/to-dir
                        (jerky/get 'path 'lily :namespace group)
                        "taskspace"
-                       (spy/string/symbol->str group))
+                       (spy:string/symbol->str group))
                :docstr (format "directory for %s taskspace notes" group-str))
     (jerky/set 'path 'taskspace 'root
                :namespace group
@@ -140,7 +140,7 @@ details, so check e.g. secrets init for a redef. Or 'C-h f
     ;; And create our `:work' group custom settings.
     (defvar -s//taskspace/custom.work
       `((:type/notes      :noteless)
-        (:format/datetime (spy/datetime/format.get 'iso-8601 'short))
+        (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
         (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
         (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
         (:file/new/generate ((".projectile" "") ;; projectile: empty file

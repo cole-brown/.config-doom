@@ -1,7 +1,7 @@
 ;;; cconfig/whitespace.el -*- lexical-binding: t; -*-
 
 
-(spy/require :spy 'hook 'def)
+(spy:require :spy 'hook 'def)
 
 
 ;;------------------------------------------------------------------------------
@@ -69,7 +69,7 @@
   ;;------------------------------
 
   ;; An org-mode/whitespace-mode hooks.
-  (spy/hook/defun org-mode-hook
+  (spy:hook/defun org-mode-hook
     '(:name "org/whitespace-mode"
       :file ".doom.d/config/whitespace.el"
       :docstr "I like some whitespace-mode stuff in org-mode, but want less than other modes."

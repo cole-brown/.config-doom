@@ -3,5 +3,5 @@
 # key: time/start
 # name: spy/org/time.start: org start/finish list timestamps
 # --
-- started:  `(spy/datetime/string.get 'iso-8601 'long)`
+- started:  `(spy:datetime/string.get 'iso-8601 'long)`
 - finished: $0

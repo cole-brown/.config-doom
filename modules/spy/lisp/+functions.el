@@ -10,16 +10,16 @@
 
 ;; Don't rely on too much from `:spy'. This should be low-level stuff for use
 ;; by other `:spy' code.
-;; (spy/require :spy 'jerky)
-;; (spy/require :spy 'buffer 'point)
-;; (spy/require :spy 'datetime 'format)
+;; (spy:require :spy 'jerky)
+;; (spy:require :spy 'buffer 'point)
+;; (spy:require :spy 'datetime 'format)
 
 
 ;;------------------------------------------------------------------------------
 ;; Functions for argument parsing.
 ;;------------------------------------------------------------------------------
 
-(defun spy/lisp/func.args (args &rest claims)
+(defun spy:lisp/func.args (args &rest claims)
   "Expects ARGS to be a list of:
   - Some args.
   - Followed by some keyword args.
@@ -48,9 +48,9 @@ It's sort of like a function signature of:
   '&rest args &keys k0 k1 ... kn'
 
 Just make your function like this:
-  (defun spy/example (&rest args)
+  (defun spy:example (&rest args)
     ...
-    (-let*/-let (((arg-list kw-list) (spy/lisp/func.args args
+    (-let*/-let (((arg-list kw-list) (spy:lisp/func.args args
                                                          :jeff :zort :vogon)))
     ...
 
@@ -75,6 +75,6 @@ Returns a list of lists:
 
     ;; Done processing list, but our lists to return are backwords right now.
     (list (nreverse leading-args) (nreverse keywords))))
-;; (spy/lisp/func.args '(jeff jefferson :namespace :work) :namespace)
-;; (spy/lisp/func.args '(jeff jefferson :namespace nil :value 42) :namespace :value)
-;; (spy/lisp/func.args (-flatten '(jeff jefferson :namespace nil :value 42)) :namespace :value)
+;; (spy:lisp/func.args '(jeff jefferson :namespace :work) :namespace)
+;; (spy:lisp/func.args '(jeff jefferson :namespace nil :value 42) :namespace :value)
+;; (spy:lisp/func.args (-flatten '(jeff jefferson :namespace nil :value 42)) :namespace :value)

@@ -9,8 +9,8 @@
 
 (require 's)
 (require 'dash)
-(spy/require :spy 'zero 'strings)
-(spy/require :spy 'jerky 'debug)
+(spy:require :spy 'zero 'strings)
+(spy:require :spy 'jerky 'debug)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
@@ -133,7 +133,7 @@ output will be nil.
                           (t                 ; Use the defaults.
                            ;; Backwards so they'll end up forwards.
                            '(:docstr :value :namespace))))
-          ((args kwargs) (apply #'spy/lisp/func.args
+          ((args kwargs) (apply #'spy:lisp/func.args
                                 args-list
                                 keywords))
           parsed)
@@ -440,7 +440,7 @@ Checks/returns first to be non-nil of:
 ;; Key Functions
 ;;------------------------------------------------------------------------------
 
-(defalias 'jerky//key/symbol->str 'spy/string/symbol->str
+(defalias 'jerky//key/symbol->str 'spy:string/symbol->str
   "Convert a symbol to a string. Removes ':' from keywords.")
 
 
@@ -965,5 +965,5 @@ Example:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'jerky) ;; I have given you tasty jerky. Enjoy.
+(spy:provide :spy 'jerky) ;; I have given you tasty jerky. Enjoy.
 (provide 'jerky)

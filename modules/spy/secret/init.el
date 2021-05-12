@@ -5,14 +5,14 @@
 
 ;; todo: spy-fan
 
-(spy/require :spy 'jerky)
-(spy/require :spy 'path)
+(spy:require :spy 'jerky)
+(spy:require :spy 'path)
 
 (require 'mis0/message)
 
 
 ;;------------------------------------------------------------------------------
-;; :spy/secret requirements
+;; :spy:secret requirements
 ;;------------------------------------------------------------------------------
 
 (load! "load")
@@ -27,10 +27,10 @@
 ;;   - A hash & id for this computer.
 ;;   - A valid root init.el for secrets.
 ;; secrets/init.el will do the per-computer stuff.
-(spy//secret/load 'emacs "init")
+(spy:/secret/load 'emacs "init")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'secret)
+(spy:provide :spy 'secret)

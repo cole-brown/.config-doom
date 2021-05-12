@@ -5,8 +5,8 @@
 
 ;; todo: spy-fan
 
-(spy/require :spy 'jerky)
-(spy/require :spy 'path)
+(spy:require :spy 'jerky)
+(spy:require :spy 'path)
 
 (require 'mis0/message)
 
@@ -15,7 +15,7 @@
 ;; Secret-Getter
 ;;------------------------------------------------------------------------------
 
-(defun spy//secret/load (key file)
+(defun spy:/secret/load (key file)
   "Load FILE (do not include '.el[c]') from this system's secrets
 directory indicated by KEY, if it has secrets.
 
@@ -30,10 +30,10 @@ And it must have FILE in <dir>.
   (if-let* ((hash (jerky/get 'system 'hash))
             (id   (jerky/get 'system 'secret 'identities hash))
             (dir  (jerky/get 'system 'path 'secret key))
-            (path (spy/path/to-file dir file)) ; No ".el"; want compiled too.
+            (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
             (name (concat path ".el")))
       (progn
-        (message "spy//secret/load(%S %S) ->\n%S %S %S %S %S" key file hash id dir path name)
+        (message "spy:/secret/load(%S %S) ->\n%S %S %S %S %S" key file hash id dir path name)
 
         ;; We got all the vars from jerky, so check for existance now.
         ;;    Do we have valid-ish data to check?
@@ -92,7 +92,7 @@ And it must have FILE in <dir>.
   nil)
 
 
-(defun spy//secret/load.path (&rest path)
+(defun spy:/secret/load.path (&rest path)
   "Attempts to load file rooted at jerky key:
   - 'system 'path 'secret 'emacs
 
@@ -101,7 +101,7 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
   (if-let* ((hash (jerky/get 'system 'hash))
             (id   (jerky/get 'system 'secret 'identities hash))
             (root (jerky/get 'system 'path 'secret 'emacs))
-            (filepath (apply #'spy/path/to-file root path)) ; No ".el"; want compiled too.
+            (filepath (apply #'spy:path/to-file root path)) ; No ".el"; want compiled too.
             (name (concat filepath ".el")))
 
       ;; We got all the vars from jerky, so check for existance now.
@@ -109,10 +109,10 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
       (cond ((or (null filepath)
                  (not (stringp filepath)))
              (mis0/init/message "%s: Cannot load path; it is not a string: %s"
-                                'spy//secret/load
+                                'spy:/secret/load
                                 filepath)
              (warn "%s: Cannot load path; it is not a string: %s"
-                   'spy//secret/load
+                   'spy:/secret/load
                    filepath)
              nil)
 
@@ -120,11 +120,11 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
             ;; Add ".el" for actual file check.
             ((not (file-exists-p name))
              (mis0/init/message "%s: Cannot load path; it does not exist: %s"
-                                'spy//secret/load
+                                'spy:/secret/load
                                 name)
              ;; Don't warn; some just don't exist.
              ;; (warn "%s: Cannot load path; it does not exist: %s"
-             ;;       'spy//secret/load
+             ;;       'spy:/secret/load
              ;;       name)
              nil)
 
@@ -141,7 +141,7 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
                                "   root: %s\n"
                                "   path: %s\n"
                                "   name: %s\n")
-                       'spy//secret/load
+                       'spy:/secret/load
                        path
                        hash
                        id
@@ -154,4 +154,4 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'secret 'load)
+(spy:provide :spy 'secret 'load)

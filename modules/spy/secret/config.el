@@ -8,18 +8,18 @@
 ;;------------------------------------------------------------------------------
 
 ;; Need load function.
-(spy/require :spy 'secret)
-(spy/require :spy 'jerky)
+(spy:require :spy 'secret)
+(spy:require :spy 'jerky)
 
 
 ;;------------------------------------------------------------------------------
 ;; Load our specific system's config, if we have one.
 ;;------------------------------------------------------------------------------
 
-(spy//secret/load 'emacs "config")
+(spy:/secret/load 'emacs "config")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (spy/provide :spy 'secret 'config)
+;; (spy:provide :spy 'secret 'config)

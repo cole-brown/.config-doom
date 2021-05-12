@@ -1,7 +1,7 @@
 ;;; spy/zero/+hook.el -*- lexical-binding: t; -*-
 
 (require 'dash)
-(spy/require :spy 'path)
+(spy:require :spy 'path)
 
 
 ;;------------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 
 ;; from here:
 ;; https://www.reddit.com/r/emacs/comments/1m7fqv/avoid_lambda_in_hooks_use_defun_instead/cc83axz/
-(defmacro spy/hook/defun-and-hooker (hook-var options &rest body)
+(defmacro spy:hook/defun-and-hooker (hook-var options &rest body)
   "Macro that `defun's a function called '-s//hook/<hook-name>'
 and adds the hook function to HOOK-VAR.
 
@@ -58,24 +58,24 @@ BODY is the code to run in the hook.
                  (if (not (stringp ,_m//file))
                      ""
                    (concat " from "
-                           (spy/path/to-relative ,_m//file)))))
+                           (spy:path/to-relative ,_m//file)))))
 
               ,@body)
        (add-hook ',_m//hook #',_m//hook-fn ',_m//postpend))))
 ;; (setq test-hook nil)
 ;; (makunbound -s//hook/test)
-;; (spy/hook/defun-and-hooker test-hook nil (message "Hello there."))
-;; (spy/hook/defun-and-hooker test-hook nil (message "Hello there."))
+;; (spy:hook/defun-and-hooker test-hook nil (message "Hello there."))
+;; (spy:hook/defun-and-hooker test-hook nil (message "Hello there."))
 ;; test-hook
 ;; (run-hooks 'test-hook)
 ;; (setq debug-on-error t)
 ;; (setq test-hook nil)
-;; (spy/hook/defun-and-hooker test-hook '(:name "jeff/mcjefferson" :file "here") (message "Hello there."))
+;; (spy:hook/defun-and-hooker test-hook '(:name "jeff/mcjefferson" :file "here") (message "Hello there."))
 ;; test-hook
 ;; (run-hooks 'test-hook)
 
 
-(defmacro spy/hook/defun (hook-var options &rest body)
+(defmacro spy:hook/defun (hook-var options &rest body)
   "Macro that `defun's a function called '-s//hook/<hook-name>'.
 
 OPTIONS is a plist of optional vars:
@@ -92,7 +92,7 @@ OPTIONS is a plist of optional vars:
 
 BODY is the code to run in the hook.
 
-Use this over `spy/hook/defun-and-hooker' only in cases where you aren't
+Use this over `spy:hook/defun-and-hooker' only in cases where you aren't
 `add-hook'ing directly (e.g. for use-package's ':hook').
 "
   (declare (indent 1))
@@ -121,17 +121,17 @@ Use this over `spy/hook/defun-and-hooker' only in cases where you aren't
                (if (not (stringp ,_m//file))
                    ""
                  (concat " from "
-                         (spy/path/to-relative ,_m//file)))))
+                         (spy:path/to-relative ,_m//file)))))
 
             ,@body)
     ))
 ;; (setq test-hook nil)
-;; (spy/hook/defun test-hook nil (message "Hello there."))
+;; (spy:hook/defun test-hook nil (message "Hello there."))
 ;; (add-hook 'test-hook '-s//hook/test)
 ;; test-hook
 ;; (run-hooks 'test-hook)
 ;; (setq test-hook nil)
-;; (spy/hook/defun test-hook '(:name "captain-hook" :file "here") (message "hi."))
+;; (spy:hook/defun test-hook '(:name "captain-hook" :file "here") (message "hi."))
 ;; (add-hook 'test-hook '-s//hook/captain)
 ;; test-hook
 ;; (run-hooks 'test-hook)
@@ -141,4 +141,4 @@ Use this over `spy/hook/defun-and-hooker' only in cases where you aren't
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'hook 'def)
+(spy:provide :spy 'hook 'def)

@@ -4,11 +4,11 @@
 ;;--                             Path Functions                               --
 ;;---------------------------------/mnt/hello-----------------------------------
 
-(spy/require :spy 'zero 'strings)
+(spy:require :spy 'zero 'strings)
 
 
 ;;------------------------------------------------------------------------------
-;; spy/path
+;; spy:path
 ;;------------------------------------------------------------------------------
 
 
@@ -16,55 +16,55 @@
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
-NEXT is normalized via `spy/string/symbol/normalize', so keywords or symbol
+NEXT is normalized via `spy:string/symbol/normalize', so keywords or symbol
 names can be used as well as strings.
 "
   ;; Use next's string value, or symbol name.
-  (let ((next (car (spy/string/symbol/normalize next))))
+  (let ((next (car (spy:string/symbol/normalize next))))
     (if (null parent)
         next
       (concat (file-name-as-directory parent) next))))
 ;; (-s//path/append nil "jeff")
-;; (spy/string/symbol/normalize "jill")
+;; (spy:string/symbol/normalize "jill")
 ;; (-s//path/append "jeff" "jill")
 ;; (-s//path/append "jeff/" "jill")
 ;; (-s//path/append "jeff/" :jill)
 
 
-(defun spy/path/join (&rest path)
+(defun spy:path/join (&rest path)
   "Combines PATH elements together into a path platform-agnostically.
 
-(spy/path/join \"jeff\" \"jill.el\")
+(spy:path/join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\"
 "
   (-reduce #'-s//path/append path))
-;; (spy/path/join "jeff" "jill")
-;; (spy/path/join "jeff")
+;; (spy:path/join "jeff" "jill")
+;; (spy:path/join "jeff")
 
 
-(defun spy/path/to-file (parent &rest path)
+(defun spy:path/to-file (parent &rest path)
   "Given a base dir, and a &rest of e.g. ('path/to' 'dir'
 'with-file' 'file.txt'), will return full /file/ path in
 platform-agnostic manner. Does not 'fix' any `path' components;
 they are expected to be valid.
 "
-  (apply #'spy/path/join
+  (apply #'spy:path/join
          (expand-file-name "" parent)
          path))
-;; (spy/path/to-file "~" "personal" "something.exe" "zort.txt")
+;; (spy:path/to-file "~" "personal" "something.exe" "zort.txt")
 
 
-(defun spy/path/to-dir (parent &rest path)
+(defun spy:path/to-dir (parent &rest path)
   "Given a base dir, and a &rest of e.g. ('path/to' 'dir' 'with-file'),
 will return full /directory/ path in platform-agnostic manner.
 Does not 'fix' any `path' components; they are expected to be
 valid."
   ;; fully qualify base as start of return value
-  (file-name-as-directory (apply #'spy/path/to-file parent path)))
-;; (spy/path/to-dir "~" "personal" "something" "zort")
+  (file-name-as-directory (apply #'spy:path/to-file parent path)))
+;; (spy:path/to-dir "~" "personal" "something" "zort")
 
 
-(defun spy/path/to-relative (&optional path root)
+(defun spy:path/to-relative (&optional path root)
   "Given a possibly absolute PATH, try to trim out ROOT. If both
 nil, returns file name."
   (let ((path (or path (buffer-file-name)))
@@ -73,15 +73,15 @@ nil, returns file name."
                 (expand-file-name root)) ;; and expand it out fully
                "" ;; replace with nothing
                (expand-file-name path)))) ;; make sure we're all expanded here too.
-;; (spy/path/to-relative "/path/to/a/file/location.txt" "/path/to/a/")
-;; (spy/path/to-relative)
+;; (spy:path/to-relative "/path/to/a/file/location.txt" "/path/to/a/")
+;; (spy:path/to-relative)
 
 
 ;; There are some existing packages for dealing with windows->unix or unix->windows paths...
 ;;   Windows emacs, Cygwin paths: https://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   Cygwin/WSL emacs, win paths: https://github.com/victorhge/windows-path
 ;; but..: aren't on melpa, haven't been updated in years, etc.
-(defun spy/path/translate (from to dir)
+(defun spy:path/translate (from to dir)
   "Translates a path style, e.g. from Windows to WSL.
 
 FROM and TO should be one of: (:windows :wsl :linux)
@@ -147,14 +147,14 @@ For `:windows' -> `:wsl':
 
           ;; Fallthrough -> error out.
           (t
-           (error "spy/path/translate currently does not support %s -> %s: %s"
+           (error "spy:path/translate currently does not support %s -> %s: %s"
                   from to path)))
 
     ;; Return the translation.
     trans))
-;; (spy/path/translate :windows :wsl "D:/path/to/somewhere.txt")
-;; (spy/path/translate :windows :wsl "D:/path/to/somewhere.txt")
-;; (spy/path/translate :wsl :windows "/mnt/d/path/to/somewhere.txt")
+;; (spy:path/translate :windows :wsl "D:/path/to/somewhere.txt")
+;; (spy:path/translate :windows :wsl "D:/path/to/somewhere.txt")
+;; (spy:path/translate :wsl :windows "/mnt/d/path/to/somewhere.txt")
 
 
 (defun -s//path/type (path)
@@ -197,7 +197,7 @@ Returns:
                    ;; WSL should work for translating to Linux too?
                    :wsl
                  :windows))
-         (translated (spy/path/translate source
+         (translated (spy:path/translate source
                             dest
                             path)))
     ;; Copy to kill-ring...
@@ -210,4 +210,4 @@ Returns:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'path)
+(spy:provide :spy 'path)

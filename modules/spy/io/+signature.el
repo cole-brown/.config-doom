@@ -13,9 +13,9 @@
 ;;------------------------------------------------------------------------------
 (require 'subr-x)
 
-(spy/require :spy 'jerky)
-(spy/require :spy 'buffer 'point)
-(spy/require :spy 'datetime 'format)
+(spy:require :spy 'jerky)
+(spy:require :spy 'buffer 'point)
+(spy:require :spy 'datetime 'format)
 
 (require 'mis0)
 
@@ -24,18 +24,18 @@
 ;; Helpers.
 ;;------------------------------------------------------------------------------
 
-(defun spy/signature/get (&rest args)
+(defun spy:signature/get (&rest args)
   "Get a signature.
 
 ARGS should be sig's type, optionally followed by `:namespace' and a namespace
 symbol if desired.
 "
   (apply #'jerky/get 'signature args))
-;; (spy/signature/get 'id 'sigil :namespace :work)
+;; (spy:signature/get 'id 'sigil :namespace :work)
 ;; (jerky/get '(signature id sigil) :work)
 
 
-(defun spy/signature/set (&rest args)
+(defun spy:signature/set (&rest args)
   "Set a signature
 
 ARGS should be sig's type, followed by keyword pairs:
@@ -44,11 +44,11 @@ ARGS should be sig's type, followed by keyword pairs:
   - optional: :docstr <docstr>
 "
  (apply #'jerky/set 'signature args))
-;; (spy/signature/set 'id 'hail :value "hi")
-;; (spy/signature/get 'id 'hail)
-;; (spy/signature/get 'id 'email :namespace :home)
+;; (spy:signature/set 'id 'hail :value "hi")
+;; (spy:signature/get 'id 'hail)
+;; (spy:signature/get 'id 'email :namespace :home)
 
-(defun spy/signature/exists (&rest args)
+(defun spy:signature/exists (&rest args)
   "Returns non-nil if one or more signatures defined by ARGS exist.
 
 ARGS should be sig's type, followed by keyword pairs:
@@ -59,9 +59,9 @@ ARGS should be sig's type, followed by keyword pairs:
 
 (defun -s//signature/insert (signature &optional namespace)
   "Figure out what SIGNATURE is and insert it at point.
-NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
+NAMESPACE is used with SIGNATURE to get a sig from `spy:signature/get'.
 "
-  (if-let ((sig (spy/signature/get signature namespace)))
+  (if-let ((sig (spy:signature/get signature namespace)))
       ;; We found something in jerky - use it.
       (insert sig)
 
@@ -96,25 +96,25 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
 ;; ♯:
 ;; §:
 ;; ▀:
-(defun spy/signature/create (sigil name)
+(defun spy:signature/create (sigil name)
   "Create signatures and save them into jerky under 'signature' root key.
 "
   ;;--------------------------
   ;; Identities To Use When Signing
   ;;--------------------------
 
-  (spy/signature/set 'id 'sigil
+  (spy:signature/set 'id 'sigil
                      :namespace :default
                      :value sigil
                      :docstr "Short 1-char signature for notes, comments...")
 
   ;; Could have multiple, but would make searching harder...
-  ;; (spy/signature/set 'signature 'id 'default
+  ;; (spy:signature/set 'signature 'id 'default
   ;;            :namespace :home
   ;;            :value benchwarmer
   ;;            :docstr "Short 1-char signature for notes, comments...")
 
-  (spy/signature/set 'id 'name
+  (spy:signature/set 'id 'name
                      :namespace :default
                      :value name
                      :docstr "Name for use in signatures.")
@@ -123,12 +123,12 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
   ;; Full Signatures
   ;;--------------------------
 
-  (spy/signature/set 'sigil 'note
+  (spy:signature/set 'sigil 'note
                      :namespace :default
                      :value (concat sigil ":")
                      :docstr "Short signature for prefixing note lines.")
 
-  (spy/signature/set 'name 'sign
+  (spy:signature/set 'name 'sign
                      :namespace :default
                      :value (concat "-" name)
                      :docstr "Name for use in signatures.")
@@ -144,22 +144,22 @@ NAMESPACE is used with SIGNATURE to get a sig from `spy/signature/get'.
   ;; TODOs, Fancy Bookmarks, and Such
   ;;--------------------------
 
-  (spy/signature/set 'sigil 'todo
+  (spy:signature/set 'sigil 'todo
                      :namespace :default
                      :value (concat sigil "-TODO-" sigil)
                      :docstr "Long signature for postfixing note lines or as last line of note block."))
-;; (spy/signature/create)
+;; (spy:signature/create)
 
 ;;------------------------------------------------------------------------------
 ;; Signatures - General
 ;;------------------------------------------------------------------------------
 
-(defun spy/signature (&rest args)
+(defun spy:signature (&rest args)
   "Gets signature based on ARGS list.
 
 Signature type is expected before keyword args, if any keywords are used.
 For example:
-(spy/signature 'id 'sigil :namespace :work)
+(spy:signature 'id 'sigil :namespace :work)
 
 Keywords are:
   - :types - following args are:
@@ -168,24 +168,24 @@ Keywords are:
 
   - OPTIONAL:
     - :namespace - namespace to use for `jerky/get'
-    - :timestamp - if non-nil, append `org-inactive' from `spy/datetime'.
+    - :timestamp - if non-nil, append `org-inactive' from `spy:datetime'.
     - :comment   - if non-nil, wrap signature in comment characters if deemed
                    appropriate to major mode and point's position (aka ask
                    `mis0/comment/wrap').
 "
   ;; Break `args' up into type list and keyword args, then check for any of the
   ;; optional keywords.
-  (-let* (((type keys) (spy/lisp/func.args args :namespace :timestamp :comment))
+  (-let* (((type keys) (spy:lisp/func.args args :namespace :timestamp :comment))
           ((&plist :namespace :timestamp :comment) keys))
 
     ;; First, we need the signature...
-    (let ((sig (spy/signature/get type :namespace namespace)))
+    (let ((sig (spy:signature/get type :namespace namespace)))
       ;; Add timestamp if desired.
       ;; Add it first - commenting could append to end.
       (when timestamp
         (setq sig (concat sig
                           " "
-                          (spy/datetime/string.get 'org-inactive))))
+                          (spy:datetime/string.get 'org-inactive))))
 
       (when comment
         ;; Append ':' and wrap sig with comment characters if necessary.
@@ -193,20 +193,20 @@ Keywords are:
 
       ;; Return it.
       sig)))
-;; (spy/signature 'id 'sigil)
-;; (spy/signature 'sigil 'todo :namespace :work)
-;; (spy/signature 'sigil 'todo :timestamp t :comment t)
+;; (spy:signature 'id 'sigil)
+;; (spy:signature 'sigil 'todo :namespace :work)
+;; (spy:signature 'sigil 'todo :timestamp t :comment t)
 
 
-(defun spy/signature/insert (&rest args)
-  "Uses ARGS to get a signature from `spy/signature', then inserts it into the
+(defun spy:signature/insert (&rest args)
+  "Uses ARGS to get a signature from `spy:signature', then inserts it into the
 current buffer at the current point.
 
 Sets evil to insert mode.
 "
-   (insert (apply #'spy/signature args))
+   (insert (apply #'spy:signature args))
    (evil-insert-state))
-;; (spy/signature/insert 'sigil 'todo)
+;; (spy:signature/insert 'sigil 'todo)
 
 
 ;;------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ Sets evil to insert mode.
   segregated from general history.")
 
 
-;; TODO: spy/signature/options function?
+;; TODO: spy:signature/options function?
 
 (defun smd/signature/search (signature)
   "Choose a signature and then search for it via `isearch-forward'."
@@ -230,7 +230,7 @@ Sets evil to insert mode.
      "Search for Signature: "
 
      ;; Shown list.
-     (spy/signature/options)
+     (spy:signature/options)
 
      ;; No predicate to limit above (shown list).
      nil
@@ -260,4 +260,4 @@ Sets evil to insert mode.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'io 'signature)
+(spy:provide :spy 'io 'signature)

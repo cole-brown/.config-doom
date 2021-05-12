@@ -89,7 +89,7 @@ it. BUFFER-OR-NAME must be exact."
 
 ;; I could just grub my meaty hooks into kill-matching-buffers, but... eh.
 ;; I'd probably just forget the function that way.
-(defun smd/buffer/kill.matching (regexp &optional
+(defun spy:cmd:buffer/kill.matching (regexp &optional
                                         internal-too
                                         no-ask
                                         delete-process

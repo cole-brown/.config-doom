@@ -36,7 +36,7 @@
 ;; Trial 1 [2019-01-29]: Use code from link.
 ;; Trial 2 [2019-05-17]: Do beginning of line first, not second.
 ;; TRIAL END [2020-02-03]: Trial successful; keep this.
-(defun smd/smarter-move-beginning-of-line (arg)
+(defun spy:cmd:smarter-move-beginning-of-line (arg)
   "Move point to beginning of line, or indentation.
 
 Move point to the beginning of the line. If point is already
@@ -72,7 +72,7 @@ point reaches the beginning or end of the buffer, stop there.
 ;; Visual Lines
 ;;---
 
-(defun smd/smarter-beginning-of-visual-line (arg)
+(defun spy:cmd:smarter-beginning-of-visual-line (arg)
   "Move point to beginning of visual line, or actual line, or indentation.
 
 Move point to the beginning of the (visual) line. If point is
@@ -96,13 +96,13 @@ point reaches the beginning or end of the buffer, stop there.
   ;; Move in the line now.
   (let ((orig-point (point)))
     (beginning-of-visual-line 1)
-    ;; If that did nothing, jump into `smd/smarter-move-beginning-of-line'
+    ;; If that did nothing, jump into `spy:cmd:smarter-move-beginning-of-line'
     ;; for more beginnings.
     (when (= orig-point (point))
-      (smd/smarter-move-beginning-of-line 1))))
+      (spy:cmd:smarter-move-beginning-of-line 1))))
 
 
-(defun smd/smarter-end-of-visual-line (arg)
+(defun spy:cmd:smarter-end-of-visual-line (arg)
   "Move point to end of visual line, or actual line.
 
 Move point to the end of the (visual) line. If point is already

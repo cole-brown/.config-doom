@@ -189,7 +189,7 @@ Returns:
          :linux)))
 
 
-(defun smd/path/translate (path)
+(defun spy:cmd:path/translate (path)
   "Tries to auto-guess source/dest path types and then translate the path."
   (interactive "sPath: ")
   (let* ((source (sss:path/type path))
@@ -204,7 +204,7 @@ Returns:
     (kill-new translated)
     ;; Return it.
     translated))
-;; (smd/path/translate "D:/")
+;; (spy:cmd:path/translate "D:/")
 
 
 ;;------------------------------------------------------------------------------

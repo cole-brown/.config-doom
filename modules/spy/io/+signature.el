@@ -221,7 +221,7 @@ Sets evil to insert mode.
 
 ;; TODO: spy:signature/options function?
 
-(defun smd/signature/search (signature)
+(defun spy:cmd:signature/search (signature)
   "Choose a signature and then search for it via `isearch-forward'."
   (interactive (list
     ;; Arg 0: signature type

@@ -172,7 +172,7 @@ notes.
 ;; (sss:org/todo.keyword "bob" "[-]" "b" 'timestamp 'notes)
 
 
-(defun smd/org/convert.todo (skip-bare)
+(defun spy:cmd:org/convert.todo (skip-bare)
   "Convert old TODO sequence to new."
   (interactive
    (list (y-or-n-p "Skip bare->wrap? ")))

@@ -15,7 +15,7 @@
 ;; `Align-Regex' helper function idea came from this nice chap:
 ;; http://pragmaticemacs.com/emacs/aligning-text/
 
-(defun smd/align-before (start end text)
+(defun spy:cmd:align-before (start end text)
   "Align columns by whitespace before TEXT. E.g. with text \"+=\" and region:
   Jeff.Jet(jeff.it).onClick += OnJeffClick;
   Jeff.Jet(jefferson.it).onClick += OnJeffersonClick;
@@ -39,7 +39,7 @@ indicated by START and END.
                   1 1 nil)))
 
 
-(defun smd/align-after (start end text)
+(defun spy:cmd:align-after (start end text)
   "Align columns by whitespace after TEXT. E.g. with text \"+=\" and region:
   Jeff.Jet(jeff.it).onClick += OnJeffClick;
   Jeff.Jet(jefferson.it).onClick += OnJeffersonClick;
@@ -74,7 +74,7 @@ indicated by START and END.
 ;;
 ;; This is actually the inverse of fill-paragraph. Takes a multi-line paragraph
 ;; and makes it into a single line of text.
-(defun smd/fill/paragraph/unfill ()
+(defun spy:cmd:fill/paragraph/unfill ()
   (interactive)
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
@@ -110,14 +110,14 @@ in a mode with a special fill for hydra hinting."
    (t #'fill-paragraph)))
 
 
-(defun smd/fill/paragraph/per-mode (&optional justify)
+(defun spy:cmd:fill/paragraph/per-mode (&optional justify)
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
   (interactive)
   (funcall (sss:fill/paragraph/fn-for-mode) justify))
 
 
-(defun smd/fill/region/single-line (&optional justify)
+(defun spy:cmd:fill/region/single-line (&optional justify)
   "Grab start/end of current line and call `fill-region'. i.e.
 \"'Fill Region' on just this line, please.\""
   (interactive)
@@ -148,8 +148,8 @@ the fill prefix-map."
        ;;------------------------------
        (:prefix ("a" . "Alignment")
 
-        :desc "spy:   Align Before"    "a" #'smd/align-before
-        :desc "spy:   Align After"     "o" #'smd/align-after
+        :desc "spy:   Align Before"    "a" #'spy:cmd:align-before
+        :desc "spy:   Align After"     "o" #'spy:cmd:align-after
         :desc "emacs: Align Regex"     ";" #'align-regexp
         :desc "emacs: C-u Align Regex" "q" (lambda () (interactive)
                                              (setq current-prefix-arg '(4))
@@ -165,19 +165,19 @@ the fill prefix-map."
         ;; Regions
         :desc "Region"              "r" #'fill-region
         :desc "Region as Paragraph" "a" #'fill-region-as-paragraph
-        :desc "Line"                "l" #'smd/fill/region/single-line
+        :desc "Line"                "l" #'spy:cmd:fill/region/single-line
 
         ;; Paragraphs
         :desc (if (eq (sss:fill/paragraph/fn-for-mode) #'fill-paragraph)
                   "Default Fill ¶"
                 "Mode-Aware Fill ¶")
-        "p" #'smd/fill/paragraph/per-mode
+        "p" #'spy:cmd:fill/paragraph/per-mode
         :desc "Individual ¶"  "i" #'fill-individual-paragraphs
         :desc "Non-Uniform ¶" "n" #'fill-nonuniform-paragraphs
         :desc "Default ¶"     "d" #'fill-paragraph
 
         ;; Unfill
-        :desc "Unfill ¶"      "u" #'smd/fill/paragraph/unfill)
+        :desc "Unfill ¶"      "u" #'spy:cmd:fill/paragraph/unfill)
 
 
        ;;------------------------------

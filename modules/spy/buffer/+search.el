@@ -5,13 +5,13 @@
 ;;------------------------------------------------------------------------------
 
 (defconst sss:buffer/search.header/boundry 1000
-  "Buffer position boundry for `smd/buffer/search.header'.")
+  "Buffer position boundry for `spy:cmd:buffer/search.header'.")
 
 ;;------------------------------------------------------------------------------
 ;; Buffer Searching Functions
 ;;------------------------------------------------------------------------------
 
-(defun smd/buffer/search.header (string &optional max-chars)
+(defun spy:cmd:buffer/search.header (string &optional max-chars)
   "Searches for STRING in the first MAX-CHARS of the buffer.
 
 If MAX-CHARS is nil, use `sss:buffer/search.header/boundry'.

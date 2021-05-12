@@ -48,7 +48,7 @@
       :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
       :quiet t)
-    (smd/buffer/search.header "[[--now")
+    (spy:cmd:buffer/search.header "[[--now")
 
     (setq yas-indent-line 'fixed))
 
@@ -270,8 +270,8 @@
         :localleader
         ;; :map evil-org-mode-map
         :prefix "l" ;; links
-        :desc "Link as 'here'." "h" #'smd/org/here.link
-        :desc "Paste as 'here' link." "p" #'smd/org/here.yank)
+        :desc "Link as 'here'." "h" #'spy:cmd:org/here.link
+        :desc "Paste as 'here' link." "p" #'spy:cmd:org/here.yank)
 
   ;; TODO: Do I want this again?
   ;; ;; 'C-c <tab>' to show headings only (no top parent notes, no

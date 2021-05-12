@@ -15,7 +15,7 @@
 ;; Interactive: Insert Timestamp
 ;;--------------------
 
-(defun smd/timestamp/iso-8601.insert ()
+(defun spy:cmd:timestamp/iso-8601.insert ()
   "Produces and inserts a full ISO 8601 format timestamp (with ' '
 date/time separator) of current time.
 "
@@ -23,7 +23,7 @@ date/time separator) of current time.
   (insert (spy:datetime/string.get 'iso-8601 'long)))
 
 
-(defun smd/timestamp/org.insert ()
+(defun spy:cmd:timestamp/org.insert ()
   "Produces and inserts a timestamp of [yyyy-mm-dd], similar to
 inactive ORG timestamp."
   (interactive)

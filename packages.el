@@ -1,6 +1,11 @@
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
+
+;;------------------------------------------------------------------------------
+;; Doom Documentation
+;;------------------------------------------------------------------------------
+
 ;; To install a package with Doom you must declare them here and run 'doom sync'
 ;; on the command line, then restart Emacs for the changes to take effect -- or
 ;; use 'M-x doom/reload'.
@@ -48,3 +53,23 @@
 ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
+
+
+;;------------------------------------------------------------------------------
+;; Packages
+;;------------------------------------------------------------------------------
+
+;; Toying with putting packages in '.doom.d/packages/' directory, but first
+;; let's try it Doom's way.
+
+(package! bufler)
+
+
+;;------------------------------------------------------------------------------
+;;                              !!!>- NOTE -<!!!
+;;                            --------------------
+;; After every change in here:
+;;   1) EXIT DOOM
+;;   2) RUN: `doom sync`
+;;   3) RESTART DOOM
+;;------------------------------------------------------------------------------

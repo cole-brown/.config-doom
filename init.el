@@ -204,6 +204,7 @@
        hook                ; spy:hook:     Hook helper macros/functions.
        org                 ; spy:org:      Org-Mode helpers. Must be after buffer.
        hydra               ; spy:hydra:    Helpers for Hydra package.
+       collections         ; spy:collections: alists, hash-tables, and... oh my!
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
        jerky               ; spy:jerky:   For key/value tree.

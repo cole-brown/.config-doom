@@ -457,7 +457,10 @@
              (:prefix "j" ;; ("j" . "journal")
               ;; Work namespaced commands.
               (:prefix ("w" . ":work journal")
-
+               :desc ":work - New Entry"           "w" (cmd!
+                                                        (sss:org.journal/namespaced
+                                                         :work
+                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":work - New Entry"           "j" (cmd!
                                                         (sss:org.journal/namespaced
                                                          :work
@@ -499,6 +502,10 @@
              (:prefix "j" ;; journal
               ;; Home namespaced commands.
               (:prefix ("h" . ":home journal")
+               :desc ":home - New Entry"           "h" (cmd!
+                                                        (sss:org.journal/namespaced
+                                                         :home
+                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
                :desc ":home - New Entry"           "j" (cmd!
                                                         (sss:org.journal/namespaced
                                                          :home

@@ -1,5 +1,8 @@
 ;;; config/keybinds.el -*- lexical-binding: t; -*-
 
+
+;; (spy:config 'spy 'dvorak)
+
 ;;------------------------------------------------------------------------------
 ;; Useful Keys I've Found So Far...
 ;;------------------------------------------------------------------------------
@@ -19,15 +22,40 @@
 ;; ] SPC - insert newline below
 ;; [ SPC - insert newline above
 ;; Y - yank - yank to end of line
+;; x - delete character at point
+;; X - delete character before point
+
+;; i - insert before/at point
+;; a - insert after point
+;; o - insert line below point and go into insert mode there.
+;;     - `evil-open-below'
+
+
+;;                                  ──────────                                ;;
+;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
+;; ║                                 KEYBINDS                               ║ ;;
+;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
+;;                                  ──────────                                ;;
+
+;;------------------------------
+;; Explanation of `map!':
+;;   http://github.com/hlissner/doom-emacs/issues/814#issuecomment-414051945
+;;------------------------------
+
+
+;; TODO: Add these?
+;;   C-d for backwards delete char
+;;     - no... 'X' does backwards, 'x' does forwards.
+;;   movement keys for in insert mode?
+;;   search, reverse search
+;;
+;; TODO: REMOVE!!!
+;;   Redo is mean. I'm too used to Emacs's ring and using C-r for reverse search.
 
 
 ;;------------------------------------------------------------------------------
-;; Keybinds
-;;------------------------------------------------------------------------------
-
-;;-----------------------------
 ;; Projectile
-;;-----------------------------
+;;------------------------------------------------------------------------------
 
 ;; BUG: Doom bug right now: I have no projectile mode map even though this
 ;; exists in modules/config/default/+emacs-bindings.el:
@@ -45,20 +73,10 @@
          :desc "Replace in project (regex)"  "\\" #'projectile-replace-regexp)))
 
 
-;;-----------------------------
+;;------------------------------------------------------------------------------
 ;; Movement
-;;-----------------------------
+;;------------------------------------------------------------------------------
 
-;; TODO: Add these?
-;;   C-d for backwards delete char
-;;   movement keys for in insert mode?
-;;   search, reverse search
-;;
-;; TODO: REMOVE!!!
-;;   Redo is mean. I'm too used to Emacs's ring and using C-r for reverse search.
-
-;; explanation of map!
-;; http://github.com/hlissner/doom-emacs/issues/814#issuecomment-414051945
 (map!
  ;; :normal, :visual states of evil
  ;; (not :motion, :emacs, :insert, :operator-pending)
@@ -74,6 +92,103 @@
  :nv "t" 'evil-next-line
  :nv "c" 'evil-previous-line)
 
+
+;; evil-backward-char
+;; Info-mode-map <normal-state> h
+;; Info-mode-map <visual-state> h
+;; evil-ex-completion-map C-b
+;; evil-ex-search-keymap C-b
+;; evil-motion-state-map <left>
+;; evil-motion-state-map h
+;; evil-normal-state-map DEL
+;; evil-normal-state-map h
+;; evil-visual-state-map h
+;; ivy-occur-grep-mode-map <normal-state> h
+;; ivy-occur-mode-map <normal-state> h
+;;
+;; evil-forward-char
+;; Info-mode-map <normal-state> l
+;; Info-mode-map <visual-state> l
+;; evil-ex-completion-map C-f
+;; evil-ex-search-keymap C-f
+;; evil-motion-state-map <right>
+;; evil-motion-state-map SPC
+;; evil-motion-state-map l
+;; evil-normal-state-map n
+;; evil-visual-state-map n
+;; ivy-occur-grep-mode-map <normal-state> l
+;; ivy-occur-mode-map <normal-state> l
+;;
+;; evil-next-line
+;; +doom-dashboard-mode-map <down>
+;; +doom-dashboard-mode-map <tab>
+;; +doom-dashboard-mode-map C-n
+;; +doom-dashboard-mode-map n
+;; evil-motion-state-map <down>
+;; evil-motion-state-map j
+;; evil-normal-state-map t
+;; evil-visual-state-map t
+;; ivy-occur-grep-mode-map <visual-state> j
+;; magit-blame-read-only-mode-map <normal-state> j
+;; magit-mode-map <normal-state> j
+;; magit-mode-map <visual-state> j
+;;
+;; evil-next-visual-line
+;; +doom-dashboard-mode-map <down>
+;; +doom-dashboard-mode-map <tab>
+;; +doom-dashboard-mode-map C-n
+;; +doom-dashboard-mode-map n
+;; evil-motion-state-map g j
+;; magit-mode-map <normal-state> j
+;; magit-mode-map <visual-state> j
+;;
+;;
+;;
+;; evil-previous-line
+;;
+;;
+;; magit-blame-read-only-mode-map <normal-state> k
+;; magit-mode-map <normal-state> k
+;; magit-mode-map <visual-state> k
+;;
+;;
+;; dired-next-line
+;; dired-mode-map <down>
+;; dired-mode-map <normal-state> <remap> <next-line>
+;; dired-mode-map <normal-state> j
+;; dired-mode-map C-n
+;; dired-mode-map SPC
+;; dired-mode-map n
+;;
+;; org-agenda-next-line
+;; org-agenda-keymap <down>
+;; org-agenda-keymap C-n
+;; org-agenda-keymap n
+;; org-agenda-mode-map <down>
+;; org-agenda-mode-map C-n
+;; org-agenda-mode-map n
+;;
+;; magit-next-line
+;; magit-cherry-mode-map <down>
+;; magit-cherry-mode-map C-n
+;; magit-diff-mode-map <down>
+;; magit-diff-mode-map C-n
+;; magit-log-mode-map <down>
+;; magit-log-mode-map C-n
+;; magit-log-select-mode-map <down>
+;; magit-log-select-mode-map C-n
+;; magit-mode-map <down>
+;; magit-mode-map C-n
+;; magit-process-mode-map <down>
+;; magit-process-mode-map C-n
+;; magit-reflog-mode-map <down>
+;; magit-reflog-mode-map C-n
+;; magit-refs-mode-map <down>
+;; magit-refs-mode-map C-n
+;; magit-status-mode-map <down>
+;; magit-status-mode-map C-n
+;;
+;; ... and many more. Search for 'next line'.
 
 
 

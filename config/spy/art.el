@@ -149,10 +149,10 @@ Draw box characters.
 _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   _y_: ?y?     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
 _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   _i_: ?i?     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^
-^ ^  ^ ^  _<_: ?<?  ^ ^  ^ ^   _P_: ?P?   _Y_: ?Y?
-_A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?
-^ ^  ^ ^  _Q_: ?Q?  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^(hi)
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ? ?
+^ ^  ^ ^  _<_: ?<?  ^ ^  ^ ^   _P_: ?P?   _Y_: ?Y?     ^ ^        ^ ^        ^ ^            _x_: ?x?
+_A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^            _X_: ?X?
+^ ^  ^ ^  _Q_: ?Q?  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
 "
   ;; NOTE: You _MUST_ start off with a newline in docstr, otherwise you will get:
   ;;  > Debugger entered--Lisp error: (error "Not enough arguments for format string")
@@ -204,6 +204,9 @@ _A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
+  (" " (funcall #'insert " ") "insert space")
+  ("x" #'evil-delete-char "delete char")
+  ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")
   ("_" #'undo "undo")
   ("C-_" #'undo "undo")
@@ -230,10 +233,10 @@ Draw box characters.
 _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   ^ ^  ^ ^     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
 _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   ^ ^  ^ ^     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^(hi)
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ? ?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _x_: ?x?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _X_: ?X?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
 "
   ;; NOTE: You _MUST_ start off with a newline in docstr, otherwise you will get:
   ;;  > Debugger entered--Lisp error: (error "Not enough arguments for format string")
@@ -270,6 +273,9 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
+  (" " (funcall #'insert " ") "insert space")
+  ("x" #'evil-delete-char "delete char")
+  ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")
   ("_" #'undo "undo")
   ("C-_" #'undo "undo")

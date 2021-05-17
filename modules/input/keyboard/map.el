@@ -172,8 +172,6 @@ If `key-binding' returns nil, this function does nothing."
         ;; Flat lists: one for global keymap, and one for all others.
         bindings-global
         bindings)
-    (message ">>>> input//kl:layout/bindings: %s" layout)
-    (message ">>>> input//kl:layout/bindings: keys: %S" layout-keys)
     ;; Do a mapping for each of the keymaps.
     (dolist (keymap-bindings layout-keys)
       (let ((keymap   (car keymap-bindings))
@@ -197,8 +195,6 @@ If `key-binding' returns nil, this function does nothing."
     ;; Got all keybinds for all keymaps. Map 'em.
     (setq bindings (nreverse bindings))
     (setq bindings-global (nreverse bindings-global))
-    (message ">>>> input//kl:layout/bindings: BINDINGS!!!:\n    %S"
-             (append bindings-global bindings))
     (doom--map-process (append bindings-global bindings))))
 
 
@@ -298,10 +294,6 @@ Example:
 
 (defmacro input:keyboard/layout:layout! (layout)
   "Map all of layout's evil-states & keybinds to their keymaps."
-  (message ">>>>")
-  (message ">>>>  input:keyboard/layout:layout! %S -> %S" layout (symbol-value layout))
-  (message ">>>>")
-
   (input//kl:layout/bindings (symbol-value layout)))
 ;; (input:keyboard/layout:layout! :spydez)
 ;; (input:keyboard/layout:layout! input//kl:layout/active)

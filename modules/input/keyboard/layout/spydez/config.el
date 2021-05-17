@@ -1,6 +1,5 @@
 ;;; input/keyboard/layout/spydez/config.el -*- lexical-binding: t; -*-
 
-(message "Loading layout/spydez/config.el...")
 
 ;;-----------------------------------Dvorak-------------------------------------
 ;;                       Cuz I was bored in college...

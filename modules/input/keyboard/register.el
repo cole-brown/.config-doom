@@ -38,9 +38,6 @@ Must be called after ACTIVE's keys/functions lists are defined."
         (default (or
                   (input//kl:flag->keyword default)
                   :qwerty)))
-    (message "input//kl:layouts/config(%s %s): expecting: %s... ok? %s"
-             active default input//kl:layout/expected
-             (eq active input//kl:layout/expected))
     (when (null input//kl:layout/expected)
       (error (concat "Module :input/keyboard/layout: `input//kl:layouts/config' "
                      "No expected layout set; cannot configure keyboard layout! "
@@ -71,7 +68,5 @@ Must be called after ACTIVE's keys/functions lists are defined."
              input//kl:layout/expected
              input//kl:layout/active)
 
-    (message ">>>> input:keyboard/layout:configure-active: loading layout for %s..."
-             input//kl:layout/active)
     (input:keyboard/layout:layout! input//kl:layout/active)))
 ;; (input//kl:layout/configure-active)

@@ -1,6 +1,5 @@
 ;;; input/keyboard/layout/spydez/init.el -*- lexical-binding: t; -*-
 
-(message "Loading layout/spydez/init.el...")
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables

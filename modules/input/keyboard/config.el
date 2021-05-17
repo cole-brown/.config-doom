@@ -58,7 +58,6 @@
   "Hook to run ONCE under `doom-init-modules-hook' for finalizing all
 keybinds that don't care about evil vs good."
   ;; Nothing to do at the moment.
-  (message "<<<< input:keyboard/layout:finalize/always")
   )
 
 
@@ -66,7 +65,6 @@ keybinds that don't care about evil vs good."
   "Hook to run ONCE under `doom-init-modules-hook' for finalizing all
 evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
   ;; TODO: rename stuff for evil vs non-evil.
-  (message "<<<< input:keyboard/layout:finalize/evil")
   (input:keyboard/layout:configure-active))
 
 
@@ -99,9 +97,7 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
   (add-transient-hook!
       'doom-init-modules-hook
     (input:keyboard/layout:finalize/evil)))
-(message ">>>> doom-init-modules-hook: %S" doom-init-modules-hook)
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(message ">>>> ---input:keyboard/config done!---")

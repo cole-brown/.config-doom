@@ -80,8 +80,7 @@ An entry is: (:layout-keyword keys-alist-symbol funcs-alist-symbol)")
                               (intern
                                (concat ":"
                                        (string-remove-prefix "+layout/"
-                                                             (symbol-name flag)))))
-                        (message ">>>> keyboard layout expected: %s" input//kl:layout/expected))
+                                                             (symbol-name flag))))))
                       ;; Count for a warning (if not suppressed).
                       (setq layouts (1+ layouts)))))
                ;; Warn only if we didn't see the suppression.
@@ -107,13 +106,6 @@ LAYOUT can be the flag symbol or keyword (see `input//kl:flag->keyword').
 
 E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 `:dvorak', and nil for others."
-  (message ">>>> keyboard layout loading for?: %s(=%s) -> %s"
-           layout
-           (input//kl:flag->keyword layout)
-  (and input//kl:layout/expected
-       layout
-       (eq input//kl:layout/expected
-           (input//kl:flag->keyword layout))))
   (and input//kl:layout/expected
        layout
        (eq input//kl:layout/expected
@@ -177,8 +169,6 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
-    (message ">>>> input:keyboard/layout:load-file:\n  layout: %s\n  load-name: %s\n  directory: %s\n  relative-to: %s"
-             layout load-name directory load-file-name)
   ;; Allow keyword or flag.
   (let* ((directory (or directory
                         (input//kl:symbol->name layout)))
@@ -187,10 +177,7 @@ The extension '.el' is used to check for file existance."
                        load-name)))
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-    (message ">>>> input:keyboard/layout:load-file:\n  layout: %s\n  load-name: %s\n  directory: %s\n  ->path: %s (%s)\n  --->exists? %s"
-             layout load-name directory path (concat path ".el") (input//kl:file/exists? (concat path ".el")))
     (when (input//kl:file/exists? (concat path ".el"))
-      (message ">>>> input:keyboard/layout:load-file: loading %s relative to %s..." path load-file-name)
       (load! path))
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))
@@ -218,10 +205,7 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
-  (message ">>>> input:keyboard/layout:load-if:\n  layout: %s\n  load-name: %s\n  directory: %s\n  load? %s\n  relative to: %s"
-           layout load-name directory (input//kl:loading-for layout) load-file-name)
   (when (input//kl:loading-for layout)
-    (message ">>>> input:keyboard/layout:load-if: load-file: %s %s %s" layout load-name directory)
     (input:keyboard/layout:load-file layout load-name directory)))
 ;; (input:keyboard/layout:load-if :spydez "config")
 
@@ -257,4 +241,3 @@ The extension '.el' is used to check for file existance."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(message ">>>> ---input:keyboard/init done!---")

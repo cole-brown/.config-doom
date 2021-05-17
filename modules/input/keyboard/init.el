@@ -32,38 +32,15 @@ An entry is: (:layout-keyword keys-alist-symbol funcs-alist-symbol)")
 
 
 ;;------------------------------
-;; Layout: Active
+;; Layouts: Active / Default
 ;;------------------------------
 
 (defvar input//kl:layout/active nil
   "Cached keyword for the active/desired keyboard layout.")
 
 
-(defvar input//kl:layout/active:keys nil
-  "Keyword -> kbd string alist for the active/desired keyboard layout.")
-
-
-(defvar input//kl:layout/active:functions nil
-  "Keymap -> Keyword -> function alists for the active/desired keyboard
-layout.")
-
-
-;;------------------------------
-;; Layout: Default
-;;------------------------------
-
 (defvar input//kl:layout/default nil
   "Cached keyword for the keyboard layout which is being overwritten.")
-
-
-(defvar input//kl:layout/default:keys nil
-  "Keymap -> Keyword -> Kbd-String alist for the keyboard layout we're leaving
-(used to save info about what keybinds are being overwritten).")
-
-
-(defvar input//kl:layout/default:functions nil
-  "Keymap -> Keyword -> Function alists for the keyboard layout we're leaving
-(used to save info about what keybinds are being overwritten).")
 
 
 ;;------------------------------------------------------------------------------
@@ -89,7 +66,7 @@ layout.")
 
 ;; Should not have more than one keyboard layout, but only check when loading.
 (if load-file-name
-  (let ((flags (doom-module-get :config 'default :flags))
+  (let ((flags (doom-module-get :input 'keyboard :flags))
         (layouts 0)
         (suppress-warning nil))
     (when (and (> 1
@@ -103,7 +80,8 @@ layout.")
                               (intern
                                (concat ":"
                                        (string-remove-prefix "+layout/"
-                                                             (symbol-name flag))))))
+                                                             (symbol-name flag)))))
+                        (message ">>>> keyboard layout expected: %s" input//kl:layout/expected))
                       ;; Count for a warning (if not suppressed).
                       (setq layouts (1+ layouts)))))
                ;; Warn only if we didn't see the suppression.
@@ -129,12 +107,24 @@ LAYOUT can be the flag symbol or keyword (see `input//kl:flag->keyword').
 
 E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 `:dvorak', and nil for others."
+  (message ">>>> keyboard layout loading for?: %s(=%s) -> %s"
+           layout
+           (input//kl:flag->keyword layout)
+  (and input//kl:layout/expected
+       layout
+       (eq input//kl:layout/expected
+           (input//kl:flag->keyword layout))))
   (and input//kl:layout/expected
        layout
        (eq input//kl:layout/expected
            (input//kl:flag->keyword layout))))
 ;; (input//kl:loading-for :spydez)
 ;; (input//kl:loading-for :qwerty)
+
+(defun input//kl:file/exists? (relative-path)
+  "Returns non-nil if RELATIVE-PATH exists relative to this file's directory."
+  (file-exists-p (concat (file-name-as-directory (dir!)) relative-path)))
+;; (input//kl:file/exists? "layout/spydez/init.el")
 
 
 (defun input//kl:flag->keyword (flag)
@@ -187,6 +177,8 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
+    (message ">>>> input:keyboard/layout:load-file:\n  layout: %s\n  load-name: %s\n  directory: %s\n  relative-to: %s"
+             layout load-name directory load-file-name)
   ;; Allow keyword or flag.
   (let* ((directory (or directory
                         (input//kl:symbol->name layout)))
@@ -195,10 +187,13 @@ The extension '.el' is used to check for file existance."
                        load-name)))
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-    (when (file-exists-p! (concat path ".el"))
+    (message ">>>> input:keyboard/layout:load-file:\n  layout: %s\n  load-name: %s\n  directory: %s\n  ->path: %s (%s)\n  --->exists? %s"
+             layout load-name directory path (concat path ".el") (input//kl:file/exists? (concat path ".el")))
+    (when (input//kl:file/exists? (concat path ".el"))
+      (message ">>>> input:keyboard/layout:load-file: loading %s relative to %s..." path load-file-name)
       (load! path))
     ;; If not, switch back to this:
-    ;; (if (file-exists-p! (concat path ".el"))
+    ;; (if (input//kl:file/exists? (concat path ".el"))
     ;;     (load! path)
     ;;   (warn (concat "Doom Module `:input/keyboard' init.el could not find "
     ;;                 "'%s' file for '%s'. path: %s")
@@ -223,7 +218,10 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
+  (message ">>>> input:keyboard/layout:load-if:\n  layout: %s\n  load-name: %s\n  directory: %s\n  load? %s\n  relative to: %s"
+           layout load-name directory (input//kl:loading-for layout) load-file-name)
   (when (input//kl:loading-for layout)
+    (message ">>>> input:keyboard/layout:load-if: load-file: %s %s %s" layout load-name directory)
     (input:keyboard/layout:load-file layout load-name directory)))
 ;; (input:keyboard/layout:load-if :spydez "config")
 
@@ -259,3 +257,4 @@ The extension '.el' is used to check for file existance."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(message ">>>> ---input:keyboard/init done!---")

@@ -16,17 +16,46 @@ keybinds for a key it is overwriting.")
 ;;------------------------------------------------------------------------------
 
 
+(defun input//kl:get (type layout)
+  "Get TYPE (`:functions' or `:keys') alist for LAYOUT keyword."
+  (let (slot
+        symbols)
+    ;; Error check / set slot.
+    (cond ((eq type :keys)
+           (setq slot 0))
+          ((eq type :functions)
+           (setq slot 1))
+          (t
+           (error (concat "Module :input/keyboard/layout: `input//kl:get' "
+                          "Unknown type '%S'. Must be either "
+                          "`:keys' or `:functions'!")
+                  type)))
+    ;; Get layout's key/func symbol from `input//kl:layouts', and return
+    ;; its alist value.
+    (setq symbols (input//kl:alist/get layout input//kl:layouts))
+    (if (not symbols)
+        (error (concat "Module :input/keyboard/layout: `input//kl:get' "
+                       "No '%S' for layout '%S'. Does layout exist and is it "
+                       "currently registered in `input//kl:layouts'?")
+                  type layout)
+      (symbol-value (nth slot symbols)))))
+;; (input//kl:get :keys :spydez)
+;; (input//kl:get :functions :qwerty)
+;; (input//kl:get nil :spydez)
+;; (input//kl:get :keys :layout-invalid)
+
+
 (defun input//kl:key (layout keymap keyword)
   "Looks up KEYWORD in LAYOUT's KEYMAP alist and returns the value
 (a `kbd' string)."
   (cond ((eq layout input//kl:layout/active)
          (input//kl:alist/get keyword
                               (input//kl:alist/get keymap
-                                                   input//kl:layout/active:keys)))
+                                                   (input//kl:get :keys layout))))
         ((eq layout input//kl:layout/default)
          (input//kl:alist/get keyword
                               (input//kl:alist/get keymap
-                                                   input//kl:layout/default:keys)))
+                                                   (input//kl:get :keys layout))))
         (t
          (error (concat "Module :input/keyboard/layout: `input//kl:key' "
                         "Cannot find keyword '%S' for keymap '%S' "
@@ -47,11 +76,11 @@ Returns: (evil-states function)"
   (cond ((eq layout input//kl:layout/active)
          (input//kl:alist/get keyword
                               (input//kl:alist/get keymap
-                                                   input//kl:layout/active:functions)))
+                                                   (input//kl:get :functions layout))))
         ((eq layout input//kl:layout/default)
          (input//kl:alist/get keyword
                               (input//kl:alist/get keymap
-                                                   input//kl:layout/default:functions)))
+                                                   (input//kl:get :functions layout))))
         (t
          (error (concat "Module :input/keyboard/layout: `input//kl:function' "
                         "Cannot find keyword '%S' for layout '%S' as the "
@@ -76,7 +105,7 @@ Returns: (EVIL-STATES kbd-string FUNCTION)"
          (value  (input//kl:value layout keymap keyword))
          (states (nth 0 value))
          (func   (nth 1 value)))
-    (input//kl:overwrite keymap states key keyword func)
+    (input//kl:entry/overwrite keymap states key keyword func)
     (list states key func)))
 ;; (setq input//kl:overwritten nil)
 ;; (input//kl:entry/map :spydez nil :up)
@@ -95,7 +124,7 @@ Returns: (EVIL-STATES kbd-string nil)"
          (value  (input//kl:value layout keymap keyword))
          (states (nth 0 value))
          (func   (nth 1 value))) ;; For recording overwrite.
-    (input//kl:overwrite keymap states key keyword func)
+    (input//kl:entry/overwrite keymap states key keyword func)
     ;; Return `nil' for function.
     (list states key nil)))
 
@@ -135,11 +164,42 @@ If `key-binding' returns nil, this function does nothing."
       t)))
 
 
-(defun input//kl:map!/all (keymap entries)
-  "Calls `map!' for KEYMAP and ENTRIES.
+(defun input//kl:layout/bindings (layout)
+  "Maps all keys to their evil-states and functions for LAYOUT keyword."
+  ;; Gather a list of map entries from layout and format for `input:keyboard/layout:map!':
+  ;;   entry: (evil-states key-keyword function)
+  (let ((layout-keys (input//kl:get :keys layout))
+        ;; Flat lists: one for global keymap, and one for all others.
+        bindings-global
+        bindings)
+    (message ">>>> input//kl:layout/bindings: %s" layout)
+    (message ">>>> input//kl:layout/bindings: keys: %S" layout-keys)
+    ;; Do a mapping for each of the keymaps.
+    (dolist (keymap-bindings layout-keys)
+      (let ((keymap   (car keymap-bindings))
+            (keywords (cdr keymap-bindings)))
+        (when keymap
+          ;; Put this keymap into the bindings so the following will all be under
+          ;; it. Skipping for global keymap (nil).
+          (push :map bindings)
+          (push keymap bindings))
 
-Each item in ENTRIES should be a list of: (evil-states kbd-string function)"
-  `(map! :map ,keymap ,@entries))
+        ;; Now get all the bindings for said keymap parsed into the lists.
+        (dolist (keyword-binding keywords)
+          ;; Get the actual binding, and push into the correct bindings list one
+          ;; at a time.
+          (dolist (key-state-func
+                   (input//kl:entry/map layout keymap (car keyword-binding)))
+            (if keymap
+                (push key-state-func bindings)
+              (push key-state-func bindings-global))))))
+
+    ;; Got all keybinds for all keymaps. Map 'em.
+    (setq bindings (nreverse bindings))
+    (setq bindings-global (nreverse bindings-global))
+    (message ">>>> input//kl:layout/bindings: BINDINGS!!!:\n    %S"
+             (append bindings-global bindings))
+    (doom--map-process (append bindings-global bindings))))
 
 
 ;; (defun input//kl:movement (layout-old layout-new keymap evil-states)
@@ -173,6 +233,7 @@ Each item in ENTRIES should be a list of: (evil-states kbd-string function)"
 ;; Public Functions
 ;;------------------------------------------------------------------------------
 
+;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
 (defmacro input:keyboard/layout:map! (layout keymap &rest keywords)
   "`map!' helper for keyboard layouts.
 
@@ -204,6 +265,7 @@ Example:
 ;; (pp-macroexpand-expression (input:keyboard/layout:map! :spydez nil :up :down :left :right))
 
 
+;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
 (defmacro input:keyboard/layout:unmap! (layout keymap &rest keywords)
   "`map!' helper for keyboard layouts that unmaps KEYWORDS keybinds.
 
@@ -231,25 +293,15 @@ Example:
                entries))
        (input//kl:map!/all ,mac:keymap entries))))
 ;; (pp-macroexpand-expression (input:keyboard/layout:unmap! :spydez nil :up :down :left :right))
+;; (input:keyboard/layout:unmap! :spydez nil :up :down :left :right)
 
 
 (defmacro input:keyboard/layout:layout! (layout)
-  "Maps all keys to their evil-states and functions for LAYOUT keyword."
-  ;; Gather a list of map entries from layout and format for `input:keyboard/layout:map!':
-  ;;   entry: (evil-states key-keyword function)
+  "Map all of layout's evil-states & keybinds to their keymaps."
+  (message ">>>>")
+  (message ">>>>  input:keyboard/layout:layout! %S -> %S" layout (symbol-value layout))
+  (message ">>>>")
 
-  (let ((mac:layout (make-symbol "layout-type")))
-    ;; Eval inputs once.
-    `(let ((,mac:layout ,layout))
-       ;; Do a mapping for each of the keymaps.
-       (dolist (keymap-bindings input//kl:layout/active:keys)
-         (let ((keymap   (car keymap-bindings))
-               (keywords (cdr keymap-bindings))
-               bindings)
-           ;; And here we have to get all the entries for the keymap.
-           (dolist (keyword-binding keywords)
-             (push (input//kl:entry/map ,mac:layout keymap (car keyword-binding)) bindings))
-
-           ;; Got everything for this keymaps. Map 'em.
-           (input//kl:map!/all keymap bindings))))))
-;; (pp-macroexpand-expression (input:keyboard/layout:layout! :spydez))
+  (input//kl:layout/bindings (symbol-value layout)))
+;; (input:keyboard/layout:layout! :spydez)
+;; (input:keyboard/layout:layout! input//kl:layout/active)

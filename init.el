@@ -18,6 +18,7 @@
        ;;chinese
        ;;japanese
        ;;layout            ; auie,ctsrnm is the superior home row
+       (keyboard +layout/spydez)
 
        :completion
        company           ; the ultimate code completion backend

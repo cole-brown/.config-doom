@@ -77,20 +77,20 @@
 ;; Movement
 ;;------------------------------------------------------------------------------
 
-(map!
- ;; :normal, :visual states of evil
- ;; (not :motion, :emacs, :insert, :operator-pending)
- :nv "h" nil  ; was: 'evil-backward-char
- :nv "j" nil  ; was: 'evil-forward-char
- :nv "k" nil  ; was: 'evil-next-line
- :nv "l" nil  ; was 'evil-previous-line
+;; (map!
+;;  ;; :normal, :visual states of evil
+;;  ;; (not :motion, :emacs, :insert, :operator-pending)
+;;  :nv "h" nil  ; was: 'evil-backward-char
+;;  :nv "j" nil  ; was: 'evil-forward-char
+;;  :nv "k" nil  ; was: 'evil-next-line
+;;  :nv "l" nil  ; was 'evil-previous-line
 
- ;; Rebind to Dvorak-friendly, WASD-style keys.
- ;; Blows up some evil/vim commands, I'm sure, but hjkl is awkward as fuck.
- :nv "h" 'evil-backward-char
- :nv "n" 'evil-forward-char
- :nv "t" 'evil-next-line
- :nv "c" 'evil-previous-line)
+;;  ;; Rebind to Dvorak-friendly, WASD-style keys.
+;;  ;; Blows up some evil/vim commands, I'm sure, but hjkl is awkward as fuck.
+;;  :nv "h" 'evil-backward-char
+;;  :nv "n" 'evil-forward-char
+;;  :nv "t" 'evil-next-line
+;;  :nv "c" 'evil-previous-line)
 
 
 ;; evil-backward-char

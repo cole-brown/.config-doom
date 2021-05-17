@@ -38,6 +38,9 @@ Must be called after ACTIVE's keys/functions lists are defined."
         (default (or
                   (input//kl:flag->keyword default)
                   :qwerty)))
+    (message "input//kl:layouts/config(%s %s): expecting: %s... ok? %s"
+             active default input//kl:layout/expected
+             (eq active input//kl:layout/expected))
     (when (null input//kl:layout/expected)
       (error (concat "Module :input/keyboard/layout: `input//kl:layouts/config' "
                      "No expected layout set; cannot configure keyboard layout! "
@@ -53,14 +56,8 @@ Must be called after ACTIVE's keys/functions lists are defined."
             (default-layout (input//kl:alist/get default
                                                  input//kl:layouts)))
         (setq input//kl:layout/active            active
-              input//kl:layout/active:keys       (symbol-value (nth 0 active-layout))
-              input//kl:layout/active:functions  (symbol-value (nth 1 active-layout))
-              input//kl:layout/default           default
-              input//kl:layout/default:keys      (symbol-value (nth 0 default-layout))
-              input//kl:layout/default:functions (symbol-value (nth 1 default-layout)))))))
+              input//kl:layout/default           default)))))
 ;; (input//kl:layouts/config :spydez)
-;; (alist-get nil input//kl:layout/active:keys)
-;; (alist-get :up (alist-get nil input//kl:layout/active:keys))
 
 
 (defun input:keyboard/layout:configure-active ()
@@ -74,5 +71,7 @@ Must be called after ACTIVE's keys/functions lists are defined."
              input//kl:layout/expected
              input//kl:layout/active)
 
-    (input//kl:layout! input//kl:layout/active)))
+    (message ">>>> input:keyboard/layout:configure-active: loading layout for %s..."
+             input//kl:layout/active)
+    (input:keyboard/layout:layout! input//kl:layout/active)))
 ;; (input//kl:layout/configure-active)

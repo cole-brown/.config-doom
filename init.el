@@ -90,6 +90,7 @@
 
        :tools
        ;;ansible
+       autogit             ; Commit (subdirs of) git repos automatically-ish.
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        ;;docker

@@ -146,13 +146,12 @@
                                 :hint none)     ;; no hint - just docstr)
   "
 Draw box characters.
-_'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   _y_: ?y?     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
-_a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   _i_: ?i?     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
+_'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   ^ ^  ^ ^     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
+_a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   ^ ^  ^ ^     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ? ?
-^ ^  ^ ^  _<_: ?<?  ^ ^  ^ ^   _P_: ?P?   _Y_: ?Y?     ^ ^        ^ ^        ^ ^            _x_: ?x?
-_A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^            _X_: ?X?
-^ ^  ^ ^  _Q_: ?Q?  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ?<SPC>?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _x_: ?x?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _X_: ?X?
 "
   ;; NOTE: You _MUST_ start off with a newline in docstr, otherwise you will get:
   ;;  > Debugger entered--Lisp error: (error "Not enough arguments for format string")
@@ -171,26 +170,38 @@ _A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^
   ("e" (funcall #'insert "┤") "┤") ;; vertical and left
 
   (";" (funcall #'insert "└") "└") ;; up and right
-  ("q" (funcall #'insert "┘") "┘") ;; up and left
-  ("j" (funcall #'insert "┴") "┴") ;; up and horizontal
+  ("q" (funcall #'insert "┴") "┴") ;; up and horizontal
+  ("j" (funcall #'insert "┘") "┘") ;; up and left
 
   ("p" (funcall #'insert "─") "─") ;; horizontal
   ("u" (funcall #'insert "│") "│") ;; vertical
 
-  ("y" (funcall #'insert "┄") "┄") ;; triple dash horizontal
-  ("i" (funcall #'insert "┆") "┆") ;; triple dash vertical
-
-  ;; These are named backwards by Unicode - don't blame me.
-  ("<" (funcall #'insert "╷") "╷") ;; down
-  ("A" (funcall #'insert "╶") "╶") ;; right
-  ("Q" (funcall #'insert "╵") "╵") ;; up
-  ("E" (funcall #'insert "╴") "╴") ;; left
-
-  ("P" (funcall #'insert "╌") "╌") ;; double dash horizontal
-  ("U" (funcall #'insert "╎") "╎") ;; double dash vertical
-
-  ("Y" (funcall #'insert "┈") "┈") ;; quadruple dash horizontal
-  ("I" (funcall #'insert "┊") "┊") ;; quadruple dash vertical
+  ;;---
+  ;; Not Working in Emacs w/ Current Fonts:
+  ;;---
+  ;; The keymap string if these worked:
+  ;; _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   _y_: ?y?     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
+  ;; _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   _i_: ?i?     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
+  ;; _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
+  ;; ^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ?<SPC>?
+  ;; ^ ^  ^ ^  _<_: ?<?  ^ ^  ^ ^   _P_: ?P?   _Y_: ?Y?     ^ ^        ^ ^        ^ ^            _x_: ?x?
+  ;; _A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^            _X_: ?X?
+  ;; ^ ^  ^ ^  _Q_: ?Q?  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
+  ;;
+  ;; ("y" (funcall #'insert "┄") "┄") ;; triple dash horizontal
+  ;; ("i" (funcall #'insert "┆") "┆") ;; triple dash vertical
+  ;;
+  ;; ;; These are named backwards by Unicode - don't blame me.
+  ;; ("<" (funcall #'insert "╷") "╷") ;; down
+  ;; ("A" (funcall #'insert "╶") "╶") ;; right
+  ;; ("Q" (funcall #'insert "╵") "╵") ;; up
+  ;; ("E" (funcall #'insert "╴") "╴") ;; left
+  ;;
+  ;; ("P" (funcall #'insert "╌") "╌") ;; double dash horizontal
+  ;; ("U" (funcall #'insert "╎") "╎") ;; double dash vertical
+  ;;
+  ;; ("Y" (funcall #'insert "┈") "┈") ;; quadruple dash horizontal
+  ;; ("I" (funcall #'insert "┊") "┊") ;; quadruple dash vertical
 
 
   ;;------------------------------
@@ -204,7 +215,7 @@ _A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
-  (" " (funcall #'insert " ") "insert space")
+  ("<SPC>" (funcall #'insert " ") "insert space")
   ("x" #'evil-delete-char "delete char")
   ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")
@@ -233,11 +244,13 @@ Draw box characters.
 _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   ^ ^  ^ ^     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
 _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   ^ ^  ^ ^     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ? ?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ?<SPC>?
 ^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _x_: ?x?
 ^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _X_: ?X?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
 "
+  ;; If ever the single line hydra gets its dotted lines and/or line-termination chars working, add this to the keymap string:
+  ;; ^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
+
   ;; NOTE: You _MUST_ start off with a newline in docstr, otherwise you will get:
   ;;  > Debugger entered--Lisp error: (error "Not enough arguments for format string")
   ;;  > format("Draw box characters.\n%s: %s  %s: %s  %s: %s   %s: ...")
@@ -273,7 +286,7 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
-  (" " (funcall #'insert " ") "insert space")
+  ("<SPC>" (funcall #'insert " ") "insert space")
   ("x" #'evil-delete-char "delete char")
   ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")

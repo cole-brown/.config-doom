@@ -43,7 +43,8 @@
    ;; Start Bookend
    ;; Will need to update (or make smarter) if get more actual priority levels.
    (or (eval (nth 0 spy:buffer/format/bookend-normal))
-       (eval (nth 0 spy:buffer/format/bookend-high)))
+       (eval (nth 0 spy:buffer/format/bookend-high))
+       (eval (nth 0 spy:buffer/format/bookend-info)))
 
    ;; Actual Buffer Name
    (one-or-more printing)
@@ -51,12 +52,61 @@
    ;; End Bookend
    ;; Will need to update (or make smarter) if get more actual priority levels.
    (or (eval (nth 1 spy:buffer/format/bookend-normal))
-       (eval (nth 1 spy:buffer/format/bookend-high))))
+       (eval (nth 1 spy:buffer/format/bookend-high))
+       (eval (nth 1 spy:buffer/format/bookend-info))))
 
   "Regexp for matching a bookended buffer name string.
 Will need to update (or make smarter) if get more actual priority levels."
   :group 'spy:group
   :type 'regexp)
+
+
+(defcustom spy:buffer/regexp/specials
+  (rx
+   ;;---
+   ;; Begin
+   ;;---
+   line-start
+   (or
+    ;;---
+    ;; Emacs
+    ;;---
+    ;; Special buffers start with "*", optionally with leading space.
+    (group
+     (optional " ")
+     "*" ;; literal asterisk
+     (one-or-more printing)
+     "*")
+
+    ;;---
+    ;; :spy/buffer
+    ;;---
+    ;; Bookended Buffer Names are special
+    (group
+     (optional " ") ;; Allow optional make-less-visible leading space.
+     ;; Start Bookend
+     (or (eval (nth 0 spy:buffer/format/bookend-normal))
+         (eval (nth 0 spy:buffer/format/bookend-high))
+         (eval (nth 0 spy:buffer/format/bookend-info)))
+
+     ;; Actual Buffer Name
+     (one-or-more printing)
+
+     ;; End Bookend
+     (or (eval (nth 1 spy:buffer/format/bookend-normal))
+         (eval (nth 1 spy:buffer/format/bookend-high))
+         (eval (nth 1 spy:buffer/format/bookend-info)))))
+   ;;---
+   ;; Done
+   ;;---
+   line-end)
+  "Regexp for matching a special buffer name string. Special buffers are:
+  - Emacs' special, visible \"*<name>*\" buffers.
+  - Emacs' special, less-visible \" *<name>*\" buffers (leading space).
+  - :spy/buffer's special bookended buffers: \"§- <name> -§\" (and other bookends)."
+  :group 'spy:group
+  :type 'regexp)
+
 
 ;;-----------------------------------------------------------------------------
 ;; Naming Functions
@@ -95,6 +145,23 @@ setting, with nil being medium priority.
 ;; (spy:buffer/special-name "jeff" "is here")
 ;; (spy:buffer/special-name "jeff" nil :high)
 ;; (spy:buffer/special-name "jeff" "is here" :high)
+
+
+(defun spy:buffer/is-special (buffer-or-name)
+  "Returns non-nil if BUFFER-OR-NAME is a specially named buffer.
+
+Special buffers are:
+  - Emacs' special, visible \"*<name>*\" buffers.
+  - Emacs' special, less-visible \" *<name>*\" buffers (leading space).
+  - :spy/buffer's special bookended buffers: \"§- <name> -§\" (and other bookends)."
+  (string-match-p
+   spy:buffer/regexp/specials
+   (if (bufferp buffer-or-name)
+       (buffer-name buffer-or-name)
+     buffer-or-name)))
+;; (spy:buffer/is-special (spy:buffer/special-name "jeff"))
+;; (spy:buffer/is-special "*Messages*")
+;; (spy:buffer/is-special "file.txt")
 
 
 ;;------------------------------------------------------------------------------

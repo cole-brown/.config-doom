@@ -1,4 +1,4 @@
-;; -*- no-byte-compile: t; -*-
+;; -*- no-byte-compile: t; lexical-binding: t; -*-
 ;;; emacs/imp/test/tree.el
 
 ;;------------------------------------------------------------------------------
@@ -23,7 +23,7 @@
 ;;------------------------------
 ;; iii:node?
 ;;------------------------------
-(ert-deftest test:node? ()
+(ert-deftest test<tree>:node? ()
   "Tests that the `iii:node?' predicate functions correctly."
   ;;---
   ;; Not node or tree - false.
@@ -49,7 +49,7 @@
 ;;------------------------------
 ;; iii:tree?
 ;;------------------------------
-(ert-deftest test:tree? ()
+(ert-deftest test<tree>:tree? ()
   "Tests that the `iii:tree?' predicate functions correctly."
   ;;---
   ;; Not node or tree - false.
@@ -78,7 +78,7 @@
 ;;------------------------------
 ;; iii:chain?
 ;;------------------------------
-(ert-deftest test:chain? ()
+(ert-deftest test<tree>:chain? ()
   "Tests that the `iii:chain?' predicate functions correctly."
   ;;---
   ;; Just a symbol - false.
@@ -118,7 +118,7 @@
 ;;------------------------------
 ;; iii:node:create
 ;;------------------------------
-(ert-deftest test:node:create ()
+(ert-deftest test<tree>:node:create ()
   "Tests that `iii:node:create' creates a node correctly."
   ;;---
   ;; No children.
@@ -158,7 +158,7 @@
 ;;------------------------------
 ;; iii:node:get
 ;;------------------------------
-(ert-deftest test:node:get ()
+(ert-deftest test<tree>:node:get ()
   "Tests that `iii:node:get' gets a child correctly from a tree."
   ;;---
   ;; Not a tree -> error
@@ -191,7 +191,7 @@
 ;;------------------------------
 ;; iii:node:name
 ;;------------------------------
-(ert-deftest test:node:name ()
+(ert-deftest test<tree>:node:name ()
   "Tests that `iii:node:name' gets the name of the node correctly from
 the node."
   ;;---
@@ -218,7 +218,7 @@ the node."
 ;;------------------------------
 ;; iii:node:children
 ;;------------------------------
-(ert-deftest test:node:children ()
+(ert-deftest test<tree>:node:children ()
   "Tests that `iii:node:children' gets the children alist correctly from a
 node."
   ;;---
@@ -240,7 +240,7 @@ node."
 ;;------------------------------
 ;; iii:node:add
 ;;------------------------------
-(ert-deftest test:node:add ()
+(ert-deftest test<tree>:node:add ()
   "Tests that `iii:node:add' adds a node correctly to an existing node's children."
   (let* ((children (list (iii:node:create :child-0)
                          (iii:node:create :child-1)))
@@ -258,7 +258,7 @@ node."
 ;;------------------------------
 ;; iii:node:update
 ;;------------------------------
-(ert-deftest test:node:update ()
+(ert-deftest test<tree>:node:update ()
   "Tests that `iii:node:update' updates a node correctly with a new child."
   ;;---
   ;; Non-pre-existing new - same result as just `iii:node:add'.
@@ -269,10 +269,10 @@ node."
                                   children))
          (new (iii:node:create :child-2))
          (expected (iii:node:add parent new)))
-    (iii:debug "TEST:NODE:UPDATE" "<TEST>")
+    (iii:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
     (should (equal (iii:node:update parent new)
                    expected)))
-    (iii:debug "TEST:NODE:UPDATE" "</TEST>")
+  (iii:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")
 
   ;;---
   ;; Pre-existing new - existing gone; replaced with the new one.
@@ -292,17 +292,17 @@ node."
                                   (iii:node:create :child-2)))
          (expected (iii:node:create :root
                                     expected-children)))
-    (iii:debug "TEST:NODE:UPDATE" "<TEST>")
+    (iii:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
     (should (equal (iii:node:update parent new)
                    expected))
-    (iii:debug "TEST:NODE:UPDATE" "orig parent: %S" parent)
-    (iii:debug "TEST:NODE:UPDATE" "</TEST>")))
+    (iii:debug "TEST<TREE>:NODE:UPDATE" "orig parent: %S" parent)
+    (iii:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")))
 
 
 ;;------------------------------
 ;; iii:node:tree
 ;;------------------------------
-(ert-deftest test:node:tree ()
+(ert-deftest test<tree>:node:tree ()
   "Test that `iii:node:tree' creates a tree from a supplied node."
   ;;---
   ;; Not a node -> error.
@@ -326,7 +326,7 @@ node."
 ;;------------------------------
 ;; iii:node:chain:create
 ;;------------------------------
-(ert-deftest test:node:chain:create ()
+(ert-deftest test<tree>:node:chain:create ()
   "Tests that `iii:node:chain:create' creates a node w/ a tree of children
 from a chain of node names."
   ;;---
@@ -379,17 +379,16 @@ from a chain of node names."
 ;;------------------------------
 ;; iii:tree:update
 ;;------------------------------
-(ert-deftest test:tree:update ()
+(ert-deftest test<tree>:tree:update ()
   "Tests that `iii:tree:update' updates and returns a tree, as intended."
   ;; TODO: test this!
-  (should (equal t nil)
-  )
+  (should (equal t nil)))
 
 
 ;;------------------------------
 ;; iii:tree:chain:get
 ;;------------------------------
-(ert-deftest test:tree:chain:get ()
+(ert-deftest test<tree>:tree:chain:get ()
   "Tests that `iii:tree:chain:get' returns a tree node or nil, as intended."
   (let* ((node (iii:node:chain:create :root '(:one :two :three :four)))
          (tree (iii:node:tree node)))
@@ -423,16 +422,16 @@ from a chain of node names."
   ;;------------------------------
   (let* ((tree (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))))
          (chain '(:root :one :two :three :fore)))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "<TEST name=\"bug: `:fore'\">")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name=\"bug: `:fore'\">")
     (should (equal (iii:tree:chain:get tree chain)
                    '(((:four)) (:fore))))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name=\"bug: `:fore'\">"))
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name=\"bug: `:fore'\">")))
 
 
 ;;------------------------------
 ;; iii:tree:chain:create
 ;;------------------------------
-(ert-deftest test:tree:chain:create ()
+(ert-deftest test<tree>:tree:chain:create ()
   "Test that `iii:tree:chain:create' walks a tree following the chain until it
 can create a new leaf node w/ remaining links in the chain."
   ;;---
@@ -441,31 +440,31 @@ can create a new leaf node w/ remaining links in the chain."
 
 
   (let ((tree (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four)))))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "<TEST name='null tree'>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='null tree'>")
     (should-not (null tree))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='null tree'>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='null tree'>")
 
     ;;---
     ;; No chain - error.
     ;;---
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "<TEST name='chain error'>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='chain error'>")
     (should-error (iii:tree:chain:create tree nil))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='chain error'>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='chain error'>")
 
     ;;---
     ;; Existing chain - error.
     ;;---
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "<TEST name='tree error' number=00>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=00>")
     (should-error (iii:tree:chain:create tree '(:root :one :two)))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='tree error' number=00>")
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "<TEST name='tree error' number=01>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=00>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=01>")
     (should-error (iii:tree:chain:create tree '(:root :one :two :three :four)))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='tree error' number=01>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=01>")
 
     ;;---
     ;; New leaf node.
     ;;---
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")
     (should (equal (iii:tree:chain:create tree '(:root :one :two :three :fore))
                    '(:root (:one (:two (:three (:four :fore)))))))
-    (iii:debug "TEST:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")))
+    (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")))

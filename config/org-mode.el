@@ -108,6 +108,7 @@
              ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
              "|"
              ,(sss:org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
+             ,(sss:org/todo.keyword "MOVED"    wrap "m" 'timestamp)  ; Moved somewhere else; no further action here.
              ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
              ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
              ,(sss:org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
@@ -122,6 +123,7 @@
              ,(sss:org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
              "|"
              ,(sss:org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
+             ,(sss:org/todo.keyword "☇" wrap "M" 'timestamp)    ; Moved somewhere else; no further action here.
              ,(sss:org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
              ,(sss:org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
              ,(sss:org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
@@ -145,6 +147,8 @@
                 (list (sss:org/todo.keyword "…" wrap)       '+org-todo-onhold)
                 (list (sss:org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
+                (list (sss:org/todo.keyword "MOVED" wrap)   'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "☇" wrap)       'spy:theme.face/org.todo.keyword/info)
                 (list (sss:org/todo.keyword "DONE" wrap)    'spy:theme.face/org.todo.keyword/done.good)
                 (list (sss:org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
                 (list (sss:org/todo.keyword "SUCCESS" wrap) 'spy:theme.face/org.todo.keyword/done.good)

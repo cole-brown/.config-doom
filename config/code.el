@@ -102,3 +102,36 @@
     ;; We'll try it for all our python in general.
     (setq fill-column 79))
   )
+
+
+;;------------------------------------------------------------------------------
+;; Metasyntatic Variables
+;;------------------------------------------------------------------------------
+(setq spy/code/variables.metasyntatic
+      '((:metasyntactic (foo (bar (baz (qux (quux (quuux (quuuux (quuuuux))))))
+                                  (thud (grunt))
+                                  (bletch)
+                                  (fum)
+                                  (bongo)
+                                  (zot)))
+         (bazola (ztesch))
+         (fred (jim (sheila (barney))))
+         (corge (grault (flarp)))
+         (zxc (spqr (wombat)))
+         (shme)
+         (spam (eggs))
+         (snork)
+         (blarg (wibble))
+         (toto (titi (tata (tutu))))
+         (pippo (pluto (paperino)))
+         (aap (noot (mies)))
+         (oogle (foogle (boogle (zork (gork (bork)))))))
+        (:pinky (narf (zort (poit (egad (troz (fiddely-posh)))))))))
+
+
+;; TODO: This?
+;; (defun spy/code/var ()
+;;   "Returns a metasyntatic variable and copies it into the kill ring."
+;;   (interactive)
+;;   ;; TODO: this?
+;;   )

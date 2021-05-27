@@ -132,7 +132,7 @@ If CLEAR is non-nil, clears the buffer. Else prints a newline, a line separator
 
 SUITE-NAME should be a valid key in `iii:test:choices' alist."
   (interactive (list (completing-read "Test Suite: "
-                                      (iii:test:names)
+                                      (iii:test:suite//get-all-names)
                                       nil
                                       ;; Must choose something in our list.
                                       t)))
@@ -145,7 +145,7 @@ SUITE-NAME should be a valid key in `iii:test:choices' alist."
     (when (not suite-name)
       (error "Unkown imp test suite #%s. Options: %S"
              suite-name
-             (iii:test:names)))
+             (iii:test:suite//get-all-names)))
 
     ;; Save suite chosen for later commands.
     (setq iii:test:suite/current suite-keyword)
@@ -172,11 +172,13 @@ SUITE-NAME should be a valid key in `iii:test:choices' alist."
         (iii:test:info/message nil "[FAIL] Failed setting up for test '%s'." suite-name)))
 
     (setq error t)
+    (setq filename nil
+          filepath nil)
 
     ;; Second, load the file(s) for the chose test.
     ;;   - Gotta figure out what those are...
     (iii:test:info/newline)
-    (iii:test:info/message nil "Getting test suite file list...")
+    (iii:test:info/message nil "Getting test suite file list for `%s'..." suite-keyword)
     (unwind-protect
         (progn
           (let ((files (iii:test:suite/files suite-keyword)))
@@ -206,7 +208,7 @@ SUITE-NAME should be a valid key in `iii:test:choices' alist."
 (defun imp:test:run (&optional suite-keyword-or-name)
   "Run a test suite defined by SUITE-KEYWORD-OR-NAME via ERT."
   (interactive (list (completing-read "Test Suite: "
-                                      (iii:test:names)
+                                      (iii:test:suite//get-all-names)
                                       nil
                                       ;; Must choose something in our list.
                                       t

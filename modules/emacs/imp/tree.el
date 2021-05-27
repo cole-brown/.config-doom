@@ -1,63 +1,11 @@
 ;;; emacs/imp/tree.el -*- lexical-binding: t; -*-
 
-;; imp requirements:
-;;   - :imp 'debug
-;;   - :imp 'error
-;;   - :imp 'path
-
-
-;; (setq iii:test:tree
-;;       '((:imp (1 . "one")
-;;               2
-;;               3)
-;;         (:boo ("a" . 0)
-;;               ("aa" . 0)
-;;               ("b" . 1)
-;;               ("bb" . 1)
-;;               ("c" . 2)
-;;               ("cc" . 2)
-;;               ("d" . 3)
-;;               ("dd" . 3)
-;;               ("e" . 4)
-;;               ("ee" . 4)
-;;               ("f" . 5)
-;;               ("ff" . 5))
-;;         (:pinky "narf"
-;;                 "zort"
-;;                 "poit"
-;;                 "egad"
-;;                 "troz"
-;;                 "fiddely-posh")
-;;         (:metasyntactic (foo (bar (baz (qux (quux (quuux (quuuux . quuuuux)))))
-;;                                   (thud (grunt))
-;;                                   fum
-;;                                   zot))
-;;                         (bazola ztesch)
-;;                         (fred barney)
-;;                         (corge grault flarp)
-;;                         (zxc spqr wombat)
-;;                         (shme)
-;;                         (snork)
-;;                         (blarg wibble)
-;;                         (toto titi tata tutu)
-;;                         (pippo pluto paperino)
-;;                         (aap noot mies))))
-;; (let ((keys '(:metasyntactic foo bar zot))
-;;       (tree iii:test:tree)
-;;       keydd)
-;;   (dolist (key keys)
-;;     (setq tree (alist-get key tree)
-;;           keydd key)
-;;     (message "%s ->\n%S\n" key tree))
-;;   (message "done.\n  key: %S\n  tree:\n%S" keydd tree)
-;;   nil)
-
 
 ;;------------------------------------------------------------------------------
 ;; Predicates: Types
 ;;------------------------------------------------------------------------------
 
-(defun iii:node? (node)
+(defun iii:tree:node? (node)
   "Retuns t if NODE is a node; nil otherwise (including if NODE is a
 tree or nil)."
   ;; A node is:
@@ -73,7 +21,7 @@ tree or nil)."
 ;; (iii:node? '(:root))
 
 
-(defun iii:tree? (tree)
+(defun iii:tree:tree? (tree)
   "Retuns t if TREE is a tree; nil otherwise (including if TREE is a node)."
   ;; A tree is:
   ;;   - A list...
@@ -82,7 +30,9 @@ tree or nil)."
           (not (listp tree)))
       nil
     ;; Each item in list must be a node.
-    (-all? #'iii:node? tree)))
+    (not
+     (seq-contains-p (mapcar #'iii:tree:node? tree)
+                     nil))))
 ;; symbol: no
 ;;   (iii:tree? :root)
 ;; node: no
@@ -92,7 +42,7 @@ tree or nil)."
 ;;   (iii:tree? '((:root :ignored) (:root02) (:root03)))
 
 
-(defun iii:chain? (chain &optional rooted)
+(defun iii:tree:chain? (chain &optional rooted)
   "Retuns t if CHAIN is a chain of tree keys; nil otherwise (including if CHAIN
 is nil)."
   (let (is-chain
@@ -124,571 +74,268 @@ is nil)."
 ;;   (iii:chain? '(root) t)
 
 
-;;------------------------------------------------------------------------------
-;; Nodes
-;;------------------------------------------------------------------------------
+(defun iii:tree:key/exists? (key tree)
+  "Returns non-nil if key exists in tree, even if it has no children.
 
-(defun iii:node:get (tree name)
-  "Get NAME from TREE's direct children.
-
-Returns alist assoc if NAME is found in tree's immediate children.
-Returns nil if no NAME in TREE's immediate children or TREE is nil."
-  (if (not (iii:tree? tree))
-      (iii:error "iii:node:get" "Input TREE is not a tree: %S" tree)
-
-    (assoc name tree)))
-;; (iii:node:get '(:root (:one (:two (:three (:four))))) :root)
-;; (iii:node:get '((:root (:one (:two (:three (:four))))) (:jeff)) :root)
-;; (iii:node:get '((:root (:one (:two (:three (:four))))) (:jeff)) :jeff)
-
-
-(defun iii:node:name (node)
-  "Get NODE's name.
-
-Returns name or nil if node is nil."
-  (car node))
-
-
-(defun iii:node:children (node)
-  "Get NODE's alist of children.
-
-Returns alist or nil."
-  (cdr node))
-
-
-(defun iii:node:create (name &optional children)
-  "Create a node for NAME with a list of CHILDREN."
-  (unless (listp children) ;; nil ok too
-    (iii:error "iii:node:create"
-               "Node '%s' cannot be created - expected list of children, got: %S"
-               name children))
-  (cons name children))
-;; (iii:node:create :root '((1 . "one") 2 3))
-;; (iii:node:create :root)
-;;
-;; Just a node; not an alist on its own.
-;;   (alist-get :root (iii:node:create :root '((1 . "one") 2 3)))
-
-
-(defun iii:node:add (parent new)
-  "Add NEW node into PARENT node's immediate children.
-
-NOTE: Assumes NEW does not already exist in PARENT!
-  - Use `iii:node:update' if you need a check!"
-  ;; Parent is a node with possible children, and we want to add one. A node is
-  ;; a list starting with the name symbol/keyword, so we cannot do normal lispy
-  ;; 'put on the front' things. Instead add it as the new final item.
-  (-snoc parent new))
-;; (iii:node:add (iii:node:create :root '((:one) (:two))) (iii:node:create :three '((:four))))
-
-
-(defun iii:node:update (parent new)
-  "Put NEW node into PARENT node's immediate children.
-
-If the node already exists in PARENT's children, this will replace it with
-NEW node.
-
-NOTE: YOU MUST USE RETURN VALUE. It is the new parent."
-  (iii:debug "iii:node:update" "parent: %S" parent)
-  (iii:debug "iii:node:update" "new:    %S" new)
-
-  (let* ((name (iii:node:name new))
-         (children (iii:node:children parent))
-         (existing (iii:node:get children name)))
-    (iii:debug:newline)
-    (iii:debug "iii:node:update" "  name:     %S" name)
-    (iii:debug "iii:node:update" "  children: %S" children)
-    (iii:debug "iii:node:update" "  existing: %S" existing)
-
-    ;; Remove existing node?
-    (when existing
-      (iii:debug "iii:node:update" "Deleting existing node...")
-
-      (setq children (delq existing children))
-      (iii:debug "iii:node:update" "Deleted; children: %S" children))
-
-    ;; Add node to tree.
-    (iii:debug "iii:node:update" "Adding new node...")
-    (setq parent (iii:node:add parent new))
-    (iii:debug "iii:node:update" "Added; parent: %S" parent)
-
-    ;; And... return the new, updated parent.
-    parent))
-
-
-;;------------------------------
-;; Node -> Tree
-;;------------------------------
-
-(defun iii:node:tree (node)
-  "Convert node to full tree in its own right."
-  (if (not (iii:node? node))
-      (iii:error "iii:node:tree" "Input NODE is not a node! %S" node)
-    (list node)))
-;; (iii:node:tree :root)
-;; (iii:node:tree (iii:node:create :root))
-;; (alist-get :imp (iii:node:tree (iii:node:create :imp '((1 . "one") 2 3)))
-;; (alist-get 1 (alist-get :imp (iii:node:tree (iii:node:create :imp '((1 . "one") 2 3))))
+Return value is KEY's entry in TREE, or nil if KEY does not exist."
+  (iii:alist/general:entry key tree))
+;; (iii:tree:key/exists? :root1 (iii:tree:update '(:root1) nil (iii:tree:create '(:root0 :one :two) :leaf)))
 
 
 ;;------------------------------------------------------------------------------
-;; Chains
+;; Helper Functions
 ;;------------------------------------------------------------------------------
 
-(defun iii:node:chain:create (name &optional chain)
-  "Create an alist entry for NAME with a list where each subsequent item is a
-  child of the previous.
+(defun iii:tree:chain (chain value)
+  "Create an alist entry for a tree from CHAIN and VALUE."
+  (unless (listp chain) ;; nil ok too
+    (iii:error "iii:tree:chain"
+               "Chain cannot be created - expected list, got: %S"
+               chain))
+  ;; Set-up: Need to build in reverse.
+  (let* ((backwards (reverse chain))
+         ;; Entry starts off as the final link w/ the value (if the value is not
+         ;; nil).
+         (entry (if value
+                    (list (car backwards) (list value))
+                  (list (car backwards))))
+         ;; And we still need to process these.
+         (link (cadr backwards))
+         (remaining (cddr backwards)))
 
-Example:
-  (iii:node:chain:create :root '(1 2 3 4))
-    - The supplied args represent this tree:
-      + :root
-        + 1
-          + 2
-            + 3
-              + 4"
-  (when (and (not (null chain))
-             (not (iii:chain? chain)))
-    (iii:error "iii:node:chain:create" "CHAIN is not a chain: %S" chain))
+    (iii:debug "iii:tree:chain" "entry:     %S" entry)
+    (iii:debug "iii:tree:chain" "link:      %S" link)
+    (iii:debug "iii:tree:chain" "remaining: %S" remaining)
 
-  (let (tree)
-    (dolist (link (reverse chain))
-      ;; Each chain is a full tree, not simply a node.
-      (setq tree (iii:node:tree (iii:node:create link tree)))
-      (iii:debug "iii:node:chain:create"
-                 "link: %S -> %S" link tree))
+    ;; Grow entry by remaining links.
+    (while link
+      ;; This makes entry an alist of alist(s).
+      (setq entry (list link entry))
+      ;; Cycle link/remaining to next.
+      (setq link (car remaining))
+      (setq remaining (cdr remaining)))
 
-    ;; Top it off with the root name.
-    ;; Just a node though, as it is likely getting inserted into an existing alist.
-    (iii:node:create name tree)))
-;; (iii:node:chain:create :root '(:one :two :three :four))
-;; (car (iii:node:chain:create :root '(:one :two :three :four)))
-;; (cdr (iii:node:chain:create :root '(:one :two :three :four)))
-
-;; (defun iii:tree:get (tree child)
-;;   "Get CHILD node from TREE's immediate children."
-;; Is iii:node:get good enough?
+    ;; Return the chain of alists for chain/value.
+    entry))
+;; (iii:tree:chain '(:root) nil)
+;; (iii:tree:chain '(:root :one :two :three) :leaf-node)
+;; (alist-get :root (list (iii:tree:chain '(:root :one :two :three) :leaf-node)))
+;; (alist-get :one (alist-get :root (list (iii:tree:chain '(:root :one :two :three) :leaf-node))))
+;; (alist-get :two (alist-get :one (alist-get :root (list (iii:tree:chain '(:root :one :two :three) :leaf-node)))))
+;; (alist-get :three (alist-get :two (alist-get :one (alist-get :root (list (iii:tree:chain '(:root :one :two :three) :leaf-node))))))
 
 
-(defun iii:tree:chain:get (tree chain)
-  "Return tuple of (tree chain-remaining).
+(defun iii:tree:create (chain value)
+  "Creates a TREE with CHAIN and VALUE as the starting content."
+  (list (iii:tree:chain chain value)))
+;; (iii:tree:create '(:root :one :two :three) :leaf-node)
 
-Returns nil if CHAIN is not in TREE at all.
 
-Walks down TREE looking for names in CHAIN. Stops when a name is not found and
-returns the current tree and the remaining chain it cannot fulfill."
-  (iii:debug "iii:tree:chain:get" "tree:  %S" tree)
-  (iii:debug "iii:tree:chain:get" "chain: %S" chain)
+(defun iii:tree:branch/update (entry branch)
+  "Add ENTRY to BRANCH.
 
+ENTRY must be an alist entry for a tree; e.g. a return value from
+`iii:tree:chain'.
+
+BRANCH must be a tree - an alist of alists. ENTRY will be added to root of
+BRANCH."
+  (iii:debug "iii:tree:branch/update" "->entry:  %S" entry)
+  (iii:debug "iii:tree:branch/update" "->branch: %S" branch)
+  (let* ((key (car entry))
+         ;; Need the entry, not the alist, of key's children.
+         ;; Need '(:value), not '((:value)).
+         (value (cadr entry))
+         (siblings (iii:alist/general:get key branch)))
+    (iii:debug "iii:tree:branch/update" "  key:      %S" key)
+    (iii:debug "iii:tree:branch/update" "  vaule:    %S" value)
+    (iii:debug "iii:tree:branch/update" "  siblings: %S" siblings)
+
+    ;; Add new value to its new siblings, update branch and done.
+    (push value siblings)
+    (iii:debug "iii:tree:branch/update" "updated siblings: %S" siblings)
+    (setq branch (iii:alist/general:update key siblings branch))
+    (iii:debug "iii:tree:branch/update" "updated branch: %S" branch)
+    branch))
+;; (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0)))))
+;; (alist-get :two (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0))))))
+;; (alist-get :leaf-node1 (alist-get :two (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0)))))))
+
+
+;;------------------------------------------------------------------------------
+;; Public API
+;;------------------------------------------------------------------------------
+
+(defun iii:tree:update (chain value tree)
+  "Adds CHAIN of symbols/keywords with final VALUE to alists TREE.
+
+If VALUE is nil, just adds chain - does not add a nil child."
+  ;;------------------------------
+  ;; Error Checking
+  ;;------------------------------
   ;; Don't allow a null chain.
   (when (or (null chain)
-            (not (iii:chain? chain)))
-    (iii:error "iii:tree:chain:get" "CHAIN is not a chain: %S" chain))
-
-  ;; Valid tree?
-  (when (or (null tree)
-            (not (iii:tree? tree)))
-    (iii:error "iii:tree:chain:get" "TREE is not a tree: %S" tree))
-
-  ;; Init link/chain for first iteration.
-  (let* ((link (car chain))
-         (chain (cdr chain))
-         (node (iii:node:get tree link))
-         done)
-
-    (if (not node)
-        ;; None of chain is in tree. We're already done.
-        ;; Just need to un-split the original chain.
-        (list tree (cons link chain))
-
-      ;; Walk into tree following chain until we get to end of chain or nil node
-      ;; in tree.
-      (while (and link node tree (not done))
-        (iii:debug:newline)
-        (iii:debug "iii:tree:chain:get" "Get for %S in: %S" link tree)
-        (setq node (iii:node:get tree link))
-        (iii:debug "iii:tree:chain:get" "  set node(%s): %S" link node)
-        (let ((node-tree (iii:node:children node)))
-          (iii:debug "iii:tree:chain:get" "  node-tree(%s): %S" link node-tree)
-          (iii:debug "iii:tree:chain:get" "  done(%s)? %S" link (not node-tree))
-
-          (if (not node-tree)
-              (progn
-                ;; Didn't find this link - quit without changing anything.
-                ;; Our current tree, (link & chain) are the return values.
-                (iii:debug "iii:tree:chain:get" "Done; node not found!")
-                (setq done t)
-                (when (not (eq (iii:node:name node) link))
-                  (iii:debug "iii:tree:chain:get" "Adding link back to chain.")
-                  ;; And push this link back into the chain for the return.
-                  (setq chain (cons link chain)))
-                (iii:debug "iii:tree:chain:get" "returning chain: %S" chain))
-
-            ;; Found this link in the tree; continue.
-            (setq tree node-tree)
-            (iii:debug "iii:tree:chain:get" "  tree(%s): %S" link tree)
-
-            ;; Set up link & chain for next loop.
-            (setq link (car chain)
-                  chain (cdr chain))
-            (iii:debug "iii:tree:chain:get" "  setq:")
-            (iii:debug "iii:tree:chain:get" "    link:     %S" link)
-            (iii:debug "iii:tree:chain:get" "    chain:    %S" chain))))
-
-      ;; Finished walk; return result.
-      (iii:debug "iii:tree:chain:get" "got tree: %S" tree)
-      (iii:debug "iii:tree:chain:get" "chain:    %S" chain)
-      ;; If nothing remaining in chain, return `nil' instead of `(nil)'.
-      (when (null (car chain))
-        (setq chain nil))
-      (iii:debug "iii:tree:chain:get" "chain remainin: %S" chain)
-      (list tree chain))))
-;; (iii:tree:chain:get (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) '(:root :one :two :three :fore))
-;; (iii:tree:chain:get (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) '(:root :one :two :three :four))
-;; (iii:tree:chain:get (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) '(:root :one :two))
-;; (iii:tree:chain:get (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) '(:too :tutu))
-;; (iii:tree:chain:get (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) nil)
-
-
-(defun iii:tree:update (tree chain subtree)
-  "Follow CHAIN down TREE, insert SUBTREE there, and update all branches back up
-to the root."
-  (iii:debug "iii:tree:update" "tree:    %S" tree)
-  (iii:debug "iii:tree:update" "chain:   %S" chain)
-  (iii:debug "iii:tree:update" "subtree: %S" subtree)
-
-  ;;---
-  ;; Validate Inputs
-  ;;---
-
-  ;; Don't allow a null chain.
-  (when (or (null chain)
-            (not (iii:chain? chain)))
+            (not (iii:tree:chain? chain)))
     (iii:error "iii:tree:update" "CHAIN is not a chain: %S" chain))
 
   ;; Valid tree?
-  (when (or (null tree)
-            (not (iii:tree? tree)))
+  (when (and (not (null tree)) ;; We can deal with a tree of nil.
+             (not (iii:tree:tree? tree))) ;; We can't deal with an invalid tree.
     (iii:error "iii:tree:update" "TREE is not a tree: %S" tree))
 
-  ;; Valid subtree?
-  (when (or (null subtree)
-            (not (iii:tree? subtree)))
-    (iii:error "iii:tree:update" "SUBTREE is not a tree: %S" subtree))
+  ;;------------------------------
+  ;; Create or update?
+  ;;------------------------------
+  (if (null tree)
+      ;;------------------------------
+      ;; Create a tree with chain.
+      ;;------------------------------
+      (iii:tree:create chain value)
 
-  ;;---
-  ;; Do the update.
-  ;;---
-  (let* ((link (car chain))
-         (chain (cdr chain))
-         (link-tree (iii:node:children (iii:node:get tree link))))
-    (iii:debug:newline)
-    (iii:debug "iii:tree:update" "link:      %S" link)
-    (iii:debug "iii:tree:update" "chain:     %S" chain)
-    (iii:debug "iii:tree:update" "link-tree: %S" link-tree)
-    ;; Keep following chain or have we arrived?
-    (if (null chain)
-        ;; Can't recurse anymore; do last link and add subtree there.
-        (progn
-          (iii:debug "iii:tree:update" "Finished chain; adding subtree...")
-          (iii:debug "iii:tree:update" "  link: %S" link)
+    ;;------------------------------
+    ;; Update tree with chain.
+    ;;------------------------------
 
-          ;; Follow last link.
-          (setq link-tree (iii:node:children (iii:node:get tree link)))
-          (iii:debug "iii:tree:update" "  link-tree(before): %S" link-tree)
+    ;; Need to splice this chain into the tree at whatever branch it shoots off
+    ;; from existing.
 
-          ;; Add subtree as child.
-          (setq link-tree (iii:node:add link-tree subtree))
-          (iii:debug "iii:tree:update" "  link-tree(after):  %S" link-tree)
-          link-tree)
+    (let ((branch tree)
+          (link (car chain))
+          (remaining (cdr chain))
+          ;; Keep track of upstream.
+          parent-branches
+          parent-links)
+      (while (and branch
+                  remaining)
+        ;; Get branch for current link; save off branch/link.
+        ;; 'parent-branch' for the 'parent-link' should include the link as an key
+        ;; - we need it for easier updating on the way back up to the root.
+        (push branch parent-branches)
+        (setq branch (iii:alist/general:get link branch))
+        (push link parent-links)
+        (iii:debug "iii:tree:update" "%S = %S" parent-links parent-branches)
+
+        ;; Update link/remaining for next round.
+        (setq link (car remaining))
+        (setq remaining (cdr remaining)))
+
+      (iii:debug "iii:tree:update" "found final branch:")
+      (iii:debug "iii:tree:update" "  branch:    %S" branch)
+      (iii:debug "iii:tree:update" "  remaining: %S" remaining)
+      (iii:debug "iii:tree:update" "  link:      %S" link)
+
+      ;;------------------------------
+      ;; Error Check: Invalid chain after all?
+      ;;------------------------------
+      ;; Do not allow adding a chain that wants to continue off from a value
+
+      ;; link and branch should now be at the end of the known existing chain in
+      ;; tree. Need to add whatever the rest is to this branch now.
+      (let ((entry (iii:tree:chain (cons link remaining) value))
+            branch-update)
+
+        ;;------------------------------
+        ;; New Branch or Add Here?
+        ;;------------------------------
+        (if (iii:alist/general:get link branch)
+            ;;------------------------------
+            ;; Add Here.
+            ;;------------------------------
+            (setq branch-update (iii:tree:branch/update entry branch))
+
+          ;;------------------------------
+          ;; New Branch.
+          ;;------------------------------
+          (iii:debug "iii:tree:update" "branch: %S" branch)
+          (iii:debug "iii:tree:update" "link: %S" link)
+          (iii:debug "iii:tree:update" "new: %S" entry)
+          (iii:debug "iii:tree:update" "  key:   %S" (car entry))
+          (iii:debug "iii:tree:update" "  value: %S" (cdr entry))
+          (setq branch-update (iii:alist/general:update (car entry)
+                                                        (cdr entry)
+                                                        branch)))
+
+        ;;------------------------------
+        ;; Finish by updating tree.
+        ;;------------------------------
+        (iii:debug "iii:tree:update" "branch-update: %S" branch-update)
+
+        (iii:debug "iii:tree:update" "Branch found/updated. Walk update up to root...\n")
+
+        ;; Now backtrack up the tree to the root - have to update every branch
+        ;; along the way to save the new value.
+        ;; ;;
+        ;; ;; First, drop the leading values from the parents lists. They are what we
+        ;; ;; already updated.
+        ;; (setq parent-links (cdr parent-links))
+        ;; (setq parent-branches (cdr parent-branches))
+        (while parent-links
+          ;; Grab what this level is.
+          (setq link (car parent-links))
+          (setq parent-links (cdr parent-links))
+          (setq branch (car parent-branches))
+          (setq parent-branches (cdr parent-branches))
+          (iii:debug "iii:tree:update" "link: %S" link)
+          (iii:debug "iii:tree:update" "branch: %S" branch)
+
+          ;; Push updated branch of tree into place.
+          (setq branch-update (iii:alist/general:update link branch-update branch))
+          (iii:debug "iii:tree:update" "branch-update: %S" branch-update))
+        branch-update))))
+;; Chain splits from tree:
+;; (iii:tree:update '(:root :one :two :free) :leaf-node1 (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; Tree doesn't exist:
+;; (iii:tree:update '(:root :one :two :free) :leaf-node1 nil)
+;; Chain doesn't exist in tree:
+;; (iii:tree:update '(:root1 :won :too :free) :leaf-node1 (iii:tree:create '(:root0 :one :two :three) :leaf-node0))
+;; Chain pre-exists in tree:
+;; (iii:tree:update '(:root :one :two) :leaf-node1 (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; Reach end of tree before end of chain:
+;; (iii:tree:update '(:root :one :two :three :four) :leaf-node1 (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; Chain w/ null value:
+;; (iii:tree:update '(:root :one :two :free) nil (iii:tree:create '(:root :one :two :three) :leaf-node0))
 
 
-      ;; Follow this link - the return value will be what we need to update our
-      ;; link-tree with.
-      (iii:debug "iii:tree:update" "Continue on chain...")
-      (setq link-tree (iii:tree:update link-tree chain subtree))
-      (iii:debug "iii:tree:update" "link-tree(recurse): %S" link-tree)
-      link-tree
-      )))
-;; (iii:tree:update (iii:node:tree (iii:node:chain:create :root '(:one :two :three)))
-;;                  '(:root :one :two :three)
-;;                  '((:four :fore)))
-
-
-(defun iii:tree:chain:create (tree chain)
-  "Walk TREE following CHAIN.
-
-If at a leaf node of TREE, insert an element in chain. Then
-update root/chain, and recurse either way.
-
-Signal an error if we cannot insert anything from CHAIN into the
-TREE.
-
-Returns tree, possibly updated."
-  (iii:debug "iii:tree:chain:create" "tree:  %S" tree)
-  (iii:debug "iii:tree:chain:create" "chain: %S" chain)
-
+(defun iii:tree:contains? (chain tree)
+  "Returns non-nil if TREE contains the CHAIN of symbols/keywords."
+  ;;------------------------------
+  ;; Error Checking
+  ;;------------------------------
   ;; Don't allow a null chain.
   (when (or (null chain)
-            (not (iii:chain? chain)))
-    (iii:error "iii:tree:chain:create" "CHAIN is not a chain: %S" chain))
+            (not (iii:tree:chain? chain)))
+    (iii:error "iii:tree:contains" "CHAIN is not a chain: %S" chain))
 
   ;; Valid tree?
   (when (or (null tree)
-            (not (iii:tree? tree)))
-    (iii:error "iii:tree:chain:create" "TREE is not a tree: %S" tree))
+            (not (iii:tree:tree? tree)))
+    (iii:error "iii:tree:contains" "TREE is not a tree: %S" tree))
 
-  ;; Find where in the tree we need to insert, and what we need to insert.
-  (-let (((subtree remaining) (iii:tree:chain:get tree chain)))
-    (iii:debug "iii:tree:chain:create" "chain:get: subtree: %S" subtree)
-    (iii:debug "iii:tree:chain:create" "chain:get: remaining: %S" remaining)
+  (iii:debug "iii:tree:contains?" "CHAIN and TREE verified as valid.\n  chain: %S\n  tree:\n    %S"
+             chain tree)
 
-    (when (null remaining)
-      ;; Everything in chain already exists - signal error.
-      (iii:error "iii:tree:chain:create"
-                 (concat "Cannot create anything for chain - "
-                         "all nodes present in tree already! "
-                         "chain: %S, tree: %S")
-                 chain tree))
+  ;;------------------------------
+  ;; Does tree contain the chain?
+  ;;------------------------------
+  (let ((branch tree) ;; Start at root of the tree.
+        entry)
+    (dolist (link chain)
+      (iii:debug "iii:tree:contains?" "  link:   %S" link)
+      (iii:debug "iii:tree:contains?" "  branch: %S" branch)
+      (setq entry (iii:tree:key/exists? link branch))
+      (iii:debug "iii:tree:contains?" "  entry: %S" entry)
+      ;; Next branch will be entry's children.
+      (setq branch (cdr entry)))
 
-    ;; Now create the part of the chain we need to add to the subtree.
-    (let ((created (iii:node:chain:create (car remaining) (cdr remaining)))
-          rchain)
-      (iii:debug "iii:tree:chain:create" "node:chain:create: created: %S" created)
+    ;; Final entry:
+    (iii:debug "iii:tree:contains?" "final entry for link '%S': %S"
+               (car (last chain)) entry)
+    (iii:debug "iii:tree:contains?" "final branch: %S"
+               branch)
 
-      ;; TODO: here?
-
-      ;; Need to insert this into the subtree...
-      (setq subtree (iii:node:add subtree created))
-      (iii:debug "iii:tree:chain:create" "new subtree: %S" subtree)
-
-      ;; Create an existing branch list to walk up.
-      (dolist (link chain)
-        (when (not (memq link remaining))
-          (push link rchain)))
-      (iii:debug "iii:tree:chain:create" "rchain:     %S" rchain)
-      (iii:debug "iii:tree:chain:create" "remaining:  %S" remaining)
-      (iii:debug "iii:tree:chain:create" "orig chain: %S" chain)
-
-      ;; TODO: or here?
-
-      ;; Finally, walk up the tree, replacing branches as we go in order to get
-      ;; it all updated.
-      (let ((working-tree tree))
-        (dolist (link (nreverse rchain))
-          (iii:debug "iii:tree:chain:create" "link:        %S" link)
-          (iii:debug "iii:tree:chain:create" "update tree: %S" working-tree)
-
-
-          ;; TODO:
-          ;; loop rchain in /forward/ order:
-          ;;   Get node's children from tree.
-          ;;   Call "Update This tree With This New Child node.
-          ;;     - Start @ base tree.
-          ;;     - 'New Child node' will have to be recursion call? I think?
-          ;; TODO OR...?
-          ;;   Thread macro? Somehow?
-
-          ;;
-          ;; TODO
-          )))))
-;; (iii:tree:chain:create (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))) '(:root :one :two :three :fore))
-
-;; TODO: use remaining from iii:tree:chain:get to call iii:node:chain:create.
-;; TODO: insert result from iii:node:chain:create into parent
-;; TODO: go up levels, replacing things if that insert didn't update the actual full tree.
-
-;; (let (links-create
-;;       links-exist
-;;       ;; Init to non-nil for while check.
-;;       (link (car chain))  ;; Allows skipping tree walk if no initial key.
-;;       (links chain)  ;; Start as full chain so first while set works as expected.
-;;       (branch t)
-;;       (start-branch tree))
-
-;;   ;;------------------------------
-;;   ;; Find existing links.
-;;   ;;------------------------------
-
-;;   ;; First, walk into tree following chain until we get to something it doesn't have.
-;;   (while (and (not links-create)
-;;               link branch)
-;;     ;; Pop link we're looking for off, and see if we can find in the tree.
-;;     (setq link (car links)
-;;           links (cdr links)
-;;           branch (iii:node:get start-branch link))
-;;     (iii:debug "iii:tree:chain:create"
-;;                "walk tree:\n  link: %S\n  links: %S\n  branch:\n    %S"
-;;                link links branch)
-;;     ;; Found the link in the tree; look deeper.
-;;     (if branch
-;;         (progn
-;;           (setq start-branch branch)
-;;           (push link links-exist))
-;;       (setq links-create (cons link links))))
-
-;;   ;; Ok; did we end up being able to create anything?
-;;   (if (null (car links-create))
-;;       (progn
-;;         (iii:debug "iii:tree:chain:create"
-;;                    "All links already exist in tree! links: %S, tree %S"
-;;                    chain tree)
-;;         tree)
-
-;;     (iii:debug "iii:tree:chain:create"
-;;                (concat
-;;                 "Done walking existing branches.\n"
-;;                 "  chain:   %S\n"
-;;                 "    ->exist: %S\n"
-;;                 "    ->make:  %S\n"
-;;                 "    ->@branch:\n"
-;;                 "      %S")
-;;                chain links-exist links-create start-branch)
-
-;;     ;;------------------------------
-;;     ;; Create new links.
-;;     ;;------------------------------
-;;     ;; Create it.
-;;     (let ((new (iii:tree:chain:create (car links-create) (cdr links-create)))
-;;           (siblings (iii:node:children start-branch)))
-;;       (iii:debug "iii:tree:chain:create"
-;;                  "Created chain for insertion: %S"
-;;                  new)
-;;       (iii:debug "iii:tree:chain:create"
-;;                  "Siblings: %S"
-;;                  siblings)
-
-;;       ;; Stick it in with its new siblings and assign back to tree.
-;;       (push new siblings)
-;;       (iii:debug "iii:tree:chain:create"
-;;                  "Added to siblings:\n  %S"
-;;                  siblings)
-;;       (dolist (branch links-exist)
-;;         (iii:debug "iii:tree:chain:create"
-;;                    "Update branch: %S" branch)
-;;         (
-;;          ;;(setf (iii:tree:get foo
-
-;;          ;;(pp-macroexpand-expression tree)
-;;          )))))
-;; (iii:tree:chain:create (iii:tree:chain:create :root '(:one :two :three :four)) '(:one :two :three 4))
-
-;; (iii:tree:chain:create iii:test:tree '(:metasyntactic foo bar fuck))
-
-;;   ;; Second, start creating/inserting leaves from the rest of the chain.
-;;   (let ((this (car chain))
-;;         (remaining (cdr chain)))
-;;     (iii:debug "iii:tree:chain:create" "this link: %S" this)
-;;     (iii:debug "iii:tree:chain:create" "links remaining: %S" remaining)
-
-;;     (if (null this)
-;;         ;; Stop recursing.
-;;         (progn
-;;           (iii:debug "iii:tree:chain:create" "null link; stop recursing: %S" this)
-;;           nil)
-
-;;     ;; Create this node and recurse for creating its child.
-;;     (iii:node:create this
-;;                           (list (iii:tree:chain:create subtree
-;;                                                       remaining)))
-;;     ;; Update tree/chain and recurse.
-;;     (let ((subtree (iii:tree:chain:create (iii:tree:get tree this)
-;;                                          remaining)))
-;;       (iii:debug "iii:tree:chain:create" "Set-up for recursion...")
-;;       (iii:debug "iii:tree:chain:create" "  this:      %S" this)
-;;       (iii:debug "iii:tree:chain:create" "  remaining: %S" remaining)
-;;       (iii:debug "iii:tree:chain:create" "  subtree:   %S" subtree)
-;;       (if (null subtree)
-;;           ;; We are a leaf on the +wind+ tree.
-;;           ;; TODO: error checking
-;;           (iii:node:create this)
-
-;;         ;; Branch; add our subtree...
-;;         (push (iii:node:create this (list subtree)) tree))))))
-;; (iii:tree:chain:create iii:test:tree '(:metasyntactic foo bar fuck))
-
-
-(defun iii:tree:set:chain (tree chain value)
-  "Set VALUE in TREE at CHAIN from TREE root."
-  (iii:debug "iii:tree:set:chain"
-             (concat "set:\n"
-                     "  chain: %S\n"
-                     "  value: %S\n"
-                     "  tree:  %S")
-             chain value tree)
-
-  ;; Stop recursing?
-  (if (null (car chain))
-      nil
-
-    ;; Get to the end of the chain in order to set subtree.
-    (let ((link (car chain))
-          (remaining (cdr chain))
-          subtree)
-      (if (null remaning)
-          ;; At the end of the chain - insert value.
-          (
-
-           (setq subtree (iii:tree:set:chain (iii:tree:get tree link)
-                                             remaining))
-           ;; And now set this level as the result of the recursion.
-           (setf (iii:tree:get tree link) subtree))))))
-
-
-;;------------------------------------------------------------------------------
-;; Tree
-;;------------------------------------------------------------------------------
-
-(defun iii:tree:get (tree name)
-  "Get NAME's children from tree in manner usable by `setf'.
-
-Returns nil if no NAME in TREE or TREE is nil."
-  (alist-get name tree))
-;; imp:features
-;; (iii:tree:get imp:features :imp)
-;; (iii:tree:get (iii:tree:get imp:features :imp) 1)
-
-
-(defun iii:tree:set (root &optional chain)
-  "Add all of ROOT, CHAIN that do not exist to `imp:features'.
-
-If final leaf in CHAIN already exists, signals an error."
-  (iii:debug "iii:tree:set" "Setting in `imp:features':")
-  (iii:debug "iii:tree:set" "  root:  %S" root)
-  (iii:debug "iii:tree:set" "  chain: %S" chain)
-
-  (if (null imp:features)
-      (iii:error "iii:tree:set"
-                 "Empty tree; use `iii:tree:create'.")
-
-    ;; Ok; check/add root first, then on to chain.
-    (let ((parent root)
-          siblings)
-      (if (null imp:features)
-          ;; Easy case: root is not in tree yet; just add everything.
-          (progn
-            (push (iii:tree:chain:create root chain) imp:features)
-            (iii:debug "iii:tree:set" "Created chain for %S at root %S."
-                       chain root))
-
-        ;; Else, walk down the chain and check against imp:features until we
-        ;; figure out what to do.
-        (setq siblings (iii:tree:get imp:features parent))
-        (dolist (link chain)
-          ;; Found the spot to insert this link in the chain.
-          (when (null siblings)
-            ;; Set link as leaf (currently) child node here in the tree.
-            (iii:debug "iii:tree:set"
-                       "Link '%S' needs inserted as child of '%S', sibling of: %S"
-                       link parent
-                       (iii:tree:get parent root))
-            (setf (iii:tree:get tree link)
-                  (iii:node:tree (iii:node:create link)))
-            (iii:debug "iii:tree:set"
-                       "Added child '%S' to tree: %S"
-                       link tree))
-
-          ;; Already (or now) have this link; keep looking at next level.
-          (setq tree (iii:tree:get tree link)))))))
-;; imp:features
-;; (iii:tree:set :imp '(jeff))
+    ;; Return whatever we found after walking that whole chain. Will be either
+    ;; a tree entry or nil, so that satisfies our predicate nature.
+    entry))
+;; (iii:tree:contains? '(:root :one :two) (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; (iii:tree:contains? '(:root :one :two :free) (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; (iii:tree:contains? '(:root1 :one :two) (iii:tree:create '(:root :one :two :three) :leaf-node0))
+;; (iii:tree:contains? '(:imp test) '((:imp (ort (something (here))) (test))))

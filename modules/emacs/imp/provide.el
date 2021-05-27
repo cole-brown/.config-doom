@@ -1,4 +1,4 @@
-;;; eeeeemacs/imp/provide.el -*- lexical-binding: t; -*-
+;;; emacs/imp/provide.el -*- lexical-binding: t; -*-
 
 ;; imp requirements:
 ;;   - :imp 'debug
@@ -18,102 +18,129 @@ their feature names should be built from the path traversed to get to them.
   - I.e. directory structures w/ files as leaves.
 
 For example:
-  '((:imp provide
-          require
-          (subthing (subthing-child0 subthing-child1))))
-    (:jeff))
-    - is a tree with 2 'roots':
+  '((:imp
+     (provide)
+     (require))
+    (:metasyntactic
+     (foo (bar (baz (qux (quux (quuux (quuuux (quuuuux))))))
+               (thud (grunt))
+               (bletch)
+               (fum)
+               (bongo)
+               (zot)))
+     (bazola (ztesch))
+     (fred (jim (sheila (barney))))
+     (corge (grault (flarp)))
+     (zxc (spqr (wombat)))
+     (shme)
+     (spam (eggs))
+     (snork)
+     (blarg (wibble))
+     (toto (titi (tata (tutu))))
+     (pippo (pluto (paperino)))
+     (aap (noot (mies)))
+     (oogle (foogle (boogle (zork (gork (bork)))))))
+    (:pinky (narf (zort (poit (egad (troz (fiddely-posh))))))))
+    - is a tree with 3 'roots':
       - :imp
         - provide
         - require
-        - subthing
-          - subthing-child0
-          - subthing-child1
-      - :jeff")
+      - :metasyntactic
+        - ...
+      - :pinky
+        - ...")
 ;; (setq imp:features nil)
-;;
-;; Apparently alists of alists are hard for me to grok:
-;;   (alist-get :root '((:root . ((1) (2) (3)))))
-;;   (alist-get 1 (alist-get :root '((:root . ((1) (2) (3))))))
-;;     - ...might be right? Let's give 1 a child...
-;;   (alist-get :root '((:root . ((1 . "one") (2) (3)))))
-;;   (alist-get 1 (alist-get :root '((:root . ((1 . "one") (2) (3))))))
-;;     - Yep. Have to put up with conses being smooshed into a list when I want
-;;       to think about them as separate conses...
-
-
-
 
 
 ;;------------------------------------------------------------------------------
-;; Feature Functions
+;; Private Functions
 ;;------------------------------------------------------------------------------
 
-(defun iii:feature:add (root &optional chain)
-  "Add the feature ROOT and its CHAIN to the `imp:features' tree."
+(defun iii:feature:imp->emacs (feature)
+  "Translate the FEATURE (a list of keywords/symbols) to a single symbol
+appropriate for Emacs' `provide'."
+  ;; Create the symbol.
+  (intern
+   ;; Create the symbol's name.
+   (mapconcat (lambda (symbol)
+                "Translates each symbol based on replacement regexes."
+                (let ((symbol/string (symbol-name symbol)))
+                  (dolist (pair imp:translate-to-emacs:replace symbol/string)
+                    (setq symbol/string
+                          (replace-regexp-in-string (car pair)
+                                                    (cdr pair)
+                                                    symbol/string)))))
+              feature
+              imp:translate-to-emacs:separator)))
+;; (iii:feature:imp->emacs '(:imp test symbols))
+
+
+(defun iii:feature:add (feature)
+  "Add the FEATURE (a list of keywords/symbols) to the `imp:features' tree."
   (iii:debug "iii:feature:add" "Adding to imp:features...")
-  (iii:debug "iii:feature:add" "  root:  %S" root)
-  (iii:debug "iii:feature:add" "  chain: %S" chain)
-  (if (null imp:features)
-      ;; Simple case: just create the tree.
-      (progn
-        (iii:debug "iii:feature:add" "Creating imp:features...")
-        (iii:debug "iii:feature:add" "  root:  %S" root)
-        (iii:debug "iii:feature:add" "  chain: %S" chain)
-        (iii:debug "iii:feature:add" "  <- %S"
-                   (iii:tree:node-to-tree (iii:tree:create:node root chain)))
-        (setq imp:features (iii:tree:create root chain))
-        (iii:debug "iii:feature:add" "imp:features: %S" imp:features))
-
-    ;; Need to insert into the tree without accidentally wiping anything else out.
-    (iii:debug "iii:feature:add" "Adding to imp:features: %S %S" root chain)
-    (iii:tree:set root chain)))
+  (iii:debug "iii:feature:add" "  feature: %S" feature)
+  (iii:debug "iii:feature:add" "imp:features before:\n%S"
+             (pp-to-string imp:features))
+  (setq imp:features (iii:tree:update feature nil imp:features))
+  (iii:debug "iii:feature:add" "imp:features after:\n%S"
+             (pp-to-string imp:features))
+  ;; Not sure what to return, but the updated features seems decent enough.
+  imp:features)
 ;; (setq imp:features nil)
-;; (iii:feature:add :imp '((1 . "one") 2 3))
+;; (iii:feature:add :imp 'test)
 ;; imp:features
-;; (alist-get :imp imp:features)
-;; (alist-get 1 (alist-get :imp imp:features))
-;; (iii:tree:get imp:features :imp)
-;; (iii:feature:add :imp '(jeff))
-;; (iii:tree:get imp:features :imp)
-;; (iii:feature:add :mis '(take quote))
+;; (iii:feature:add :imp 'ort 'something 'here)
+;; (iii:alist/general:get :imp imp:features)
+;; (iii:tree:contains? '(:imp) imp:features)
+;; (iii:tree:contains? '(:imp ort something) imp:features)
 
 
 (defun imp:features:print ()
   "Pretty print `imp:features' to a temp buffer."
   (interactive)
-  (pp-display-expression imp:features "imp:features"))
+  (pp-display-expression imp:features imp:features:buffer))
 ;; (imp:features:print)
 
 
 ;;------------------------------------------------------------------------------
-;; Provide
+;; Public API: Provide
 ;;------------------------------------------------------------------------------
 
-;; TODO: this
-(defun imp:provided? (&rest symbols)
-  "Checks for SYMBOLS in `imp:features'."
-  ;; old; mis's version
-  ;; (when-let ((feature (apply #'iii:load:name symbols)))
-  ;;   ;; Check for the feature in our loaded features and convert to
-  ;;   ;; a boolean (t/nil).
-  ;;   (not (null (assoc-string feature imp:features))))
-  )
-;; (imp:provided? :imp 'provide)
+(defun imp:provided? (&rest feature)
+  "Checks for FEATURE in `imp:features'."
+  (iii:tree:contains? feature imp:features))
+;; (imp:provided? :imp 'test)
 
 
-;; TODO: this
-(defun imp:provide (&rest symbols)
-  "Record SYMBOLS as having been provided."
-  ;; old; mis's version
-  ;; (unless (apply #'imp:provided? symbols)
-  ;;   (push (apply #'iii:path symbols) imp:features))
-  )
+(defun imp:provide (&rest feature)
+  "Record FEATURE in `imp:features' as having been provided.
+
+If you want to provide the feature to emacs as well, you can either:
+  1. Use `imp:provide:with-emacs' instead of this to have it automatically
+     happen.
+     - imp will translate the FEATURE symbol chain via `iii:feature:imp->emacs'.
+  2. Do it yourself by also calling Emacs' `provide' with a symbol of your
+     choosing."
+  (iii:debug "imp:provide" "Providing feature '%S'..."
+             feature)
+  (iii:feature:add feature))
+;; (imp:provide :package 'module 'submodule 'feature)
+
+
+(defun imp:provide:with-emacs (&rest feature)
+  "Record FEATURE in `imp:features' and in Emacs' `features' (via
+Emacs' `provide') as having been provided.
+
+imp will translate the FEATURE symbol chain via `iii:feature:imp->emacs' and use
+the result for the call to Emacs' `provide'."
+  (apply #'imp:provide feature)
+  (let ((feature/emacs (iii:feature:imp->emacs feature)))
+    (iii:debug "imp:provide:with-emacs" "Providing to emacs as '%S'..."
+               feature/emacs)
+    (provide feature/emacs)))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; TODO: provide this
-;; (imp:provide :imp 'provide)
-;; (provide 'imp:provide)
+(imp:provide:with-emacs :imp 'provide)

@@ -2,6 +2,7 @@
 
 
 ;; imp requirements:
+;;   - :imp 'debug
 ;;   - :imp 'error
 ;;   - :imp 'path
 ;;   - :imp 'provide
@@ -13,15 +14,25 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Load, Require, Provide
+;; Private Functions
 ;;------------------------------------------------------------------------------
 
-(defun iii:load (keyword &rest names)
-  "Load a file relative to `iii:path:root' based on root KEYWORD and
-NAMES strings/symbols.
+;; TODO: finish path.el first
 
-This is for loading done internally in mis."
-  ;; TODO: the load-all functionality
+
+;; TODO: here
+
+(defun iii:load (path-root &rest feature)
+  "Load a file relative to PATH-ROOT based on FEATURE list of keywords/symbols.
+
+The zeroith element in FEATURES is assumed to be represented by PATH-ROOT.
+E.g. (iii:load \"/path/to/imp\" :imp 'provide)
+  Will try to load: \"/path/to/imp/provide.el\"
+
+If nothing is provided for FEATURE except a single keyword/symbol, it will use
+PATH-ROOT as-is.
+E.g. (iii:load \"/path/to/imp/init.el\" :imp)"
+  ;; TODO: 'load-all' functionality?
   (let* ((normal (apply #'iii:string:normalize names))
          (name (apply #'iii:load:name normal))
          (path (apply #'iii:path:get normal)))
@@ -31,6 +42,11 @@ This is for loading done internally in mis."
           (load path nil 'nomessage))
     (error "mis fail loading: %s (%S); error: %S" path name e))))
 ;; (imp:load 'test 'something)
+
+
+;;------------------------------------------------------------------------------
+;; Public API: Require
+;;------------------------------------------------------------------------------
 
 
 (defun imp:require (root &rest names)

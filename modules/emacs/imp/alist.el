@@ -16,13 +16,25 @@ Caller should probably raise an error if they get a nil returned."
 
 
 (defun iii:alist/general:get (key alist)
-  "Get cdr of KEY's entry in ALIST."
+  "Get value of KEY's entry in ALIST."
   ;;---
   ;; Error Checking
   ;;---
   (if (iii:alist/general:valid/key key)
       (alist-get key alist)
     (error (concat "iii:alist/general:get: "
+                   "String key '%s' won't work... "
+                   "Use `iii:alist/string:get' for string keys.")
+           key)))
+
+(defun iii:alist/general:entry (key alist)
+  "Get KEY's entire entry (`car' is KEY, `cdr' is value) from ALIST."
+  ;;---
+  ;; Error Checking
+  ;;---
+  (if (iii:alist/general:valid/key key)
+      (assoc key alist)
+    (error (concat "iii:alist/general:entry: "
                    "String key '%s' won't work... "
                    "Use `iii:alist/string:get' for string keys.")
            key)))
@@ -101,11 +113,24 @@ Caller should probably raise an error if they get a nil returned."
   "Get cdr of KEY's entry in ALIST.
 
 If KEY is not in the alist, nil or DEFAULT will be returned."
-  (unless (iii:alist/string:valid/key key)
+  (if (iii:alist/string:valid/key key)
+      (alist-get key alist default nil #'string=)
     (error (concat "iii:alist/string:get: "
+                   "Invalid key: %s. Only string keys allowed. "
+                   "Use `iii:alist/general:get' for non-string keys.")
+           key)))
+
+
+(defun iii:alist/string:entry (key alist)
+  "Get KEY's entire entry (`car' is KEY, `cdr' is value) from ALIST."
+  ;;---
+  ;; Error Checking
+  ;;---
+  (if (iii:alist/string:valid/key key)
+      (assoc key alist #'string=)
+    (error (concat "iii:alist/string:entry: "
                    "Only string keys allowed. "
-                   "Use `iii:alist/general:get' for non-string keys.")))
-  (alist-get key alist default nil #'string=))
+                   "Use `iii:alist/general:get' for non-string keys."))))
 
 
 (defmacro iii:alist/string:update (key value alist &optional set-alist)

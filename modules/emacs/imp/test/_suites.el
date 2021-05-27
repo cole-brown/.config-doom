@@ -249,7 +249,7 @@ Does /not/ include `iii:test:suites:files/load-always'."
                             suite-name-or-keyword
                           (iii:test:suite/name->keyword suite-name-or-keyword)))
          files)
-    (cond ((not (memq suite-keyword (iii:test:suite/keywords)))
+    (cond ((not (memq suite-keyword (iii:test:suite//get-all-keywords)))
            (error "Invalid suite '%S'; valid choices are: %S or %S"
                   suite-name-or-keyword
                   (iii:test:suite/keywords)
@@ -274,3 +274,4 @@ Does /not/ include `iii:test:suites:files/load-always'."
     files))
 ;; (iii:test:suite/files iii:test:suite:all.name)
 ;; (iii:test:suite/files "tree")
+;; (iii:test:suite/files :alist)

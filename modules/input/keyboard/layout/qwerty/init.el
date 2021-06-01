@@ -135,16 +135,16 @@
           ;;---
           (:word:next:begin               . "w")
           (:word:next:end                 . "e")
+          (:word:prev:begin               . "b")
           (:word:next:begin:bigword       . "W") ;; aka (:word:next with optional arg BIGWORD set to 't')
           (:word:next:end:bigword         . "E")
-          (:word:prev:begin               . "b")
           (:word:prev:begin:bigword       . "B")
 
           ;;---
           ;; Sentences
           ;;---
-          (:sentence:begin:reverse        . "(")
-          (:sentence:begin:forward        . ")")
+          (:sentence:begin:prev           . "(")
+          (:sentence:begin:next           . ")")
 
           ;;---
           ;; Paragraphs
@@ -168,24 +168,24 @@
           ;;---
           (:goto:line:first-non-blank     . "G") ;; default: last line in buffer
           (:goto:line:visible:first       . "H")
-          (:goto:line:visible:last        . "L")
           (:goto:line:visible:middle      . "M")
+          (:goto:line:visible:last        . "L")
 
           ;;---
           ;; Searches
           ;;---
-          (:search:forward                . "n")
-          (:search:forward                . "/")
+          (:search:next                   . "n")
           (:search:prev                   . "N")
-          (:search:prev                   . "?")
+          (:search:forward                . "/")
+          (:search:backward               . "?")
 
-          (:search:word:reverse           . "#")
+          (:search:word:backward          . "#")
           (:search:word:forward           . "*")
 
-          (:snipe:next:1                  . "t")
-          (:snipe:next:1                  . "f")
-          (:snipe:prev:1                  . "T")
-          (:snipe:prev:1                  . "F")
+          (:snipe:next:1-t                . "t")
+          (:snipe:next:1-f                . "f")
+          (:snipe:prev:1-t                . "T")
+          (:snipe:prev:1-f                . "F")
           (:snipe:next:2                  . "s")
           (:snipe:prev:2                  . "S")
           (:snipe:repeat                  . ";")
@@ -354,6 +354,228 @@
   "Keymap -> Keyword -> function alists for the active/desired keyboard
 layout.")
 
+(defvar input//kl:qwerty:functions-2
+  '(;;-------------------------------------------------------------------------
+    ;; Global Keymap
+    ;;-------------------------------------------------------------------------
+    (nil .
+         (;;------------------------------
+          ;; Movement
+          ;;------------------------------
+          ;;---
+          ;; Up/Down/Left/Right
+          ;;---
+          (:line:prev                     . #'evil-previous-line)
+          (:line:next                     . #'evil-next-line)
+          (:char:next                     . #'evil-backward-char)
+          (:char:prev                     . #'evil-forward-char)
+
+          ;;---
+          ;; Word
+          ;;---
+          (:word:next:begin               . #'evil-forward-word-begin)
+          (:word:next:end                 . #'evil-forward-word-end)
+          (:word:prev:begin               . #'evil-backward-word-begin)
+          (:word:next:begin:bigword       . #'evil-forward-WORD-begin)
+          (:word:next:end:bigword         . #'evil-forward-WORD-end)
+          (:word:prev:begin:bigword       . #'evil-backward-WORD-begin)
+
+          ;;---
+          ;; Sentences
+          ;;---
+          (:sentence:begin:prev           . #'evil-backward-sentence-begin)
+          (:sentence:begin:next           . #'evil-forward-sentence-begin)
+
+          ;;---
+          ;; Paragraphs
+          ;;---
+          (:paragraph:prev                . #'evil-backward-paragraph)
+          (:paragraph:next                . #'evil-forward-paragraph)
+
+          ;;---
+          ;; Lines
+          ;;---
+          (:item:jump                     . #'evil-jump-item)
+          (:digit-arg:0/line:start        . #'evil-digit-argument-or-evil-beginning-of-line)
+          (:line:end                      . #'evil-end-of-line)
+          (:line:prev:first-non-blank     . #'evil-previous-line-first-non-blank)
+          (:line:current:first-non-blank  . #'evil-first-non-blank)
+          (:line:next-1:first-non-blank   . #'evil-next-line-1-first-non-blank)
+          (:line:next:first-non-blank     . #'evil-next-line-first-non-blank)
+
+          ;;---
+          ;; Go-To Line
+          ;;---
+          (:goto:line:first-non-blank     . #'evil-goto-line) ;; default: last line in buffer
+          (:goto:line:visible:first       . #'evil-window-top)
+          (:goto:line:visible:middle      . #'evil-window-middle)
+          (:goto:line:visible:last        . #'evil-window-bottom)
+
+          ;;---
+          ;; Searches
+          ;;---
+          (:search:next                   . #'evil-ex-search-next) ; TODO: double check w/ qwerty bindings on. "n"
+          (:search:prev                   . #'evil-ex-search-previous)
+          (:search:forward                . #'evil-ex-search-forward)
+          (:search:backward               . #'evil-ex-search-backward)
+
+          (:search:word:backward          . #'evil-ex-search-word-backward)
+          (:search:word:forward           . #'evil-ex-search-word-forward)
+
+          ;; TODO: snipe seems very tied to its keys that it has hard-coded...
+          ;; May need to use `evil-snipe-def' to invent new ones...
+          (:snipe:next:1-t                . #'evil-snipe-t)
+          (:snipe:next:1-f                . #'evil-snipe-f)
+          (:snipe:prev:1-t                . #'evil-snipe-T)
+          (:snipe:prev:1-f                . #'evil-snipe-F)
+          (:snipe:next:2                  . #'evil-snipe-s)
+          (:snipe:prev:2                  . #'evil-snipe-S)
+          (:snipe:repeat                  . #'evil-snipe-repeat)
+          (:snipe:repeat:inverse          . #'evil-snipe-repeat-reverse)
+
+          ;;---
+          ;; Marks
+          ;;---
+          (:mark:set                      . #'evil-set-marker)
+          (:mark:goto                     . #'evil-goto-mark)
+
+
+          ;;------------------------------
+          ;; Repeating
+          ;;------------------------------
+          (:digit-arg:1                   . #'digit-argument)
+          (:digit-arg:2                   . #'digit-argument)
+          (:digit-arg:3                   . #'digit-argument)
+          (:digit-arg:4                   . #'digit-argument)
+          (:digit-arg:5                   . #'digit-argument)
+          (:digit-arg:6                   . #'digit-argument)
+          (:digit-arg:7                   . #'digit-argument)
+          (:digit-arg:8                   . #'digit-argument)
+          (:digit-arg:9                   . #'digit-argument)
+          ;; (:digit-arg:0/line:start     . #'evil-digit-argument-or-evil-beginning-of-line)
+
+
+          ;;------------------------------
+          ;; Text Maniplutaion
+          ;;------------------------------
+
+          ;;---
+          ;; Undo/Redo
+          ;;---
+          (:text:undo                     . #'evil-undo)
+          (when (featurep! :emacs undo)
+            (:text:redo                   . #'evil-redo))
+
+          ;;---
+          ;; Copy/Cut/Paste
+          ;;---
+          (:kill-ring:copy                . #'evil-yank)
+          (:kill-ring:copy:line           . #'evil-yank-line)
+          (:text:delete                   . #'evil-delete)
+          (:text:delete:line:point-to-end . #'evil-delete-line)
+          (:paste:after                   . #'evil-paste-after)
+          (:paste:before                  . #'evil-paste-before)
+          (:char:delete:current           . #'evil-delete-char)
+          (:char:delete:prev              . #'evil-delete-backward-char)
+
+          ;; "Change" meaning "delete and put me in insert mode"?
+          (:change:dwim                   . #'evil-change) ; TODO: double check w/ qwerty bindings on. "c")
+          (:change:line:point-to-end      . #'evil-change-line)
+
+          ;;---
+          ;; Indent/Outdent
+          ;;---
+          (:text:shift:left               . #'evil-shift-left)
+          (:text:shift:right              . #'evil-shift-right)
+          (:indent                        . #'evil-indent)
+
+          (:case:invert                   . #'evil-invert-char)
+          (:replace:repeat                . #'evil-ex-repeat-substitute)  ;; Same as: :s//~/
+          (when (not (featurep! :emacs undo))
+            (:char:replace                . #'evil-replace))
+
+          ;;---
+          ;; Line-Based
+          ;;---
+          (:line:join:next-to-current     . #'evil-join)
+
+          ;;---
+          ;; Macros (not Emacs macros)
+          ;;---
+          (:macro:record                  . #'evil-record-macro)
+          (:macro:execute                 . #'evil-execute-macro)
+
+          ;;---
+          ;; Repeat "the last editing command".
+          ;;---
+          (:edit:repeat                   . #'evil-repeat)
+
+          ;;------------------------------
+          ;; Commands
+          ;;------------------------------
+          ;;---
+          ;; Evil Command
+          ;;---
+          (:evil:command                  . #'evil-ex)
+
+          ;;---
+          ;; Shell Command
+          ;;---
+          (:shell:command                 . #'evil-shell-command)  ;; Execute region as shell command?
+
+          ;;------------------------------
+          ;; Evil States
+          ;;------------------------------
+          (:state:insert:before           . #'evil-insert)
+          (:state:insert:after            . #'evil-append)
+          (:state:insert:line:start       . #'evil-insert-line)
+          (:state:insert:line:end         . #'evil-append-line)
+          (:state:insert:line:open-below  . #'evil-open-below)
+          (:state:insert:line:open-above  . #'evil-open-above)
+          (:state:replace                 . #'evil-replace-state)
+          (:state:visual:char-wise        . #'evil-visual-char)
+          (:state:visual:line-wise        . #'evil-visual-line)
+
+
+          ;;------------------------------
+          ;; Doom!
+          ;;------------------------------
+          (:docs:lookup                   . #'+lookup/documentation)
+
+
+          ;;------------------------------
+          ;; No Keybind
+          ;;------------------------------
+          (:undefined                     . nil)
+          (:undefined                     . nil)
+
+
+          ;;------------------------------
+          ;; TODO: All the multi-key keybinds
+          ;;------------------------------
+          ;; These aren't keybinds - they just have a lot of keybinds in them.
+          ;; (:menu:prev  . #'"[")
+          ;; (:menu:next  . #'"]")
+          ;; (:menu:text? . #'"g")
+          ;; (:menu:???   . #'"z")
+          ;; (:menu:???   . #'"Z")
+
+
+          ;;------------------------------
+          ;; TODO: All the modifier keybinds (Ctrl, Shift, etc)
+          ;;------------------------------
+          ;; like, do everything all over again but with Ctrl.
+          ;; ...and then shift...
+          ;; ...and then etc...
+          ))
+
+
+    ;;--------------------------------------------------------------------------
+    ;; TODO: A bunch of other mode maps.
+    ;;--------------------------------------------------------------------------
+    )
+  "Keymap -> Keyword -> function alists for the active/desired keyboard
+layout.")
 
 ;;------------------------------------------------------------------------------
 ;; Registration

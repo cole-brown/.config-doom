@@ -215,6 +215,12 @@ The extension '.el' is used to check for file existance."
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; Layout Builder Functions
+;;------------------------------
+(load! "layout/init")
+
+
+;;------------------------------
 ;; Qwerty
 ;;------------------------------
 ;; Always need qwerty (right now) for unmapping help.

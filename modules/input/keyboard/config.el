@@ -28,6 +28,14 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; Layout Builder Functions
+;;------------------------------
+;; [2021-05-28] Not currently sure if config.el will exist, so using this.
+;; If config.el MUST exist, switch to the `load!' function.
+(input:keyboard/layout:load-file "layout/config")
+
+
+;;------------------------------
 ;; Qwerty
 ;;------------------------------
 ;; Always need qwerty (right now) for unmapping help.

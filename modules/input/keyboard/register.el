@@ -1,72 +1,194 @@
 ;;; input/keyboard/register.el -*- lexical-binding: t; -*-
 
 
+;; ;;------------------------------------------------------------------------------
+;; ;; Functions: Initialization
+;; ;;------------------------------------------------------------------------------
+
+;; (defun input//kl:layout/init (layout keys functions)
+;;   "Register LAYOUT with its KEYS and FUNCTIONS alists.
+
+;; KEYS must be a /quoted symbol/ to an alist that satisfies
+;; `input//kl:layout/active:keys' format.
+
+;; FUNCTIONS must be a /quoted symbol/ to an alist that satisfies
+;; `input//kl:layout/active:functions' format."
+;;   (input//kl:alist/update layout
+;;                           (list keys functions)
+;;                           input//kl:layouts
+;;                           t))
+
+
+;; ;;------------------------------------------------------------------------------
+;; ;; Functions: Configuration
+;; ;;------------------------------------------------------------------------------
+
+;; (defun input//kl:layouts/config (active &optional default)
+;;   "Set ACTIVE/desired layout, and optionally the DEFAULT.
+
+;; ACTIVE/DEFAULT must be either:
+;;   1) layout keyword (`:dvorak') or,
+;;   2) layout flag symbol (`+layout/dvorak').
+
+;; If DEFAULt is nil, `:qwerty'/`+layout/qwerty' is assumed.
+
+;; Must be called after ACTIVE's keys/functions lists are defined."
+;;   ;; Normalize to keywords.
+;;   (let ((active (input//kl:normalize->keyword active))
+;;         (default (or
+;;                   (input//kl:normalize->keyword default)
+;;                   :qwerty)))
+;;     (when (null input//kl:layout/expected)
+;;       (error (input//kl:error-message "input//kl:layouts/config"
+;;                                       "No expected layout set; cannot configure keyboard layout! "
+;;                                       "expected: '%S'")
+;;                input//kl:layout/expected))
+;;     ;; Only allow the expected to config themselves.
+
+;;     (when (eq active input//kl:layout/expected)
+;;       ;; Get the keys/functions alist symobls from `input//kl:layouts' and then
+;;       ;; set `input//kl:layout/{active,default}:{keys,functions}'.
+;;       (let ((active-layout (input//kl:alist/get active
+;;                                                 input//kl:layouts))
+;;             (default-layout (input//kl:alist/get default
+;;                                                  input//kl:layouts)))
+;;         (setq input//kl:layout/active            active
+;;               input//kl:layout/default           default)))))
+;; ;; (input//kl:layouts/config :spydez)
+
+
+;; (defun input:keyboard/layout:configure-active ()
+;;   "Map the active keyboard layout to its keybinds."
+;;   (if (null input//kl:layout/active)
+;;       (error (input//kl:error-message "input:keyboard/layout:configure-active"
+;;                                       "No active layout set; cannot configure keyboard layout! "
+;;                                       "expected: '%S', "
+;;                                       "active: '%S'")
+;;              input//kl:layout/expected
+;;              input//kl:layout/active)
+
+;;     (input:keyboard/layout:layout! input//kl:layout/active)))
+;; ;; (input//kl:layout/configure-active)
+
+
 ;;------------------------------------------------------------------------------
-;; Functions: Initialization
+;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:layout/init (layout keys functions)
-  "Register LAYOUT with its KEYS and FUNCTIONS alists.
+(defvar input//kl:layout:keybinds nil
+  "The keybinds for the active layout.
 
-KEYS must be a /quoted symbol/ to an alist that satisfies
-`input//kl:layout/active:keys' format.
+Saved in `input:keyboard/layout:set' during module config; set/activated in
+`input:keyboard/layout:activate' during module finalization.
 
-FUNCTIONS must be a /quoted symbol/ to an alist that satisfies
-`input//kl:layout/active:functions' format."
-  (input//kl:alist/update layout
-                          (list keys functions)
-                          input//kl:layouts
-                          t))
+This is an alist with 3 expected entries:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.
+
+Each alist key's value should be a list of args for
+`input:keyboard/layout:map!'.")
+
+
+(defconst input//kl:layout:types '(:common :emacs :evil)
+  "Allowed types for a few function args, alist keys.
+
+Types are:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.")
+
+
+;;------------------------------------------------------------------------------
+;; Functions: Validity
+;;------------------------------------------------------------------------------
+
+(defun input//kl:layout:valid/type (type)
+  "Returns non-nil if TYPE is a valid type.
+
+See `input//kl:layout:types for the list of valid types."
+  (memq type input//kl:layout:types))
 
 
 ;;------------------------------------------------------------------------------
 ;; Functions: Configuration
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:layouts/config (active &optional default)
-  "Set ACTIVE/desired layout, and optionally the DEFAULT.
+(defun input:keyboard/layout:set (type keybind-map)
+  "Saves TYPE's KEYBIND-MAP for final configuration in
+`input:keyboard/layout:activate'.
 
-ACTIVE/DEFAULT must be either:
-  1) layout keyword (`:dvorak') or,
-  2) layout flag symbol (`+layout/dvorak').
+TYPE should be one of:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.
 
-If DEFAULt is nil, `:qwerty'/`+layout/qwerty' is assumed.
-
-Must be called after ACTIVE's keys/functions lists are defined."
-  ;; Normalize to keywords.
-  (let ((active (input//kl:flag->keyword active))
-        (default (or
-                  (input//kl:flag->keyword default)
-                  :qwerty)))
-    (when (null input//kl:layout/expected)
-      (error (concat "Module :input/keyboard/layout: `input//kl:layouts/config' "
-                     "No expected layout set; cannot configure keyboard layout! "
-                     "expected: '%S'")
-               input//kl:layout/expected))
-    ;; Only allow the expected to config themselves.
-
-    (when (eq active input//kl:layout/expected)
-      ;; Get the keys/functions alist symobls from `input//kl:layouts' and then
-      ;; set `input//kl:layout/{active,default}:{keys,functions}'.
-      (let ((active-layout (input//kl:alist/get active
-                                                input//kl:layouts))
-            (default-layout (input//kl:alist/get default
-                                                 input//kl:layouts)))
-        (setq input//kl:layout/active            active
-              input//kl:layout/default           default)))))
-;; (input//kl:layouts/config :spydez)
+If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
+earlier."
+  (declare (indent 1))
+  (if (not (input//kl:layout:valid/type type))
+      (error (input//kl:error-message "input:keyboard/layout:set"
+                                      "Type '%S' is not a valid type. "
+                                      "Must be one of: %S")
+             type input//kl:layout:types)
+    (input//kl:alist/update type keybind-map input//kl:layout:keybinds t)))
 
 
-(defun input:keyboard/layout:configure-active ()
-  "Map the active keyboard layout to its keybinds."
-  (if (null input//kl:layout/active)
-      (error (concat "Module :input/keyboard/layout: "
-                     "`input:keyboard/layout:configure-active' "
-                     "No active layout set; cannot configure keyboard layout! "
-                     "expected: '%S', "
-                     "active: '%S'")
-             input//kl:layout/expected
-             input//kl:layout/active)
+(defun input//kl:activate/validate (func type)
+  "Checks that things are valid for `input:keyboard/layout:activate/<foo>' functions.
 
-    (input:keyboard/layout:layout! input//kl:layout/active)))
-;; (input//kl:layout/configure-active)
+1. There must be an active layout.
+2. Some keybinds must be set/saved.
+3. TYPE must be valid."
+  (cond ((null input//kl:layout/active)
+         (error (input//kl:error-message func
+                                         "No active layout set; cannot configure keyboard layout! "
+                                         "expected: '%S', "
+                                         "active: '%S'")
+                input//kl:layout/expected
+                input//kl:layout/active))
+
+        ((null input//kl:layout:keybinds)
+         (error (input//kl:error-message func
+                                         "Active layout has not set its keybinds; "
+                                         "cannot configure keyboard layout! "
+                                         "Expected %S to have called `input:keyboard/layout:set'."
+                                         "Keybinds are: %S")
+                input//kl:layout/active
+                input//kl:layout:keybinds))
+        ((not (input//kl:layout:valid/type type))
+         (error (input//kl:error-message func
+                                         "Type '%S' is not a valid type. "
+                                         "Must be one of: %S")
+                type input//kl:layout:types))
+
+        (t
+         ;; No errors - return something non-nil.
+         type)))
+
+
+(defun input:keyboard/layout:activate (type)
+  "Map the active keyboard layout's keybinds for TYPE."
+  (when-let ((valid (input//kl:activate/validate "input:keyboard/layout:activate" type))
+             ;; Could be this keybind has nothing for type, and that's fine...
+             ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
+             (keybinds (input//kl:alist/get type input//kl:layout:keybinds)))
+     ;;(input//kl:layout:map-parse keybinds)))
+    (eval
+     ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
+     ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
+     (input//kl:layout:map-parse keybinds))))
+;; (input:keyboard/layout:activate :common)
+;; (input:keyboard/layout:activate :emacs)
+;; (input:keyboard/layout:activate :evil)
+;; (input:keyboard/layout:activate :INVALID)
+;; (input:keyboard/layout:map!
+;;  :nvm  "c"  #'evil-previous-line
+;;  :nvm  "t"  #'evil-next-line
+;;  :nvm  "h"  #'evil-backward-char
+;;  :nvm  "n"  #'evil-forward-char)
+
+
+;;------------------------------------------------------------------------------
+;; The End
+;;------------------------------------------------------------------------------

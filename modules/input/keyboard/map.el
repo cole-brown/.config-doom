@@ -26,18 +26,18 @@ keybinds for a key it is overwriting.")
           ((eq type :functions)
            (setq slot 1))
           (t
-           (error (concat "Module :input/keyboard/layout: `input//kl:get' "
-                          "Unknown type '%S'. Must be either "
-                          "`:keys' or `:functions'!")
+           (error (input//kl:error-message "input//kl:get"
+                                           "Unknown type '%S'. Must be either "
+                                           "`:keys' or `:functions'!")
                   type)))
     ;; Get layout's key/func symbol from `input//kl:layouts', and return
     ;; its alist value.
     (setq symbols (input//kl:alist/get layout input//kl:layouts))
     (if (not symbols)
-        (error (concat "Module :input/keyboard/layout: `input//kl:get' "
-                       "No '%S' for layout '%S'. Does layout exist and is it "
-                       "currently registered in `input//kl:layouts'?")
-                  type layout)
+        (error (input//kl:error-message "input//kl:get"
+                                        "No '%S' for layout '%S'. Does layout exist and is it "
+                                        "currently registered in `input//kl:layouts'?")
+               type layout)
       (symbol-value (nth slot symbols)))))
 ;; (input//kl:get :keys :spydez)
 ;; (input//kl:get :functions :qwerty)
@@ -57,10 +57,10 @@ keybinds for a key it is overwriting.")
                               (input//kl:alist/get keymap
                                                    (input//kl:get :keys layout))))
         (t
-         (error (concat "Module :input/keyboard/layout: `input//kl:key' "
-                        "Cannot find keyword '%S' for keymap '%S' "
-                        "in layout '%S' as the layout is not the "
-                        "active (%S) or default (%S).")
+         (error (input//kl:error-message "input//kl:key"
+                                         "Cannot find keyword '%S' for keymap '%S' "
+                                         "in layout '%S' as the layout is not the "
+                                         "active (%S) or default (%S).")
                 keyword
                 keymap
                 layout
@@ -82,9 +82,9 @@ Returns: (evil-states function)"
                               (input//kl:alist/get keymap
                                                    (input//kl:get :functions layout))))
         (t
-         (error (concat "Module :input/keyboard/layout: `input//kl:function' "
-                        "Cannot find keyword '%S' for layout '%S' as the "
-                        "layout is not the active (%S) or default (%S).")
+         (error (input//kl:error-message "input//kl:function"
+                                         "Cannot find keyword '%S' for layout '%S' as the "
+                                         "layout is not the active (%S) or default (%S).")
                 keyword
                 layout
                 input//kl:layout/active
@@ -229,67 +229,67 @@ If `key-binding' returns nil, this function does nothing."
 ;; Public Functions
 ;;------------------------------------------------------------------------------
 
-;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
-(defmacro input:keyboard/layout:map! (layout keymap &rest keywords)
-  "`map!' helper for keyboard layouts.
+;; ;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
+;; (defmacro input:keyboard/layout:map! (layout keymap &rest keywords)
+;;   "`map!' helper for keyboard layouts.
 
-Provide keyboard LAYOUT keyword symbol (e.g. `:dvorak') and some KEYWORDS in
-the KEYMAP to `map!'. Each item in KEYWORDS a keyword that exists in the
-LAYOUT's keys and functions alists.
+;; Provide keyboard LAYOUT keyword symbol (e.g. `:dvorak') and some KEYWORDS in
+;; the KEYMAP to `map!'. Each item in KEYWORDS a keyword that exists in the
+;; LAYOUT's keys and functions alists.
 
-Example:
-  (input:keyboard/layout:map!
-    :dvorak
-    'org-mode-map
-    :up :down :left :right
-    :line-beginning)"
-  (let ((mac:layout   (make-symbol "layout-type"))
-        (mac:keymap   (make-symbol "layout-keymap"))
-        (mac:keywords (make-symbol "layout-keywords")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mac:layout   ,layout)
-           (,mac:keymap   ,keymap)
-           (,mac:keywords '(,@keywords))
-           entries)
-       (dolist (keyword ,mac:keywords entries)
-         (push (input//kl:entry/map ,mac:layout
-                                    ,mac:keymap
-                                    keyword)
-               entries))
-       (input//kl:map!/all ,mac:keymap entries))))
-;; (pp-macroexpand-expression (input:keyboard/layout:map! :spydez nil :up :down :left :right))
+;; Example:
+;;   (input:keyboard/layout:map!
+;;     :dvorak
+;;     'org-mode-map
+;;     :up :down :left :right
+;;     :line-beginning)"
+;;   (let ((mac:layout   (make-symbol "layout-type"))
+;;         (mac:keymap   (make-symbol "layout-keymap"))
+;;         (mac:keywords (make-symbol "layout-keywords")))
+;;     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+;;     ;; Eval inputs once.
+;;     `(let ((,mac:layout   ,layout)
+;;            (,mac:keymap   ,keymap)
+;;            (,mac:keywords '(,@keywords))
+;;            entries)
+;;        (dolist (keyword ,mac:keywords entries)
+;;          (push (input//kl:entry/map ,mac:layout
+;;                                     ,mac:keymap
+;;                                     keyword)
+;;                entries))
+;;        (input//kl:map!/all ,mac:keymap entries))))
+;; ;; (pp-macroexpand-expression (input:keyboard/layout:map! :spydez nil :up :down :left :right))
 
 
-;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
-(defmacro input:keyboard/layout:unmap! (layout keymap &rest keywords)
-  "`map!' helper for keyboard layouts that unmaps KEYWORDS keybinds.
+;; ;; TODO: does this work? If not, fix to be like `input:keyboard/layout:layout!'.
+;; (defmacro input:keyboard/layout:unmap! (layout keymap &rest keywords)
+;;   "`map!' helper for keyboard layouts that unmaps KEYWORDS keybinds.
 
-Provide keyboard LAYOUT keyword symbol (e.g. `:dvorak') and some
-KEYWORDS to unmap in the KEYMAP via `map!'.
-Example:
-  (input:keyboard/layout:unmap!
-    :dvorak
-    'org-mode-map
-    :up
-    :line-beginning)"
-  (let ((mac:layout   (make-symbol "layout-type"))
-        (mac:keymap   (make-symbol "layout-keymap"))
-        (mac:keywords (make-symbol "layout-keywords")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mac:layout   ,layout)
-           (,mac:keymap   ,keymap)
-           (,mac:keywords '(,@keywords))
-           entries)
-       (dolist (keyword ,mac:keywords entries)
-         (push (input//kl:entry/unmap ,mac:layout
-                                      ,mac:keymap
-                                      keyword)
-               entries))
-       (input//kl:map!/all ,mac:keymap entries))))
-;; (pp-macroexpand-expression (input:keyboard/layout:unmap! :spydez nil :up :down :left :right))
-;; (input:keyboard/layout:unmap! :spydez nil :up :down :left :right)
+;; Provide keyboard LAYOUT keyword symbol (e.g. `:dvorak') and some
+;; KEYWORDS to unmap in the KEYMAP via `map!'.
+;; Example:
+;;   (input:keyboard/layout:unmap!
+;;     :dvorak
+;;     'org-mode-map
+;;     :up
+;;     :line-beginning)"
+;;   (let ((mac:layout   (make-symbol "layout-type"))
+;;         (mac:keymap   (make-symbol "layout-keymap"))
+;;         (mac:keywords (make-symbol "layout-keywords")))
+;;     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+;;     ;; Eval inputs once.
+;;     `(let ((,mac:layout   ,layout)
+;;            (,mac:keymap   ,keymap)
+;;            (,mac:keywords '(,@keywords))
+;;            entries)
+;;        (dolist (keyword ,mac:keywords entries)
+;;          (push (input//kl:entry/unmap ,mac:layout
+;;                                       ,mac:keymap
+;;                                       keyword)
+;;                entries))
+;;        (input//kl:map!/all ,mac:keymap entries))))
+;; ;; (pp-macroexpand-expression (input:keyboard/layout:unmap! :spydez nil :up :down :left :right))
+;; ;; (input:keyboard/layout:unmap! :spydez nil :up :down :left :right)
 
 
 (defmacro input:keyboard/layout:layout! (layout)

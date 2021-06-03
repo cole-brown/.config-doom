@@ -75,6 +75,21 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Defaults for All Programming Modes
+;;------------------------------------------------------------------------------
+
+(spy:hook/defun-and-hooker prog-mode-hook
+    '(:name "prog-mode/settings"
+      :file ".doom.d/config/code.el"
+      :docstr "Settings for all prog-mode derived modes. Non-LSP stuff."
+      :quiet t)
+
+    ;; My 2560x1440 monitor can display around 152 columns when fullscreen with
+    ;; two vertically-split windows, so we'll do 140 as our fill column?
+    (setq fill-column 140))
+
+
+;;------------------------------------------------------------------------------
 ;; Python
 ;;------------------------------------------------------------------------------
 
@@ -100,8 +115,7 @@
 
     ;; pycodestyle insists 79 is the One True Fill Column...
     ;; We'll try it for all our python in general.
-    (setq fill-column 79))
-  )
+    (setq fill-column 79)))
 
 
 ;;------------------------------------------------------------------------------

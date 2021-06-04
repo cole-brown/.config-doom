@@ -50,7 +50,7 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
 The extension '.el' is used to check for file existance."
   ;; Allow keyword or flag.
   (let* ((directory (or directory
-                        (input//kl:layout:normalize->string layout)))
+                        (input//kl:normalize->string layout)))
          (path (concat (file-name-as-directory "layout")
                        (file-name-as-directory directory)
                        load-name)))

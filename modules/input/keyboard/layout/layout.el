@@ -108,7 +108,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                      "Expected a valid keyboard layout function, got: %S")
                     func))
 
-            ((not (input//kl:layout:valid/type type))
+            ((not (input//kl:layout:valid/type? type))
              (error (input//kl:error-message
                      "input:keyboard/layout:define/keywords"
                      "Type '%S' is not a valid type. "

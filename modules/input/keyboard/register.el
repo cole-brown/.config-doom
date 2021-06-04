@@ -33,7 +33,7 @@ Types are:
 ;; Functions: Validity
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:layout:valid/type (type)
+(defun input//kl:layout:valid/type? (type)
   "Returns non-nil if TYPE is a valid type.
 
 See `input//kl:layout:types for the list of valid types."
@@ -63,7 +63,7 @@ earlier."
              layout)
     (setq input//kl:layout/active layout))
 
-  (if (not (input//kl:layout:valid/type type))
+  (if (not (input//kl:layout:valid/type? type))
       (error (input//kl:error-message "input:keyboard/layout:set"
                                       "Type '%S' is not a valid type. "
                                       "Must be one of: %S")
@@ -130,7 +130,7 @@ earlier."
                                          "Keybinds are: %S")
                 input//kl:layout/active
                 input//kl:layout:keybinds))
-        ((not (input//kl:layout:valid/type type))
+        ((not (input//kl:layout:valid/type? type))
          (error (input//kl:error-message func
                                          "Type '%S' is not a valid type. "
                                          "Must be one of: %S")

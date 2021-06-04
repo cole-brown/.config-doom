@@ -9,6 +9,10 @@
   "Absolute path to `:input/keyboard' root directory.")
 
 
+(defconst input//kl:dir/layout/prefix "+"
+  "Layout dirs must start with a '+'.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Basic Load Functions
 ;;------------------------------------------------------------------------------
@@ -52,6 +56,8 @@ The extension '.el' is used to check for file existance."
   (let* ((directory (or directory
                         (input//kl:normalize->string layout)))
          (path (concat (file-name-as-directory "layout")
+                       ;; Add the required '+'.
+                       input//kl:dir/layout/prefix
                        (file-name-as-directory directory)
                        load-name)))
     ;; Is it ok for some files to not exist, maybe?
@@ -111,12 +117,11 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
                            (buffer-file-name)))
          (directory-path (directory-file-name
                           (file-name-directory file-path-this)))
-         ;; TODO: Rename layout dirs to have '+' in front of them.
-         ;; TODO: Update regex to require a '+' to start the string.
+         ;; Layout dirs must have '+' in front of them and must be our direct children.
          (files-and-attrs (directory-files-and-attributes directory-path
                                                           nil
                                                           (rx string-start
-                                                              (= 2 (not "."))
+                                                              "+"
                                                               (one-or-more print)
                                                               string-end))))
     ;; Iterate through what was found and figure out if its a directory.
@@ -129,6 +134,7 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
           ;; Our keyboard layout directories are named such that they can be
           ;; passed into `input:keyboard/layout:load-active'.
           (input:keyboard/layout:load-active name file))))))
+;; (input:keyboard/layout:find-and-load-active "config")
 
 
 ;;------------------------------------------------------------------------------

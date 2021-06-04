@@ -43,7 +43,6 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 (load! "error")
 (load! "load")
 (load! "alist")
-(load! "map")
 (load! "register")
 
 
@@ -144,7 +143,6 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;; (input//kl:normalize->keyword :spydez)
 ;; (input//kl:normalize->keyword "spydez")
 ;; (input//kl:normalize->keyword nil)
-
 
 
 ;;------------------------------------------------------------------------------

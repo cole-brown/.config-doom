@@ -45,10 +45,14 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 
   ;; Allows us to have a list of functions to run under evil's
   ;; `evil-collection-setup-hook'.
-  (fset 'input:keyboard/layout:evil-collection-setup-hook
-        ;; Currently no functions, but if we have some it'll look like:
-        ;; (input//kl:evil/setup:foo input//kl:evil/setup:bar)
-        nil)
+  ;; (fset 'input:keyboard/layout:evil-collection-setup-hook
+  ;;       (
+  ;;        ;; Currently no functions, but if we did, they'd just be in the list like:
+  ;;        ;; input//kl:evil/setup:foo
+  ;;        ;; input//kl:evil/setup:bar
+  ;;       ))
+  ;; (add-hook 'evil-collection-setup-hook
+  ;;           #'input:keyboard/layout:evil-collection-setup-hook)
 
 
   ;;------------------------------
@@ -59,12 +63,15 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
   ;; some/all of our keyboard layout overwritten by Doom. So we must delay until
   ;; the correct time.
   ;;
-  ;; The existing ':input/layout' module uses this hooks, so we will too:
+  ;; This Doom hook seems to be the proper one to use:
   (add-transient-hook!
       'doom-init-modules-hook
     ;; Finalize by actually finally mapping the layout's keybinds.
     (input:keyboard/layout:finalize)))
 
+;;------------------------------
+;; FOR TESTING LAYOUTS:
+;;------------------------------
 ;; If testing, and you want to apply the keybind like the transient hook will,
 ;; just evaluate this:
 ;;   (input:keyboard/layout:finalize)

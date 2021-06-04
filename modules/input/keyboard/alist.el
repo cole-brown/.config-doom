@@ -149,6 +149,37 @@ Returns ALIST."
 ;;   (input//kl:alist/string/update "foo" 'baz alist))
 
 
+(defmacro input//kl:alist/string/update-quoted (key value alist &optional set-alist)
+  "Set/overwrite an entry in the alist without evaluating VALUE.
+
+If VALUE is nil, it will be set as KEY's value. Use `input//kl:alist/string/delete' if
+you want to remove it.
+
+Returns ALIST."
+  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
+  (let ((mmm:alist (make-symbol "alist:string"))
+        (mmm:key   (make-symbol "alist:string/key")))
+    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+    ;; Eval inputs once.
+    `(let ((,mmm:alist ,alist)
+           (,mmm:key ,key))
+       ;;---
+       ;; Error Checking
+       ;;---
+       (when (not (stringp ,mmm:key))
+         (error (input//kl:error-message "input//kl:alist/string/update"
+                                         "Only string keys allowed. "
+                                         "Use `input//kl:alist/update' for non-string key %S.")
+                ,mmm:key))
+
+       (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) value)
+       (when ,set-alist
+         (setq ,alist ,mmm:alist))
+       ,mmm:alist)))
+;; (let ((alist '(("foo" . bar))))
+;;   (input//kl:alist/string/update "foo" 'baz alist))
+
+
 (defmacro input//kl:alist/string/delete (key alist &optional set-alist)
   "Removes KEY from ALIST.
 

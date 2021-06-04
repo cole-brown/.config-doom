@@ -36,97 +36,26 @@ Format:
 ;; Validity
 ;;------------------------------------------------------------------------------
 
-;; TODO: is it being used and useful?
-(defun input//kl:layout:valid/keymap? (keymap)
-  "Returns `t' if KEYMAP a is valid.
-'Valid' is a: symbol, nil, `global', or `:global'."
-  (cond ((memq keymap '(nil global :global))
-         ;; These all mean 'the global keymap'.
-         t)
-        ((symbolp keymap)
-         ;; These could be for things that aren't loaded yet so don't think we
-         ;; can do any additional checks.
-         t)
-        (t
-         (error (input//kl:error-message
-                 "input//kl:layout:valid/keymap?"
-                 "KEYMAP '%S' is not valid.")
-                keymap))))
-
-
-;; TODO: is it being used and useful?
+;; TODO: add `type' param
 (defun input//kl:layout:valid/keyword? (keyword)
   "Is KEYWORD a keyword and is it a valid keyboard layout keyword?"
   (and (keywordp keyword)
+       ;; TODO: concat type string to end of prefix
        (string-prefix-p input//kl:layout:keyword/prefix
                         (symbol-name keyword))))
 
 
 ;; TODO: is it being used and useful?
-(defun input//kl:layout:valid/keybind? (keybind)
-  "Is KEYBIND a string and is it a valid keybinding string?"
-  (stringp keybind)
-  ;; TODO: "and is it a valid keybinding string?"
-  )
-
-
-;; TODO: is it being used and useful?
 (defun input//kl:layout:valid/function? (func)
   "Is FUNC a symbol or function symbol and is it a valid keybinding function?
-FUNC is optional, so `nil' is valid."
+`nil' is valid - it is used for unbinding already-bound keys."
   (or (null func)
       (and (symbolp func)
            (not (keywordp func))
            ;; Could get something that is not defined yet? In which case this
            ;; causes us to say it's invalid:
            ;; (functionp func)
-           ;;
-           ;; TODO: "and is it a valid keybinding function?"
            )))
-
-
-;;------------------------------------------------------------------------------
-;; Normalization
-;;------------------------------------------------------------------------------
-
-;; TODO: delete this I think?
-(defun input//kl:layout:normalize/keymap (keymap)
-  "In general, returns KEYMAP as-is.
-
-Will convert `nil' and `global' to `:global'."
-  (cond
-   ;;---
-   ;; Invalid KEYMAP
-   ;;---
-   ((not (input//kl:layout:valid/keymap? keymap))
-    ;; `input//kl:layout:valid/keymap?' should have errored but:
-    (error (input//kl:error-message
-            "input//kl:layout:normalize/keymap"
-            "KEYMAP '%S' is not valid.")
-           keymap))
-
-   ;;---
-   ;; Synonyms
-   ;;---
-   ((memq keymap '(nil global :global))
-    ;; These all mean 'the global keymap' and we'll normalize to `:global'.
-    :global)
-
-   ;;---
-   ;; (Expected) Default: Return as-is.
-   ;;---
-   ((symbolp keymap)
-    keymap)
-
-   ;;---
-   ;; (Unexpected) Default: "...IDK what's going on" error.
-   ;;---
-   (t
-    (error (input//kl:error-message
-            "input//kl:layout:normalize/keymap"
-            "KEYMAP '%S' fell through all valid checks "
-            "- cannot normalize.")
-           keymap))))
 
 
 ;;------------------------------------------------------------------------------
@@ -275,9 +204,8 @@ Used for side-effects; just returns non-nil (`t')."
 ;; (doom--map-def "c" #'evil-prev-line nil "testing...")
 
 
-;; TODO: Get rid of debug `message' calls.
-;; TODO: keyword is for _FUNCTION_, not keybind string!
-;;       - see after `input:keyboard/layout:map!' for example.
+;; TODO: Do I want 'parse' or should I do 'process' to match doom-....
+;;       - Yeah. Change to 'process'.
 (defun input//kl:layout:map-parse (rest)
   "Layout-aware backend for `map!' - equivalent to `doom--map-process'.
 
@@ -372,10 +300,10 @@ input keywords and such."
                                  (:map evil-outer-text-objects-map ,key ,outer))
                           doom--map-forms)))
                  ;;---
-                 ;; Evil States
+                 ;; Fallthrough: Evil States
                  ;;---
                  (_
-                  (condition-case err ;; TODO: `err' back to: _
+                  (condition-case _
                       ;; Evil states are followed by a `kbd'-type string, then
                       ;; either a function or a layout-keyword to bind to the
                       ;; keyword/string.
@@ -416,8 +344,12 @@ input keywords and such."
 ;;                                  (doom--map-process '(:desc "test" :nvm "t" #'evil-next-line))))
 
 
+;; TODO: rework description
+;;       - add ':input/keyboard' specific stuff
+;;       - change any 'map!' to full function name
 (defmacro input:keyboard/layout:map! (&rest rest)
-  "A convenience macro for defining keybinds, powered by `general'.
+  "A convenience macro for defining keybinds, powered by `general';
+an ':input/keyboard'-aware equivalent to Doom's `map!' macro.
 
 If evil isn't loaded, evil-specific bindings are ignored.
 

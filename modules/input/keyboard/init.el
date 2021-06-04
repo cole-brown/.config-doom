@@ -164,7 +164,7 @@ E.g. `+layout/dvorak' -> `:dvorak'."
                           (setq input//kl:layout/expected
                                 (input//kl:normalize->keyword flag))
                         ;; Count for a warning (if not suppressed).
-                        (setq layouts (1+ layouts)))))
+                        (setq layouts (1+ layouts))))))
                  ;; Warn only if we didn't see the suppression.
                  (not suppress-warning))
         (warn (concat "Doom Module `:input/keyboard' init detected %d keyboard "

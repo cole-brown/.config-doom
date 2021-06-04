@@ -7,6 +7,7 @@
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                  ──────────                                ;;
 
+;; TODO: A function? Or pass to `set'?
 (setq input//kl:layout/active :qwerty)
 
 
@@ -55,117 +56,7 @@
 ;;------------------------------------------------------------------------------
 
 
-
-
-;; ;;------------------------------------------------------------------------------
-;; ;; Keyword Naming
-;; ;;------------------------------------------------------------------------------
-;; ;;
-;; ;; - Try to be succinct; use short synonymns.
-;; ;;   + Instead of 'beginning', use 'start'.
-;; ;; - Try to modify the function name into a symbol based on these guidelines
-;; ;;   (as opposed to just making up something that feels better).
-;; ;;   + `beginning-of-line' -> `:line:start' as opposed to, say, `:point:bol'.
-;; ;; - Try to use words instead of acronyms.
-;; ;;   + E.g. "file end" or "end of file" instead of "eof" should be what you try
-;; ;;     to make your symbol out of.
-;; ;; - Be specific:
-;; ;;   + `evil-previous-line-first-non-blank'
-;; ;;     - YES: `:line:prev-non-blank'
-;; ;;     -  NO: `:line:prev'
-;; ;;     - Someone may want to use `evil-previous-line' everywhere instead of
-;; ;;       `evil-previous-line-first-non-blank' and they should be the ones to
-;; ;;       claim `:line:prev'.
-;; ;;
-;; ;;------------------------------
-;; ;; Groupings:
-;; ;;---
-;; ;;   - If a key has a general grouping and a specific functionality in that
-;; ;;     group of commands, order general->specific and separate with colons.
-;; ;;     + :group-1:func-A
-;; ;;     + :group-1:func-B
-;; ;;     + :line:next
-;; ;;     + :line:prev
-;; ;;     + :line:prev-non-blank
-;; ;;
-;; ;;
-;; ;;------------------------------
-;; ;; Combos / Multi-Function:
-;; ;;---
-;; ;;   - If a key has multiple functionalities, depending on context, separate
-;; ;;     them with a '/' character.
-;; ;;     + :func-A/func-B
-;; ;;   - If a key has different functionalities, depending on setup, use separate
-;; ;;     `when's instead of a single `if' block so they can be place properly.
-;; ;;     + YES:
-;; ;;          <some section>
-;; ;;          (when (featurep! :emacs undo)
-;; ;;            (:undo:redo . "r"))
-;; ;;          ...
-;; ;;          <some other section>
-;; ;;          (when (not (featurep! :emacs undo))
-;; ;;            (:char:replace . "r"))
-;; ;;     + NO:
-;; ;;          (if (featurep! :emacs undo)
-;; ;;              (:undo:redo . "r")
-;; ;;            (:char:replace . "r"))
-;; ;;
-;; ;;
-;; ;;------------------------------
-;; ;; Combining:
-;; ;;---
-;; ;;   - Do the best you can, but you may not always be able to follow the
-;; ;;     guidelines completely if in some hybrid of two or more things.
-;; ;;   - E.g.: a grouping and a combo:
-;; ;;     + :func-A/group-1:func-B
-;; ;;     + :group-1:func-A/func-B
-;; ;;
-;; ;;------------------------------
-
-
-;; ;;------------------------------------------------------------------------------
-;; ;; List Ordering
-;; ;;------------------------------------------------------------------------------
-;; ;;
-;; ;;  - List is grouped by keymaps - global (nil) should be first.
-;; ;;  - Within a keymap, order keys by general functionality:
-;; ;;    + Movement
-;; ;;    + etc.
-;; ;;  - Within a general functionality, try to break up/order keybinds into
-;; ;;    sub-groups.
-;; ;;  - If there is a combo-key (e.g. `:digit-arg:0/line:start'), place it in the
-;; ;;    first group it belongs to in the list.
-;; ;;    + Try to place a commented out or comment about it in other groups it
-;; ;;      belongs to.
-;; ;;
-;; ;;------------------------------
-
-
-;; ;;------------------------------------------------------------------------------
-;; ;; Pretty Formatting
-;; ;;------------------------------------------------------------------------------
-;; ;; NOTE: ^The above 3 lines are a "headline"
-;; ;;   - It is a 'full-width' headline as both hyphen lines go out to column 80.
-;; ;;   - A 'medium' headline has 30 hyphens/dashes.
-;; ;;   - A 'small' headline has 3 hyphens/dashes.
-;; ;;
-;; ;; - Try to keep the keybind strings of subgroups or groups aligned.
-;; ;;          (:item:jump                 . "%")
-;; ;;          (:digit-arg:0/line:start    . "0")
-;; ;;          (:line:end                  . "$")
-;; ;;          (:line:prev:first-non-blank . "-")
-;; ;;
-;; ;; - Use a full-width headline between keymaps.
-;; ;;   + Try to keep two empty lines between keymaps.
-;; ;;
-;; ;; - Use a medium headline between groups.
-;; ;;   + Try to keep two empty lines between groups.
-;; ;;
-;; ;; - Use a small headline between subgroups.
-;; ;;   + Try to keep one empty line between subgroups.
-;; ;;
-;; ;;------------------------------
-
+;; TODO: steal all these key strings to flesh out the qwerty layout
 
 ;; ;;------------------------------------------------------------------------------
 ;; ;; Constants & Variables
@@ -633,16 +524,3 @@
 ;;     )
 ;;   "Keymap -> Keyword -> function alists for the active/desired keyboard
 ;; layout.")
-
-;; ;;------------------------------------------------------------------------------
-;; ;; Registration
-;; ;;------------------------------------------------------------------------------
-
-;; (input//kl:layout/init :qwerty
-;;                        'input//kl:qwerty:keys
-;;                        'input//kl:qwerty:functions)
-
-
-;; ;;------------------------------------------------------------------------------
-;; ;; The End.
-;; ;;------------------------------------------------------------------------------

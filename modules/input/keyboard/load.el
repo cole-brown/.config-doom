@@ -10,7 +10,7 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Load Functions
+;; Basic Load Functions
 ;;------------------------------------------------------------------------------
 
 (defun input//kl:file/exists? (relative-path)
@@ -70,6 +70,10 @@ The extension '.el' is used to check for file existance."
     ))
 ;; (input:keyboard/layout:load-file :spydez "config")
 
+
+;;------------------------------------------------------------------------------
+;; Load Active Layout Functions
+;;------------------------------------------------------------------------------
 
 (defun input:keyboard/layout:load-active (layout load-name &optional directory)
   "Load LAYOUT if it is the desired layout according to `input//kl:loading-for'

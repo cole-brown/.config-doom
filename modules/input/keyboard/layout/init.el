@@ -30,30 +30,6 @@
 (input:keyboard/layout:find-and-load-active "init")
 
 
-;; ;;------------------------------
-;; ;; Qwerty
-;; ;;------------------------------
-;; ;; Always need qwerty (right now) for unmapping help.
-;; (input:keyboard/layout:load-file :qwerty "init")
-;; ;; (input:keyboard/layout:load-active :qwerty "init")
-
-
-;; ;;------------------------------
-;; ;; Dvorak (Optional)
-;; ;;------------------------------
-
-;; ;; Normal Dvorak
-;; (input:keyboard/layout:load-file :dvorak "init")
-
-;; ;; Dvorak with non-standard keybinds of mine.
-;; (input:keyboard/layout:load-file :spydez "init")
-
-
-;; ;;------------------------------
-;; ;; <NEXT LAYOUT> (Optional)
-;; ;;------------------------------
-
-
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

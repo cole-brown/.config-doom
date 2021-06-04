@@ -8,46 +8,11 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Required
-;;------------------------------------------------------------------------------
-
-;; Order matters.
-;;   - But there are none right now, so.
-
-
-;;------------------------------------------------------------------------------
-;; Optional
-;;------------------------------------------------------------------------------
-
-;; None at the moment.
-
-
-;;------------------------------------------------------------------------------
 ;; Config: Keyboard Layouts
 ;;------------------------------------------------------------------------------
 
 ;; Find our active keyboard layout and load its config if it has one.
 (input:keyboard/layout:find-and-load-active "config")
-
-;; ;;------------------------------
-;; ;; Qwerty
-;; ;;------------------------------
-;; (input:keyboard/layout:load-active :qwerty "config")
-
-
-;; ;;------------------------------
-;; ;; Dvorak (Optional)
-;; ;;------------------------------
-;; ;; Normal Dvorak
-;; (input:keyboard/layout:load-active :dvorak "config")
-
-;; ;; Dvorak with non-standard keybinds of mine.
-;; (input:keyboard/layout:load-active :spydez "config")
-
-
-;; ;;------------------------------
-;; ;; <NEXT LAYOUT> (Optional)
-;; ;;------------------------------
 
 
 ;;------------------------------------------------------------------------------

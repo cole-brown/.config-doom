@@ -1,6 +1,5 @@
 ;;; layout/keyboard/init.el -*- lexical-binding: t; -*-
 
-(message ":keyboard/init.el!")
 ;;                                  ──────────                                ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
 ;; ║                            Keyboard Layouts                            ║ ;;
@@ -23,6 +22,7 @@ keyboard layout.
 e.g. `+layout/dvorak' -> `:dvorak'")
 
 
+;; TODO: delete this
 (defvar input//kl:layouts nil
   "Collection of registered layouts. A layout should add its entry via
 `input//kl:layout/register' during init.
@@ -39,12 +39,13 @@ An entry is: (:layout-keyword keys-alist-symbol funcs-alist-symbol)")
   "Cached keyword for the active/desired keyboard layout.")
 
 
+;; TODO: delete this, fix subheader
 (defvar input//kl:layout/default nil
   "Cached keyword for the keyboard layout which is being overwritten.")
 
 
 ;;------------------------------------------------------------------------------
-;; Load: Required
+;; Load: Required Code Files
 ;;------------------------------------------------------------------------------
 
 ;; NOTE: Order could matter - take care if modifying.
@@ -146,8 +147,6 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;;------------------------------------------------------------------------------
 ;; Error Checking & Setting of `input//kl:layout/expected'
 ;;------------------------------------------------------------------------------
-(message ":keyboard/init.el: Loading? %S" (input//kl:loading?))
-(message ":keyboard/init.el: Flags: %S" (doom-module-get :input 'keyboard :flags))
 
 ;; Should not have more than one keyboard layout, but only check when loading.
 (if (input//kl:loading?)
@@ -164,7 +163,6 @@ E.g. `+layout/dvorak' -> `:dvorak'."
                         (when (null input//kl:layout/expected)
                           (setq input//kl:layout/expected
                                 (input//kl:normalize->keyword flag))
-                          (message ":keyboard/init.el: FOUND FLAG! %S" input//kl:layout/expected))
                         ;; Count for a warning (if not suppressed).
                         (setq layouts (1+ layouts)))))
                  ;; Warn only if we didn't see the suppression.
@@ -178,7 +176,6 @@ E.g. `+layout/dvorak' -> `:dvorak'."
   ;; Else we're not running during init... probably evaluating this buffer
   ;; directly for dev/testing. Set expected to a testing default.
   (setq input//kl:layout/expected :spydez))
-(message ":keyboard/init.el: expected layout: %S" input//kl:layout/expected)
 
 
 ;;------------------------------------------------------------------------------

@@ -36,6 +36,7 @@ Format:
 ;; Validity
 ;;------------------------------------------------------------------------------
 
+;; TODO: is it being used and useful?
 (defun input//kl:layout:valid/keymap? (keymap)
   "Returns `t' if KEYMAP a is valid.
 'Valid' is a: symbol, nil, `global', or `:global'."
@@ -53,6 +54,7 @@ Format:
                 keymap))))
 
 
+;; TODO: is it being used and useful?
 (defun input//kl:layout:valid/keyword? (keyword)
   "Is KEYWORD a keyword and is it a valid keyboard layout keyword?"
   (and (keywordp keyword)
@@ -60,6 +62,7 @@ Format:
                         (symbol-name keyword))))
 
 
+;; TODO: is it being used and useful?
 (defun input//kl:layout:valid/keybind? (keybind)
   "Is KEYBIND a string and is it a valid keybinding string?"
   (stringp keybind)
@@ -67,6 +70,7 @@ Format:
   )
 
 
+;; TODO: is it being used and useful?
 (defun input//kl:layout:valid/function? (func)
   "Is FUNC a symbol or function symbol and is it a valid keybinding function?
 FUNC is optional, so `nil' is valid."
@@ -85,6 +89,7 @@ FUNC is optional, so `nil' is valid."
 ;; Normalization
 ;;------------------------------------------------------------------------------
 
+;; TODO: delete this I think?
 (defun input//kl:layout:normalize/keymap (keymap)
   "In general, returns KEYMAP as-is.
 
@@ -411,13 +416,6 @@ input keywords and such."
 ;;                                  (doom--map-process '(:desc "test" :nvm "t" #'evil-next-line))))
 
 
-(defmacro input//kl:map! (rest)
-  "Same as `input:keyboard/layout:map!', but expects input of a variable whose
-value is the list of things to map, instead of expecting the things to map
-directly."
-  (input//kl:layout:map-parse rest))
-
-
 (defmacro input:keyboard/layout:map! (&rest rest)
   "A convenience macro for defining keybinds, powered by `general'.
 
@@ -478,29 +476,8 @@ Keybinds
   #'org-agenda, etc).
 "
   (input//kl:layout:map-parse rest))
-
-
-
-;;   (if (and (listp rest)
-;;            (= (length rest) 1))
-;;       (progn
-;;         `(message "car rest: %S" ,(car rest))
-;;         `(input//kl:layout:map-parse ,(car rest))
-;;       ;;`(list ,(input//kl:layout:map-parse (car rest)))
-;;       )
-;;     (message "just rest.\nlistp? %S, len=1? %S listp-car? %S"
-;; (listp rest)
-;;            (= (length rest) 1)
-;;            (listp (car rest))
-;;              )
-;;     (input//kl:layout:map-parse rest)))
-
-;;  (input//kl:layout:map-process rest))
 ;; Dvorak keyboard right-handed WASD-type movement:
 ;; (input:keyboard/layout:map!
-;;  ;; ┌──────────────────────────────────────────────────────────────────────┐
-;;  ;; │ Movement                                                             │
-;;  ;; └──────────────────────────────────────────────────────────────────────┘
 ;;  :nvm  "c"  :layout:evil:line-prev
 ;;  :nvm  "t"  :layout:evil:line-next
 ;;  :nvm  "h"  :layout:evil:char-next

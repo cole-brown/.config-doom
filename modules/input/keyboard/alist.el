@@ -1,8 +1,8 @@
 ;;; input/keyboard/alist.el -*- lexical-binding: t; -*-
 
-;; Copy of `:spy/collections/alist' so it's available to `:input/keyboard'
-;; module regardless of init order and in case this ever gets published as a
-;; module.
+;; Helper functions for alists that follow a convention for naming and stuff.
+;; And will assist you in keeping you alist up-to-date, like it's a variable
+;; or something.
 
 
 ;;------------------------------------------------------------------------------
@@ -21,8 +21,6 @@ If VALUE is nil, it will be set as KEY's value. Use
 `input//kl:alist/delete' if you want to remove it.
 
 Returns ALIST."
-  ;; (declare (indent defun))
-
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
   (let ((mmm:alist (make-symbol "alist:general"))
         (mmm:key   (make-symbol "alist:general/key")))
@@ -127,8 +125,6 @@ If VALUE is nil, it will be set as KEY's value. Use `input//kl:alist/string/dele
 you want to remove it.
 
 Returns ALIST."
-  ;; (declare (indent defun))
-
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
   (let ((mmm:alist (make-symbol "alist:string"))
         (mmm:key   (make-symbol "alist:string/key")))

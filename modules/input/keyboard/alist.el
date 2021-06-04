@@ -1,5 +1,14 @@
 ;;; input/keyboard/alist.el -*- lexical-binding: t; -*-
 
+;;                                 ──────────                                 ;;
+;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
+;; ║                         Better Alist Functions                         ║ ;;
+;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
+;;                                   ──────                                   ;;
+;;               At least these all have 'alist' in the name...               ;;
+;;                                 ──────────                                 ;;
+
+
 ;; Helper functions for alists that follow a convention for naming and stuff.
 ;; And will assist you in keeping you alist up-to-date, like it's a variable
 ;; or something.

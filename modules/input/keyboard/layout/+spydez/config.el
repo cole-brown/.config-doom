@@ -1,9 +1,14 @@
 ;;; input/keyboard/layout/spydez/config.el -*- lexical-binding: t; -*-
 
 
-;;-----------------------------------Dvorak-------------------------------------
-;;                       Cuz I was bored in college...
-;;--------And not normal evil mapped to Dvorak, cuz I'm weird that way.---------
+;;                                 ──────────                                 ;;
+;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
+;; ║                                 SpydeZ                                 ║ ;;
+;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
+;;                                   ──────                                   ;;
+;;                Dvorak Layout: Cuz I was bored in college...                ;;
+;;             Non-standard Evil Layout: Cuz I'm weird that way.              ;;
+;;                                 ──────────                                 ;;
 
 
 ;;------------------------------------------------------------------------------

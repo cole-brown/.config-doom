@@ -41,10 +41,10 @@ See `input//kl:layout:types for the list of valid types."
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Configuration
+;; Functions: Initialization
 ;;------------------------------------------------------------------------------
 
-(defun input:keyboard/layout:set (type keybind-map)
+(defun input:keyboard/layout:set (layout type keybind-map)
   "Saves TYPE's KEYBIND-MAP for final configuration in
 `input:keyboard/layout:activate'.
 
@@ -56,6 +56,13 @@ TYPE should be one of:
 If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
 earlier."
   (declare (indent 1))
+  (if (not (input//kl:valid/layout? layout))
+      (error (input//kl:error-message "input:keyboard/layout:set"
+                                      "`layout' must be a keyword. "
+                                      "Got: %S")
+             layout)
+    (setq input//kl:layout/active layout))
+
   (if (not (input//kl:layout:valid/type type))
       (error (input//kl:error-message "input:keyboard/layout:set"
                                       "Type '%S' is not a valid type. "
@@ -64,6 +71,43 @@ earlier."
     (input//kl:alist/update type keybind-map input//kl:layout:keybinds t)))
 
 
+;;------------------------------------------------------------------------------
+;; Functions: Configuration
+;;------------------------------------------------------------------------------
+
+(defun input:keyboard/layout:config (layout)
+  "Verifies that layout is still valid and is ready for finalization."
+
+  ;;---
+  ;; Can use finalization's check here w/ known-good type.
+  ;;---
+  (input//kl:activate/validate "input:keyboard/layout:config"
+                               :common)
+
+  ;;---
+  ;; Also verify the `layout'.
+  ;;---
+  (unless (input//kl:valid/layout? layout :active)
+    (error (input//kl:error-message "input:keyboard/layout:set"
+                                    "`layout' must be a keyword. "
+                                    "Got: %S")
+           layout))
+
+  ;;------------------------------
+  ;; Configuration
+  ;;------------------------------
+  ;; Nothing to do, currently.
+  ;; Only steps that need to happen after `input:keyboard/layout:set' is the
+  ;; `input:keyboard/layout:activate', which happens in Finalization.
+  )
+
+
+;;------------------------------------------------------------------------------
+;; Functions: Finalization
+;;------------------------------------------------------------------------------
+
+;; Also used in config step, currently, but could make that have its own checks
+;; if this needs to change to be specific to finalization.
 (defun input//kl:activate/validate (func type)
   "Checks that things are valid for `input:keyboard/layout:activate/<foo>' functions.
 
@@ -73,9 +117,9 @@ earlier."
   (cond ((null input//kl:layout/active)
          (error (input//kl:error-message func
                                          "No active layout set; cannot configure keyboard layout! "
-                                         "expected: '%S', "
-                                         "active: '%S'")
-                input//kl:layout/expected
+                                         "desired: '%S', "
+                                         "active:  '%S'")
+                input//kl:layout/desired
                 input//kl:layout/active))
 
         ((null input//kl:layout:keybinds)
@@ -103,7 +147,8 @@ earlier."
              ;; Could be this keybind has nothing for type, and that's fine...
              ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
              (keybinds (input//kl:alist/get type input//kl:layout:keybinds)))
-     ;;(input//kl:layout:map-parse keybinds)))
+
+    ;; Should we do any sanity checks before `input//kl:layout:map-parse' output is eval'd?
     (eval
      ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
      ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.

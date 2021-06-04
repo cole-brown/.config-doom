@@ -7,10 +7,6 @@
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                  ──────────                                ;;
 
-;; TODO: A function? Or pass to `set'?
-(setq input//kl:layout/active :qwerty)
-
-
 ;;------------------------------------------------------------------------------
 ;; Common
 ;;------------------------------------------------------------------------------
@@ -23,7 +19,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Set our evil keybinds. Does not configure the keybinds; just saves it for now.
-(input:keyboard/layout:set :evil
+(input:keyboard/layout:set :qwerty :evil
   ;; Keybinds for the `:qwerty' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗

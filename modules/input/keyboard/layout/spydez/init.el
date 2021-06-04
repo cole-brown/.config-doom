@@ -7,10 +7,6 @@
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                  ──────────                                ;;
 
-;; TODO: A function? Or pass to `set'?
-(setq input//kl:layout/active :spydez)
-
-
 ;;------------------------------------------------------------------------------
 ;; Common
 ;;------------------------------------------------------------------------------
@@ -22,8 +18,9 @@
 ;; Evil
 ;;------------------------------------------------------------------------------
 
-;; Set our evil keybinds. Does not configure the keybinds; just saves it for now.
-(input:keyboard/layout:set :evil
+;; Set `:spydez' as the active layout, and also set our evil keybinds.
+;; Does not configure the keybinds; just saves it for now.
+(input:keyboard/layout:set :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗

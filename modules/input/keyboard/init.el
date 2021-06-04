@@ -12,36 +12,27 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; Module-Level
+;; Layout: Desired/Active
 ;;------------------------------
 
-(defvar input//kl:layout/expected nil
+(defvar input//kl:layout/desired nil
   "Cached :input/keyboard flag (converted to layout keyword) for desired
 keyboard layout.
 
-e.g. `+layout/dvorak' -> `:dvorak'")
+e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 
-
-;; TODO: delete this
-(defvar input//kl:layouts nil
-  "Collection of registered layouts. A layout should add its entry via
-`input//kl:layout/register' during init.
-
-An entry is: (:layout-keyword keys-alist-symbol funcs-alist-symbol)")
-;; (setq input//kl:layouts nil)
-
-
-;;------------------------------
-;; Layouts: Active / Default
-;;------------------------------
+'active' vs 'desired':
+  - Desired is set from Doom module flags and comes from user.
+  - Active is set in `input:keyboard/layout:set' when called by desired layout.
+  - Both are set during 'init' file phase.")
 
 (defvar input//kl:layout/active nil
-  "Cached keyword for the active/desired keyboard layout.")
+  "Cached keyword for the active/desired keyboard layout.
 
-
-;; TODO: delete this, fix subheader
-(defvar input//kl:layout/default nil
-  "Cached keyword for the keyboard layout which is being overwritten.")
+'active' vs 'desired':
+  - Desired is set from Doom module flags and comes from user.
+  - Active is set in `input:keyboard/layout:set' when called by desired layout
+  - Both are set during 'init' file phase.")
 
 
 ;;------------------------------------------------------------------------------
@@ -54,13 +45,6 @@ An entry is: (:layout-keyword keys-alist-symbol funcs-alist-symbol)")
 (load! "alist")
 (load! "map")
 (load! "register")
-
-
-;;------------------------------------------------------------------------------
-;; Load: Optional
-;;------------------------------------------------------------------------------
-
-;; None at the moment.
 
 
 ;;------------------------------------------------------------------------------
@@ -89,6 +73,24 @@ Returns non-nil if `doom-init-p' is nil."
 ;;------------------------------------------------------------------------------
 ;; Module Helpers
 ;;------------------------------------------------------------------------------
+
+(defun input//kl:valid/layout? (layout &optional compare-active)
+  "Returns non-nil if LAYOUT is valid.
+
+LAYOUT must fulfill these criteria:
+  - Must be a keyword.
+  - If `input//kl:layout/desired' is set, LAYOUT must be `eq' to it (else we
+    assume LAYOUT will become the desired layout).
+  - If COMPARE-ACTIVE is non-nil, LAYOUT must be `eq' to
+   `input//kl:layout/active'."
+  (and (keywordp layout)
+       ;; Equal to desired?
+       (or (not input//kl:layout/desired)
+           (eq layout input//kl:layout/desired))
+       ;; Equal to active?
+       (or (null compare-active)
+           (eq layout input//kl:layout/active))))
+
 
 (defun input//kl:normalize->string (input)
   "Normalize INPUT to a layout string.
@@ -144,9 +146,14 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;; (input//kl:normalize->keyword nil)
 
 
+
 ;;------------------------------------------------------------------------------
-;; Error Checking & Setting of `input//kl:layout/expected'
+;; Init: ':input/keyboard' Module
 ;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; Error Checking & Setting of `input//kl:layout/desired'
+;;------------------------------
 
 ;; Should not have more than one keyboard layout, but only check when loading.
 (if (input//kl:loading?)
@@ -159,9 +166,9 @@ E.g. `+layout/dvorak' -> `:dvorak'."
                       (when (eq flag '+suppress/layouts)
                         (setq suppress-warning t))
                       (when (string-prefix-p "+layout/" (symbol-name flag))
-                        ;; Save first/only as expected/desired layout.
-                        (when (null input//kl:layout/expected)
-                          (setq input//kl:layout/expected
+                        ;; Save first/only as desired layout.
+                        (when (null input//kl:layout/desired)
+                          (setq input//kl:layout/desired
                                 (input//kl:normalize->keyword flag))
                         ;; Count for a warning (if not suppressed).
                         (setq layouts (1+ layouts))))))
@@ -174,8 +181,8 @@ E.g. `+layout/dvorak' -> `:dvorak'."
               flags)))
 
   ;; Else we're not running during init... probably evaluating this buffer
-  ;; directly for dev/testing. Set expected to a testing default.
-  (setq input//kl:layout/expected :spydez))
+  ;; directly for dev/testing. Set desired to a testing default.
+  (setq input//kl:layout/desired :spydez))
 
 
 ;;------------------------------------------------------------------------------

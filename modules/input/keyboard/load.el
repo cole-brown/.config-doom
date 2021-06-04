@@ -26,9 +26,9 @@ LAYOUT can be the flag symbol or keyword (see `input//kl:normalize->keyword').
 
 E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 `:dvorak', and nil for others."
-  (and input//kl:layout/expected
+  (and input//kl:layout/desired
        layout
-       (eq input//kl:layout/expected
+       (eq input//kl:layout/desired
            (input//kl:normalize->keyword layout))))
 ;; (input//kl:loading-for :spydez)
 ;; (input//kl:loading-for :qwerty)

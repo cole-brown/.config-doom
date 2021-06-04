@@ -23,7 +23,7 @@
   "Hook to run ONCE under `doom-init-modules-hook' for finalizing all
 evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 
-  ;; Common first, then +good+ Emacs vs Evil.
+  ;; Common first, then +Good+ Emacs vs Evil.
   (input:keyboard/layout:activate :common)
 
   ;; Evil or Emacs? Only load one...

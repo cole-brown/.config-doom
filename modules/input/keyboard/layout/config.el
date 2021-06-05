@@ -40,7 +40,8 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 
 ;; Don't mess with any of the hooks unless we're being evaluated during
 ;; start-up.
-(when (input//kl:loading?)
+(when (and (not input//kl:testing:disable-start-up-init)
+           (input//kl:loading?))
   ;;------------------------------
   ;; Evil Itself
   ;;------------------------------

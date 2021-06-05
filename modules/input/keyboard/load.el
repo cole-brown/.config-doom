@@ -22,14 +22,42 @@
   "Layout dirs must start with a '+'.")
 
 
+;;------------------------------------------------------------------------------------------------------------------------------------------
+;; Path Functions
+;;------------------------------------------------------------------------------------------------------------------------------------------
+
+(defun input//kl:path/append (parent next)
+  "Append NEXT element as-is to PARENT, adding dir separator between them if
+needed.
+
+NEXT and PARENT are expected to be strings.
+"
+  (if (null parent)
+      next
+    (concat (file-name-as-directory parent) next)))
+
+
+(defun input//kl:path (&rest paths)
+  "Joins together all strings in PATHS.
+If relative, will append `input//kl:dir/root'."
+  (let ((path (reduce #'input//kl:path/append paths)))
+    (if (file-name-absolute-p path)
+        path
+      (input//kl:path/append input//kl:dir/root path))))
+;; (input//kl:path "foo" "bar")
+;; (input//kl:path "layout" "+spydez" "init.el")
+;; (input//kl:path "c:/" "foo" "bar")
+
+
 ;;------------------------------------------------------------------------------
 ;; Basic Load Functions
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:file/exists? (relative-path)
-  "Returns non-nil if RELATIVE-PATH exists relative to this file's directory."
-  (file-exists-p (concat (file-name-as-directory input//kl:dir/root) relative-path)))
-;; (input//kl:file/exists? "layout/spydez/init.el")
+(defun input//kl:file/exists? (&rest path)
+  "Returns non-nil if PATH exists.
+If relative, `input//kl:dir/root' will be used as the path's root."
+  (file-exists-p (apply #'input//kl:path path)))
+;; (input//kl:file/exists? "layout/+spydez/init.el")
 
 
 (defun input//kl:loading-for (layout)
@@ -64,14 +92,18 @@ The extension '.el' is used to check for file existance."
   ;; Allow keyword or flag.
   (let* ((directory (or directory
                         (input//kl:normalize->string layout)))
-         (path (concat (file-name-as-directory "layout")
-                       ;; Add the required '+'.
-                       input//kl:dir/layout/prefix
-                       (file-name-as-directory directory)
-                       load-name)))
+         (path (input//kl:path "layout"
+                               (concat
+                                ;; Add the required '+'.
+                                input//kl:dir/layout/prefix
+                                ;; Should end up the same.
+                                ;; Does in current cases, anyawys. [2021-06-05]
+                                (or directory
+                                    (input//kl:normalize->string layout)))
+                               load-name)))
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-    (when (input//kl:file/exists? (concat path ".el"))
+    (when (input//kl:file/exists? (concat "d:/home/spydez/.doom.d/modules/input/keyboard/layout/+spydez/init" ".el"))
       (load! path))
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))
@@ -105,9 +137,15 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
-  (when (and (not input//kl:testing:disable-start-up-init)
-             (input//kl:loading-for layout))
+  (when (and
+         ;; If we're loading during start-up /and/ have start-up-init disabled:
+         ;; Do not load.
+         (not (and (input//kl:loading?)
+                   input//kl:testing:disable-start-up-init))
+         ;; Only load for desired layout.
+         (input//kl:loading-for layout))
     (input:keyboard/layout:load-file layout load-name directory)))
+;; (input:keyboard/layout:load-active :spydez "init")
 ;; (input:keyboard/layout:load-active :spydez "config")
 
 
@@ -119,15 +157,9 @@ found, load file name FILE /only if/ it is the directory name matches the active
 layout.
 
 FILE should /not/ have its extension so that the .elc can be used if it exists."
-  ;; Find all files/dirs in this file's directory that:
-  ;;   - Are not "." or "..".
-  ;;   - And have at least one character in their name.
+  ;; Find all files/dirs in the layout directory that match the layout folder regex.
   ;; Get their attributes too so we can filter down to just directories.
-  (let* ((file-path-this (if load-in-progress
-                             (file-name-directory load-file-name)
-                           (buffer-file-name)))
-         (directory-path (directory-file-name
-                          (file-name-directory file-path-this)))
+  (let* ((directory-path (input//kl:path "layout"))
          ;; Layout dirs must have '+' in front of them and must be our direct children.
          (files-and-attrs (directory-files-and-attributes directory-path
                                                           nil
@@ -145,6 +177,7 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
           ;; Our keyboard layout directories are named such that they can be
           ;; passed into `input:keyboard/layout:load-active'.
           (input:keyboard/layout:load-active name file))))))
+;; (input:keyboard/layout:find-and-load-active "config")
 ;; (input:keyboard/layout:find-and-load-active "config")
 
 

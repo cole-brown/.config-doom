@@ -71,7 +71,7 @@
   ;; ┌──────────────────────────────┐
   ;; ├ Searches                     ┤
   ;; └──────────────────────────────┘
-  :layout:evil:search-next                   #'evil-ex-search-next ; TODO: double check w/ qwerty bindings on. "n"
+  :layout:evil:search-next                   #'evil-ex-search-next
   :layout:evil:search-prev                   #'evil-ex-search-previous
   :layout:evil:search-forward                #'evil-ex-search-forward
   :layout:evil:search-backward               #'evil-ex-search-backward
@@ -144,7 +144,7 @@
   :layout:evil:char-delete-prev              #'evil-delete-backward-char
 
   ;; "Change" meaning "delete and put me in insert mode"?
-  :layout:evil:change-dwim                   #'evil-change  ; TODO: double check w/ qwerty bindings on. "c")
+  :layout:evil:change-dwim                   #'evil-change
   :layout:evil:change-line-point-to-end      #'evil-change-line
 
   ;; ┌──────────────────────────────┐

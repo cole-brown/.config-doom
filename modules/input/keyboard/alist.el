@@ -23,6 +23,11 @@
   (alist-get key alist))
 
 
+(defun input//kl:alist/entry (key alist)
+  "Get full assoc/entry of KEY in ALIST."
+  (assoc key alist))
+
+
 (defmacro input//kl:alist/update (key value alist &optional set-alist)
   "Set/overwrite an entry in the alist.
 
@@ -125,6 +130,15 @@ If KEY is not in the alist, nil or DEFAULT will be returned."
                                     "Only string keys allowed. "
                                     "Use `input//kl:alist/get' for non-string keys.")))
   (alist-get key alist default nil #'string=))
+
+
+(defun input//kl:alist/string/entry (key alist)
+  "Get full assoc/entry of KEY in ALIST."
+  (when (not (stringp key))
+    (error (input//kl:error-message "input//kl:alist/string/get"
+                                    "Only string keys allowed. "
+                                    "Use `input//kl:alist/get' for non-string keys.")))
+  (assoc key alist #'string=))
 
 
 (defmacro input//kl:alist/string/update (key value alist &optional set-alist)

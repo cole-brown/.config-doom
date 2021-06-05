@@ -14,6 +14,15 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; TESTING
+;;------------------------------
+
+(defvar input//kl:testing:disable-start-up-init t
+  "If non-nil, does not run anything during startup.
+Just loads files to get all functions and such defined.")
+
+
+;;------------------------------
 ;; Layout: Desired/Active
 ;;------------------------------
 
@@ -155,34 +164,35 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;; Error Checking & Setting of `input//kl:layout/desired'
 ;;------------------------------
 
-;; Should not have more than one keyboard layout, but only check when loading.
-(if (input//kl:loading?)
-    ;; We are loading, so check our module flags.
-    (let ((flags (doom-module-get :input 'keyboard :flags))
-          (layouts 0)
-          (suppress-warning nil))
-      (when (and (> 1
-                    (dolist (flag flags layouts)
-                      (when (eq flag '+suppress/layouts)
-                        (setq suppress-warning t))
-                      (when (string-prefix-p "+layout/" (symbol-name flag))
-                        ;; Save first/only as desired layout.
-                        (when (null input//kl:layout/desired)
-                          (setq input//kl:layout/desired
-                                (input//kl:normalize->keyword flag))
-                        ;; Count for a warning (if not suppressed).
-                        (setq layouts (1+ layouts))))))
-                 ;; Warn only if we didn't see the suppression.
-                 (not suppress-warning))
-        (warn (concat "Doom Module `:input/keyboard' init detected %d keyboard "
-                      "layout flags. You should really only have one. Suppress "
-                      "this by adding the `+suppress/layouts' flag. flags: %S")
-              layouts
-              flags)))
+(unless input//kl:testing:disable-start-up-init
+  ;; Should not have more than one keyboard layout, but only check when loading.
+  (if (input//kl:loading?)
+      ;; We are loading, so check our module flags.
+      (let ((flags (doom-module-get :input 'keyboard :flags))
+            (layouts 0)
+            (suppress-warning nil))
+        (when (and (> 1
+                      (dolist (flag flags layouts)
+                        (when (eq flag '+suppress/layouts)
+                          (setq suppress-warning t))
+                        (when (string-prefix-p "+layout/" (symbol-name flag))
+                          ;; Save first/only as desired layout.
+                          (when (null input//kl:layout/desired)
+                            (setq input//kl:layout/desired
+                                  (input//kl:normalize->keyword flag))
+                            ;; Count for a warning (if not suppressed).
+                            (setq layouts (1+ layouts))))))
+                   ;; Warn only if we didn't see the suppression.
+                   (not suppress-warning))
+          (warn (concat "Doom Module `:input/keyboard' init detected %d keyboard "
+                        "layout flags. You should really only have one. Suppress "
+                        "this by adding the `+suppress/layouts' flag. flags: %S")
+                layouts
+                flags)))
 
-  ;; Else we're not running during init... probably evaluating this buffer
-  ;; directly for dev/testing. Set desired to a testing default.
-  (setq input//kl:layout/desired :spydez))
+    ;; Else we're not running during init... probably evaluating this buffer
+    ;; directly for dev/testing. Set desired to a testing default.
+    (setq input//kl:layout/desired :spydez)))
 
 
 ;;------------------------------------------------------------------------------

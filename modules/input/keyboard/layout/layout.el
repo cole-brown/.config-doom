@@ -45,16 +45,51 @@ Format:
 ;; Validity
 ;;------------------------------------------------------------------------------
 
-;; TODO: add `type' param
-(defun input//kl:layout:valid/keyword? (keyword)
-  "Is KEYWORD a keyword and is it a valid keyboard layout keyword?"
-  (and (keywordp keyword)
-       ;; TODO: concat type string to end of prefix
-       (string-prefix-p input//kl:layout:keyword/prefix
-                        (symbol-name keyword))))
+
+(defun input//kl:layout:keyword/valid-name-regex (type)
+  "Returns a layout keyword validation regex for the TYPE keyword
+(:common, :emacs, :evil).
+
+If type is invalid or has no string from `input//kl:layout:type->string',
+returns nil."
+  (when-let ((type/string (input//kl:layout:type->string type)))
+    (rx-to-string
+     `(sequence
+       ;;---
+       ;; Validate start/prefix.
+       ;;---
+       string-start
+       ;; ":layout:"
+       ,input//kl:layout:keyword/prefix
+       ;; "emacs:"
+       ,type/string
+       ":"
+       ;;---
+       ;; Validate the name itself.
+       ;;---
+       ;; Could expand this more; I just want to disallow ":" for now.
+       ;; May re-allow it if we want to use it for groupings
+       ;; (e.g. :layout:evil:word:next-begin or something).
+       (one-or-more (any "-" "/" "_" "?" alphanumeric))
+       ;;---
+       ;; Validate the end/postfix.
+       ;;---
+       string-end))))
+;; (input//kl:layout:keyword/valid-name-regex :emacs)
 
 
-;; TODO: is it being used and useful?
+(defun input//kl:layout:valid/keyword? (type keyword)
+  "Is KEYWORD a keyword, is it a valid keyboard layout keyword, and is it named
+correctly for TYPE?
+
+Returns non-nil for valid KEYWORD."
+  (when-let* ((valid/keyword? (keywordp keyword))
+              (valid/name-rx (input//kl:layout:keyword/valid-name-regex type)))
+    (string-match-p valid/name-rx (symbol-name keyword))))
+;; (input//kl:layout:valid/keyword? :evil :layout:evil:valid_hello-there)
+;; (input//kl:layout:valid/keyword? :evil :layout:evil:INVALID:hello-there)
+
+
 (defun input//kl:layout:valid/function? (func)
   "Is FUNC a symbol or function symbol and is it a valid keybinding function?
 `nil' is valid - it is used for unbinding already-bound keys."
@@ -100,10 +135,10 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                      "input:keyboard/layout:define/keywords"
                      "Expected a keyword, got: %S")
                     keyword))
-            ((not (input//kl:layout:valid/keyword? keyword))
+            ((not (input//kl:layout:valid/keyword? type keyword))
              (error (input//kl:error-message
                      "input:keyboard/layout:define/keywords"
-                     "Expected a valid keyboard layout keyword, got: %S")
+                     "Expected a valid keyboard layout keyword for '%S', got: %S")
                     keyword))
 
             ((not (symbolp func))
@@ -213,9 +248,7 @@ Used for side-effects; just returns non-nil (`t')."
 ;; (doom--map-def "c" #'evil-prev-line nil "testing...")
 
 
-;; TODO: Do I want 'parse' or should I do 'process' to match doom-....
-;;       - Yeah. Change to 'process'.
-(defun input//kl:layout:map-parse (rest)
+(defun input//kl:layout:map-process (rest)
   "Layout-aware backend for `map!' - equivalent to `doom--map-process'.
 
 Create sexprs required for `map!' to be able to map keybinds based on its
@@ -321,7 +354,7 @@ input keywords and such."
                                                  (doom--map-keyword-to-states key)
                                                  desc)
                     (error
-                     (input//kl:error-message "input//kl:layout:map-parse"
+                     (input//kl:error-message "input//kl:layout:map-process"
                                               "Not a valid `map!' property: %s")
                                               key))
 
@@ -348,17 +381,14 @@ input keywords and such."
     ;; Get rid of nils and order correctly.
     (macroexp-progn (nreverse (delq nil doom--map-forms)))))
 ;; (pp-macroexpand-expression (list :layout-keyword
-;;                                  (input//kl:layout:map-parse '(:desc "test" :nvm "t" :layout:line-next))
+;;                                  (input//kl:layout:map-process '(:desc "test" :nvm "t" :layout:line-next))
 ;;                                  :should-equal-keybind-string
 ;;                                  (doom--map-process '(:desc "test" :nvm "t" #'evil-next-line))))
 
 
-;; TODO: rework description
-;;       - add ':input/keyboard' specific stuff
-;;       - change any 'map!' to full function name
 (defmacro input:keyboard/layout:map! (&rest rest)
-  "A convenience macro for defining keybinds, powered by `general';
-an ':input/keyboard'-aware equivalent to Doom's `map!' macro.
+  "A convenience macro for defining keyboard-layout-aware keybinds,
+powered by `general' - equivalent to Doom's `map!' macro.
 
 If evil isn't loaded, evil-specific bindings are ignored.
 
@@ -398,25 +428,23 @@ States
   These must be placed right before the keybind.
 
   Do
-    (map! :leader :desc \"Description\" :n \"C-c\" #'dosomething)
-    (map! :leader :desc \"Description\" :n :layout:action-name #'dosomething)
+    (input:keyboard/layout:map! :leader :desc \"Description\" :n \"C-c\" #'dosomething)
+    (input:keyboard/layout:map! :leader :desc \"Description\" :n \"C-c\" :layout:action-name)
   Don't
-    (map! :n :leader :desc \"Description\" \"C-c\" #'dosomething)
-    (map! :n :leader :desc \"Description\" :layout:action-name #'dosomething)
-    (map! :leader :n :desc \"Description\" \"C-c\" #'dosomething)
-    (map! :leader :n :desc \"Description\" :layout:action-name #'dosomething)
+    (input:keyboard/layout:map! :n :leader :desc \"Description\" \"C-c\" #'dosomething)
+    (input:keyboard/layout:map! :n :leader :desc \"Description\" \"C-c\" :layout:action-name)
+    (input:keyboard/layout:map! :leader :n :desc \"Description\" \"C-c\" #'dosomething)
+    (input:keyboard/layout:map! :leader :n :desc \"Description\" \"C-c\" :layout:action-name)
 
 Keybinds
-  A keybind can be described by either:
-    - A `kbd'-type string (\"C-c\", \"M-S-o\", \"x\", etc.)
-    - An `input:keyboard/layout'-type keyword - must begin with
-     `input//kl:layout:keyword/prefix' (:layout:text-center, :layout:line-prev,
-     :layout:paste-after, etc).
-
-  A keybind also needs a function to bind to (#'dosomething, #'evil-paste-after,
-  #'org-agenda, etc).
-"
-  (input//kl:layout:map-parse rest))
+  A keybind is in two parts:
+    1. The `kbd' string - e.g. \"C-c\", \"SPC\", \"M-S-o\", \"x\", etc.)
+    2. The binding, which can either be:
+       - A keyboard-layout keyword (e.g. :layout:evil:line-prev).
+       - A function symbol (e.g. #'evil-previous-line).
+       - nil (which will unbind the key)."
+  ;; Process args into a progn of calls to `general' to bind the keys.
+  (input//kl:layout:map-process rest))
 ;; Dvorak keyboard right-handed WASD-type movement:
 ;; (input:keyboard/layout:map!
 ;;  :nvm  "c"  :layout:evil:line-prev

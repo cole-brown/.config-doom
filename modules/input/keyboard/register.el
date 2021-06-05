@@ -29,24 +29,36 @@ Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
 
 
-(defconst input//kl:layout:types '(:common :emacs :evil)
+(defconst input//kl:layout:types '((:common . "common")
+                                   (:emacs  . "emacs")
+                                   (:evil   . "evil"))
   "Allowed types for a few function args, alist keys.
 
 Types are:
   :common - Any keybinds that exist in both evil-mode and standard Emacs.
   :emacs  - Any Emacs-only keybinds (non-evil-mode).
   :evil   - Any Evil-only keybinds.")
+;; input//kl:layout:types
+;; (makunbound 'input//kl:layout:types)
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Validity
+;; Functions: Type Validity, etc.
 ;;------------------------------------------------------------------------------
 
 (defun input//kl:layout:valid/type? (type)
   "Returns non-nil if TYPE is a valid type.
 
-See `input//kl:layout:types for the list of valid types."
-  (memq type input//kl:layout:types))
+See `input//kl:layout:types for the alist of valid types."
+  (input//kl:alist/entry type input//kl:layout:types))
+;; (input//kl:layout:valid/type? :emacs)
+
+
+(defun input//kl:layout:type->string (type)
+  "Returns the string for TYPE keyword."
+  ;; We have `input//kl:layout:valid/type?' returning the alist entry.
+  (cdr (input//kl:layout:valid/type? type)))
+;; (input//kl:layout:type->string :emacs)
 
 
 ;;------------------------------------------------------------------------------
@@ -157,11 +169,11 @@ earlier."
              ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
              (keybinds (input//kl:alist/get type input//kl:layout:keybinds)))
 
-    ;; Should we do any sanity checks before `input//kl:layout:map-parse' output is eval'd?
+    ;; Should we do any sanity checks before `input//kl:layout:map-process' output is eval'd?
     (eval
      ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
      ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
-     (input//kl:layout:map-parse keybinds))))
+     (input//kl:layout:map-process keybinds))))
 ;; (input:keyboard/layout:activate :common)
 ;; (input:keyboard/layout:activate :emacs)
 ;; (input:keyboard/layout:activate :evil)

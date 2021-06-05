@@ -93,6 +93,7 @@ The extension '.el' is used to check for file existance."
 (defun input:keyboard/layout:load-active (layout load-name &optional directory)
   "Load LAYOUT if it is the desired layout according to `input//kl:loading-for'
 and if its LOAD-NAME file exists on the filesystem.
+  - And only if `input//kl:testing:disable-start-up-init' is nil.
 
 DIRECTORY, if nil, will be FLAG minus its default prefix (e.g. `+layout/dvorak'
 is 'dvorak/' directory).
@@ -104,7 +105,8 @@ LOAD-NAME should be filename (without extension) to be passed to `load!' as:
         LOAD-NAME)
 
 The extension '.el' is used to check for file existance."
-  (when (input//kl:loading-for layout)
+  (when (and (not input//kl:testing:disable-start-up-init)
+             (input//kl:loading-for layout))
     (input:keyboard/layout:load-file layout load-name directory)))
 ;; (input:keyboard/layout:load-active :spydez "config")
 

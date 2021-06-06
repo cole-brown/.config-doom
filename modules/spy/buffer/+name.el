@@ -171,7 +171,7 @@ Special buffers are:
 ;; This (or similar (prelude-copy-file-name-to-clipboard)) used to be in Prelude
 ;; Emacs.
 ;;   https://github.com/bbatsov/prelude/issues/764
-(defun spy:file-name/clipboard ()
+(defun spy:cmd:file-name/clipboard ()
   "Copy the current file name to the clipboard"
   (interactive)
   (let ((filename (if (equal major-mode 'dired-mode)
@@ -191,7 +191,7 @@ Special buffers are:
 ;;   http://ergoemacs.org/emacs/emacs_copy_file_path.html
 ;; Originally `xah-file-path'. Originally only used `kill-new' - modified to put
 ;; in clipboard too (`clipboard-kill-region').
-(defun spy:file-or-dir-name/clipboard (&optional dir-path-only-p)
+(defun spy:cmd:file-or-dir-name/clipboard (&optional dir-path-only-p)
   "Copy the current buffer's file path or dired path to `kill-ring'.
 Result is full path.
 If `universal-argument' is called first, copy only the dir path.

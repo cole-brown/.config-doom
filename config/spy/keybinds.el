@@ -160,7 +160,7 @@ the fill prefix-map."
 ;; See Doom's keybindings for how to do complicated things:
 ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/config/default/+evil-bindings.el
 (map! :leader       ; Be under the SPC leader.
-      :desc   "spy"
+
 
       ;;------------------------------
       ;; Start of 'spy' prefix "-"
@@ -188,7 +188,6 @@ the fill prefix-map."
          :desc "Center at 40 (80 width)" "c" (cmd! (spy:cmd:center/width 80))
          :desc "Center to Column..."     "t" #'spy:cmd:center/to
          :desc "Center at Width..."      "w" #'spy:cmd:center/width))
-
 
        ;;------------------------------
        ;; Fill
@@ -309,6 +308,6 @@ the fill prefix-map."
        ;;------------------------------
        ;; File/Dir Names
        ;;------------------------------
-       :desc "Copy Buffer's File Name"    "k" #'spy:file-or-dir-name/clipboard
-       :desc "Copy Buffer's Dir Name"    "K" (cmd!! #'spy:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
+       :desc "Copy Buffer's File Name"    "k" #'spy:cmd:file-or-dir-name/clipboard
+       :desc "Copy Buffer's Dir Name"    "K" (cmd!! #'spy:cmd:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
        ))

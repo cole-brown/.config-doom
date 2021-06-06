@@ -10,6 +10,33 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Centering Helpers
+;;------------------------------------------------------------------------------
+;; TODO: move to mis.
+
+(defun spy:cmd:center/width (full-width)
+  "Sets `fill-column' to FULL-WIDTH then invokes `center-region', or
+`center-line' if there is no active region."
+  (interactive "nColumn Width: ")
+  (let ((fill-column full-width))
+    (if (doom-region-active-p)
+        (center-region (doom-region-beginning)
+                       (doom-region-end))
+      (center-line))))
+
+
+(defun spy:cmd:center/to (center-column)
+  "Sets `fill-column' to CENTER-COLUMN * 2 then invokes `center-region', or
+`center-line' if there is no active region."
+  (interactive "nCenter at Column: ")
+  (let ((fill-column (* center-column 2)))
+    (if (doom-region-active-p)
+        (center-region (doom-region-beginning)
+                       (doom-region-end))
+      (center-line))))
+
+
+;;------------------------------------------------------------------------------
 ;; Align Regex Helpers
 ;;------------------------------------------------------------------------------
 ;; `Align-Regex' helper function idea came from this nice chap:
@@ -127,8 +154,6 @@ the fill prefix-map."
     (fill-region from to justify)))
 
 
-
-
 ;;------------------------------------------------------------------------------
 ;; Evil Spy Stuff.
 ;;------------------------------------------------------------------------------
@@ -155,7 +180,14 @@ the fill prefix-map."
                                              (setq current-prefix-arg '(4))
                                              (call-interactively #'align-regexp))
         :desc "emacs: Align"           "'" #'align
-        :desc "emacs: Align Current"   "," #'align-current)
+        :desc "emacs: Align Current"   "," #'align-current
+
+        ;; Centering is... kind of alignment?
+        ;; Pull out of alignment if too confusing for my fingers.
+        (:prefix ("c" . "Centering")
+         :desc "Center at 40 (80 width)" "c" (cmd! (spy:cmd:center/width 80))
+         :desc "Center to Column..."     "t" #'spy:cmd:center/to
+         :desc "Center at Width..."      "w" #'spy:cmd:center/width))
 
 
        ;;------------------------------

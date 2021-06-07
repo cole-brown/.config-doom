@@ -17,6 +17,20 @@
 ;; Private Functions
 ;;------------------------------------------------------------------------------
 
+;; TODO: a load timing feature?
+;;   - One in `iii:load' that will:
+;;     1. start timer, output: "loading xxx..."?
+;;     2. stop timer, output:  "└─yy.zzz seconds"
+;;     3. Look nice when cascading?
+;;        "loading xxx..."
+;;        "├─loading yyy..."
+;;        "│ └─cc.dd seconds"
+;;        "└─aa.bb seconds"
+;;     4. Output to some buffer named by defcustom (default "*Messages*").
+;;  - One or two stand-alone, external-api-named funcs (that `iii:load' calls?).
+;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
+
+
 ;; TODO: finish path.el first
 
 

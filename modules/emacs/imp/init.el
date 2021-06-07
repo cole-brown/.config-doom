@@ -72,6 +72,7 @@ an Emacs symbol."
   "Default replacement for entries in `imp:translate-to-path:replace'.")
 
 
+;; (makunbound 'imp:translate-to-path:replace)
 (defcustom imp:translate-to-path:replace
   `(;;------------------------------
     ;; Default/Any/All
@@ -88,7 +89,7 @@ an Emacs symbol."
       ;; Disallowed by all:
       ;;---
       ("/"
-       'imp:translate-to-path:replace/default)
+       imp:translate-to-path:replace/default)
       ,(list (rx-to-string `control)
              'imp:translate-to-path:replace/default))
 
@@ -165,7 +166,7 @@ an Emacs symbol."
     ;;      - Technically that's all for HFS+, but usually you can't get away with
     ;;        NUL (integer 0), et al.
     (darwin
-     (":" 'imp:translate-to-path:replace/default))
+     (":" imp:translate-to-path:replace/default))
     ;;------------------------------
     ;; Unsupported/Only Defaults
     ;;------------------------------
@@ -215,10 +216,15 @@ to:
 
 ;; Order matters.
 (load! "error")   ; Internal only.
+(load! "alist")   ; Internal only.
 (load! "tree")    ; Internal only.
 (load! "path")    ; Has Public API; mostly internal only.
 (load! "provide") ; Has Public API.
 (load! "require") ; Has Public API.
+
+;; Path was needed earlier than provide, so now we need to let path
+;; provide itself.
+(iii:path:provide)
 
 
 ;;------------------------------------------------------------------------------

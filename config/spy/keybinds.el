@@ -182,8 +182,7 @@ If prefix ARG is set, include ignored/hidden files."
 ;;------------------------------------------------------------------------------
 ;; See Doom's keybindings for how to do complicated things:
 ;; https://github.com/hlissner/doom-emacs/blob/develop/modules/config/default/+evil-bindings.el
-(map! :leader       ; Be under the SPC leader.
-
+(map! :leader       ; Be under the Doom SPC leader.
 
       ;;------------------------------
       ;; Start of 'spy' prefix "-"

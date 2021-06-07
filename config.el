@@ -38,11 +38,27 @@
 ;; Includes
 ;;------------------------------------------------------------------------------
 
-(spy:require :spy 'jerky)
-(spy:require :spy 'path)
-(spy:require :spy 'config)
-(spy:require :spy 'package)
+;;------------------------------
+;; Set-Up imp Roots
+;;------------------------------
 
+(imp:path:root :modules (imp:path:paths->path doom-private-dir "modules"))
+(imp:path:root :config (imp:path:paths->path doom-private-dir "config"))
+
+;;------------------------------
+;; Include Some of my 'Packages'
+;;------------------------------
+
+;; These /should/ all be loaded already via Doom's module init.
+(spy:require :spy 'jerky)   ;; modules/spy/jerky/+jerky
+(spy:require :spy 'path)    ;; modules/spy/file/+path
+(spy:require :spy 'config)  ;; modules/spy/system/+config
+(spy:require :spy 'package) ;; modules/spy/system/+package
+
+
+;;------------------------------------------------------------------------------
+;; NOTE: Function Naming
+;;------------------------------------------------------------------------------
 
 ;; NOTE: My functions are named thusly:
 ;;   - "spy:<category>/<func>": A *public* function in "category" namespace.

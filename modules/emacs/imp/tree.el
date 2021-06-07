@@ -56,7 +56,7 @@ is nil)."
                            (not (listp chain)))
                        nil
                      ;; Each item in chain must be a symbol.
-                     (-all? #'symbolp chain)))
+                     (seq-every-p #'symbolp chain)))
 
     ;; Additionally, a rooted chain must have a keyword as the first symbol.
     (when (and is-chain rooted)
@@ -162,7 +162,7 @@ BRANCH."
 
 
 ;;------------------------------------------------------------------------------
-;; Public API
+;; API for imp:
 ;;------------------------------------------------------------------------------
 
 (defun iii:tree:update (chain value tree)

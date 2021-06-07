@@ -136,6 +136,8 @@ KWARGS should be a plist. All default to `t':
       (iii:debug "iii:path:to-string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))))
 ;; (iii:path:to-string :imp)
+;; Should lose both slashes:
+;; (iii:path:to-string "~/doom.d/")
 
 
 (defun iii:path:imp->string (feature)
@@ -156,22 +158,47 @@ needed.
 
 NEXT and PARENT are expected to be keywords or symbols.
 "
-  (if (null parent)
-      next
-    (concat (file-name-as-directory parent) next)))
+  ;; Error checks first.
+  (cond ((and parent
+              (not (stringp parent)))
+         (iii:error "iii:path:append"
+                    "Paths to append must be strings. Parent is: %S"
+                    parent))
+        ((or (null next)
+             (not (stringp next)))
+         (iii:error "iii:path:append"
+                    "Paths to append must be strings. Next is: %S"
+                    next))
+
+        ;;---
+        ;; Append or not?
+        ;;---
+        ;; Expected initial case for appending: nil parent, non-nil next.
+        ((null parent)
+         next)
+
+        (t
+         (concat (file-name-as-directory parent) next))))
 
 
-(defun iii:path:join (feature)
+(defun iii:path:features->path (feature)
   "Combine FEATURE (a list of keywords/symbols) together into a path
 platform-agnostically.
 
-(iii:path:join :jeff 'jill)
+(iii:path:features->path :jeff 'jill)
   -> \"jeff/jill\"
 or possibly
   -> \"jeff\\jill\""
-  (reduce #'iii:path:append
-          (iii:path:imp->string feature)))
-;; (iii:path:join '(:jeff jill))
+  (iii:debug "iii:path:features->path" "--input: %S" feature)
+  (unless (seq-every-p #'symbolp feature)
+    (iii:error "iii:path:features->path"
+               "FEATURE list must only contain symbols/keywords. Got: %S"
+               feature))
+  (seq-reduce #'iii:path:append
+              (iii:path:imp->string feature)
+              nil))
+;; works: (iii:path:features->path '(:jeff jill))
+;; fails: (iii:path:features->path '("~/.doom.d/" "modules"))
 
 
 ;;------------------------------------------------------------------------------
@@ -184,13 +211,40 @@ or possibly
 NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
 presumably by having called `imp:root'."
   (iii:path:append (iii:path:get-root (car feature))
-                   (iii:path:join (cdr feature))))
+                   (imp:path:join (cdr feature))))
 ;; (iii:path:get '(:imp test feature))
 
 
 ;;------------------------------------------------------------------------------
 ;; Public API: Feature Root Directories
 ;;------------------------------------------------------------------------------
+
+(defun imp:path:features->path (&rest feature)
+  "Combine FEATURE (keywords/symbols) together into a path
+platform-agnostically.
+
+(imp:path:features->path :jeff 'jill)
+  -> \"jeff/jill\"
+or possibly
+  -> \"jeff\\jill\""
+  (iii:debug "imp:path:features->path" "input: %S" feature)
+  (iii:path:features->path feature))
+;; works: (imp:path:features->path :jeff 'jill)
+;; fails: (imp:path:features->path "~/.doom.d/" "modules")
+
+
+(defun imp:path:paths->path (&rest paths)
+  "Combine PATHS (a list of path strings) together into a path
+platform-agnostically.
+
+(imp:path:paths->path \"~/.doom.d\" \"foo\" \"bar\")
+  -> \"~/.doom.d/foo/bar\""
+  (seq-reduce #'iii:path:append
+              paths
+              nil))
+;; works: (imp:path:paths->path "~/.doom.d/" "modules")
+;; fails: (imp:path:paths->path :jeff 'jill)
+ 
 
 (defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
   "Set the root path(s) of KEYWORD for future `imp:require' calls.
@@ -239,6 +293,12 @@ in `imp:path:roots'.
                  ;; root file - just provide relative to dir/imp
                  "init.el"))
 
-;; And provide; we have an external/API function so follow our imp policy of
-;; using `imp:provide:with-emacs'.
-(imp:provide:with-emacs :imp 'path)
+;; And provide; we have an external/API function so we'd like to follow our imp
+;; policy of using `imp:provide:with-emacs', but...
+;; We are loaded before that exists.
+;;   (imp:provide:with-emacs :imp 'path)
+;; So instead expect someone to call this function:
+(defun iii:path:provide ()
+  "Lets the imp:path module provide itself after
+`imp:provide:with-emacs' is loaded."
+  (imp:provide:with-emacs :imp 'path))

@@ -76,6 +76,7 @@
        ;;undo              ; persistent, smarter undo for your inevitable mistakes
 
        vc                ; version-control and Emacs, sitting in a tree
+       imp               ; require/provide with more than one symbol
 
        :term
        ;;eshell            ; the elisp shell that works everywhere

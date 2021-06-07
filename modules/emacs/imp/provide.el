@@ -67,13 +67,13 @@ appropriate for Emacs' `provide'."
                 (let ((symbol/string (symbol-name symbol)))
                   (dolist (pair imp:translate-to-emacs:replace symbol/string)
                     (setq symbol/string
-                          (replace-regexp-in-string (car pair)
-                                                    (cdr pair)
+                          (replace-regexp-in-string (nth 0 pair)
+                                                    (nth 1 pair)
                                                     symbol/string)))))
               feature
               imp:translate-to-emacs:separator)))
 ;; (iii:feature:imp->emacs '(:imp test symbols))
-
+;; (iii:feature:imp->emacs '(:imp provide))
 
 (defun iii:feature:add (feature)
   "Add the FEATURE (a list of keywords/symbols) to the `imp:features' tree."

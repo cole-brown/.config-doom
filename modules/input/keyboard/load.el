@@ -40,7 +40,7 @@ NEXT and PARENT are expected to be strings.
 (defun input//kl:path (&rest paths)
   "Joins together all strings in PATHS.
 If relative, will append `input//kl:dir/root'."
-  (let ((path (reduce #'input//kl:path/append paths)))
+  (let ((path (seq-reduce #'input//kl:path/append paths nil)))
     (if (file-name-absolute-p path)
         path
       (input//kl:path/append input//kl:dir/root path))))

@@ -1,7 +1,7 @@
 ;;; spy/zero/+hook.el -*- lexical-binding: t; -*-
 
 (require 'dash)
-(spy:require :spy 'path)
+(imp:require :modules 'spy 'file 'path)
 
 
 ;;------------------------------------------------------------------------------
@@ -137,8 +137,7 @@ Use this over `spy:hook/defun-and-hooker' only in cases where you aren't
 ;; (run-hooks 'test-hook)
 
 
-
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'hook 'def)
+(imp:provide :modules 'spy 'hook 'def)

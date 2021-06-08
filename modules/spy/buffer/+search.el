@@ -35,4 +35,4 @@ If MAX-CHARS is nil, use `sss:buffer/search.header/boundry'.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'search)
+(imp:provide :modules 'spy 'buffer 'search)

@@ -1,7 +1,7 @@
 ;;; config/identity.el -*- lexical-binding: t; -*-
 
 
-(spy:require :spy 'io 'signature)
+(imp:provide :modules 'spy 'io 'signature)
 
 
 ;;------------------------------------------------------------------------------

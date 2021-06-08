@@ -1,7 +1,7 @@
 ;;; spy/system/+package.el -*- lexical-binding: t; -*-
 
-(spy:require :spy 'zero 'strings)
-(spy:require :spy 'path)
+(imp:require :modules 'spy 'zero 'strings)
+(imp:require :modules 'spy 'file 'path)
 (spy:require :spy 'jerky)
 
 
@@ -67,4 +67,4 @@ This will load file: \"package/jeff/jill.el(c)\"
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'package)
+(imp:provide :modules 'spy 'system 'package)

@@ -1,7 +1,7 @@
 ;;; spy/system/+config.el -*- mode: emacs-lisp; lexical-binding: t; -*-
 
-(spy:require :spy 'zero 'strings)
-(spy:require :spy 'path)
+(imp:require :modules 'spy 'zero 'strings)
+(imp:require :modules 'spy 'file 'path)
 (spy:require :spy 'jerky)
 
 
@@ -68,4 +68,4 @@ This will load file: \"config/jeff/jill.el(c)\"
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'config)
+(imp:provide :spy 'system 'config)

@@ -8,7 +8,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Need load function.
-(spy:require :spy 'secret)
+(imp:require :modules 'spy 'secret)
 (spy:require :spy 'jerky)
 
 
@@ -22,4 +22,5 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (spy:provide :spy 'secret 'config)
+;; Already did `imp:provide' in init. Don't think we need to provide
+;; anything here.

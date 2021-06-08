@@ -9,7 +9,7 @@
 
 (require 's)
 (require 'dash)
-(spy:require :spy 'zero 'strings)
+(imp:require :modules 'spy 'zero 'strings)
 (spy:require :spy 'jerky 'debug)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.

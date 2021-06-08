@@ -5,7 +5,7 @@
 ;;--------------------------(probably the wrong one)----------------------------
 
 (spy:require :spy 'jerky)
-(spy:require :spy 'path)
+(imp:require :modules 'spy 'file 'path)
 
 
 ;;------------------------------------------------------------------------------

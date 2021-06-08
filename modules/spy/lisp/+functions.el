@@ -11,7 +11,7 @@
 ;; Don't rely on too much from `:spy'. This should be low-level stuff for use
 ;; by other `:spy' code.
 ;; (spy:require :spy 'jerky)
-;; (spy:require :spy 'buffer 'point)
+;; (imp:require :modules 'spy 'buffer 'point)
 ;; (imp:require :modules 'spy 'datetime 'format)
 
 

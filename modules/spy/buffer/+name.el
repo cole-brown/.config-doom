@@ -224,4 +224,4 @@ is usually the “current” dir when that buffer was created)."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'name)
+(imp:provide :modules 'spy 'buffer 'name)

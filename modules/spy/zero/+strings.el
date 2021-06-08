@@ -4,6 +4,8 @@
 ;; TODO: a spy/fan header here
 
 
+;; TODO: Move this to its own 'strings' module - not 'zero'.
+
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
@@ -203,4 +205,4 @@ Returns a list of strings.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'zero 'strings)
+(imp:provide :modules 'spy 'zero 'strings)

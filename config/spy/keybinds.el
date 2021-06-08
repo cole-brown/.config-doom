@@ -4,7 +4,7 @@
 (require 'hydra)
 
 
-(spy:require :spy 'io 'signature)
+(imp:provide :modules 'spy 'io 'signature)
 (spy:config 'spy 'art)
 (spy:config 'spy 'join)
 

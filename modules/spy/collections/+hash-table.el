@@ -45,4 +45,4 @@ NOTE: if anything is provided in PARAMS-PLIST, no defaults are used. So provide
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'collections 'hash-table)
+(imp:provide :modules 'spy 'collections 'hash-table)

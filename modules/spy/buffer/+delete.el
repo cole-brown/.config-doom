@@ -12,4 +12,4 @@ the end of a word. Delete ARG number of words.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'delete)
+(imp:provide :modules 'spy 'buffer 'delete)

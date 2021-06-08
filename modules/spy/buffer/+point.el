@@ -29,4 +29,4 @@ Result depends on syntax table's comment character."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'point)
+(imp:provide :modules 'spy 'buffer 'point)

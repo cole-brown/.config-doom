@@ -14,3 +14,9 @@
   "Insert stored org link as an org-mode link with description 'here'."
   (interactive)
   (org-insert-link nil (car (car org-stored-links)) "here"))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :modules 'spy 'org 'link)

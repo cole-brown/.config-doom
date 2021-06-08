@@ -51,9 +51,9 @@
 
 ;; These /should/ all be loaded already via Doom's module init.
 (spy:require :spy 'jerky)   ;; modules/spy/jerky/+jerky
-(spy:require :spy 'path)    ;; modules/spy/file/+path
-(spy:require :spy 'config)  ;; modules/spy/system/+config
-(spy:require :spy 'package) ;; modules/spy/system/+package
+(imp:require :modules 'spy 'file 'path)
+(imp:require :config 'spy 'system 'config)
+(imp:provide :modules 'spy 'system 'package)
 
 
 ;;------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 ;;; spy/org/keyword.el -*- lexical-binding: t; -*-
 
-(spy:require :spy 'buffer 'delete)
+(imp:require :modules 'spy 'buffer 'delete)
 
 
 ;; http://kitchingroup.cheme.cmu.edu/blog/2013/05/05/Getting-keyword-options-in-org-files/
@@ -254,4 +254,4 @@ notes.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'org 'keyword)
+(imp:provide :modules 'spy 'org 'keyword)

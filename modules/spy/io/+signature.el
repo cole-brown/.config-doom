@@ -14,7 +14,7 @@
 (require 'subr-x)
 
 (spy:require :spy 'jerky)
-(spy:require :spy 'buffer 'point)
+(imp:require :modules 'spy 'buffer 'point)
 (imp:require :modules 'spy 'datetime 'format)
 
 (require 'mis0)
@@ -260,4 +260,4 @@ Sets evil to insert mode.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'io 'signature)
+(imp:provide :modules 'spy 'io 'signature)

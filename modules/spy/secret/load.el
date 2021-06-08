@@ -6,7 +6,7 @@
 ;; todo: spy-fan
 
 (spy:require :spy 'jerky)
-(spy:require :spy 'path)
+(imp:require :modules 'spy 'file 'path)
 
 (require 'mis0/message)
 
@@ -154,4 +154,4 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'secret 'load)
+(imp:provide :modules 'spy 'secret 'load)

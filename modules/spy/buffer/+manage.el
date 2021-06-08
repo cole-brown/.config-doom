@@ -170,4 +170,4 @@ Deletes buffer's process (if any) if DELETE-PROCESS is non-nil."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'manage)
+(imp:provide :modules 'spy 'buffer 'manage)

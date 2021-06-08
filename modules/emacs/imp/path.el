@@ -210,9 +210,57 @@ or possibly
 
 NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
 presumably by having called `imp:root'."
-  (iii:path:append (iii:path:get-root (car feature))
-                   (imp:path:join (cdr feature))))
+  (iii:path:append (iii:path:root/dir (car feature))
+                   (iii:path:features->path (cdr feature))))
 ;; (iii:path:get '(:imp test feature))
+
+
+;; TODO: Move this to init.el with other defcustoms.
+(defcustom imp:path:find/regex
+  (rx
+   ;; Prefix
+   (group (optional (or "+"
+                        ;; Any other prefixes?
+                        )))
+   ;; Feature Name to insert
+   "%S"
+   ;; Postfix
+   (group (optional (or ".el"
+                        ".imp.el"))))
+  "Regex to apply to each name in a feature list (except root) when searching
+for a filepath match.
+
+Feature name string will replace the '%S'.")
+
+
+;; TODO: Change to this after implementing?
+(defun iii:path:find (feature)
+  "Convert FEATURE (a list of keywords/symbols) to a load path.
+
+1) Converts FEATURE into a load path regex string.
+2) Searches for a load path that matches.
+   - Fails if more than one match: nil return.
+   - Fails if zero matches: nil return.
+3) Returns load path string if it exists, nil if not.
+
+NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
+presumably by having called `imp:root'.
+
+Example:
+  (iii:path:find :imp 'foo 'bar 'baz)
+  Could return:
+    -> \"/path/to/imp-root/foo/bar/baz.el\"
+    -> \"/path/to/imp-root/+foo/bar/baz.el\"
+    -> \"/path/to/imp-root/foo/+bar/baz.el\"
+    -> \"/path/to/imp-root/+foo/bar/+baz.el\"
+    -> etc, depending on `imp:path:find/regex' settings."
+  ;; TODO: implement this.
+  ;; Features to strings.
+  ;; For each string except first:
+  ;;   - turn into regex
+  ;; Search for path that matches regex somehow.
+  ;; Return if found.
+  nil)
 
 
 ;;------------------------------------------------------------------------------
@@ -244,7 +292,7 @@ platform-agnostically.
               nil))
 ;; works: (imp:path:paths->path "~/.doom.d/" "modules")
 ;; fails: (imp:path:paths->path :jeff 'jill)
- 
+
 
 (defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
   "Set the root path(s) of KEYWORD for future `imp:require' calls.

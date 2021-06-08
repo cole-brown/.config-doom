@@ -13,7 +13,7 @@
 (spy:require :spy 'buffer 'name)
 (spy:require :spy 'path)
 (spy:require :spy 'jerky)
-(spy:provide :spy 'datetime 'format)
+(imp:require :modules 'spy 'datetime 'format)
 
 
 ;;------------------------------------------------------------------------------

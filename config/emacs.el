@@ -1,6 +1,9 @@
 ;;; config/emacs.el -*- lexical-binding: t; -*-
 
 
+(imp:require :modules 'spy 'datetime 'format)
+
+
 ;;------------------------------------------------------------------------------
 ;; Emacs Itself
 ;;------------------------------------------------------------------------------
@@ -14,6 +17,22 @@
 ;;   - That just trains me to hit 'y' to whatever message popped up.
 ;;     - Oh wait. Did I kill an unsaved buffer... again?
 (setq confirm-kill-emacs nil)
+
+
+;;------------------------------------------------------------------------------
+;; File Time Formats
+;;------------------------------------------------------------------------------
+
+(customize-set-variable 'ls-lisp-format-time-list
+                        (list
+                         ;; Recent Time Format:
+                         (spy:datetime/format.get 'iso-8601 'long)
+                         ;; Not-Recent Time Format:
+                         (spy:datetime/format.get 'iso-8601 'long))
+                        (concat "Set time format for e.g. dired to a better format - ISO-8601. "
+                                "Original value: '(\"%d.%m.%Y %H:%M\" \"%d.%m.%Y %H:%M\"))"))
+(customize-set-variable 'ls-lisp-use-localized-time-format t
+                        "Force use of `ls-lisp-format-time-list' regardless of locale.")
 
 
 ;;------------------------------------------------------------------------------

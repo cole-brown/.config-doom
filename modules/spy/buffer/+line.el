@@ -132,4 +132,4 @@ point reaches the beginning or end of the buffer, stop there.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'buffer 'line)
+(imp:provide :modules 'spy 'buffer 'line)

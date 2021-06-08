@@ -36,26 +36,24 @@
 
 ;; TODO: here
 
-(defun iii:load (path-root &rest feature)
-  "Load a file relative to PATH-ROOT based on FEATURE list of keywords/symbols.
+(defun iii:load (root &rest feature)
+  "Load a file relative to ROOT based on FEATURE list of keywords/symbols.
 
-The zeroith element in FEATURES is assumed to be represented by PATH-ROOT.
-E.g. (iii:load \"/path/to/imp\" :imp 'provide)
-  Will try to load: \"/path/to/imp/provide.el\"
+ROOT must be a keyword which exists in `imp:path:roots' (set via the
+`imp:path:root'function).
 
-If nothing is provided for FEATURE except a single keyword/symbol, it will use
-PATH-ROOT as-is.
-E.g. (iii:load \"/path/to/imp/init.el\" :imp)"
+E.g. (iii:load :imp 'provide)
+  Will try to load: \"/path/to/imp-root/provide.el\""
   ;; TODO: 'load-all' functionality?
-  (let* ((normal (apply #'iii:string:normalize names))
-         (name (apply #'iii:load:name normal))
-         (path (apply #'iii:path:get normal)))
-    (condition-case-unless-debug e
+  (let* ((path (iii:path:get (cons root feature))))
+    (condition-case-unless-debug err
         (let (file-name-handler-alist)
-          ;(load path nil))
           (load path nil 'nomessage))
-    (error "mis fail loading: %s (%S); error: %S" path name e))))
-;; (imp:load 'test 'something)
+      (error "mis fail loading %S via path: %S\n  - error: %S"
+             (cons root features)
+             path
+             err))))
+;; (iii:load :imp 'something)
 
 
 ;;------------------------------------------------------------------------------
@@ -75,13 +73,12 @@ Examples:
   To require/load \"mis/code/*.el[c]\":
     (imp:load :mis 'code)"
   ;; TODO: the load-all functionality
-  (unless (apply #'iii:provided? names)
-    (apply #'iii:load names)))
+  (unless (apply #'imp:provided? root names)
+    (apply #'iii:load root names)))
 ;; (imp:require 'test 'this)
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :imp 'require)
-(provide 'imp:require)
+(imp:provide:with-emacs :imp 'require)

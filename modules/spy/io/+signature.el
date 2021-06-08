@@ -15,7 +15,7 @@
 
 (spy:require :spy 'jerky)
 (spy:require :spy 'buffer 'point)
-(spy:require :spy 'datetime 'format)
+(imp:require :modules 'spy 'datetime 'format)
 
 (require 'mis0)
 

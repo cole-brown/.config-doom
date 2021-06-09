@@ -50,7 +50,7 @@
 ;;------------------------------
 
 ;; These /should/ all be loaded already via Doom's module init.
-(spy:require :spy 'jerky)   ;; modules/spy/jerky/+jerky
+(imp:require :jerky)
 (imp:require :modules 'spy 'file 'path)
 (imp:require :config 'spy 'system 'config)
 (imp:provide :modules 'spy 'system 'package)

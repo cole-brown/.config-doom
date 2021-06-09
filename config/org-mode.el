@@ -8,11 +8,11 @@
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;;------------------------------------------------------------------------------
 
+(imp:require :jerky)
 (imp:require :modules 'spy 'hook 'def)
 (imp:require :modules 'spy 'buffer 'search)
 (imp:require :modules 'spy 'buffer 'name)
 (imp:require :modules 'spy 'file 'path)
-(spy:require :spy 'jerky)
 (imp:require :modules 'spy 'datetime 'format)
 
 

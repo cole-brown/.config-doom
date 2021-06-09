@@ -4,7 +4,7 @@
 ;;--                     What computer is this anyways?                       --
 ;;--------------------------(probably the wrong one)----------------------------
 
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 (imp:require :modules 'spy 'file 'path)
 
 

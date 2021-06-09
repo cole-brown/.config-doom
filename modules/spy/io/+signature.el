@@ -13,7 +13,7 @@
 ;;------------------------------------------------------------------------------
 (require 'subr-x)
 
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 (imp:require :modules 'spy 'buffer 'point)
 (imp:require :modules 'spy 'datetime 'format)
 

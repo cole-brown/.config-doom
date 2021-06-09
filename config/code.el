@@ -2,7 +2,7 @@
 
 
 (imp:require :modules 'spy 'hook 'def)
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------

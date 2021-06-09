@@ -10,7 +10,7 @@
 (require 's)
 (require 'dash)
 (imp:require :modules 'spy 'zero 'strings)
-(spy:require :spy 'jerky 'debug)
+(imp:require :jerky 'debug)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
@@ -965,5 +965,5 @@ Example:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'jerky) ;; I have given you tasty jerky. Enjoy.
-(provide 'jerky)
+;; TODO: Rename this - remove "+". This is not an optional file.
+(imp:provide:with-emacs :jerky 'jerky)

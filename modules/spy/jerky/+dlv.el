@@ -6,7 +6,7 @@
 
 (require 's)
 (require 'dash)
-(spy:require :spy 'jerky 'debug)
+(imp:require :jerky 'debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -478,5 +478,4 @@ If not provided, they will be nil.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy:provide :spy 'jerky 'dlv)
-(provide 'jerky/dlv)
+(imp:provide:with-emacs :jerky 'dlv)

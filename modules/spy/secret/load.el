@@ -5,7 +5,7 @@
 
 ;; todo: spy-fan
 
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 (imp:require :modules 'spy 'file 'path)
 
 (require 'mis0/message)

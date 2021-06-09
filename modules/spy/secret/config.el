@@ -9,7 +9,7 @@
 
 ;; Need load function.
 (imp:require :modules 'spy 'secret)
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 (imp:require :modules 'spy 'zero 'strings)
 (imp:require :modules 'spy 'file 'path)
-(spy:require :spy 'jerky)
+(imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------

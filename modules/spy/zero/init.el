@@ -35,11 +35,6 @@
 ;; ...Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load `require' unless specifically removed.
-(unless (featurep! -require)
-  (load! "+require"))
-
-
 ;; Always load `strings' unless specifically removed.
 (unless (featurep! -strings)
   (load! "+strings"))

@@ -68,4 +68,4 @@ This will load file: \"config/jeff/jill.el(c)\"
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :spy 'system 'config)
+(imp:provide :modules 'spy 'system 'config)

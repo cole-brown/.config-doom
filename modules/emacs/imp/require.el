@@ -49,11 +49,13 @@ E.g. (iii:load :imp 'provide)
     (condition-case-unless-debug err
         (let (file-name-handler-alist)
           (load path nil 'nomessage))
-      (error "mis fail loading %S via path: %S\n  - error: %S"
+      (iii:error "iii:load"
+                 "imp fail to load %S via path: %S\n  - error: %S"
              (cons root features)
              path
              err))))
 ;; (iii:load :imp 'something)
+;; (iii:load :config 'spy 'system 'config)
 
 
 ;;------------------------------------------------------------------------------

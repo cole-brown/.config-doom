@@ -72,7 +72,6 @@ an Emacs symbol."
   "Default replacement for entries in `imp:translate-to-path:replace'.")
 
 
-;; (makunbound 'imp:translate-to-path:replace)
 (defcustom imp:translate-to-path:replace
   `(;;------------------------------
     ;; Default/Any/All
@@ -152,7 +151,8 @@ an Emacs symbol."
                                          "COM2" "COM3" "COM4" "COM5" "COM6"
                                          "COM7" "COM8" "COM9" "LPT1" "LPT2"
                                          "LPT3" "LPT4" "LPT5" "LPT6" "LPT7"
-                                         "LPT8" "LPT9")))
+                                         "LPT8" "LPT9")
+                                     (or "." string-end)))
              'imp:translate-to-path:replace/default)
      ,(list (rx-to-string `(sequence "." string-end))
             'imp:translate-to-path:replace/default))

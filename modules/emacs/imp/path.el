@@ -138,6 +138,7 @@ KWARGS should be a plist. All default to `t':
 ;; (iii:path:to-string :imp)
 ;; Should lose both slashes:
 ;; (iii:path:to-string "~/doom.d/")
+;; bugged: (iii:path:to-string "config")
 
 
 (defun iii:path:imp->string (feature)
@@ -146,6 +147,7 @@ KWARGS should be a plist. All default to `t':
 Returns the list of normalized string."
   (mapcar #'iii:path:to-string feature))
 ;; (iii:path:imp->string '(:root test feature))
+;; bugged: (iii:path:imp->string '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
@@ -199,6 +201,7 @@ or possibly
               nil))
 ;; works: (iii:path:features->path '(:jeff jill))
 ;; fails: (iii:path:features->path '("~/.doom.d/" "modules"))
+;; bugged: (iii:path:features->path '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
@@ -213,6 +216,7 @@ presumably by having called `imp:root'."
   (iii:path:append (iii:path:root/dir (car feature))
                    (iii:path:features->path (cdr feature))))
 ;; (iii:path:get '(:imp test feature))
+;; (iii:path:get '(:config spy system config))
 
 
 ;; TODO: Move this to init.el with other defcustoms.

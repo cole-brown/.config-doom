@@ -1,17 +1,22 @@
-;;; spy/lisp/init.el -*- lexical-binding: t; -*-
+;;; -*- mode: emacs-lisp; lexical-binding: t -*-
+
+
+;; TODO: a spy/fan header here
+
 
 ;;------------------------------------------------------------------------------
-;; Load our sub-module thingies.
+;; Includes
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -functions)
-   (load! "+functions"))
-(unless (featurep! -types)
-   (load! "+types"))
+;; Order matters.
+(load! "string")
+(load! "normalize")
+
+
+(load! "hash")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'lisp)
+(imp:provide :modules 'spy 'strings)

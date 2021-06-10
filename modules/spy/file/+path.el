@@ -4,7 +4,7 @@
 ;;--                             Path Functions                               --
 ;;---------------------------------/mnt/hello-----------------------------------
 
-(imp:require :modules 'spy 'zero 'strings)
+(imp:require :modules 'spy 'strings 'normalize)
 
 
 ;;------------------------------------------------------------------------------
@@ -16,16 +16,15 @@
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
-NEXT is normalized via `spy:string/symbol/normalize', so keywords or symbol
-names can be used as well as strings.
-"
+NEXT is normalized via `spy:string/normalize.name', so
+keywords or symbol names can be used as well as strings."
   ;; Use next's string value, or symbol name.
-  (let ((next (car (spy:string/symbol/normalize next))))
+  (let ((next (car (spy:string/normalize.name next))))
     (if (null parent)
         next
       (concat (file-name-as-directory parent) next))))
 ;; (sss:path/append nil "jeff")
-;; (spy:string/symbol/normalize "jill")
+;; (spy:string/normalize.name "jill")
 ;; (sss:path/append "jeff" "jill")
 ;; (sss:path/append "jeff/" "jill")
 ;; (sss:path/append "jeff/" :jill)

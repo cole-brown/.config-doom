@@ -1,6 +1,6 @@
 ;;; spy/system/+config.el -*- mode: emacs-lisp; lexical-binding: t; -*-
 
-(imp:require :modules 'spy 'zero 'strings)
+(imp:require :modules 'spy 'strings 'normalize)
 (imp:require :modules 'spy 'file 'path)
 (imp:require :jerky)
 
@@ -43,7 +43,7 @@ This will load file: \"config/jeff/jill.el(c)\"
   (let ((path-input (make-symbol "temp-path")))
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
     ;; Eval inputs once.
-    `(let* ((,path-input (spy:string/symbol/normalize ,@path))
+    `(let* ((,path-input (spy:string/normalize.name ,@path))
             ;; Non-inputs:
             (root        (jerky/get sss:config.jerky.key))
             (final-name  (apply #'spy:path/join root ,path-input))

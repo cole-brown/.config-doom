@@ -9,7 +9,8 @@
 
 (require 's)
 (require 'dash)
-(imp:require :modules 'spy 'zero 'strings)
+(imp:require :modules 'spy 'strings)
+(imp:require :modules 'spy 'lisp)
 (imp:require :jerky 'debug)
 
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
@@ -440,7 +441,7 @@ Checks/returns first to be non-nil of:
 ;; Key Functions
 ;;------------------------------------------------------------------------------
 
-(defalias 'jerky//key/symbol->str 'spy:string/symbol->str
+(defalias 'jerky//key/symbol->str 'spy:string/normalize.symbol
   "Convert a symbol to a string. Removes ':' from keywords.")
 
 

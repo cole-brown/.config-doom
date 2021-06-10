@@ -5,6 +5,8 @@
 ;;--------------------------(probably the wrong one)----------------------------
 
 (imp:require :jerky)
+(imp:require :modules 'spy 'strings 'normalize)
+(imp:require :modules 'spy 'strings 'hash)
 (imp:require :modules 'spy 'file 'path)
 
 

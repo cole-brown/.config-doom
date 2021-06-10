@@ -35,9 +35,9 @@
 ;; ...Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load `strings' unless specifically removed.
-(unless (featurep! -strings)
-  (load! "+strings"))
+;; ;; Always load `strings' unless specifically removed.
+;; (unless (featurep! -strings)
+;;   (load! "+strings"))
 
 
 ;;------------------------------------------------------------------------------

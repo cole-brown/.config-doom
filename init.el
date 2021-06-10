@@ -200,7 +200,8 @@
 
        :spy
        ;; Functions and Helpers
-       zero                ; spy:zero:     Must be first. strings, other funcs needed very early...
+       zero                ; spy:zero:     Must be first. Funcs needed to start with in init/config...
+       strings             ; spy:strings:  Should be very very early for other modules' use.
        lisp                ; spy:lisp:     Helpful Elisp stuff.
        file                ; spy:file:     For helpful path/file/dir functions.
        buffer              ; spy:buffer:   Buffer, line, point, etc functions.

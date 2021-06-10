@@ -53,7 +53,7 @@
 (imp:require :jerky)
 (imp:require :modules 'spy 'file 'path)
 (imp:require :modules 'spy 'system 'config)
-(imp:provide :modules 'spy 'system 'package)
+(imp:require :modules 'spy 'system 'package)
 
 
 ;;------------------------------------------------------------------------------

@@ -106,10 +106,21 @@ appropriate for Emacs' `provide'."
 ;; Public API: Provide
 ;;------------------------------------------------------------------------------
 
+(defalias 'imp:feature? 'imp:provided?
+  "Checks for FEATURE in `imp:features'.")
+(defalias 'imp:featurep 'imp:provided?
+  "Checks for FEATURE in `imp:features'.")
+(defalias 'imp:providedp 'imp:provided?
+  "Checks for FEATURE in `imp:features'.")
+
+
 (defun imp:provided? (&rest feature)
   "Checks for FEATURE in `imp:features'."
   (iii:tree:contains? feature imp:features))
-;; (imp:provided? :imp 'test)
+;; (imp:provided? :imp)
+;; (imp:providedp :imp)
+;; (imp:feature? :imp)
+;; (imp:featurep :imp)
 
 
 (defun imp:provide (&rest feature)

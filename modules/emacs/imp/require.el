@@ -31,11 +31,6 @@
 ;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
 
 
-;; TODO: finish path.el first
-
-
-;; TODO: here
-
 (defun iii:load (root &rest feature)
   "Load a file relative to ROOT based on FEATURE list of keywords/symbols.
 
@@ -43,17 +38,34 @@ ROOT must be a keyword which exists in `imp:path:roots' (set via the
 `imp:path:root'function).
 
 E.g. (iii:load :imp 'provide)
-  Will try to load: \"/path/to/imp-root/provide.el\""
+  Will try to load: \"/path/to/imp-root/provide.el\"
+
+Returns non-nil if loaded."
   ;; TODO: 'load-all' functionality?
-  (let* ((path (iii:path:get (cons root feature))))
-    (condition-case-unless-debug err
-        (let (file-name-handler-alist)
-          (load path nil 'nomessage))
-      (iii:error "iii:load"
-                 "imp fail to load %S via path: %S\n  - error: %S"
-             (cons root features)
-             path
-             err))))
+
+  (cond ((apply #'imp:provided? root feature)
+         t)
+
+        ;; Not loaded, but we know where to find it?
+        ((iii:path:root/contains? root)
+         ;; imp knows about this - let's try to load it.
+         (let* ((path (iii:path:get (cons root feature))))
+           (condition-case-unless-debug err
+               (let (file-name-handler-alist)
+                 (load path nil 'nomessage))
+
+             (iii:error "iii:load"
+                        "imp fail to load %S via path: %S\n  - error: %S"
+                        (cons root features)
+                        path
+                        err))))
+
+        ;; Fallback: Try to let emacs require it:
+        (t
+         (require (iii:feature:imp->emacs feature)
+                 ;; TODO: guess at a file/path based on 'root/feature-0/...'?
+                 nil
+                 'noerror))))
 ;; (iii:load :imp 'something)
 ;; (iii:load :config 'spy 'system 'config)
 
@@ -73,10 +85,22 @@ Examples:
     (imp:load :mis 'code 'comment)
 
   To require/load \"mis/code/*.el[c]\":
-    (imp:load :mis 'code)"
+    (imp:load :mis 'code)
+
+Returns non-nil on success."
   ;; TODO: the load-all functionality
-  (unless (apply #'imp:provided? root names)
-    (apply #'iii:load root names)))
+  ;; Already provided?
+  (cond ((apply #'imp:provided? root names)
+         t)
+
+        ;; Can we load it?
+        ((apply #'iii:load root names)
+         ;; Yes; so add to imp's feature tree.
+         (iii:feature:add (cons root feature)))
+
+        ;; Nope; return nil.
+        (t
+         nil)))
 ;; (imp:require 'test 'this)
 
 

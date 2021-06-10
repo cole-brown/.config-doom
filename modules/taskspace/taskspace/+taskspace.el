@@ -200,6 +200,9 @@
 (require 'seq) ;; for `seq-contains'
 (require 'f) ;; for nicer file api
 (require 'dash)
+(require 'imp)
+
+
 
 
 (defgroup taskspace nil
@@ -367,9 +370,8 @@ It should only be set via `taskspace/group/dlv'")
 
 (defun -t//jerky-p ()
   "Returns t if `jerky' and `jerky/dlv' are present as provided features."
-  ;; TODO: can we change this to use `imp:provided?' when imp becomes a package?
-  (and (featurep 'jerky)
-       (featurep 'jerky:dlv)))
+  (and (imp:provided? :jerky)
+       (imp:provided? :jerky 'dlv)))
 ;; (-t//jerky-p)
 
 

@@ -241,6 +241,11 @@
   ;; do ".txt".
   (add-to-list 'auto-mode-alist '("\\.org.txt$" . org-mode))
 
+  ;; Keybinds are in: config/keybinds/org-mode.el
+
+  ;; Theme tweaks are in: config/theme/
+
+
   ;; TODO: whitespace-mode fix for org-mode... still needed?
   ;;   ;; This does double the work on the org-indent-strings array, but meh.
   ;;   (require 'cl-lib)
@@ -267,47 +272,6 @@
   ;;               ))))
   ;;   (advice-add 'org-indent--compute-prefixes
   ;;               :after #'spy:advice/org-indent/prefix-munger)
-
-  ;; Map some things for org-mode.
-  (map! :after org
-        :map org-mode-map
-        :localleader
-        ;; :map evil-org-mode-map
-        :prefix "l" ;; links
-        :desc "Link as 'here'." "h" #'spy:cmd:org/here.link
-        :desc "Paste as 'here' link." "p" #'spy:cmd:org/here.yank)
-
-  ;; TODO: Do I want this again?
-  ;; ;; 'C-c <tab>' to show headings only (no top parent notes, no
-  ;; ;; children notes, just headings). Org-Mode had 'C-c <tab>' as
-  ;; ;; outline-show-children, which only shows direct children
-  ;; ;; headings, not all descendants' headings.
-  ;; ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
-  ;; ("C-c <tab>" . #'org-kill-note-or-show-branches)
-
-  ;; TODO: If/when Zenburn, see if I want this again:
-  ;;
-  ;; ;; There is a `:custom-face' section of use-packge, but I don't think I can do
-  ;; ;; the zenburn feature check or the `zenburn-with-color-variables' call.
-  ;; ;;
-  ;; ;; Change some headline colors.
-  ;; (require 'with)
-  ;; (with-feature 'zenburn-theme
-  ;;   (zenburn-with-color-variables
-  ;;     ;; I don't like green in these as it confuses me with the "DONE" etc
-  ;;     ;; flags, and I apparently like having my level 2 headings set to DONE and
-  ;;     ;; it was exactly the same color as far as my eyes could tell.
-  ;;     (set-face-foreground 'org-level-1 zenburn-orange)
-  ;;     (set-face-foreground 'org-level-2 zenburn-blue-1)
-  ;;     (set-face-foreground 'org-level-3 zenburn-yellow-2)
-  ;;     (set-face-foreground 'org-level-4 zenburn-cyan)
-  ;;     (set-face-foreground 'org-level-5 zenburn-red-4)
-  ;;     (set-face-foreground 'org-level-6 zenburn-blue-4)
-  ;;     ;; these get a bit weird but we're really super deeper than I've been
-  ;;     (set-face-foreground 'org-level-7 zenburn-cyan)
-  ;;     (set-face-foreground 'org-level-8 zenburn-yellow-2)
-  ;;     ;; and after 8 it repeats from 1
-  ;;     )
   )
 
 
@@ -428,105 +392,10 @@
   ;; configuration
   ;;--------------------
 
-
-  (when (jerky/namespace/has :work)
-    ;; Add `:home' namespaced org-journal stuff.
-    (when (featurep! :lang org +journal)
-      ;; Insert :work dir local variable(s).
-      (jerky/dlv/set nil
-                     (jerky/get 'path 'org 'journal :namespace :work)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :work
-                     :value (jerky/get 'path 'org 'journal :namespace :work)
-                     :docstr "org-journal's :work directory"
-                     :dlv 'full
-                     :safe t)
-      ;; (jerky/dlv/set nil
-      ;;                (jerky/get 'path 'taskspace :namespace :work)
-      ;;                'taskspace-mode
-      ;;                'org-journal-dir
-      ;;                :namespace :work
-      ;;                :value (jerky/get 'path 'org 'journal :namespace :work)
-      ;;                :docstr "org-journal's :work directory"
-      ;;                :dlv 'full
-      ;;                :safe t)
-
-      ;; Insert :work journal shortcuts if appropriate.
-      ;; Add to Doom Leader...
-      (map! :leader
-            ;; :normal, :visual states of evil
-            ;; (not :motion, :emacs, :insert, :operator-pending)
-            (:prefix "n" ;; notes
-             (:prefix "j" ;; ("j" . "journal")
-              ;; Work namespaced commands.
-              (:prefix ("w" . ":work journal")
-               :desc ":work - New Entry"           "w" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":work - New Entry"           "j" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":work - Visit Journal"       "v" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":work - Search Forever"      "s" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
-
-  ;; Insert :home journal shortcuts if appropriate.
-  (when (jerky/namespace/has :home)
-    ;; Add `:home' namespaced org-journal stuff.
-    (when (featurep! :lang org +journal)
-      ;; Insert :home dir local variable(s).
-      (jerky/dlv/set nil
-                     (jerky/get 'path 'org 'journal :namespace :home)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :home
-                     :value (jerky/get 'path 'org 'journal :namespace :home)
-                     :docstr "org-journal's :home directory"
-                     :dlv 'full
-                     :safe t)
-
-      ;; Insert :home journal shortcuts if appropriate.
-      ;; Add to Doom Leader...
-      (map! :leader
-            ;; :normal, :visual states of evil
-            ;; (not :motion, :emacs, :insert, :operator-pending)
-            (:prefix "n" ;; notes
-             (:prefix "j" ;; journal
-              ;; Home namespaced commands.
-              (:prefix ("h" . ":home journal")
-               :desc ":home - New Entry"           "h" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":home - New Entry"           "j" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":home - Visit Journal"       "v" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":home - Search Forever"      "s" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
+  ;; Keybinds are in: config/keybinds/org-mode.el
   )
+
+
 
 
 ;;------------------------------------------------------------------------------
@@ -611,20 +480,7 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; buffer" errors every other time it runs `org-roam-build-cache'.
   (when (eq system-type 'windows-nt)
     ;; default value: 'idle-timer
-    (customize-set-variable 'org-roam-db-update-method 'immediate))
-
-
-  (map! :leader
-        :prefix "nr" ;; notes -> roam
-        :desc "Kill roam info buffer" "K" #'sss:org-roam/buffer/deactivate
-        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate)
-  (map! :after org
-        :map org-mode-map
-        :localleader
-        :prefix "m" ;; org-roam is... 'm' here instead of 'r'.
-        ;; and copy the above 'map!':
-        :desc "Kill roam info buffer" "K" #'sss:org-roam/buffer/deactivate
-        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate))
+    (customize-set-variable 'org-roam-db-update-method 'immediate)))
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(

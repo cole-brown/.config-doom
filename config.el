@@ -111,6 +111,9 @@
 (spy:config 'daemons)
 (spy:config 'completion)
 
+;; Get rid of some Doom annoying functionality with respect to parens...
+(spy:config 'parenthesis)
+
 
 ;;------------------------------------------------------------------------------
 ;; Look & Feel
@@ -135,19 +138,35 @@
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 
-;; (spy:package 'hercules)
-
-;; Changes to Emacs/Evil keybinds.
-(spy:config 'keybinds)
+;;------------------------------
+;; Input Method
+;;------------------------------
 
 ;; Changes to Evil, Evil Settings, etc.
+;;   - No changes to keybinds directly, but this is the most related section?
 (spy:config 'evil)
 
-;; My additions to a new entry in the SPC leader.
-(spy:config 'spy 'keybinds)
 
-;; Get rid of some Doom functionality...
-(spy:config 'parenthesis)
+;;------------------------------
+;; Keyboard Layout
+;;------------------------------
+
+;; Fully controlled by '.doom.d/init.el'.
+;;   - ':input/keyboard' module and its '+layout/spydez' flag.
+
+
+;;------------------------------
+;; Keybind Modifications
+;;------------------------------
+
+;; Whatever isn't big enough or important enough to warrent its own file.
+(spy:config 'keybinds 'misc)
+
+;; Specific things:
+(spy:config 'keybinds 'org-mode)
+
+;; My additions to the overabundance of keybindings:
+(spy:config 'keybinds 'spy-leader)
 
 
 ;;------------------------------------------------------------------------------

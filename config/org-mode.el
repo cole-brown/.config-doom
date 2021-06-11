@@ -206,13 +206,6 @@
   (customize-set-variable 'org-cycle-separator-lines 0
                           "Hide extra newlines between (sub)trees")
 
-  ;; Hide extra newlines between (sub)trees.
-  ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
-  ;; Really useful because I tend to like the bonus whitespace for visually
-  ;; separating one tree from the next...
-  (customize-set-variable 'org-cycle-separator-lines 0
-                          "Hide /all/ extra newlines between (sub)trees.")
-
   ;; Doom already has good abbrevs.
   ;; ;; [[link:tag]] becomes something else.
   ;; ;; e.g.: [[google:test]] becomes link:

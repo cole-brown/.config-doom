@@ -63,6 +63,46 @@
 ;; Whitespace-Mode
 ;;------------------------------------------------------------------------------
 
+(defvar sss:whitespace-mode:style
+  ;;---
+  ;; visualization via faces (see set-face-attribute below)
+  ;;---
+  '(face
+
+    ;;---
+    ;; general/normal whitespace
+    ;;---
+    tabs spaces newline
+
+    ;;---
+    ;; the bad kind
+    ;;---
+    trailing space-before-tab space-after-tab
+
+    ;; Emacs 26.3:
+    ;; `empty' lines were annoying as emacs or whitespace is bad at cleaning up
+    ;; the visualization when the line is no longer matching this whitespace
+    ;; warning type.
+    ;; NOTE: Have not tested in emacs 27+.
+    ;;empty       ;; ...lines (...at beginning/end of buffer)
+
+    lines-tail  ;; `lines' would be whole line...
+    ;; lines-tail is just whatever's past fill-column
+
+    ;;---
+    ;; not sure if want or bad or what.
+    ;;---
+    indentation
+
+    ;;---
+    ;; visualize these whitespaces with non-whitespace chars via display-table
+    ;;---
+    space-mark tab-mark newline-mark)
+  "Desired whitespace-style setting.
+Will this get rid of the whitspace-mode/org-mode hook bug with `lines-tail'?
+Find out next time...")
+
+
 (use-package! whitespace
   ;;------------------------------
   :init
@@ -77,7 +117,7 @@
     ;; make a local copy of whitespace-style we can modify and...
     (set (make-local-variable 'whitespace-style)
          ;; ...set it as old one with removed 'too-long line' highlighting
-         (remove 'lines-tail whitespace-style)))
+         (remove 'lines-tail sss:whitespace-mode:style)))
 
 
   ;;------------------------------
@@ -104,42 +144,8 @@
   ;; Doom has this reduced down to: '(face tabs tab-mark)
   ;; I want to see the good /and/ the bad whitespace.
   (customize-set-variable 'whitespace-style
-   (quote
-    ;;---
-    ;; visualization via faces (see set-face-attribute below)
-    ;;---
-    (face
-
-     ;;---
-     ;; general/normal whitespace
-     ;;---
-     tabs spaces newline
-
-     ;;---
-     ;; the bad kind
-     ;;---
-     trailing space-before-tab space-after-tab
-
-     ;; Emacs 26.3:
-     ;; `empty' lines were annoying as emacs or whitespace is bad at cleaning up
-     ;; the visualization when the line is no longer matching this whitespace
-     ;; warning type.
-     ;; NOTE: Have not tested in emacs 27+.
-     ;;empty       ;; ...lines (...at beginning/end of buffer)
-
-     lines-tail  ;; `lines' would be whole line...
-     ;; lines-tail is just whatever's past fill-column
-
-     ;;---
-     ;; not sure if want or bad or what.
-     ;;---
-     indentation
-
-     ;;---
-     ;; visualize these whitespaces with non-whitespace chars via display-table
-     ;;---
-     space-mark tab-mark newline-mark)))
-
+                          sss:whitespace-mode:style)
+  ;; whitespace-style
 
   ;;---
   ;; Whitespace Faces

@@ -33,9 +33,11 @@
   :layout:evil:word-next-begin               #'evil-forward-word-begin
   :layout:evil:word-next-end                 #'evil-forward-word-end
   :layout:evil:word-prev-begin               #'evil-backward-word-begin
+  :layout:evil:word-prev-end                 #'evil-backward-word-end ;; Not mapped in default/qwerty.
   :layout:evil:word-next-begin-bigword       #'evil-forward-WORD-begin
   :layout:evil:word-next-end-bigword         #'evil-forward-WORD-end
   :layout:evil:word-prev-begin-bigword       #'evil-backward-WORD-begin
+  :layout:evil:word-prev-end-bigword         #'evil-backward-WORD-end ;; Not mapped in default/qwerty.
 
   ;; ┌──────────────────────────────┐
   ;; ├ Sentences                    ┤
@@ -60,13 +62,30 @@
   :layout:evil:line-next-1-first-non-blank   #'evil-next-line-1-first-non-blank
   :layout:evil:line-next-first-non-blank     #'evil-next-line-first-non-blank
 
-  ;; ┌──────────────────────────────┐
-  ;; ├ Go-To Line                   ┤
-  ;; └──────────────────────────────┘
   :layout:evil:goto-line-first-non-blank     #'evil-goto-line ;; default: last line in buffer
   :layout:evil:goto-line-window-first        #'evil-window-top
   :layout:evil:goto-line-window-middle       #'evil-window-middle
   :layout:evil:goto-line-window-last         #'evil-window-bottom
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ Scroll                       ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:scroll-up                     #'evil-scroll-up
+  :layout:evil:scroll-down                   #'evil-scroll-down
+  :layout:evil:scroll-left                   #'evil-scroll-left
+  :layout:evil:scroll-right                  #'evil-scroll-right
+  :layout:evil:scroll-line-to-top            #'evil-scroll-line-to-top
+  :layout:evil:scroll-line-to-center         #'evil-scroll-line-to-center
+  :layout:evil:scroll-line-to-bottom         #'evil-scroll-line-to-bottom
+  :layout:evil:scroll-page-up                #'evil-scroll-page-up
+  :layout:evil:scroll-page-down              #'evil-scroll-page-up
+  :layout:evil:scroll-line-up                #'evil-scroll-line-up
+  :layout:evil:scroll-line-down              #'evil-scroll-line-down
+  :layout:evil:scroll-column-left            #'evil-scroll-column-left
+  :layout:evil:scroll-column-right           #'evil-scroll-column-right
+  :layout:evil:scroll-line-to-top            #'evil-scroll-line-to-top
+  :layout:evil:scroll-line-to-bottom         #'evil-scroll-line-to-bottom
+  :layout:evil:scroll-count-reset            #'evil-scroll-count-reset  ;; Unused in qwerty.
 
   ;; ┌──────────────────────────────┐
   ;; ├ Searches                     ┤
@@ -81,12 +100,12 @@
 
   ;; TODO: snipe seems very tied to its keys that it has hard-coded...
   ;; May need to use `evil-snipe-def' to invent new ones...
-  :layout:evil:snipe-next-1-t                #'evil-snipe-t
-  :layout:evil:snipe-next-1-f                #'evil-snipe-f
-  :layout:evil:snipe-prev-1-t                #'evil-snipe-T
-  :layout:evil:snipe-prev-1-f                #'evil-snipe-F
-  :layout:evil:snipe-next-2                  #'evil-snipe-s
-  :layout:evil:snipe-prev-2                  #'evil-snipe-S
+  :layout:evil:snipe-next-1-t                #'evil-snipe-t ;; TODO: not a keyboard-dependent keyword?
+  :layout:evil:snipe-next-1-f                #'evil-snipe-f ;; TODO: not a keyboard-dependent keyword?
+  :layout:evil:snipe-prev-1-t                #'evil-snipe-T ;; TODO: not a keyboard-dependent keyword?
+  :layout:evil:snipe-prev-1-f                #'evil-snipe-F ;; TODO: not a keyboard-dependent keyword?
+  :layout:evil:snipe-next-2-s                #'evil-snipe-s ;; TODO: not a keyboard-dependent keyword?
+  :layout:evil:snipe-prev-2-S                #'evil-snipe-S ;; TODO: not a keyboard-dependent keyword?
   :layout:evil:snipe-repeat                  #'evil-snipe-repeat
   :layout:evil:snipe-repeat-inverse          #'evil-snipe-repeat-reverse
 

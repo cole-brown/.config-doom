@@ -10,6 +10,24 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Doom Keybind Files
+;;------------------------------------------------------------------------------
+;;
+;; Doom's `map!' macro and other keybinding functions:
+;;   ~/.emacs.d/core/core-keybinds.el
+;;
+;; Doom's keybinds for evil mode:
+;;   ~/.emacs.d/modules/config/default/+evil-bindings.el
+;;
+;; Some evil keybinds:
+;;   ~/.emacs.d/modules/editor/evil/config.el
+;;
+;; Evil itself:
+;;   ~/.emacs.d/.local/straight/repos/evil/evil-keybindings.el
+;;   ~/.emacs.d/.local/straight/repos/evil/evil-maps.el
+
+
+;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 

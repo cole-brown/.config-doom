@@ -29,13 +29,133 @@
     ;; ╚════════════════════════════════════════════════════════════════╝
 
     ;; ┌────────────────────────────────┐
+    ;; │ States                         │
+    ;; └────────────────────────────────┘
+    :n  "i"  :state:insert:before
+    :v  "I"  :state:insert:before
+
+    :n  "a"  :state:insert:after
+    :v  "A"  :state:insert:after
+
+    :n  "o"  :state:insert:line:open-below
+    :n  "O"  :state:insert:line:open-above
+
+    :n  "I"  :state:insert:line:start
+    :n  "A"  :state:insert:line:end
+    :n  "R"  :state:replace
+
+    :m  "v"  :state:visual:char-wise
+    :m  "V"  :state:visual:line-wise
+
+
+    ;; ┌────────────────────────────────┐
     ;; │ Movement                       │
     ;; └────────────────────────────────┘
 
+    ;; ──┬────────────────
+    ;;   │ ↑ ↓ ← →
+    ;; ──┴────────────────
+    ;;  evil: normal, visual, motion
     :nvm  "k"  :layout:evil:line-prev
     :nvm  "j"  :layout:evil:line-next
     :nvm  "l"  :layout:evil:char-next
     :nvm  "h"  :layout:evil:char-prev
+
+    ;; ──┬────────────────
+    ;;   │ Word
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m  "w"  :layout:evil:word-next-begin
+    :m  "e"  :layout:evil:word-next-end
+    :m  "b"  :layout:evil:word-prev-begin
+    ;; :m  ___  :layout:evil:word-prev-end
+    :m  "W"  :layout:evil:word-next-begin-bigword ;; aka :layout:evil:word-next with optional arg BIGWORD set to 't'
+    :m  "E"  :layout:evil:word-next-end-bigword
+    :m  "B"  :layout:evil:word-prev-begin-bigword
+    ;; :m  ___  :layout:evil:word-prev-end-bigword
+
+    ;; ──┬────────────────
+    ;;   │ Sentences
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m  "("  :layout:evil:sentence-begin-prev
+    :m  ")"  :layout:evil:sentence-begin-next
+
+    ;; ──┬────────────────
+    ;;   │ Paragraphs
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m  "{"  :layout:evil:paragraph-prev
+    :m  "}"  :layout:evil:paragraph-next
+
+    ;; ──┬────────────────
+    ;;   │ Lines
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m  "%"  :layout:evil:item-jump
+    :m  "0"  :layout:evil:digit-arg-0/line-start
+    :m  "$"  :layout:evil:line-end
+    :m  "-"  :layout:evil:line-prev-first-non-blank
+    :m  "^"  :layout:evil:line-current-first-non-blank
+    :m  "_"  :layout:evil:line-next-1-first-non-blank
+    :m  "+"  :layout:evil:line-next-first-non-blank
+
+    ;; evil: motion
+    :m  "G"  :layout:evil:goto-line-first-non-blank ;; default:layout:evil: last line in buffer
+    :m  "H"  :layout:evil:goto-line-visible-first
+    :m  "M"  :layout:evil:goto-line-visible-middle
+    :m  "L"  :layout:evil:goto-line-visible-last
+
+    ;; ──┬────────────────
+    ;;   │ Scroll
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m "C-u" :layout:evil:scroll-up
+    :m "C-d" :layout:evil:scroll-down
+    :m "zH"  :layout:evil:scroll-left  ;; Related to main motion keys
+    :m "zL"  :layout:evil:scroll-right ;; Related to main motion keys
+    :m "zt"  :layout:evil:scroll-line-to-top
+    :m "zz"  :layout:evil:scroll-line-to-center
+    :m "zb"  :layout:evil:scroll-line-to-bottom
+    :m "C-b" :layout:evil:scroll-page-up
+    :m "C-f" :layout:evil:scroll-page-down
+    :m "C-y" :layout:evil:scroll-line-up
+    :m "C-e" :layout:evil:scroll-line-down
+    :m "zh"  :layout:evil:scroll-column-left  ;; Related to main motion keys
+    :m "zl"  :layout:evil:scroll-column-right ;; Related to main motion keys
+    :m "z^"  :layout:evil:scroll-top-line-to-bottom
+    :m "z+"  :layout:evil:scroll-bottom-line-to-top
+    ;; Unused:
+    ;; :? "" :layout:evil:scroll-count-reset
+
+    ;; ──┬────────────────
+    ;;   │ Searches
+    ;; ──┴────────────────
+    ;; evil: motion
+    :m  "n"  :layout:evil:search-next
+    :m  "N"  :layout:evil:search-prev
+    :m  "/"  :layout:evil:search-forward
+    :m  "?"  :layout:evil:search-backward
+
+    :m  "#"  :layout:evil:search-word-backward
+    :m  "*"  :layout:evil:search-word-forward
+
+    :m  "t"  :layout:evil:snipe-next-1-t ;; TODO: not a keyboard-dependent keyword?
+    :m  "f"  :layout:evil:snipe-next-1-f ;; TODO: not a keyboard-dependent keyword?
+    :m  "T"  :layout:evil:snipe-prev-1-T ;; TODO: not a keyboard-dependent keyword?
+    :m  "F"  :layout:evil:snipe-prev-1-F ;; TODO: not a keyboard-dependent keyword?
+    :m  "s"  :layout:evil:snipe-next-2-s ;; TODO: not a keyboard-dependent keyword?
+    :m  "S"  :layout:evil:snipe-prev-2-S ;; TODO: not a keyboard-dependent keyword?
+    :m  ";"  :layout:evil:snipe-repeat
+    :m  ","  :layout:evil:snipe-repeat-inverse
+
+    ;; ──┬────────────────
+    ;;   │ Marks
+    ;; ──┴────────────────
+    ;; evil: normal
+    :n  "m"  :layout:evil:mark-set
+    ;; evil: motion
+    :m  "`"  :layout:evil:mark-goto
 
     ;; TODO: Many more keybinds for global?
     ;; TODO: Many more keymaps
@@ -75,73 +195,6 @@
 ;;           (:line:next                     . "j")
 ;;           (:char:next                     . "h")
 ;;           (:char:prev                     . "l")
-
-;;           ;;---
-;;           ;; Word
-;;           ;;---
-;;           (:word:next:begin               . "w")
-;;           (:word:next:end                 . "e")
-;;           (:word:prev:begin               . "b")
-;;           (:word:next:begin:bigword       . "W") ;; aka (:word:next with optional arg BIGWORD set to 't')
-;;           (:word:next:end:bigword         . "E")
-;;           (:word:prev:begin:bigword       . "B")
-
-;;           ;;---
-;;           ;; Sentences
-;;           ;;---
-;;           (:sentence:begin:prev           . "(")
-;;           (:sentence:begin:next           . ")")
-
-;;           ;;---
-;;           ;; Paragraphs
-;;           ;;---
-;;           (:paragraph:prev                . "{")
-;;           (:paragraph:next                . "}")
-
-;;           ;;---
-;;           ;; Lines
-;;           ;;---
-;;           (:item:jump                     . "%") ;; Movement
-;;           (:digit-arg:0/line:start        . "0")
-;;           (:line:end                      . "$")
-;;           (:line:prev:first-non-blank     . "-")
-;;           (:line:current:first-non-blank  . "^")
-;;           (:line:next-1:first-non-blank   . "_")
-;;           (:line:next:first-non-blank     . "+")
-
-;;           ;;---
-;;           ;; Go-To Line
-;;           ;;---
-;;           (:goto:line:first-non-blank     . "G") ;; default: last line in buffer
-;;           (:goto:line:visible:first       . "H")
-;;           (:goto:line:visible:middle      . "M")
-;;           (:goto:line:visible:last        . "L")
-
-;;           ;;---
-;;           ;; Searches
-;;           ;;---
-;;           (:search:next                   . "n")
-;;           (:search:prev                   . "N")
-;;           (:search:forward                . "/")
-;;           (:search:backward               . "?")
-
-;;           (:search:word:backward          . "#")
-;;           (:search:word:forward           . "*")
-
-;;           (:snipe:next:1-t                . "t")
-;;           (:snipe:next:1-f                . "f")
-;;           (:snipe:prev:1-t                . "T")
-;;           (:snipe:prev:1-f                . "F")
-;;           (:snipe:next:2                  . "s")
-;;           (:snipe:prev:2                  . "S")
-;;           (:snipe:repeat                  . ";")
-;;           (:snipe:repeat:inverse          . ",")
-
-;;           ;;---
-;;           ;; Marks
-;;           ;;---
-;;           (:mark:set                      . "m")
-;;           (:mark:goto                     . "`")
 
 
 ;;           ;;------------------------------
@@ -226,20 +279,6 @@
 ;;           ;; Shell Command
 ;;           ;;---
 ;;           (:shell:command                 . "!")  ;; Execute region as shell command?
-
-;;           ;;------------------------------
-;;           ;; Evil States
-;;           ;;------------------------------
-;;           (:state:insert:before           . "i")
-;;           (:state:insert:after            . "a")
-;;           (:state:insert:line:start       . "I")
-;;           (:state:insert:line:end         . "A")
-;;           (:state:insert:line:open-below  . "o")
-;;           (:state:insert:line:open-above  . "O")
-;;           (:state:replace                 . "R")
-;;           (:state:visual:char-wise        . "v")
-;;           (:state:visual:line-wise        . "V")
-
 
 ;;           ;;------------------------------
 ;;           ;; Misc.

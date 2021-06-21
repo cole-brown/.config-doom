@@ -201,48 +201,47 @@
   ;; └──────────────────────────────┘
   :layout:evil:edit-repeat                   #'evil-repeat)
 
+
+(input:keyboard/layout:define/keywords :evil
+  "┌─────────────────────────────────────────────────────────────────────────┐
+   │ Commands                                                                │
+   └─────────────────────────────────────────────────────────────────────────┘"
+  ;; ┌──────────────────────────────┐
+  ;; ├ Evil Command                 ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:evil-command                  #'evil-ex
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ Shell Command                ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:shell-command                 #'evil-shell-command ;; Execute region as shell command?
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ Evil States                  ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:state-insert-before           #'evil-insert
+  :layout:evil:state-insert-after            #'evil-append
+  :layout:evil:state-insert-line-start       #'evil-insert-line
+  :layout:evil:state-insert-line-end         #'evil-append-line
+  :layout:evil:state-insert-line-open-below  #'evil-open-below
+  :layout:evil:state-insert-line-open-above  #'evil-open-above
+  :layout:evil:state-replace                 #'evil-replace-state
+  :layout:evil:state-visual-char-wise        #'evil-visual-char
+  :layout:evil:state-visual-line-wise        #'evil-visual-line
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ Doom!                        ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:docs-lookup                   #'+lookup/documentation
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ No Keybind                   ┤
+  ;; └──────────────────────────────┘
+  :layout:evil:undefined                     nil
+  )
+
 ;; TODO: HERE YOU ARE- MH, YES.
 ;;       - Finish the rest:
-;; (input:keyboard/layout:define/keywords :evil
-;;   "┌─────────────────────────────────────────────────────────────────────────┐
-;;    │ Commands                                                                │
-;;    └─────────────────────────────────────────────────────────────────────────┘"
-;;  ;; ┌──────────────────────────────┐
-;;  ;; ├ Evil Command                 ┤
-;;  ;; └──────────────────────────────┘
-;;  :layout:evil:evil-command                  #'evil-ex
-
-;;  ;; ┌──────────────────────────────┐
-;;  ;; ├ Shell Command                ┤
-;;  ;; └──────────────────────────────┘
-;;  :layout:evil:shell-command                 #'evil-shell-command) ;; Execute region as shell command?
-
-;;  ;; ┌──────────────────────────────┐
-;;  ;; ├ Evil States                  ┤
-;;  ;; └──────────────────────────────┘
-;;  :layout:evil:state-insert-before           #'evil-insert
-;;  :layout:evil:state-insert-after            #'evil-append
-;;  :layout:evil:state-insert-line-start       #'evil-insert-line
-;;  :layout:evil:state-insert-line-end         #'evil-append-line
-;;  :layout:evil:state-insert-line-open-below  #'evil-open-below
-;;  :layout:evil:state-insert-line-open-above  #'evil-open-above
-;;  :layout:evil:state-replace                 #'evil-replace-state
-;;  :layout:evil:state-visual-char-wise        #'evil-visual-char
-;;  :layout:evil:state-visual-line-wise        #'evil-visual-line
-
-
-;;  ;; ┌──────────────────────────────┐
-;;  ;; ├ Doom!                        ┤
-;;  ;; └──────────────────────────────┘
-;;  :layout:evil:docs-lookup                   #'+lookup/documentation
-
-
-;;  ;; ┌──────────────────────────────┐
-;;  ;; ├ No Keybind                   ┤
-;;  ;; └──────────────────────────────┘
-;;  :layout:evil:undefined                     nil
-
-
 ;;  ;;------------------------------
 ;;  ;; TODO: All the multi-key keybinds
 ;;  ;;------------------------------

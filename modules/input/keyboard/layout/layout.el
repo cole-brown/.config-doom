@@ -488,6 +488,9 @@ checked by this function. It will be translated to a function via the
 DESC can be nil or a string describing the keybinding.
 
 Used for side-effects; just returns non-nil (`t')."
+  ;; (message "MAP-BIND: HELLO: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
+  ;;          keybind keyword-or-func states desc)
+
   ;;------------------------------
   ;; Normalize States.
   ;;------------------------------
@@ -495,11 +498,21 @@ Used for side-effects; just returns non-nil (`t')."
             (null states))
     (setq states (cons 'nil (delq 'global states))))
 
+  ;; (message "map-bind: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
+  ;;          keybind keyword-or-func states desc)
+
   ;;------------------------------
   ;; Keyword -> Function
   ;;------------------------------
   ;; Is `keyword-or-func' a keyword? Assume a function if not.
   (let ((func (input//kl:layout:normalize->func keyword-or-func)))
+    (when (keywordp func)
+      (error
+       (input//kl:error-message "input//kl:layout:map-bind"
+                                "Unknown keybind keyword: %s -> %s")
+       keyword-or-func func))
+    ;; (message "map-bind: keyword-or-func: %S -> func: %S"
+    ;;          keyword-or-func func)
     ;; Empty string keybind and null func are modified into an ignored keybind.
     ;; Null func is an unbind.
     ;; So not much to error check...
@@ -508,7 +521,7 @@ Used for side-effects; just returns non-nil (`t')."
     ;; Is it a `derived' keybind?
     ;;------------------------------
     (when (and (listp keybind)
-               (eq (car keybind) 'derive))
+               (eq (car keybind) :derive))
       (setq keybind
             ;; We've guarenteed that `states' is a list of at least `nil'.
             (input//kl:layout:derive states
@@ -535,7 +548,9 @@ Used for side-effects; just returns non-nil (`t')."
     ;;------------------------------
     (dolist (state states)
       (push (list keybind func)
-            (alist-get state doom--map-batch-forms)))
+            (alist-get state doom--map-batch-forms))
+      ;; (message "map-bind: SAVE: %S + %S -> %S" state keybind func)
+      )
 
     ;;------------------------------
     ;; Always return non-nil as expected by caller.
@@ -549,59 +564,83 @@ Used for side-effects; just returns non-nil (`t')."
 ;; doom--map-batch-forms
 
 
+(defun input//kl:layout:map-nested (wrapper rest)
+  "Map a nested list in `input//kl:layout:map-process'."
+  ;; Finish current map-forms.
+  (doom--map-commit)
+  ;; Setup for the nested call.
+  (let ((doom--map-parent-state (doom--map-state)))
+    (push (if wrapper
+              (append wrapper (list (input//kl:layout:map-process rest)))
+            (input//kl:layout:map-process rest))
+          doom--map-forms)))
+
+
 (defun input//kl:layout:map-process (rest)
   "Layout-aware backend for `map!' - equivalent to `doom--map-process'.
 
 Create sexprs required for `map!' to be able to map keybinds based on its
 input keywords and such."
+  ;; (message "map-processs: Hello")
   (let ((doom--map-fn doom--map-fn)
         doom--map-state
         doom--map-forms
         desc)
     (while rest
       (let ((key (pop rest)))
+        ;; (message "MAP-PROCESS _KEY_ LOOP: %S" key)
         ;;------------------------------
         ;; Nested Mapping?
         ;;------------------------------
         (cond ((listp key)
-               (doom--map-nested nil key))
+               ;; (message "-cond->list: list: send to input//kl:layout:map-nested: %S" key)
+               (input//kl:layout:map-nested nil key))
 
               ;;------------------------------
               ;; `map!' keyword to parse.
               ;;------------------------------
               ((keywordp key)
+               ;; (message "-cond->keyword: keyword->pcase: %S" key)
                (pcase key
                  ;;---
                  ;; Leaders
                  ;;---
                  ;; Save off info for later.
                  (:leader
+                  ;; (message "---pcase->keyword: `%S': doom--map-fn -> `doom--define-leader-key'" key)
                   (doom--map-commit)
                   (setq doom--map-fn 'doom--define-leader-key))
                  (:localleader
+                  ;; (message "---pcase->keyword: `%S': doom--map-fn -> `define-localleader-key!'" key)
                   (doom--map-commit)
                   (setq doom--map-fn 'define-localleader-key!))
                  ;;---
                  ;; `:after'  - map as nested under an `after!' macro.
                  ;;---
                  (:after
-                  (doom--map-nested (list 'after! (pop rest)) rest)
+                  ;; (message "---pcase->keyword: `%S': Call `doom--map-nested'" key)
+                  ;; TODO: OUR NESTED FUNC!!!
+                  (input//kl:layout:map-nested (list 'after! (pop rest)) rest)
                   (setq rest nil))
                  ;;---
                  ;; Description
                  ;;---
                  ;; Save for next item that wants a description.
                  (:desc
+                  ;; (message "---pcase->keyword: `%S': setq desc: %S" key (car rest))
                   (setq desc (pop rest)))
                  ;;---
                  ;; Keymaps
                  ;;---
                  (:map
+                  ;; (message "---pcase->keyword: `%S': doom--map-set: %S" rest)
+                  ;; TODO: do I need to remake `doom--map-set'?
                   (doom--map-set :keymaps `(quote ,(doom-enlist (pop rest)))))
                  ;;---
                  ;; Major Mode
                  ;;---
                  (:mode
+                  ;; (message "---pcase->keyword: `%S': Push mode stuff into rest." key)
                   (push (cl-loop for m in (doom-enlist (pop rest))
                                  collect (intern (concat (symbol-name m) "-map")))
                         rest)
@@ -610,12 +649,14 @@ input keywords and such."
                  ;; Conditions
                  ;;---
                  ((or :when :unless)
+                  ;; (message "---pcase->keyword: `%S': -> `doom--map-nested'" key)
                   (doom--map-nested (list (intern (doom-keyword-name key)) (pop rest)) rest)
                   (setq rest nil))
                  ;;---
                  ;; Prefix/Prefix-Map
                  ;;---
                  (:prefix-map
+                  ;; (message "---pcase->keyword: `%S': create `doom-leader-%s-map'" key desc)
                   (cl-destructuring-bind (prefix . desc)
                       (doom-enlist (pop rest))
                     (let ((keymap (intern (format "doom-leader-%s-map" desc))))
@@ -626,16 +667,23 @@ input keywords and such."
                       (push `(defvar ,keymap (make-sparse-keymap))
                             doom--map-forms))))
                  (:prefix
+                  ;; (message "---pcase->keyword: `%S': prefix stuff" key)
                   (cl-destructuring-bind (prefix . desc)
                       (doom-enlist (pop rest))
+                    ;; (message "---pcase->:prefix: (%S . %S): rest=%S" prefix desc rest)
                     (doom--map-set (if doom--map-fn :infix :prefix)
                                    prefix)
                     (when (stringp desc)
-                      (setq rest (append (list :desc desc "" nil) rest)))))
+                      ;; (message "---pcase->:prefix: string desc %S" desc)
+                      (setq rest (append (list :desc desc "" nil) rest))
+                      ;; (message "---pcase->:prefix: rest w/ desc -> %S" rest)
+                      )))
                  ;;---
                  ;; Text Object Inner/Outer Keybind Pairing.
                  ;;---
                  (:textobj
+                  ;; (message "---pcase->keyword: `%S': text-objects-map stuff: key: %S, inner: %S, outer: %S"
+                  ;;          key key inner outer)
                   (let* ((key (pop rest))
                          (inner (pop rest))
                          (outer (pop rest)))
@@ -646,18 +694,28 @@ input keywords and such."
                  ;; Fallthrough: Evil States
                  ;;---
                  (_
+                  ;; (message "---pcase->_/fallthrough: `%S': evil state? %S + %S -> %S"
+                  ;;          key
+                  ;;          (doom--map-keyword-to-states key)
+                  ;;          (nth 0 rest)
+                  ;;          (nth 1 rest))
                   (condition-case _
                       ;; Evil states are followed by a `kbd'-type string, then
                       ;; either a function or a layout-keyword to bind to the
                       ;; keyword/string.
-                      (input//kl:layout:map-bind (pop rest)
-                                                 (pop rest)
-                                                 (doom--map-keyword-to-states key)
-                                                 desc)
+                      ;;
+                      ;; NOTE: Keep `progn'! I keep adding a debug print or something here and ruining the flow into
+                      ;; `input//kl:layout:map-bind'...
+                      (progn
+                        ;; (message "-----map-bind->:state: %S: %S -> %S" key (nth 0 rest) (nth 1 rest))
+                        (input//kl:layout:map-bind (pop rest)
+                                                   (pop rest)
+                                                   (doom--map-keyword-to-states key)
+                                                   desc))
                     (error
                      (input//kl:error-message "input//kl:layout:map-process"
                                               "Not a valid `map!' property: %s")
-                                              key))
+                     key))
 
                   ;; Reset `desc' since we used it.
                   (setq desc nil))))
@@ -666,6 +724,7 @@ input keywords and such."
               ;; Keybind string to map?
               ;;------------------------------
               (t
+               ;; (message "-cond->t/default: 'string'?: %S -> %S" key (car rest))
                ;; Takes over for `doom--map-def' - handles normal string->func
                ;; and new layout-keyword->func functionality.
                (input//kl:layout:map-bind key
@@ -678,6 +737,7 @@ input keywords and such."
     ;;------------------------------
     ;; Finalize
     ;;------------------------------
+    ;; (pp-macroexpand-expression doom--map-forms)))
     (doom--map-commit)
     ;; Get rid of nils and order correctly.
     (macroexp-progn (nreverse (delq nil doom--map-forms)))))

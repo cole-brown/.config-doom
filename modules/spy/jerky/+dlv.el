@@ -35,7 +35,7 @@
   "Verify DIR is valid for `jerky/dlv.set/<...>'.
 
 If QUIET is not nil, signals error. Else returns nil on error.
-Returns t on success.
+Returns directory name on success.
 "
   (cond ((null dir)
          (if quiet
@@ -48,20 +48,24 @@ Returns t on success.
              nil
            (error "%s: Directory path must be absolute. %s"
                   "jerky//dlv/verify.dir" dir)))
+
         ((not (directory-name-p dir))
-         (if quiet
-             nil
-           (error "%s: Path must be a directory path (add '/'?). %s"
-                  "jerky//dlv/verify.dir" dir)))
+         ;; Is absolute; needs fixed to have final slash.
+         (file-name-as-directory dir))
+        ;; Old way: error on not directory-name-p.
+        ;; (if quiet
+        ;;      nil
+        ;;    (error "%s: Path must be a directory path (add '/'?). %s"
+        ;;           "jerky//dlv/verify.dir" dir)))
         ;; ((not (file-exists-p dir))
         ;;  (if quiet
         ;;      nil
         ;;    (error "%s: Directory must exist. %s"
         ;;           "jerky//dlv/verify.dir" dir)))
 
-        ;; Ok; errors all checked.
+        ;; Ok as-is.
         (t
-         t)))
+         dir)))
 ;; Bad:
 ;; (jerky//dlv/verify.dir "relative/path/file")
 ;; (jerky//dlv/verify.dir "c:/absolute/path/file")
@@ -364,7 +368,8 @@ If not provided, they will be nil.
     (when (not (null key-jerky))
       (error "jerky/dlv/set: unexpected args before keywords: %S" key-jerky))
 
-    (if (not (and (jerky//dlv/verify.dir directory quiet)
+    (let ((dir (jerky//dlv/verify.dir directory quiet)))
+      (if (not (and dir
                   (or (null namespace)
                       (jerky//dlv/verify.namespace namespace))
                   ;; (jerky//dlv/verify.variable namespace key-jerky)
@@ -416,8 +421,8 @@ If not provided, they will be nil.
           ;; Set-up a class of dlv variables and apply it to the directory.
           (jerky//debug dbg.func "DLV class var `%S': %s" class mode-dlv)
           (dir-locals-set-class-variables class mode-dlv)
-          (jerky//debug dbg.func "DLV class dir `%S': %s" class directory)
-          (dir-locals-set-directory-class directory class)
+          (jerky//debug dbg.func "DLV class dir `%S': %s" class dir)
+          (dir-locals-set-directory-class dir class)
 
           ;; Should we also automatically consider it safe?
           (when safe
@@ -432,7 +437,7 @@ If not provided, they will be nil.
                    :docstr docstr
                    :dlv t
                    :directory directory
-                   :class class)))))
+                   :class class))))))
 ;; (let ((dir (jerky/get "path/org/journal" :namespace :work)))
 ;;   (jerky/dlv/set 'org-journal
 ;;                  dir

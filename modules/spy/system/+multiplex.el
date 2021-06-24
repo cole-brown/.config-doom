@@ -15,8 +15,12 @@
 ;;------------------------------------------------------------------------------
 
 (defun spy:system/hash ()
-  "Generate a system hash from `system-name' and `system-type'.
-"
+  "Generate a system hash from `system-name' and `system-type'."
+  ;; TODO: Why does a system have a different hash at start of init compared
+  ;; to after doom/emacs is running?
+  ;; (message "system hash for system-name %S system-type %S: %S"
+  ;;          (system-name) system-type
+  ;;          (spy:hash/pretty (list (system-name) system-type)))
   (spy:hash/pretty (list (system-name) system-type)))
 ;; (spy:system/hash)
 
@@ -49,11 +53,11 @@ on the UNIQUE-ID of the system and the ROOT path.
 ;; "Where the hell am I?", obviously.
 ;; Or maybe "Who the hell am I?"...
 
-(jerky/set "system/hash"
+(jerky/set 'system 'hash
            ;; default namespace
            :value (spy:system/hash)
            :docstr "Pretty hash of /current/ system-name and system-type.")
-
+;; (jerky/get 'system 'hash)
 
 ;;------------------------------------------------------------------------------
 ;; All Systems: Initialize.
@@ -130,11 +134,43 @@ on the UNIQUE-ID of the system and the ROOT path.
              :docstr "Home desktop PC built in 2017."))
 
 
+;;---
+;; work/2013/desk::4c4925-0b54bd
+;;   via Windows 10
+;;---
+(let* ((hash "4c4925-0b54bd")
+       (id   (concat "work/2013/desk::" hash))
+       (path/root "c:/home/cole/.secret.d/")
+       (path/doom.rel "emacs/doom")
+       (path/doom.abs (spy:path/to-dir path/root path/doom.rel)))
+
+  (jerky/set 'system 'path 'secret 'root
+             :value path/root
+             :docstr "Root for .secret.d")
+  (jerky/set 'system 'path 'secret 'emacs
+             :value path/doom.abs
+             :docstr "Root for Per-Computer Set-Up of Emacs")
+
+  ;; (jerky/get :system 'secret 'identities hash))
+  ;; (jerky/get :system :path :secret id))
+
+  (jerky/set 'system 'secret 'identities hash
+             :value id
+             :docstr "2013 work desktop PC - Windows 7")
+
+  ;; Have to set path per-system since work comps have restrictions on where
+  ;; things can be, and home comps tend to have a random number of hard drives
+  ;; just wherever.
+  (jerky/set 'system 'path 'secret id
+             :value  (spy:system/path path/doom.abs id)
+             :docstr "2013 work desktop PC - Windows 7"))
+
+
 ;; Generate a new system's UID using this:
 ;; - "home", "work", other domain
 ;; - year, or YYYY-MM-DD
 ;; - "desk", "lap", "tablet", other type
 ;;
-;; (spy:system/unique-id '("home" "2017" "desk"))
+;; (spy:system/unique-id "home" "2017" "desk")
 ;;
 ;; Then add it to jerky by copy/modifying a whole `let*' block above.

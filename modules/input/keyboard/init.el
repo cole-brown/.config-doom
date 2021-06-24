@@ -70,6 +70,7 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 
 ;; NOTE: Order could matter - take care if modifying.
 (load! "error")
+(load! "debug")
 (load! "load")
 (load! "alist")
 (load! "register")
@@ -96,69 +97,6 @@ Returns non-nil if `doom-init-p' is nil."
 
   ;; I give up? If `load-file-name' is set, some file is being loaded right now.
   load-file-name)
-
-
-(defun input:keyboard/layout:apply (layout)
-  "Initialize, configure, and apply the LAYOUT.
-
-Overrides any current active layout with the new LAYOUT."
-  ;; Could do a completing read or something with the valid layout dirs as the choices.
-  (interactive "sLoad Layout: ")
-  (let ((layout/keyword (input//kl:normalize->keyword layout)))
-    ;; Updated desired first.
-    (cond ((null input//kl:layout/desired)
-           ;; Undefined
-           (message "Setting desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
-                    layout/keyword))
-
-          ((not (eq input//kl:layout/desired layout/keyword))
-           (message "Changing desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
-                    layout/keyword))
-
-          (t
-           (message "Reapplying desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
-                    layout/keyword)))
-    (setq input//kl:layout/desired layout/keyword)
-
-    ;; Check/report about active.
-    (cond ((null input//kl:layout/active)
-           (message "Setting active keyboard layout: %S -> %S"
-                    input//kl:layout/active
-                    layout/keyword))
-          ((not (eq input//kl:layout/active layout/keyword))
-           (message "Changing active keyboard layout: %S -> %S"
-                    input//kl:layout/active
-                    layout/keyword))
-          (t
-           (message "Reapplying active keyboard layout: %S -> %S"
-                    input//kl:layout/active
-                    layout/keyword)))
-
-    ;; Load active.
-    (input:keyboard/layout:find-and-load-active "init") ;; This will set active.
-
-    ;; Verify it was set before config/finalization.
-    (if (not (eq input//kl:layout/active layout/keyword))
-        ;; Fail message.
-        (message (concat
-                  "Initializing layout did not set it to the active layout?!\n"
-                  "  Input:   %S\n"
-                  "  Desired: %S\n"
-                  "  Active:  %S")
-                 layout/keyword
-                 input//kl:layout/desired
-                 input//kl:layout/active)
-
-      ;; Config and finalize the new layout.
-      (message "Configuring & binding %S..." input//kl:layout/active)
-      (input:keyboard/layout:find-and-load-active "config")
-      (input:keyboard/layout:finalize)
-      (message "Loaded layout %S." input//kl:layout/active))))
-;; (setq input//kl:layout/desired nil)
-;; (setq input//kl:layout/active nil)
 
 
 ;;------------------------------------------------------------------------------

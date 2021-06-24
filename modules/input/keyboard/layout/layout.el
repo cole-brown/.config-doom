@@ -139,6 +139,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
              (error (input//kl:error-message
                      "input:keyboard/layout:define/keywords"
                      "Expected a valid keyboard layout keyword for '%S', got: %S")
+                    type
                     keyword))
 
             ((not (symbolp func))
@@ -167,9 +168,9 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;;------------------------------
       ;; Use `input//kl:alist/update' so we overwrite a pre-existing.
       (input//kl:alist/update-quoted keyword
-                              value ;; Save the quoted value, not `func'.
-                              input//kl:definitions:keywords
-                              t))))
+                                     value ;; Save the quoted value, not `func'.
+                                     input//kl:definitions:keywords
+                                     t))))
 ;; input//kl:definitions:keywords
 ;; (setq input//kl:definitions:keywords nil)
 ;; (input:keyboard/layout:define/keywords :evil "docstring here" :layout:test-keyword #'ignore)
@@ -182,9 +183,46 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 
 (defun input//kl:layout:normalize->func (keyword-or-func)
   "Normalizes a KEYWORD-OR-FUNC to a function."
-  (or (input//kl:alist/get keyword-or-func
-                           input//kl:definitions:keywords)
-      keyword-or-func))
+  ;; "Function" can be nil for unbinding something, so get the entry to check
+  ;; for its existance instead.
+  (let ((key->func (input//kl:alist/entry keyword-or-func
+                                          input//kl:definitions:keywords)))
+    (cond
+     ;; Did the keyword exist?
+     (key->func
+      ;; Return its function/nil.
+      (cdr key->func))
+
+     ;; Is a keyword; didn't find it. Error.
+     ((keywordp keyword-or-func)
+      (error (input//kl:error-message
+              "input//kl:layout:normalize->func"
+              "No known keyword for %S.")
+             keyword-or-func))
+
+     ;; Assume it was a function already, not a keyword, and return it as-is.
+     (t
+      keyword-or-func))))
+;; (input//kl:layout:normalize->func :layout:evil:line-prev)
+;; (input//kl:layout:normalize->func :layout:common:undefined)
+;; (input//kl:layout:normalize->func :layout:DNE:should-error)
+
+
+(defun input//kl:layout:normalize->modifier (symbol)
+  "Normalizes a symbol, quoted symbol, or keyword to a modifier keyword."
+  (let ((symbol/in (doom-unquote symbol)))
+    (cond ((keywordp symbol/in)
+           symbol/in)
+          ((symbolp symbol/in)
+           (intern (concat ":" (symbol-name symbol/in))))
+          (t
+           (error (input//kl:error-message
+                   "input//kl:layout:normalize->modifier"
+                   "Unknown input type: %S. Not a keyword or symbol.")
+                  symbol)))))
+;; (input//kl:layout:normalize->modifier ':control)
+;; (input//kl:layout:normalize->modifier 'control)
+;; (input//kl:layout:normalize->modifier (quote (quote control)))
 
 
 ;;------------------------------------------------------------------------------
@@ -202,12 +240,16 @@ FUNC should be the function to search for.
 IN-PROGRESS-MAP-FORMS should be `doom--map-batch-forms'.
 
 Returns keybind string or nil."
-  (let (keybind-found)
+  (let ((debug/tags '(:derive :derive/search))
+        keybind-found)
     (while (and (not keybind-found)
                 states)
       (let* ((state (car states))
              (search/bindings (alist-get state in-progress-map-forms)))
-        ;; (message "search state: %S" state)
+        (input//kl:debug
+            "input//kl:layout:derive/search/in-progress"
+            debug/tags
+          "search state: %S" state)
         (setq states (cdr states))
         ;; Go through `search/bindings' until we run out or find something to return.
         (while (and (not keybind-found)
@@ -221,25 +263,37 @@ Returns keybind string or nil."
             ;; What is `binding', anyways?
             ;;     ;; Just the function; use it.
             (cond ((functionp (doom-unquote binding))
-                   ;; (message "search/in-progress: functionp %S == %S?: %S"
-                   ;;          binding func
-                   ;;          (eq (doom-unquote binding) (doom-unquote func)))
+                   (input//kl:debug
+                       "input//kl:layout:derive/search/in-progress"
+                       debug/tags
+                     "functionp %S == %S?: %S"
+                     binding func
+                     (eq (doom-unquote binding) (doom-unquote func)))
                    ;; If it's a match, save the key.
                    ;; Else ignore.
                    (when (eq (doom-unquote binding) (doom-unquote func))
-                     ;; (message "search/in-progress: functionp found %S -> %S" (doom-unquote func) key)
+                     (input//kl:debug
+                         "input//kl:layout:derive/search/in-progress"
+                         debug/tags
+                       "functionp found %S -> %S" (doom-unquote func) key)
                      (setq keybind-found key)))
 
                   ;; A list which includes the function.
                   ((listp binding)
-                   ;; (message "search/in-progress: listp %S: t" binding)
+                   (input//kl:debug
+                       "input//kl:layout:derive/search/in-progress"
+                       debug/tags
+                     "listp %S: t" binding)
                    ;; Find the function to return.
                    (dolist (each binding)
                      ;; If it's a function and matches, save the key.
                      ;; Else ignore.
                      (when (and (functionp (doom-unquote each))
                                 (eq (doom-unquote each) (doom-unquote func)))
-                       ;; (message "search/in-progress: listp found %S -> %S" (doom-unquote func) key)
+                       (input//kl:debug
+                           "input//kl:layout:derive/search/in-progress"
+                           debug/tags
+                         "listp found %S -> %S" (doom-unquote func) key)
                        (setq keybind-found key))))
 
                   ;; Don't know - ignore? error?
@@ -253,8 +307,8 @@ Returns keybind string or nil."
                     func
                     binding)
                    nil))))))
-        ;; Done searching - return whatever we did (or didn't) find.
-        keybind-found))
+    ;; Done searching - return whatever we did (or didn't) find.
+    keybind-found))
 ;; (let ((batch-forms '((motion
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
@@ -290,6 +344,7 @@ Uses general's `general-keybindings.
 
 Returns keybind string or nil."
   (let ((search/maps general-keybindings)
+        (debug/tags '(:derive :derive/search))
         keybind-found)
     (while (and (not keybind-found)
                 states)
@@ -304,32 +359,51 @@ Returns keybind string or nil."
                  ;; For this symbol, we only care about the keybinds of `state'.
                  ;; So just get that state from the cdr/alist.
                  (search/bindings (alist-get state (cdar search/maps)))) ;; (cdr search/maps))))
-            ;; (message "searching map %S: bindings? %S"
-            ;;          map-symbol
-            ;;          (not (null search/bindings)))
-            ;; (message "search/bindings is: %S" search/bindings)
+            (input//kl:debug
+                "input//kl:layout:derive/search/existing"
+                debug/tags
+              "searching map %S: bindings? %S"
+              map-symbol
+              (not (null search/bindings)))
+            (input//kl:debug
+                "input//kl:layout:derive/search/existing"
+                debug/tags
+              "search/bindings is: %S"
+              search/bindings)
             ;; Search state's keybinds...
             (while (and (not keybind-found)
                         search/bindings)
-              ;; (message "  checking %S binding: %S" map-symbol (car search/bindings))
+              (input//kl:debug
+                  "input//kl:layout:derive/search/existing"
+                  debug/tags
+                "  checking %S binding: %S"
+                map-symbol (car search/bindings))
               ;; Split the first `search/bindings' entry into key string/vector and function bound.
               (let* ((bound-key (nth 0 (car search/bindings)))
                      (bound-func (nth 1 (car search/bindings))))
-                ;; (message "    %S -> %S" (kbd key) func)
+                (input//kl:debug
+                    "input//kl:layout:derive/search/existing"
+                    debug/tags
+                  "    %S -> %S"
+                  (kbd key) func)
 
                 ;; Update `search/bindings' for next loop.
                 (setq search/bindings (cdr search/bindings))
 
                 ;; Check for match.
                 (when (eq (doom-unquote bound-func) (doom-unquote func))
-                  ;; (message "search/existing: found %S -> %S" (doom-unquote func) bound-key)
+                  (input//kl:debug
+                      "input//kl:layout:derive/search/existing"
+                      debug/tags
+                    "found %S -> %S"
+                    (doom-unquote func) bound-key)
                   (setq keybind-found bound-key)))))
 
           ;; Update loop variable for next iteration.
           (setq search/maps (cdr search/maps)))))
 
-        ;; Done searching - return whatever we did (or didn't) find.
-        keybind-found))
+    ;; Done searching - return whatever we did (or didn't) find.
+    keybind-found))
 ;; (input//kl:layout:derive/search/existing '(normal) #'evil-backward-char)
 
 
@@ -355,14 +429,26 @@ ARGS should be a list of:
   - Keyword or function to derive the keybind from. E.g.:
     + :layout:evil:char-prev
     + #'evil-backward-char"
-  (let (modifiers
+  (let ((debug/tags '(:derive))
+        modifiers
         keys)
+    (input//kl:debug
+        (format "input//kl:layout:derive(%s %S %S)"
+                states in-progress args)
+        debug/tags
+      "Hello.")
     ;; Work through our args to build binding.
     (dolist (arg args)
       ;; What kind of arg is it?
-      (cond ((memq arg '(control shift meta ;; Common Modifiers
-                         alt super hyper))  ;; Uncommon Modifiers
-             (push arg modifiers))
+      (cond ((memq (input//kl:layout:normalize->modifier arg)
+                   '(:control :shift :meta ;; Common Modifiers
+                     :alt :super :hyper))  ;; Uncommon Modifiers
+             (input//kl:debug
+                 "input//kl:layout:derive"
+                 debug/tags
+               "    derive found modifier: %S"
+               arg)
+             (push (input//kl:layout:normalize->modifier arg) modifiers))
 
             ;; Our keyword/function we want to derive from.
             ;; Find its keybind string.
@@ -375,15 +461,36 @@ ARGS should be a list of:
                                 ;; Else, search for an existing keybind.
                                 (input//kl:layout:derive/search/existing states func))))
                ;; Found the keybind - save it.
+               (input//kl:debug
+                   "input//kl:layout:derive"
+                   debug/tags
+                 "    derive found key: %S"
+                 arg)
                (push found keys)))
 
             ;; Fallthrough: Failed to parse arg - error.
             (t
+             (input//kl:debug
+                 "input//kl:layout:derive"
+                 debug/tags
+               "    derive found nothing - error: %S"
+               arg)
              (error
               (input//kl:error-message "input//kl:layout:derive"
                                        "Don't know how to process '%s' for deriving keybind. derivation: %S")
               arg
               args))))
+
+    (input//kl:debug
+        "input//kl:layout:derive"
+        debug/tags
+      "    derive: modifiers: %S"
+      modifiers)
+    (input//kl:debug
+        "input//kl:layout:derive"
+        debug/tags
+      "    derive: keys: %S"
+      keys)
 
     ;; Not sure what to do about trying to derive a 'control' keybind from a base of e.g. "mtt".
     ;; Do they want "C-m tt"? "C-m C-t C-t"?
@@ -407,19 +514,19 @@ ARGS should be a list of:
       (dolist (mod/symbol modifiers)
         ;; Convert 'control -> "C-", etc for other modifiers.
         ;; Don't know an actual Emacs function that does this.
-        (cond ((eq mod/symbol 'control)
+        (cond ((eq mod/symbol :control)
                (setq mod/string (concat mod/string "C-")))
-              ((eq mod/symbol 'shift)
+              ((eq mod/symbol :shift)
                ;; Shift is capital 'S'.
                (setq mod/string (concat mod/string "S-")))
-              ((eq mod/symbol 'meta)
+              ((eq mod/symbol :meta)
                (setq mod/string (concat mod/string "M-")))
-              ((eq mod/symbol 'hyper)
+              ((eq mod/symbol :hyper)
                (setq mod/string (concat mod/string "H-")))
-              ((eq mod/symbol 'super)
+              ((eq mod/symbol :super)
                ;; Super is lowercase 's'.
                (setq mod/string (concat mod/string "s-")))
-              ((eq mod/symbol 'alt)
+              ((eq mod/symbol :alt)
                (setq mod/string (concat mod/string "A-")))
               (t
                (error
@@ -431,9 +538,9 @@ ARGS should be a list of:
       ;; Check our `keys'? Zero is bad; more than one might be weird...
       (cond ((= (length keys) 0)
              (error
-                (input//kl:error-message "input//kl:layout:derive"
-                                         "No keybind found for: %S")
-                args))
+              (input//kl:error-message "input//kl:layout:derive"
+                                       "No keybind found for: %S")
+              args))
             ((> (length keys) 1)
              (error
               (input//kl:error-message "input//kl:layout:derive"
@@ -488,74 +595,121 @@ checked by this function. It will be translated to a function via the
 DESC can be nil or a string describing the keybinding.
 
 Used for side-effects; just returns non-nil (`t')."
-  ;; (message "MAP-BIND: HELLO: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
-  ;;          keybind keyword-or-func states desc)
-
-  ;;------------------------------
-  ;; Normalize States.
-  ;;------------------------------
-  (when (or (memq 'global states)
-            (null states))
-    (setq states (cons 'nil (delq 'global states))))
-
-  ;; (message "map-bind: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
-  ;;          keybind keyword-or-func states desc)
-
-  ;;------------------------------
-  ;; Keyword -> Function
-  ;;------------------------------
-  ;; Is `keyword-or-func' a keyword? Assume a function if not.
-  (let ((func (input//kl:layout:normalize->func keyword-or-func)))
-    (when (keywordp func)
-      (error
-       (input//kl:error-message "input//kl:layout:map-bind"
-                                "Unknown keybind keyword: %s -> %s")
-       keyword-or-func func))
-    ;; (message "map-bind: keyword-or-func: %S -> func: %S"
-    ;;          keyword-or-func func)
-    ;; Empty string keybind and null func are modified into an ignored keybind.
-    ;; Null func is an unbind.
-    ;; So not much to error check...
+  (let ((debug/tags '(:map :map/bind)))
+    (input//kl:debug
+        "input//kl:layout:map-bind"
+        debug/tags
+      "keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
+      keybind keyword-or-func states desc)
 
     ;;------------------------------
-    ;; Is it a `derived' keybind?
+    ;; Normalize States.
     ;;------------------------------
-    (when (and (listp keybind)
-               (eq (car keybind) :derive))
-      (setq keybind
-            ;; We've guarenteed that `states' is a list of at least `nil'.
-            (input//kl:layout:derive states
-                                     doom--map-batch-forms
-                                     (cdr keybind))))
+    (when (or (memq 'global states)
+              (null states))
+      (setq states (cons 'nil (delq 'global states))))
+    (input//kl:debug
+        "input//kl:layout:map-bind"
+        debug/tags
+      "map-bind: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
+      keybind keyword-or-func states desc)
 
     ;;------------------------------
-    ;; Process `desc' into `func'.
+    ;; Keyword -> Function
     ;;------------------------------
-    (when desc
-      (let (unquoted)
-        (cond ((and (listp func)
-                    (keywordp (car-safe (setq unquoted (doom-unquote func)))))
-               (setq func (list 'quote (plist-put unquoted :which-key desc))))
-              ((setq func (cons 'list
-                                (if (and (equal keybind "")
-                                         (null func))
-                                    `(:ignore t :which-key ,desc)
-                                  (plist-put (general--normalize-extended-def func)
-                                             :which-key desc))))))))
+    ;; Is `keyword-or-func' a keyword? Assume a function if not.
+    (let ((func (input//kl:layout:normalize->func keyword-or-func)))
+      (when (keywordp func)
+        (input//kl:debug
+            "input//kl:layout:map-bind"
+            debug/tags
+          "Um... Unknown keybind keyword: %s -> %s"
+          keyword-or-func func)
+        (error
+         (input//kl:error-message "input//kl:layout:map-bind"
+                                  "Unknown keybind keyword: %s -> %s")
+         keyword-or-func func))
+      (input//kl:debug
+          "input//kl:layout:map-bind"
+          debug/tags
+        "map-bind: keyword-or-func: %S -> func: %S"
+        keyword-or-func func)
+      ;; Empty string keybind and null func are modified into an ignored keybind.
+      ;; Null func is an unbind.
+      ;; So not much to error check...
 
-    ;;------------------------------
-    ;; Save Keybind.
-    ;;------------------------------
-    (dolist (state states)
-      (push (list keybind func)
-            (alist-get state doom--map-batch-forms))
-      ;; (message "map-bind: SAVE: %S + %S -> %S" state keybind func)
-      )
+      ;;------------------------------
+      ;; Is it a derived keybind?
+      ;;------------------------------
+      ;; (input//kl:debug
+      ;;     "input//kl:layout:map-bind"
+      ;;     debug/tags
+      ;;   "map-bind: IS IT DERIVED???: %S %S -> %S"
+      ;;   (listp keybind)
+      ;;   (if (listp keybind)
+      ;;       (car keybind)
+      ;;     "<nope>")
+      ;;   (and (listp keybind)
+      ;;        (eq (car keybind) :derive)))
+      (when (and (listp keybind)
+                 (eq (car keybind) :derive))
+        (input//kl:debug
+            "input//kl:layout:map-bind"
+            debug/tags
+          "  states: %S\n  batch-forms: %S\n derive-info: %S"
+          states doom--map-batch-forms (cdr keybind))
+        (input//kl:debug
+            "input//kl:layout:map-bind"
+            debug/tags
+          "-->map-bind derived: %S <- %S"
+          (input//kl:layout:derive states
+                                   doom--map-batch-forms
+                                   (cdr keybind))
+          keybind)
+        (let ((debug-orig keybind))
+          (setq keybind
+                ;; We've guarenteed that `states' is a list of at least `nil'.
+                (input//kl:layout:derive states
+                                         doom--map-batch-forms
+                                         (cdr keybind)))
+          (input//kl:debug
+              "input//kl:layout:map-bind"
+              debug/tags
+            "input//kl:layout:map-bind: derived %S from: %S"
+            keybind
+            debug-orig)))
 
-    ;;------------------------------
-    ;; Always return non-nil as expected by caller.
-    ;;------------------------------
-    t))
+      ;;------------------------------
+      ;; Process `desc' into `func'.
+      ;;------------------------------
+      (when desc
+        (let (unquoted)
+          (cond ((and (listp func)
+                      (keywordp (car-safe (setq unquoted (doom-unquote func)))))
+                 (setq func (list 'quote (plist-put unquoted :which-key desc))))
+                ((setq func (cons 'list
+                                  (if (and (equal keybind "")
+                                           (null func))
+                                      `(:ignore t :which-key ,desc)
+                                    (plist-put (general--normalize-extended-def func)
+                                               :which-key desc))))))))
+
+      ;;------------------------------
+      ;; Save Keybind.
+      ;;------------------------------
+      (dolist (state states)
+        (push (list keybind func)
+              (alist-get state doom--map-batch-forms))
+        (input//kl:debug
+            "input//kl:layout:map-bind"
+            debug/tags
+          "map-bind: SAVE: %S + %S -> %S"
+          state keybind func))
+
+      ;;------------------------------
+      ;; Always return non-nil as expected by caller.
+      ;;------------------------------
+      t)))
 ;; input//kl:definitions:keywords
 ;; (setq doom--map-batch-forms nil)
 ;; (input//kl:layout:map-bind "c" :layout:evil:line-prev nil "testing...")
@@ -581,45 +735,63 @@ Used for side-effects; just returns non-nil (`t')."
 
 Create sexprs required for `map!' to be able to map keybinds based on its
 input keywords and such."
-  ;; (message "map-processs: Hello")
-  (let ((doom--map-fn doom--map-fn)
+  (let ((debug/tags '(:map :map/process))
+        (doom--map-fn doom--map-fn)
         doom--map-state
         doom--map-forms
         desc)
     (while rest
       (let ((key (pop rest)))
-        ;; (message "MAP-PROCESS _KEY_ LOOP: %S" key)
+        (input//kl:debug
+            "input//kl:layout:map-process"
+            debug/tags
+          "MAP-PROCESS _KEY_ LOOP: %S"
+          key)
         ;;------------------------------
         ;; Nested Mapping?
         ;;------------------------------
         (cond ((listp key)
-               ;; (message "-cond->list: list: send to input//kl:layout:map-nested: %S" key)
+               (input//kl:debug
+                   "input//kl:layout:map-process"
+                   debug/tags
+                 "-cond->list: list: send to input//kl:layout:map-nested: %S" key)
                (input//kl:layout:map-nested nil key))
 
               ;;------------------------------
               ;; `map!' keyword to parse.
               ;;------------------------------
               ((keywordp key)
-               ;; (message "-cond->keyword: keyword->pcase: %S" key)
+               (input//kl:debug
+                   "input//kl:layout:map-process"
+                   debug/tags
+                 "-cond->keyword: keyword->pcase: %S" key)
                (pcase key
                  ;;---
                  ;; Leaders
                  ;;---
                  ;; Save off info for later.
                  (:leader
-                  ;; (message "---pcase->keyword: `%S': doom--map-fn -> `doom--define-leader-key'" key)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': doom--map-fn -> `doom--define-leader-key'" key)
                   (doom--map-commit)
                   (setq doom--map-fn 'doom--define-leader-key))
                  (:localleader
-                  ;; (message "---pcase->keyword: `%S': doom--map-fn -> `define-localleader-key!'" key)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': doom--map-fn -> `define-localleader-key!'" key)
                   (doom--map-commit)
                   (setq doom--map-fn 'define-localleader-key!))
                  ;;---
                  ;; `:after'  - map as nested under an `after!' macro.
                  ;;---
                  (:after
-                  ;; (message "---pcase->keyword: `%S': Call `doom--map-nested'" key)
-                  ;; TODO: OUR NESTED FUNC!!!
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': Call `doom--map-nested'" key)
                   (input//kl:layout:map-nested (list 'after! (pop rest)) rest)
                   (setq rest nil))
                  ;;---
@@ -627,20 +799,29 @@ input keywords and such."
                  ;;---
                  ;; Save for next item that wants a description.
                  (:desc
-                  ;; (message "---pcase->keyword: `%S': setq desc: %S" key (car rest))
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': setq desc: %S" key (car rest))
                   (setq desc (pop rest)))
                  ;;---
                  ;; Keymaps
                  ;;---
                  (:map
-                  ;; (message "---pcase->keyword: `%S': doom--map-set: %S" rest)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': doom--map-set: %S" rest)
                   ;; TODO: do I need to remake `doom--map-set'?
                   (doom--map-set :keymaps `(quote ,(doom-enlist (pop rest)))))
                  ;;---
                  ;; Major Mode
                  ;;---
                  (:mode
-                  ;; (message "---pcase->keyword: `%S': Push mode stuff into rest." key)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': Push mode stuff into rest." key)
                   (push (cl-loop for m in (doom-enlist (pop rest))
                                  collect (intern (concat (symbol-name m) "-map")))
                         rest)
@@ -649,14 +830,20 @@ input keywords and such."
                  ;; Conditions
                  ;;---
                  ((or :when :unless)
-                  ;; (message "---pcase->keyword: `%S': -> `doom--map-nested'" key)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': -> `doom--map-nested'" key)
                   (doom--map-nested (list (intern (doom-keyword-name key)) (pop rest)) rest)
                   (setq rest nil))
                  ;;---
                  ;; Prefix/Prefix-Map
                  ;;---
                  (:prefix-map
-                  ;; (message "---pcase->keyword: `%S': create `doom-leader-%s-map'" key desc)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': create `doom-leader-%s-map'" key desc)
                   (cl-destructuring-bind (prefix . desc)
                       (doom-enlist (pop rest))
                     (let ((keymap (intern (format "doom-leader-%s-map" desc))))
@@ -667,23 +854,38 @@ input keywords and such."
                       (push `(defvar ,keymap (make-sparse-keymap))
                             doom--map-forms))))
                  (:prefix
-                  ;; (message "---pcase->keyword: `%S': prefix stuff" key)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': prefix stuff" key)
                   (cl-destructuring-bind (prefix . desc)
                       (doom-enlist (pop rest))
-                    ;; (message "---pcase->:prefix: (%S . %S): rest=%S" prefix desc rest)
+                    (input//kl:debug
+                        "input//kl:layout:map-process"
+                        debug/tags
+                      "---pcase->:prefix: (%S . %S): rest=%S" prefix desc rest)
                     (doom--map-set (if doom--map-fn :infix :prefix)
                                    prefix)
                     (when (stringp desc)
-                      ;; (message "---pcase->:prefix: string desc %S" desc)
+                      (input//kl:debug
+                          "input//kl:layout:map-process"
+                          debug/tags
+                        "---pcase->:prefix: string desc %S" desc)
                       (setq rest (append (list :desc desc "" nil) rest))
-                      ;; (message "---pcase->:prefix: rest w/ desc -> %S" rest)
+                      (input//kl:debug
+                          "input//kl:layout:map-process"
+                          debug/tags
+                        "---pcase->:prefix: rest w/ desc -> %S" rest)
                       )))
                  ;;---
                  ;; Text Object Inner/Outer Keybind Pairing.
                  ;;---
                  (:textobj
-                  ;; (message "---pcase->keyword: `%S': text-objects-map stuff: key: %S, inner: %S, outer: %S"
-                  ;;          key key inner outer)
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->keyword: `%S': text-objects-map stuff: key: %S, inner: %S, outer: %S"
+                    key key inner outer)
                   (let* ((key (pop rest))
                          (inner (pop rest))
                          (outer (pop rest)))
@@ -694,11 +896,14 @@ input keywords and such."
                  ;; Fallthrough: Evil States
                  ;;---
                  (_
-                  ;; (message "---pcase->_/fallthrough: `%S': evil state? %S + %S -> %S"
-                  ;;          key
-                  ;;          (doom--map-keyword-to-states key)
-                  ;;          (nth 0 rest)
-                  ;;          (nth 1 rest))
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "---pcase->_/fallthrough: `%S': evil state? %S + %S -> %S"
+                    key
+                    (doom--map-keyword-to-states key)
+                    (nth 0 rest)
+                    (nth 1 rest))
                   (condition-case _
                       ;; Evil states are followed by a `kbd'-type string, then
                       ;; either a function or a layout-keyword to bind to the
@@ -707,7 +912,10 @@ input keywords and such."
                       ;; NOTE: Keep `progn'! I keep adding a debug print or something here and ruining the flow into
                       ;; `input//kl:layout:map-bind'...
                       (progn
-                        ;; (message "-----map-bind->:state: %S: %S -> %S" key (nth 0 rest) (nth 1 rest))
+                        (input//kl:debug
+                            "input//kl:layout:map-process"
+                            debug/tags
+                          "-----map-bind->:state: %S: %S -> %S" key (nth 0 rest) (nth 1 rest))
                         (input//kl:layout:map-bind (pop rest)
                                                    (pop rest)
                                                    (doom--map-keyword-to-states key)
@@ -724,7 +932,10 @@ input keywords and such."
               ;; Keybind string to map?
               ;;------------------------------
               (t
-               ;; (message "-cond->t/default: 'string'?: %S -> %S" key (car rest))
+               (input//kl:debug
+                   "input//kl:layout:map-process"
+                   debug/tags
+                 "-cond->t/default: 'string'?: %S -> %S" key (car rest))
                ;; Takes over for `doom--map-def' - handles normal string->func
                ;; and new layout-keyword->func functionality.
                (input//kl:layout:map-bind key

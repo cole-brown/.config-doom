@@ -26,12 +26,13 @@
 evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 
   ;; Common first, then +Good+ Emacs vs Evil.
-  (input:keyboard/layout:activate :common)
-
-  ;; Evil or Emacs? Only load one...
-  (if (featurep! :editor evil)
-      (input:keyboard/layout:activate :evil)
-    (input:keyboard/layout:activate :emacs)))
+  (let ((types '(:common)))
+    ;; Evil or Emacs? Only load one...
+    (if (featurep! :editor evil)
+        (push :evil types)
+      (push :emacs types))
+    ;; Activate the keybinds for types.
+    (input:keyboard/layout:activate :full types)))
 
 
 ;;------------------------------------------------------------------------------

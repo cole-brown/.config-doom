@@ -13,7 +13,18 @@
 ;; Create Keywords
 ;;------------------------------------------------------------------------------
 
-;; TODO: common keyword/functions
+
+(input:keyboard/layout:define/keywords :common
+  "┌─────────────────────────────────────────────────────────────────────────┐
+   │ Commands                                                                │
+   └─────────────────────────────────────────────────────────────────────────┘"
+
+  ;; ┌──────────────────────────────┐
+  ;; ├ No Keybind                   ┤
+  ;; └──────────────────────────────┘
+  :layout:common:undefined    nil)
+
+  ;; TODO: common keyword/functions
 ;; (input:keyboard/layout:define/keywords :common
 ;;   "┌─────────────────────────────────────────────────────────────────────────┐
 ;;    │ GROUP-TITLE                                                             │

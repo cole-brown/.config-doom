@@ -22,9 +22,9 @@
   "Layout dirs must start with a '+'.")
 
 
-;;------------------------------------------------------------------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------
 ;; Path Functions
-;;------------------------------------------------------------------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------
 
 (defun input//kl:path/append (parent next)
   "Append NEXT element as-is to PARENT, adding dir separator between them if
@@ -179,6 +179,36 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
           (input:keyboard/layout:load-active name file))))))
 ;; (input:keyboard/layout:find-and-load-active "config")
 ;; (input:keyboard/layout:find-and-load-active "config")
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+
+(defun input:keyboard/layout:list-layouts ()
+  "Get a list of all layout directories as layout keywords.
+
+E.g. if 'input/keyboard/layout/' dir has subdirs '+foo', '+bar', and 'baz':
+  -> '(:foo :bar)"
+  (let* ((directory-path (input//kl:path "layout"))
+         ;; Layout dirs must have '+' in front of them and must be our direct children.
+         (files-and-attrs (directory-files-and-attributes directory-path
+                                                          nil
+                                                          (rx string-start
+                                                              "+"
+                                                              (one-or-more print)
+                                                              string-end)))
+         layouts)
+    ;; Iterate through what was found and figure out if its a directory.
+    ;; Return `layouts' as the function's  return value.
+    (dolist (file-and-attr files-and-attrs layouts)
+      (let ((name (car file-and-attr))
+            (dir? (file-attribute-type (cdr file-and-attr))))
+        ;; `file-attribute-type' returns t for a directory, so skip any
+        ;; non-directories like so.
+        (when dir?
+          ;; Convert to a layout keyword and add to the list.
+          (push (input//kl:normalize->keyword name) layouts))))))
 
 
 ;;------------------------------------------------------------------------------

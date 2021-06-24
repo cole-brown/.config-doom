@@ -24,20 +24,20 @@
   ;; └──────────────────────────────┘
   :layout:evil:line-prev                     #'evil-previous-line
   :layout:evil:line-next                     #'evil-next-line
-  :layout:evil:char-next                     #'evil-backward-char
-  :layout:evil:char-prev                     #'evil-forward-char
+  :layout:evil:char-prev                     #'evil-backward-char
+  :layout:evil:char-next                     #'evil-forward-char
 
   ;; ┌──────────────────────────────┐
   ;; ├ Word                         ┤
   ;; └──────────────────────────────┘
-  :layout:evil:word-next-begin               #'evil-forward-word-begin
-  :layout:evil:word-next-end                 #'evil-forward-word-end
   :layout:evil:word-prev-begin               #'evil-backward-word-begin
   :layout:evil:word-prev-end                 #'evil-backward-word-end ;; Not mapped in default/qwerty.
-  :layout:evil:word-next-begin-bigword       #'evil-forward-WORD-begin
-  :layout:evil:word-next-end-bigword         #'evil-forward-WORD-end
+  :layout:evil:word-next-begin               #'evil-forward-word-begin
+  :layout:evil:word-next-end                 #'evil-forward-word-end
   :layout:evil:word-prev-begin-bigword       #'evil-backward-WORD-begin
   :layout:evil:word-prev-end-bigword         #'evil-backward-WORD-end ;; Not mapped in default/qwerty.
+  :layout:evil:word-next-begin-bigword       #'evil-forward-WORD-begin
+  :layout:evil:word-next-end-bigword         #'evil-forward-WORD-end
 
   ;; ┌──────────────────────────────┐
   ;; ├ Sentences                    ┤
@@ -56,7 +56,13 @@
   ;; └──────────────────────────────┘
   :layout:evil:item-jump                     #'evil-jump-item
   :layout:evil:digit-arg-0/line-start        #'evil-digit-argument-or-evil-beginning-of-line
+
+  :layout:evil:line-begin                    #'evil-beginning-of-line
   :layout:evil:line-end                      #'evil-end-of-line
+  :layout:evil:line-begin-visual             #'evil-beginning-of-visual-line
+  :layout:evil:line-end-visual               #'evil-end-of-visual-line
+  :layout:evil:line-end/line-end-visual      #'evil-end-of-line-or-visual-line
+
   :layout:evil:line-prev-first-non-blank     #'evil-previous-line-first-non-blank
   :layout:evil:line-current-first-non-blank  #'evil-first-non-blank
   :layout:evil:line-next-1-first-non-blank   #'evil-next-line-1-first-non-blank
@@ -83,8 +89,6 @@
   :layout:evil:scroll-line-down              #'evil-scroll-line-down
   :layout:evil:scroll-column-left            #'evil-scroll-column-left
   :layout:evil:scroll-column-right           #'evil-scroll-column-right
-  :layout:evil:scroll-line-to-top            #'evil-scroll-line-to-top
-  :layout:evil:scroll-line-to-bottom         #'evil-scroll-line-to-bottom
   :layout:evil:scroll-count-reset            #'evil-scroll-count-reset  ;; Unused in qwerty.
 
   ;; ┌──────────────────────────────┐
@@ -233,11 +237,6 @@
   ;; ├ Doom!                        ┤
   ;; └──────────────────────────────┘
   :layout:evil:docs-lookup                   #'+lookup/documentation
-
-  ;; ┌──────────────────────────────┐
-  ;; ├ No Keybind                   ┤
-  ;; └──────────────────────────────┘
-  :layout:evil:undefined                     nil
   )
 
 ;; TODO: HERE YOU ARE- MH, YES.

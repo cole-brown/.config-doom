@@ -20,6 +20,13 @@
 ;; Functions for both evil and emacs.
 (load! "layout")
 
+
+;;------------------------------------------------------------------------------
+;; Layout Keyword -> Functions
+;;------------------------------------------------------------------------------
+
+(load! "common")
+
 ;; Include either evil or emacs keybinds, depending on if evil-mode is being
 ;; used.
 (if (featurep! :editor evil)

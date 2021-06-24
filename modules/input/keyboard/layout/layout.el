@@ -454,12 +454,12 @@ ARGS should be a list of:
             ;; Find its keybind string.
             ((or (functionp arg)
                  (keywordp arg))
-             (when-let ((func (input//kl:layout:normalize->func arg))
-                        (found (or
-                                ;; Search the in-progress keybinds for a match.
-                                (input//kl:layout:derive/search/in-progress states func in-progress)
-                                ;; Else, search for an existing keybind.
-                                (input//kl:layout:derive/search/existing states func))))
+             (when-let* ((func (input//kl:layout:normalize->func arg))
+                         (found (or
+                                 ;; Search the in-progress keybinds for a match.
+                                 (input//kl:layout:derive/search/in-progress states func in-progress)
+                                 ;; Else, search for an existing keybind.
+                                 (input//kl:layout:derive/search/existing states func))))
                ;; Found the keybind - save it.
                (input//kl:debug
                    "input//kl:layout:derive"
@@ -904,26 +904,25 @@ input keywords and such."
                     (doom--map-keyword-to-states key)
                     (nth 0 rest)
                     (nth 1 rest))
-                  (condition-case _
-                      ;; Evil states are followed by a `kbd'-type string, then
-                      ;; either a function or a layout-keyword to bind to the
-                      ;; keyword/string.
-                      ;;
-                      ;; NOTE: Keep `progn'! I keep adding a debug print or something here and ruining the flow into
-                      ;; `input//kl:layout:map-bind'...
-                      (progn
-                        (input//kl:debug
-                            "input//kl:layout:map-process"
-                            debug/tags
-                          "-----map-bind->:state: %S: %S -> %S" key (nth 0 rest) (nth 1 rest))
-                        (input//kl:layout:map-bind (pop rest)
-                                                   (pop rest)
-                                                   (doom--map-keyword-to-states key)
-                                                   desc))
-                    (error
-                     (input//kl:error-message "input//kl:layout:map-process"
-                                              "Not a valid `map!' property: %s")
-                     key))
+                  ;; `doom--map-process' did a condition-case around this equivalent and then raised a different error message if an error
+                  ;; was caught. But I want `input//kl:layout:map-bind' to do the erroring - it knows more than we do about what went wrong.
+                  ;;
+                  ;; Evil states are followed by a `kbd'-type string, then
+                  ;; either a function or a layout-keyword to bind to the
+                  ;; keyword/string.
+                  ;;
+                  ;; NOTE: Keep `progn'! I keep adding a debug print or something here and ruining the flow into
+                  ;; `input//kl:layout:map-bind'...
+                  (input//kl:debug
+                      "input//kl:layout:map-process"
+                      debug/tags
+                    "-----map-bind->:state: %S=%S, %S -> %S"
+                    key (doom--map-keyword-to-states key)
+                    (nth 0 rest) (nth 1 rest))
+                  (input//kl:layout:map-bind (pop rest)
+                                             (pop rest)
+                                             (doom--map-keyword-to-states key)
+                                             desc)
 
                   ;; Reset `desc' since we used it.
                   (setq desc nil))))

@@ -220,6 +220,7 @@
     ;; :m  "0"    :layout:evil:digit-arg-0/line-start
     :m (:derive 'control :layout:evil:char-prev) :layout:evil:line-begin
     :m (:derive 'control :layout:evil:char-next) :layout:evil:line-end
+    :m (:derive 'hyper 'super :layout:evil:char-next) :layout:DNE:not-a-thing
     ;; :m  "-"    :layout:evil:line-prev-first-non-blank
     ;; :m  "^"    :layout:evil:line-current-first-non-blank
     ;; :m  "_"    :layout:evil:line-next-1-first-non-blank

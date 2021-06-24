@@ -103,7 +103,7 @@ The extension '.el' is used to check for file existance."
                                load-name)))
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-    (when (input//kl:file/exists? (concat "d:/home/spydez/.doom.d/modules/input/keyboard/layout/+spydez/init" ".el"))
+   (when (input//kl:file/exists? (concat path ".el"))
       (load! path))
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))

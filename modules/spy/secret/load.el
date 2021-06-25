@@ -7,6 +7,7 @@
 
 (imp:require :jerky)
 (imp:require :modules 'spy 'file 'path)
+(imp:require :modules 'spy 'system)
 
 (require 'mis0/message)
 
@@ -27,9 +28,9 @@ It must have these keys in jerky:
 And it must have FILE in <dir>.
 "
   ;; Load our specific secrets if we have the system set up for it.
-  (if-let* ((hash (jerky/get 'system 'hash))
-            (id   (jerky/get 'system 'secret 'identities hash))
-            (dir  (jerky/get 'system 'path 'secret key))
+  (if-let* ((hash (spy:system/hash))
+            (id   (spy:system/get hash 'id))
+            (dir  (spy:system/get hash 'path 'secret 'system))
             (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
             (name (concat path ".el")))
       (progn
@@ -94,13 +95,13 @@ And it must have FILE in <dir>.
 
 (defun sss:secret/load.path (&rest path)
   "Attempts to load file rooted at jerky key:
-  - 'system 'path 'secret 'emacs
+  - 'system <hash> 'path 'secret 'emacs
 
 Appends PATH (do not include '.el[c]' in the last, filename, component).
 "
-  (if-let* ((hash (jerky/get 'system 'hash))
-            (id   (jerky/get 'system 'secret 'identities hash))
-            (root (jerky/get 'system 'path 'secret 'emacs))
+  (if-let* ((hash (spy:system/hash))
+            (id   (spy:system/get hash 'id))
+            (root (spy:system/get (spy:system/hash) 'path 'secret 'emacs))
             (filepath (apply #'spy:path/to-file root path)) ; No ".el"; want compiled too.
             (name (concat filepath ".el")))
 

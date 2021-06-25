@@ -28,7 +28,7 @@
 ;; OLD: IJKL position keys (WASD left-hand, index on home key)
 ;;------------------------------
 ;; "commented out" by switching from `set' to `temp'.
-(input:keyboard/layout:set :spydez :evil
+(input:keyboard/layout:bind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗

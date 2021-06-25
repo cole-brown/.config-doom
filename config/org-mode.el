@@ -293,6 +293,24 @@
 ;; Org-Journal
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Domain Switcher Macro
+;;------------------------------
+(defmacro sss:org.journal/namespaced (namespace &rest body)
+  "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
+  `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
+                                              :namespace namespace))
+         (org-journal-dir ,(jerky/get 'path 'org 'journal
+                                      :namespace namespace)))
+     ,@body
+     ))
+;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
+;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+
+
+;;------------------------------
+;; Org-Journal Set-Up
+;;------------------------------
 (use-package! org-journal
   :after org
 
@@ -322,19 +340,6 @@
                             ".logbook.org")
              :docstr "`org-journal-file-format' for :work")
 
-  ;;---
-  ;; Domain Switcher
-  ;;---
-  (defmacro sss:org.journal/namespaced (namespace &rest body)
-    "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
-    `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
-                                                :namespace namespace))
-           (org-journal-dir ,(jerky/get 'path 'org 'journal
-                                        :namespace namespace)))
-       ,@body
-       ))
-  ;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-  ;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
 
 
   ;; ;;--------------------

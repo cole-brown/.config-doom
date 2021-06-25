@@ -104,7 +104,7 @@
 ;;------------------------------
 ;; NEW: ESDF position keys (shifted-WASD left-hand, index on home key)
 ;;------------------------------
-(input:keyboard/layout:temp :bind :pp-sexpr
+(input:keyboard/layout:temp :bind :eval ; :pp-sexpr
                             :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
@@ -151,16 +151,16 @@
     ;; "Small" words: Shift
     ;; "Big"   words: Meta
     ;; TODO: swap modifier if using "Big" more than "Small".
-    ;; TODO: TODO: Use derive?
-    :m  "A"    :layout:evil:word-prev-begin
-    :m  "O"    :layout:evil:word-prev-end
-    :m  "U"    :layout:evil:word-next-begin
-    :m  "I"    :layout:evil:word-next-end
+    ;; TODO: TODO: Use derive? But nothing to derive "A"/"I" from.
+    :m  "A"                                       :layout:evil:word-prev-begin
+    :m  (:derive 'shift :layout:evil:char-prev)   :layout:evil:word-prev-end
+    :m  (:derive 'shift :layout:evil:char-next)   :layout:evil:word-next-begin
+    :m  "I"                                       :layout:evil:word-next-end
     ;; AKA :layout:evil:word-*-* with optional arg BIGWORD set to 't'
-    :m  "M-a"  :layout:evil:word-prev-begin-bigword
-    :m  "M-o"  :layout:evil:word-prev-end-bigword
-    :m  "M-u"  :layout:evil:word-next-begin-bigword
-    :m  "M-i"  :layout:evil:word-next-end-bigword
+    :m  (:derive 'meta 'unshift :layout:evil:word-prev-begin)  :layout:evil:word-prev-begin-bigword
+    :m  (:derive 'meta 'unshift :layout:evil:word-prev-end)    :layout:evil:word-prev-end-bigword
+    :m  (:derive 'meta 'unshift :layout:evil:word-next-begin)  :layout:evil:word-next-begin-bigword
+    :m  (:derive 'meta 'unshift :layout:evil:word-next-end)    :layout:evil:word-next-end-bigword
 
     ;; ──┬────────────────
     ;;   │ Sentences
@@ -196,8 +196,8 @@
     ;; :m (:derive 'control :layout:evil:char-next)        :layout:evil:scroll-right
 
     ;; Full page scrolling.
-    :m (:derive 'control 'alt :layout:evil:line-prev)   :layout:evil:scroll-page-up
-    :m (:derive 'control 'alt :layout:evil:line-next)   :layout:evil:scroll-page-down
+    :m (:derive 'control 'meta :layout:evil:line-prev)   :layout:evil:scroll-page-up
+    :m (:derive 'control 'meta :layout:evil:line-next)   :layout:evil:scroll-page-down
 
     ;; ;; Line/column scrolling.
     ;; :m (:derive 'control 'shift :layout:evil:line-prev) :layout:evil:scroll-line-up

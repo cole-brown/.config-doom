@@ -223,6 +223,8 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 ;; (input//kl:layout:normalize->modifier ':control)
 ;; (input//kl:layout:normalize->modifier 'control)
 ;; (input//kl:layout:normalize->modifier (quote (quote control)))
+;; (input//kl:layout:normalize->modifier 'unshift)
+;; (input//kl:layout:normalize->modifier 'jeff)
 
 
 ;;------------------------------------------------------------------------------
@@ -420,15 +422,21 @@ preferring `existing' over currently bound keys.
 
 ARGS should be a list of:
   - Modifier key symbols:
-    + `control'
-    + `shift'
-    + `meta'
-    + `alt'
-    + `super'
-    + `hyper'
+    + `control'/`:control'
+    + `shift'/`:shift'
+    + `unshift'/`:unshift'
+    + `meta'/`:meta'
+    + `alt'/`:alt'
+    + `super'/`:super'
+    + `hyper'/`:hyper'
   - Keyword or function to derive the keybind from. E.g.:
     + :layout:evil:char-prev
-    + #'evil-backward-char"
+    + #'evil-backward-char
+
+`input:keyboard/layout:map!' Usage Examples:
+    :nvm  \"o\"                                                 :layout:evil:char-prev
+    :m    (:derive 'shift :layout:evil:char-prev)             :layout:evil:word-prev-end
+    :m    (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword"
   (let ((debug/tags '(:derive))
         modifiers
         keys)
@@ -442,7 +450,8 @@ ARGS should be a list of:
       ;; What kind of arg is it?
       (cond ((memq (input//kl:layout:normalize->modifier arg)
                    '(:control :shift :meta ;; Common Modifiers
-                     :alt :super :hyper))  ;; Uncommon Modifiers
+                     :alt :super :hyper    ;; Uncommon Modifiers
+                     :unshift))            ;; Cheating a bit...
              (input//kl:debug
                  "input//kl:layout:derive"
                  debug/tags
@@ -452,7 +461,7 @@ ARGS should be a list of:
 
             ;; Our keyword/function we want to derive from.
             ;; Find its keybind string.
-            ((or (functionp arg)
+            ((or (functionp (doom-unquote arg))
                  (keywordp arg))
              (when-let* ((func (input//kl:layout:normalize->func arg))
                          (found (or
@@ -477,8 +486,8 @@ ARGS should be a list of:
                arg)
              (error
               (input//kl:error-message "input//kl:layout:derive"
-                                       "Don't know how to process '%s' for deriving keybind. derivation: %S")
-              arg
+                                       "Don't know how to process '%S' (type: %S) for deriving keybind. derivation: %S")
+              arg (type-of arg)
               args))))
 
     (input//kl:debug
@@ -509,7 +518,8 @@ ARGS should be a list of:
        keys))
 
     ;; Join together the modifiers and keys to create the derived keybind.
-    (let (mod/string)
+    (let (mod/string
+          (key-translation-fn #'identity))
       ;; Process modifiers.
       (dolist (mod/symbol modifiers)
         ;; Convert 'control -> "C-", etc for other modifiers.
@@ -519,6 +529,9 @@ ARGS should be a list of:
               ((eq mod/symbol :shift)
                ;; Shift is capital 'S'.
                (setq mod/string (concat mod/string "S-")))
+              ((eq mod/symbol :unshift)
+               ;; Unshift is for downcasing a capital letter 'S'->'s'.
+               (setq key-translation-fn #'downcase))
               ((eq mod/symbol :meta)
                (setq mod/string (concat mod/string "M-")))
               ((eq mod/symbol :hyper)
@@ -550,27 +563,30 @@ ARGS should be a list of:
               args))
             ;; Only one result in keys. Create and return resultant derived keybind string.
             (t
-             (concat mod/string (key-description (nth 0 keys))))))))
+             (concat mod/string (key-description
+                                     (funcall key-translation-fn (nth 0 keys)))))))))
 ;; (let ((batch-forms '((motion
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
 ;;                       ("t"
 ;;                        (list :def #'evil-next-line :which-key "hello"))
-;;                       ("c" #'evil-previous-line))
+;;                       ("C" #'evil-previous-line))
 ;;                      (visual
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
 ;;                       ("t"
 ;;                        (list :def #'evil-next-line :which-key "hello"))
-;;                       ("c" #'evil-previous-line))
+;;                       ("C" #'evil-previous-line))
 ;;                      (normal
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
 ;;                       ("t"
 ;;                        (list :def #'evil-next-line :which-key "hello"))
-;;                       ("c" #'evil-previous-line)))))
+;;                       ("C" #'evil-previous-line)))))
 ;;   ;; Should get "C-h" because char-prev is "h".
-;;   (input//kl:layout:derive '(motion) batch-forms '(control :layout:evil:char-prev)))
+;;   (input//kl:layout:derive '(motion) batch-forms '(control :layout:evil:char-prev))
+;;   ;; Should get "c" from unshifting "C".
+;;   (input//kl:layout:derive '(motion) batch-forms '(unshift #'evil-previous-line)))
 
 
 ;;------------------------------------------------------------------------------

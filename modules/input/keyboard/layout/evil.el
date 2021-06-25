@@ -84,7 +84,7 @@
   :layout:evil:scroll-line-to-center         #'evil-scroll-line-to-center
   :layout:evil:scroll-line-to-bottom         #'evil-scroll-line-to-bottom
   :layout:evil:scroll-page-up                #'evil-scroll-page-up
-  :layout:evil:scroll-page-down              #'evil-scroll-page-up
+  :layout:evil:scroll-page-down              #'evil-scroll-page-down
   :layout:evil:scroll-line-up                #'evil-scroll-line-up
   :layout:evil:scroll-line-down              #'evil-scroll-line-down
   :layout:evil:scroll-column-left            #'evil-scroll-column-left

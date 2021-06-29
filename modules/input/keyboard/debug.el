@@ -69,6 +69,16 @@ Any keyword can be used regardless of this list - these will be provided to
 to toggle.")
 
 
+(defconst input//kl:debug/fills
+  '("  "
+    "- ")
+  "List of characters to use for alternating fill/padding strings.")
+
+
+(defvar input//kl:debug/fills/index 0
+  "Next fill/padding to use from `input//kl:debug/fills'.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Commands: Debugging Status
 ;;------------------------------------------------------------------------------
@@ -137,6 +147,55 @@ to toggle.")
 
 
 ;;------------------------------------------------------------------------------
+;; String Functions (message, fills)
+;;------------------------------------------------------------------------------
+
+(defun input//kl:debug:fill/clear ()
+  "Setup fills for debug messages."
+  (setq input//kl:debug/fills/index 0))
+
+
+(defun input//kl:debug:fill (len)
+  "CREATE a string of length LEN using next fill string as determined by
+`input//kl:debug/fills' and `input//kl:debug/fills/index'."
+  ;; Ensure string is proper length.
+  (truncate-string-to-width
+   (let* ((fill-str (elt input//kl:debug/fills input//kl:debug/fills/index))
+          (fill-len (length fill-str))
+          (times (1+ (/ len fill-len))) ; +1 for int math divide flooring odds.
+          fill-list)
+     ;; Create the filling from our "whatever width you want" strings by making a long-enough list of the fills.
+     (while (> times 0)
+         (setq fill-list (cons fill-str fill-list))
+         ;; Loop conditional.
+         (setq times (1- times)))
+
+     ;; Update index for next time.
+     (setq input//kl:debug/fills/index (% (1+ input//kl:debug/fills/index)
+                                          (length input//kl:debug/fills)))
+     ;; Have long-enough list - convert to a string.
+     (apply #'concat fill-list))
+   len))
+;; (input//kl:debug:fill 41)
+;; (input//kl:debug:fill 42)
+;; (length (input//kl:debug:fill 41))
+;; (length (input//kl:debug:fill 42))
+
+
+(defun input//kl:debug:message (func msg args-list)
+  "Returns a sexpr for creating a debug `message'.
+
+FUNC should be the calling function's name (string).
+
+MSG should be the `message' formatting string.
+
+ARGS-LIST should be the `message' arguments."
+  `(message
+    (concat ,func ": " ,msg)
+    ,@args-list))
+
+
+;;------------------------------------------------------------------------------
 ;; Debugging Functions
 ;;------------------------------------------------------------------------------
 
@@ -160,19 +219,6 @@ to toggle.")
   "Returns non-nil if `input//kl:debugging' is active and tags match enabled tags."
   (and input//kl:debugging
        (input//kl:debug:tagged tags)))
-
-
-(defun input//kl:debug:message (func msg args-list)
-  "Returns a sexpr for creating a debug `message'.
-
-FUNC should be the calling function's name (string).
-
-MSG should be the `message' formatting string.
-
-ARGS-LIST should be the `message' arguments."
-  `(message
-    (concat ,func ": " ,msg)
-    ,@args-list))
 
 
 (defmacro input//kl:debug (func tags msg &rest args)

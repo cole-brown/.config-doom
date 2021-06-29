@@ -167,6 +167,17 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;; Add this keyword entry to alist.
       ;;------------------------------
       ;; Use `input//kl:alist/update' so we overwrite a pre-existing.
+      (when input//kl:debugging
+        (let* ((kw-str (format "%S" keyword))
+               (pad-str (input//kl:debug:fill (- 45    ; Enlarge as needed.
+                                                 (length kw-str)
+                                                 2)))) ; Preexisting pad spaces in msg.
+          (input//kl:debug "input:keyboard/layout:define/keywords"
+              '(:layout :define)
+            "%s %s -> %-S"
+            kw-str
+            pad-str
+            value)))
       (input//kl:alist/update-quoted keyword
                                      value ;; Save the quoted value, not `func'.
                                      input//kl:definitions:keywords
@@ -519,7 +530,7 @@ ARGS should be a list of:
 
     ;; Join together the modifiers and keys to create the derived keybind.
     (let (mod/string
-          (key-translation-fn #'identity))
+          downcasing)
       ;; Process modifiers.
       (dolist (mod/symbol modifiers)
         ;; Convert 'control -> "C-", etc for other modifiers.
@@ -527,11 +538,12 @@ ARGS should be a list of:
         (cond ((eq mod/symbol :control)
                (setq mod/string (concat mod/string "C-")))
               ((eq mod/symbol :shift)
-               ;; Shift is capital 'S'.
+               ;; Shift is capital "S".
                (setq mod/string (concat mod/string "S-")))
               ((eq mod/symbol :unshift)
-               ;; Unshift is for downcasing a capital letter 'S'->'s'.
-               (setq key-translation-fn #'downcase))
+               ;; Unshift is for downcasing a capital letter "S"->"s".
+               ;; Also needs to 'downcase' "S-s" to "s".
+               (setq downcasing t))
               ((eq mod/symbol :meta)
                (setq mod/string (concat mod/string "M-")))
               ((eq mod/symbol :hyper)
@@ -564,7 +576,7 @@ ARGS should be a list of:
             ;; Only one result in keys. Create and return resultant derived keybind string.
             (t
              (concat mod/string (key-description
-                                     (funcall key-translation-fn (nth 0 keys)))))))))
+                                     (input//kl:layout:derive/normalize-keys keys downcasing))))))))
 ;; (let ((batch-forms '((motion
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
@@ -587,6 +599,43 @@ ARGS should be a list of:
 ;;   (input//kl:layout:derive '(motion) batch-forms '(control :layout:evil:char-prev))
 ;;   ;; Should get "c" from unshifting "C".
 ;;   (input//kl:layout:derive '(motion) batch-forms '(unshift #'evil-previous-line)))
+
+
+;; (defun input//kl:layout:derive/modifier-str? (key-str)
+;;   "Returns non-nil if KEY-STR is a modifier string.
+;;
+;; Modifier strings are:
+;;   - control: \"C-a\"
+;;   - shift:   \"S-a\"
+;;   - meta:    \"M-a\"
+;;   - alt:     \"A-a\"
+;;   - super:   \"s-a\"
+;;   - hyper:   \"H-a\""
+;;
+;;   )
+
+
+ (defun input//kl:layout:derive/normalize-keys (keys downcasing)
+   "Normalize input params to a key string.
+
+ KEYS should be a list of string.
+
+ DOWNCASING should be nil, or not nil if KEYS should be downcased."
+   keys)
+;;   (if (null downcasing)
+;;       ;; Currently no normalizing needs done; just return as-is.
+;;       keys
+;;     (let (normalized)
+;;       ;; We expect only one string in the list, but we have no real requirement
+;;       ;; to enforce this, so we can just be general/stupid.
+;;       (dolist (key-str (reverse keys)) ;; Get output to be the correct way 'round.
+;;         ;; Need to either unshift or remove "S-".
+;;         (if (string-match (length keys)
+;;         (push normalized (replace-regexp-in-string "S-" "" keys)))
+;;
+;;       ;; Also
+;;
+;;   )
 
 
 ;;------------------------------------------------------------------------------

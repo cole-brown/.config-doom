@@ -180,7 +180,8 @@ notes.
    (save-excursion
      ;; Bare->Wrapped ("TODO" -> "[TODO   ]"), for width consistency.
      (unless skip-bare
-       (let* ((wrap "[]")
+       (message "'TODO' -> '[TODO   ]'")
+       (let* ((wrap "[ ]")
               (replacements
                `(("TODO"      . ,(sss:org/todo.keyword "TODO" wrap))
                  ("STARTED"   . ,(sss:org/todo.keyword "CURRENT" wrap))
@@ -239,6 +240,9 @@ notes.
                                  (sss:org/todo.keyword "X" wrap)
                                  (sss:org/todo.keyword "✘" wrap)
                                  (sss:org/todo.keyword "÷" wrap))))
+
+         ;; "[TODO   ]" -> "├TODO───┤"
+         (message "'[TODO   ]' -> '├TODO───┤'")
 
          ;; And... find/replace 'em.
          (dotimes (index (length replacements/new))

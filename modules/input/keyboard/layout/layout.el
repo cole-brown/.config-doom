@@ -447,15 +447,25 @@ ARGS should be a list of:
 `input:keyboard/layout:map!' Usage Examples:
     :nvm  \"o\"                                                 :layout:evil:char-prev
     :m    (:derive 'shift :layout:evil:char-prev)             :layout:evil:word-prev-end
-    :m    (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword"
+    :m    (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword
+
+Returns the derived kbd string.
+Examples:
+  1. If `:layout:evil:word-prev-end' is \"A\":
+    (:derive 'meta 'unshift :layout:evil:word-prev-end)
+      -> \"M-a\"
+  2. If `:layout:evil:word-prev-end' is \"C-A\":
+    (:derive 'meta :layout:evil:word-prev-end)
+      -> \"M-C-A\""
   (let ((debug/tags '(:derive))
         modifiers
         keys)
     (input//kl:debug
-        (format "input//kl:layout:derive(%s %S %S)"
-                states in-progress args)
+        "input//kl:layout:derive"
         debug/tags
-      "Hello.")
+      "Hello!\n  states: %S\n  args: %S\n  in-progress: %S"
+      states args in-progress)
+
     ;; Work through our args to build binding.
     (dolist (arg args)
       ;; What kind of arg is it?
@@ -466,7 +476,7 @@ ARGS should be a list of:
              (input//kl:debug
                  "input//kl:layout:derive"
                  debug/tags
-               "    derive found modifier: %S"
+               "derive found modifier: %S"
                arg)
              (push (input//kl:layout:normalize->modifier arg) modifiers))
 
@@ -484,7 +494,7 @@ ARGS should be a list of:
                (input//kl:debug
                    "input//kl:layout:derive"
                    debug/tags
-                 "    derive found key: %S"
+                 "derive found key: %S"
                  arg)
                (push found keys)))
 
@@ -493,7 +503,7 @@ ARGS should be a list of:
              (input//kl:debug
                  "input//kl:layout:derive"
                  debug/tags
-               "    derive found nothing - error: %S"
+               "derive found nothing - error: %S"
                arg)
              (error
               (input//kl:error-message "input//kl:layout:derive"
@@ -504,12 +514,12 @@ ARGS should be a list of:
     (input//kl:debug
         "input//kl:layout:derive"
         debug/tags
-      "    derive: modifiers: %S"
+      "\n  --> Final Modifiers: %S"
       modifiers)
     (input//kl:debug
         "input//kl:layout:derive"
         debug/tags
-      "    derive: keys: %S"
+      "\n  --> Final Keys: %S"
       keys)
 
     ;; Not sure what to do about trying to derive a 'control' keybind from a base of e.g. "mtt".
@@ -530,7 +540,8 @@ ARGS should be a list of:
 
     ;; Join together the modifiers and keys to create the derived keybind.
     (let (mod/string
-          downcasing)
+          ;; nil - no change, :lower - downcase/lowercase, :upper - uppercase/upcase
+          (string/case nil))
       ;; Process modifiers.
       (dolist (mod/symbol modifiers)
         ;; Convert 'control -> "C-", etc for other modifiers.
@@ -538,12 +549,14 @@ ARGS should be a list of:
         (cond ((eq mod/symbol :control)
                (setq mod/string (concat mod/string "C-")))
               ((eq mod/symbol :shift)
-               ;; Shift is capital "S".
-               (setq mod/string (concat mod/string "S-")))
+               ;; Shift should be capital "S"? But it isn't working for me.
+               ;; (setq mod/string (concat mod/string "S-"))
+               ;; Instead let's try upcasing.
+               (setq string/case :upper))
               ((eq mod/symbol :unshift)
                ;; Unshift is for downcasing a capital letter "S"->"s".
-               ;; Also needs to 'downcase' "S-s" to "s".
-               (setq downcasing t))
+               ;; Also needs to 'downcase' "S-s" to "s"?
+               (setq string/case :lower))
               ((eq mod/symbol :meta)
                (setq mod/string (concat mod/string "M-")))
               ((eq mod/symbol :hyper)
@@ -575,8 +588,14 @@ ARGS should be a list of:
               args))
             ;; Only one result in keys. Create and return resultant derived keybind string.
             (t
+             (input//kl:debug
+                 "input//kl:layout:derive"
+                 debug/tags
+               "\n  == %S"
+               (concat mod/string (key-description
+                                   (input//kl:layout:derive/normalize-keys keys string/case))))
              (concat mod/string (key-description
-                                     (input//kl:layout:derive/normalize-keys keys downcasing))))))))
+                                     (input//kl:layout:derive/normalize-keys keys string/case))))))))
 ;; (let ((batch-forms '((motion
 ;;                       ("h" #'evil-backward-char)
 ;;                       ("n" #'evil-forward-char)
@@ -601,6 +620,7 @@ ARGS should be a list of:
 ;;   (input//kl:layout:derive '(motion) batch-forms '(unshift #'evil-previous-line)))
 
 
+;; TODO: This?
 ;; (defun input//kl:layout:derive/modifier-str? (key-str)
 ;;   "Returns non-nil if KEY-STR is a modifier string.
 ;;
@@ -615,27 +635,68 @@ ARGS should be a list of:
 ;;   )
 
 
- (defun input//kl:layout:derive/normalize-keys (keys downcasing)
+(defun input//kl:layout:derive/normalize-keys (keys case)
    "Normalize input params to a key string.
 
- KEYS should be a list of string.
+KEYS should be a list of strings.
 
- DOWNCASING should be nil, or not nil if KEYS should be downcased."
-   keys)
-;;   (if (null downcasing)
-;;       ;; Currently no normalizing needs done; just return as-is.
-;;       keys
-;;     (let (normalized)
-;;       ;; We expect only one string in the list, but we have no real requirement
-;;       ;; to enforce this, so we can just be general/stupid.
-;;       (dolist (key-str (reverse keys)) ;; Get output to be the correct way 'round.
-;;         ;; Need to either unshift or remove "S-".
-;;         (if (string-match (length keys)
-;;         (push normalized (replace-regexp-in-string "S-" "" keys)))
-;;
-;;       ;; Also
-;;
-;;   )
+CASE should be:
+  - nil (no change)
+  - :upper (upcase/uppercase)
+  - :lower (lowercase/downcase)"
+   ;; Validate KEYS.
+   (dolist (each keys)
+     (unless (stringp each)
+         (error
+          (input//kl:error-message "input//kl:layout:derive/normalize-key"
+                                   "KEYS must contain all strings - found '%S' "
+                                   "(type '%S') in it: %S"
+                                   each
+                                   (type-of each)
+                                   keys))))
+
+   ;; Normalize KEYS list to a string. Expecting it to be backwards from
+   ;; `push'ing elements on.
+   (let ((key (apply #'concat (reverse keys)))
+         (debug/tags '(:derive :derive/normalize)))
+     ;; "S-" doesn't work, turns out, so I'm removing it from the code in baby steps...
+     ;; TODO: delete this
+     ;; ;; Get rid of any "shift modifiers" in it.
+     ;; (setq key (replace-regexp-in-string "S-" "" key))
+
+     ;; Valid: To lower/upper cases.
+     (cond ((eq case :upper)
+            (input//kl:debug "input//kl:layout:derive/normalize-key"
+                '(:derive :derive/normalize)
+              "UPPERCASE: keys: %S, case: %S -> %S"
+              keys case (upcase key))
+            (upcase key))
+           ((eq case :lower)
+            (input//kl:debug "input//kl:layout:derive/normalize-key"
+                '(:derive :derive/normalize)
+              "lowercase: keys: %S, case: %S -> %S"
+              keys case (upcase key))
+            (downcase key))
+
+           ;; Valid: "Do nothing" case.
+           ((null case)
+            (input//kl:debug "input//kl:layout:derive/normalize-key"
+                '(:derive :derive/normalize)
+              "As-Is: keys: %S, case: %S -> %S"
+              keys case (upcase key))
+            ;; No normalizing needs done; just return as-is.
+            key)
+
+           ;; Invalid: CASE is wrong.
+           (t
+            (error
+             (input//kl:error-message "input//kl:layout:derive/normalize-key"
+                                      "Unknown CASE input: %s. Valid inputs are: %S"
+                                      case
+                                      '(nil, :lower, :upper)))))))
+;; (input//kl:layout:derive/normalize-key '("LLO" "he") nil)
+;; (input//kl:layout:derive/normalize-key '("LLO" "he") :lower)
+;; (input//kl:layout:derive/normalize-key '("LLO" "he") :upper)
 
 
 ;;------------------------------------------------------------------------------

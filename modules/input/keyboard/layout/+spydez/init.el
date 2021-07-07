@@ -28,7 +28,9 @@
 ;; OLD: IJKL position keys (WASD left-hand, index on home key)
 ;;------------------------------
 ;; "commented out" by switching from `set' to `temp'.
-(input:keyboard/layout:bind :spydez :evil
+;; TODO [2021-06-29]: Trying out new binds - revert to this if necessary.
+;; (input:keyboard/layout:bind :spydez :evil
+(input:keyboard/layout:temp :bind :pp-sexpr :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
@@ -51,7 +53,9 @@
 ;;------------------------------
 ;; Unbind Keys
 ;;------------------------------
-(input:keyboard/layout:temp :unbind :eval :spydez :evil
+;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
+;; (input:keyboard/layout:temp :unbind :eval :spydez :evil
+(input:keyboard/layout:unbind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
@@ -104,8 +108,10 @@
 ;;------------------------------
 ;; NEW: ESDF position keys (shifted-WASD left-hand, index on home key)
 ;;------------------------------
-(input:keyboard/layout:temp :bind :eval ; :pp-sexpr
-                            :spydez :evil
+;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
+;; (input:keyboard/layout:temp :bind :eval ; :pp-sexpr
+;;                             :spydez :evil
+(input:keyboard/layout:bind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗

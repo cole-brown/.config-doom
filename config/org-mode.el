@@ -66,7 +66,7 @@
   ;;--------------------
 
   ;;--------------------
-  ;; customization
+  ;; customization: org-mode
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
@@ -105,14 +105,14 @@
              ,(sss:org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
              ,(sss:org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
              ,(sss:org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
-             ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
              "|"
-             ,(sss:org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
-             ,(sss:org/todo.keyword "MOVED"    wrap "m" 'timestamp)  ; Moved somewhere else; no further action here.
-             ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
-             ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
-             ,(sss:org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
-             ,(sss:org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
+             ,(sss:org/todo.keyword "───────" wrap "n" 'timestamp) ; No one cares.
+             ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp) ; Info.
+             ,(sss:org/todo.keyword "MOVED"   wrap "m" 'timestamp) ; Moved somewhere else; no further action here.
+             ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp) ; Task completed... whatever.
+             ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)     ; Task completed successfully!!!
+             ,(sss:org/todo.keyword "FAILURE" wrap "f" 'notes)     ; Task was completed the bad way.
+             ,(sss:org/todo.keyword "KILLED"  wrap "k" 'notes))    ; Task was cancelled, aborted, or is no longer applicable.
             (sequence ;; Checkboxes sequence.
              ,(sss:org/todo.keyword "_" wrap "T")    ; A task that needs doing
              ,(sss:org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
@@ -226,7 +226,7 @@
 
 
   ;;--------------------
-  ;; configuration
+  ;; configuration: org-mode
   ;;--------------------
 
   ;; Put .org.txt into the mode list for org-mode. Useful for org-mode files in
@@ -265,6 +265,23 @@
   ;;               ))))
   ;;   (advice-add 'org-indent--compute-prefixes
   ;;               :after #'spy:advice/org-indent/prefix-munger)
+
+
+  ;;--------------------
+  ;; customization: org-agenda
+  ;;--------------------
+
+  (when-let ((agenda-files (jerky/get 'path 'org 'agenda)))
+    (customize-set-variable 'org-agenda-files
+                            agenda-files
+                            "My paths to search for agenda items."))
+
+
+  ;;--------------------
+  ;; configuration: org-agenda
+  ;;--------------------
+
+
   )
 
 

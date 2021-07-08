@@ -126,14 +126,16 @@ KEYS will be prepended with `:system' and the HASH."
         (t
          (let ((hash/get (or hash
                              (jerky/get 'system 'hash))))
-           ;; Check `hash' validity, finally.
+           ;; Check `hash/get' validity, finally.
            (if (not hash/get)
                (error (concat "`spy:system/get': No hash provided and could "
                               "not find a saved hash... "
                               "provided: %S, saved: %S")
                       hash (jerky/get 'system 'hash))
-           (jerky/get 'system hash keys))))))
+           (jerky/get 'system hash/get keys))))))
 ;; (spy:system/get nil)
+;; (spy:system/get nil 'path 'secret 'emacs)
+;; (spy:system/get (jerky/get 'system 'hash) 'path 'secret 'emacs)
 ;; (spy:system/get "foo" 'bar)
 ;; (jerky//parse '(system "foo" (bar)) t)
 ;; (jerky/get 'system "foo" '(bar))

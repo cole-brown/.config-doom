@@ -16,6 +16,80 @@
 ;; Secret-Getter
 ;;------------------------------------------------------------------------------
 
+
+(defun sss:secret/init ()
+  "Load secret's root init.el."
+  (let* ((hash (spy:system/hash))
+         (id   (spy:system/get hash 'id))
+         (file/name "init")
+         (file/ext ".el")
+         (secret/path/emacs (spy:system/get hash 'path 'secret 'emacs))
+         ;; No file extension so we can load compiled if it exists.
+         (secret/path/load (concat secret/path/emacs file/name))
+         ;; With file extension so we can check that file exists.
+         (secret/path/file (concat secret/path/load file/ext)))
+
+    ;; Check that we have a valid secret to load.
+    (cond ((or (null hash)
+               (null id))
+           (mis0/init/message (concat "%S %S: "
+                                      "No secret hash and/or id:\n"
+                                      "hash: %S\n"
+                                      "id:   %S")
+                              "|secret|"
+                              "[SKIP]"
+                              hash
+                              id))
+
+          ;; Found a path to use?
+          ((or (null secret/path/emacs)
+               (not (stringp secret/path/emacs)))
+           (mis0/init/message "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
+                              "root emacs directory"
+                              id secret/path/emacs)
+           ;; TODO: no warn? Just use mis0?
+           (warn "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
+                 "root emacs directory"
+                 id secret/path/emacs)
+           nil)
+
+          ;; Does path even exist?
+          ((not (file-directory-p secret/path/emacs))
+           (mis0/init/message "Secrets %s for this system (%s) does not exist: %s"
+                              "root emacs directory"
+                              id secret/path/emacs)
+           ;; TODO: no warn? Just use mis0?
+           (warn "Secrets %s for this system (%s) does not exist: %s"
+                 "root emacs directory"
+                 id secret/path/emacs)
+           nil)
+
+          ;; What about the filepath?
+          ((not (file-exists-p secret/path/file))
+           (mis0/init/message "Secrets %s for this system (%s) does not exist: %s"
+                              (concat "root emacs '" file/name file/ext "'")
+                              id secret/path/file)
+           ;; TODO: no warn? Just use mis0?
+           (warn "Secrets %s for this system (%s) does not exist: %s"
+                 (concat "root emacs '" file/name file/ext "'")
+                 id secret/path/file)
+           nil)
+
+          ;; File exists; load it...
+          (t
+           (mis0/init/message "Loading %s for %s...\n   load path: %s"
+                              (concat "root emacs '" file/name "'")
+                              id
+                              secret/path/load)
+           (message "%s: Loading %s for %s...\n   load path: %s"
+                    "|secret|"
+                    (concat "root emacs '" file/name "'")
+                    id
+                    secret/path/load)
+           ;; TODO: no message? Just use mis0?
+           (load secret/path/load)))))
+
+
 (defun sss:secret/load (key file)
   "Load FILE (do not include '.el[c]') from this system's secrets
 directory indicated by KEY, if it has secrets.
@@ -34,13 +108,21 @@ And it must have FILE in <dir>.
             (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
             (name (concat path ".el")))
       (progn
-        (message "sss:secret/load(%S %S) ->\n%S %S %S %S %S" key file hash id dir path name)
+        (mis0/init/message (mapconcat #'identity
+                            '("sss:secret/load(%S %S)"
+                              "  hash: %S"
+                              "  id:   %S"
+                              "  dir:  %S"
+                              "  path  %S"
+                              "  name: %S")
+                            "\n")
+                 key file hash id dir path name)
 
         ;; We got all the vars from jerky, so check for existance now.
         ;;    Do we have valid-ish data to check?
         (cond ((or (null dir)
                    (not (stringp dir)))
-               (message "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
+               (mis0/init/message "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
                         "directory"
                         id dir)
                (warn "Secrets %s for this system (%s) cannot be determined; directory is not a string: %s"
@@ -50,7 +132,7 @@ And it must have FILE in <dir>.
 
               ;; Does dir even exist?
               ((not (file-directory-p dir))
-               (message "Secrets %s for this system (%s) do not exist: %s"
+               (mis0/init/message "Secrets %s for this system (%s) do not exist: %s"
                         "directory"
                         id dir)
                (warn "Secrets %s for this system (%s) do not exist: %s"
@@ -61,7 +143,7 @@ And it must have FILE in <dir>.
               ;; What about the filepath?
               ;; Add ".el" for actual file check.
               ((not (file-exists-p name))
-               (message "Secrets %s for this system (%s) does not exist: %s"
+               (mis0/init/message "Secrets %s for this system (%s) does not exist: %s"
                         "file"
                         id path)
                (warn "Secrets %s for this system (%s) does not exist: %s"

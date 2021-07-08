@@ -76,11 +76,20 @@ KWARGS should be a plist. All default to `t':
     ;; Validity Checks
     ;;---
     (when (or exists dir)  ; :dir implies :exists
-      (unless (file-exists-p path)
-        (iii:error func
-                   "Path does not exist: %s"
-                   path)
-        (setq result nil)))
+      (cond ((null path)
+             (iii:error func
+                        "Null `path'?! path: %s"
+                        path)
+             (setq result nil))
+
+            ((not (file-exists-p path))
+             (iii:error func
+                        "Path does not exist: %s"
+                        path)
+             (setq result nil))
+
+            (t
+             nil)))
 
     (when dir
       (unless (file-directory-p path)

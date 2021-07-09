@@ -161,6 +161,19 @@ Will convert using `autogit:changes:symbols' custom var."
 ;; (autogit//changes:summary (autogit//changes:in-subdir default-directory))
 
 
+;; TODO: autogit//changes:summary/multiple-repos-fmt
+;;   - Take in alist of repo-path to alist/changes.
+;;   - Check entire alist for how to format:
+;;     - numbers
+;;       - e.g. 123 changed files in foo repo, so use 3 digits in all fields
+;;     - column widths
+;;       - e.g. longest repo-path is 88 chars, so path column is 88 chars wide
+;;   - Create output alist:
+;;     '(("<repo-path-0> formatted to width: " "formatted status string")
+;;       (etc ...)
+;;       ...)
+
+
 (defun autogit//changes:commit-filter (alist/changes)
   "Returns either list of files to commit or a keyword.
 
@@ -251,28 +264,26 @@ Example:
                       \"adding all changes...\"
                       \"add\" \"-A\" \".\")
      message: \"calling git: adding all changes...\""
-  (autogit//output:message buffer
-                           ;; Indent.
-                           (if (wholenump indent)
-                               (make-string indent ?\s)
-                             indent)
+  ;; Output messages first.
+  (autogit//output:message/indented buffer
+                                    (autogit//output:indent indent 1)
 
-                           ;; Dry-Run prefix?
-                           (if dry-run
-                               (list :prop :face:failure :text autogit:text:dry-run)
-                             ;; nil will just be ignored
-                             nil)
-                           ;; Dry-Run separator? (Don't want it propertized like prefix is.)
-                           (if dry-run
-                               ": "
-                             ;; nil will just be ignored
-                             nil)
+                                    ;; Dry-Run prefix?
+                                    (list :prop :face:failure
+                                          :text (concat (if dry-run
+                                                            autogit:text:dry-run
+                                                          "GIT")
+                                                        ":")))
+  (autogit//output:message/indented buffer
+                                    (autogit//output:indent indent 2)
 
-                           ;; Command or message.
-                           (list :prop :face:git
-                                 :text (if (eq message :args-as-msg)
-                                           (concat "git " (string-join args " "))
-                                         message)))
+                                    ;; Command or message.
+                                    (list :prop :face:git
+                                          :text (if (eq message :args-as-msg)
+                                                    (concat "git " (string-join args " "))
+                                                  message)))
+
+  ;; Do not actually run the command in dry-run mode.
   (unless dry-run
     (apply #'magit-call-git args)))
 
@@ -319,11 +330,51 @@ If in Doom Emacs, set up popup rules first."
         (pop-to-buffer name))
     ;; Not using Doom & its popup window system, so just pop to the buffer.
     (pop-to-buffer name)))
+;; (autogit//buffer:show autogit:buffer:name/status)
 
 
 ;;------------------------------------------------------------------------------
 ;; Messages
 ;;------------------------------------------------------------------------------
+
+(defun autogit//output:indent (indent level)
+  "Get indent string for indent LEVEL from INDENT.
+
+LEVEL must be a wholenum - 0 is 'not indented'.
+
+INDENT can be:
+  - wholenum: a string of spaces of length (INDENT * LEVEL).
+  - string:   returns the string repeated LEVEL times.
+  - list:     returns the string at element (LEVEL - 1) or \"\" if LEVEL is 0."
+  (cond ((not (wholenump level))
+         (error "autogit//output:indent: LEVEL must be a wholenum, got: %S"
+                level))
+
+        ((listp indent)
+         (if (= level 0)
+             ""
+           ;; Pretend level 1 indent so no enlarging of the list's indent.
+           (autogit//output:indent (seq-elt indent (1- level)) 1)))
+
+        ((wholenump indent)
+         (make-string (* indent level) ?\s))
+
+        ((stringp indent)
+         (let (indents)
+           (dotimes (_ level)
+             (setq indents (cons indent indents)))
+           (apply 'concat indents)))
+
+        (t
+         (error "autogit//output:indent: Unknown INDENT type: %S %S"
+                (type-of indent) indent))))
+;; (autogit//output:indent 4 1)
+;; (autogit//output:indent 4 2)
+;; (autogit//output:indent "  " 1)
+;; (autogit//output:indent "  " 2)
+;; (autogit//output:indent '("hello" "there") 1)
+;; (autogit//output:indent '("hello" "there") 2)
+
 
 (defun autogit//output:propertize (&rest args)
   "Parse args to created a propertized string.
@@ -415,8 +466,8 @@ properties."
 ;; (propertize "hello there" 'face 'package-name)
 
 
-(defun autogit//output:message (buffer &rest args)
-  "Creates a (propertized) string and outputs it to BUFFER.
+(defun autogit//output:finalize (args)
+  "Creates a (propertized) string ready to be output to a buffer.
 
 ARGS should each be one of:
   - A string.
@@ -427,10 +478,7 @@ ARGS should each be one of:
       `autogit//output:propertize'.
   - A list of: a format-string and format-args.
 
-No padding between args is created.
-
-NOTE: If BUFFER is not `:message', it will print to the current buffer,
-so it must be used inside the `autogit//macro:with-buffer' macro body!"
+No padding between args is created. "
   (let (text/list)
     (dolist (arg args)
       (cond ((null arg)
@@ -451,23 +499,64 @@ so it must be used inside the `autogit//macro:with-buffer' macro body!"
 
             ;; Unknown - Error
             (t
-             (error "`autogit//output:message': Cannot process input: %S"
+             (error "`autogit//output:finalize': Cannot process input: %S"
                     arg))))
 
     (when text/list
-      ;; Combine and output.
-      (let ((text (apply #'concat (nreverse text/list))))
-        (if (and (keywordp buffer)
-                 (eq buffer :messages))
-            ;; Using *Messages* buffer, so just use the `message' function to put the
-            ;; message there.
-            (message text)
-          ;; Not using *Messages*; insert the formatted string on a new line at the
-          ;; end of the current buffer, assumed to be the buffer named `buffer'.
-          (goto-char (point-max))
-          (insert (concat "\n" text)))))))
+      ;; Combine the list and we're done.
+      (apply #'concat (nreverse text/list)))))
+
+
+(defun autogit//output:insert (buffer message)
+  "Inserts finalized MESSAGE into BUFFER.
+
+BUFFER should be a keyword, string or buffer object.
+  - If it is the keyword `:messages', output to the *Messages* buffer using `message'.
+  - Else inserts into BUFFER using `autogit//macro:with-buffer'.
+
+MESSAGE should be output from `autogit//output:finalize'."
+  (cond ((and (keywordp buffer)
+              (eq buffer :messages))
+         ;; Using *Messages* buffer, so just use the `message' function to put the
+         ;; message there.
+         (message message))
+
+        ;; Some other keyword: error.
+        ((keywordp buffer)
+         (error "`autogit//output:insert': unknown buffer keyword: %S" buffer))
+
+        ;; Buffer obj or str:
+        ((or (stringp buffer)
+             (bufferp buffer))
+         (autogit//macro:with-buffer buffer
+           ;; We are now in BUFFER, so just insert the formatted string on a new line at the end.
+           (goto-char (point-max))
+           (insert (concat "\n" message))))
+
+        ;; Fallthrough error.
+        (t
+         (error "`autogit//output:insert': unhandled buffer type %S %S"
+                (type-of buffer) buffer))))
+
+
+(defun autogit//output:message (buffer &rest args)
+  "Creates a (propertized) string and outputs it to BUFFER.
+
+ARGS should each be one of:
+  - A string.
+  - A plist for propertizing a string.
+    + With requried key `:text', value of a string or list of
+      format-string and format-args.
+    + With optional key `:prop' or `:property', value of a keyword from
+      `autogit//output:propertize'.
+  - A list of: a format-string and format-args.
+
+No padding between args is created.
+
+NOTE: If BUFFER is not `:message', it will print to the current buffer,
+so it must be used inside the `autogit//macro:with-buffer' macro body!"
+  (autogit//output:insert buffer (autogit//output:finalize args)))
 ;; (let ((buffer autogit:buffer:name/status))
-;;   (autogit//macro:with-buffer buffer
 ;;     (autogit//output:message buffer
 ;;                         (list :prop :face:self :text autogit:text:name)
 ;;                         ": "
@@ -476,6 +565,46 @@ so it must be used inside the `autogit//macro:with-buffer' macro body!"
 ;;                               :text (list "%d" (length autogit:repos:path/watch)))
 ;;                         " watch locations...")
 ;;     (autogit//buffer:show buffer)))
+
+
+(defun autogit//output:message/indented (buffer indent &rest args)
+  "Creates an indented, propertized message and outputs it to BUFFER.
+
+INDENT should be a wholenum or a string.
+  - wholenum: indent by that number of spaces
+  - string: use that string to indent
+
+Each line of the final message will be indented.
+
+ARGS should each be one of:
+  - A string.
+  - A plist for propertizing a string.
+    + With requried key `:text', value of a string or list of
+      format-string and format-args.
+    + With optional key `:prop' or `:property', value of a keyword from
+      `autogit//output:propertize'.
+  - A list of: a format-string and format-args.
+
+No padding between args is created.
+
+NOTE: If BUFFER is not `:message', it will print to the current buffer,
+so it must be used inside the `autogit//macro:with-buffer' macro body!"
+  (let ((msg (autogit//output:finalize args))
+        (indent-str (cond ((wholenump indent)
+                            (make-string indent ?\s))
+                           ((stringp indent)
+                            indent)
+                           (t
+                           ""))))
+    ;; Apply indent to all lines in message.
+    (when indent-str
+      (let ((lines (split-string msg "\n"))
+            indented)
+        (dolist (line (nreverse lines))
+          (push (concat indent-str line) indented))
+        (setq msg (mapconcat 'identity indented "\n"))))
+
+  (autogit//output:insert buffer msg)))
 
 
 ;; TODO: namespace for 'message', 'section', 'buffer' type things.

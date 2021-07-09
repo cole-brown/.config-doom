@@ -62,7 +62,12 @@
 ;; Toying with putting packages in '.doom.d/packages/' directory, but first
 ;; let's try it Doom's way.
 
+
+;; Buffer management.
 (package! bufler)
+
+;; Asynchronous Helpers. AKA 'emacs-deferred'.
+(package! deferred)
 
 
 ;;------------------------------------------------------------------------------

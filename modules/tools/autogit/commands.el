@@ -27,6 +27,7 @@
 
 
 (require 'subr-x)
+(require 'deferred)
 
 ;; How to get this lazy loaded?
 ;;   - Take the require out of the funcs when figured out.
@@ -80,7 +81,9 @@ If NAME is `:messages', kills the \"*Messages*\" buffer."
 
 (defun autogit:push (&optional dry-run)
   "For each item in `autogit:repos:path/commit', use
-Magit to: add files, commit, and push."
+Magit to: add files, commit, and push.
+
+If DRY-RUN is non-nil, does not execute git commands."
   (interactive "P")
 
   ;; Either have to require magit here, or set magit to ":demand t" in
@@ -94,181 +97,204 @@ Magit to: add files, commit, and push."
 
     (let ((buffer autogit:buffer:name/push)
           (step 1)
-          results)
-      (autogit//macro:with-buffer buffer
-        (autogit//output:section-break/auto buffer)
-        (autogit//output:message buffer
-                                 (list :prop :face:self
-                                       :text autogit:text:name)
-                                 " "
-                                 (format-time-string autogit:datetime:format)
-                                 ": "
-                                 "Commit "
-                                 (list :prop :face:highlight
-                                       :text (list "%d" (length autogit:repos:path/commit)))
-                                 " locations...\n")
-        (autogit//buffer:show buffer)
+          results
+          (indent/commands '(6 8)))
+      (deferred:$
+        (deferred:next
+          (lambda ()
+            (autogit//macro:with-buffer buffer
+              (autogit//output:section-break/auto buffer))))
+        (deferred:nextc it
+          (lambda (_)
+            (autogit//macro:with-buffer buffer
+              (autogit//output:message buffer
+                                       (list :prop :face:self
+                                             :text autogit:text:name)
+                                       " "
+                                       (format-time-string autogit:datetime:format)
+                                       ": "
+                                       (list :prop :face:title
+                                             :text "Commit & Push")
+                                       " on "
+                                       (list :prop :face:highlight
+                                             :text (list "%d" (length autogit:repos:path/commit)))
+                                       " locations...\n"))))
+        (deferred:nextc it
+          (lambda (_)
+            (autogit//buffer:show buffer)))
 
         ;; Walk our list of auto-commit loctaions.
-        (dolist (path autogit:repos:path/commit)
-          (autogit//output:newline buffer)
-          (autogit//output:message buffer
-                                   (list :prop :face:self
-                                         :text autogit:text:name)
-                                   ": "
-                                   "Checking "
-                                   (list :prop :face:path :text (list "%s" path))
-                                   "...")
-
-          ;; Change the default-directory just for this scope...
-          (let* ((default-directory (if (file-directory-p path)
-                                        ;; Already a 'directory' path; is ok.
-                                        path
-                                      ;; Needs a slash?
-                                      (file-name-as-directory path)))
-                 ;; Some silly little message.
-                 (commit-message (format "autogit commit\n\n%s: %s triggered in %s by %s"
-                                         (format-time-string autogit:datetime:format)
-                                         "Auto-commit"
-                                         "emacs/magit"
-                                         "autogit:magit/auto-commit function."))
-                 ;; Full changes.
-                 (alist/changes (autogit//changes:in-subdir default-directory))
-                 ;; Filtered changes or "do-not-commit" reason keyword.
-                 (changes/abs (autogit//changes:commit-filter alist/changes)))
-
-            ;; Not allowed to commit?
-            (cond ((and (keywordp changes/abs)
-                        (eq changes/abs :unmerged))
-                   ;; Save that nothing happened.
-                   (push (cons path "Blocked by unmerged files.") results)
-                   ;; And say why.
-                   (autogit//output:message buffer
-                                            (list :prop :face:failure
-                                                  :text "  Unmerged changes - cannot auto-commit!"))
-                   ;; TODO: Display unmerged paths in alist/changes.
-                   )
-
-                  ;; Not necessary to commit?
-                  ((and (keywordp changes/abs)
-                        (eq changes/abs :no-op))
-                   ;; Save that nothing happened.
-                   (push (cons path "None.") results)
-                   ;; Say why nothing happened.)
-                   (autogit//output:message buffer
-                                            "  No changes to auto-commit: "
-                                            (list :prorp :face:path "%s"
-                                                  :text default-directory)))
-
-                  ;; Ok. Commit.
-                  (t
-                   (let* ((changes/rel
-                           ;; Gather up all changed files, strip out dir prefix.
-                           (mapcar (lambda (x)
-                                     (string-remove-prefix default-directory x))
-                                   changes/abs))
-                          (prefix "\n    + ")
-                          (changed-str (concat
-                                        prefix
-                                        (string-join changes/rel prefix))))
-                     ;; Add!
-                     (autogit//output:message buffer
-                                              (list :prop :face:highlight
-                                                    :text (list "  %d. " step))
-                                              "Adding changes found:"
-                                              (list :prop :face:path
-                                                    :text changed-str))
-                     (setq step (1+ step))
-
-                     ;; "add <path>" or "add -A ." work to add untracked.
-                     ;; "add -A ." == "add ." + "add -u ."
-                     ;; "add ." only adds modified.
-                     (autogit//magit:git dry-run
-                                         buffer
-                                         nil
-                                         :args-as-msg
-                                         "add" "-A" ".")
-                     (setq step (1+ step))
-
-
-                     ;; Commit!
-                     (autogit//output:newline buffer)
-                     ;; TODO: Get list of staged for message? Currently trusting they are
-                     ;; the same as the `changes/abs' - and they /should/ be.
-                     (autogit//output:message buffer
-                                              (list :prop :face:highlight
-                                                    :text (list "  %d. " step))
-                                              "Committing changes:"
-                                              (list :prop :face:path
-                                                    :text changed-str))
-                     (setq step (1+ step))
-
-                     ;; Don't 'commit all' ("commit -a"), so we can commit just whatever
-                     ;; sub-folder we are in.
-                     (autogit//magit:git dry-run
-                                         buffer
-                                         nil
-                                         :args-as-msg
-                                         "commit" "-m" commit-message)
-                     (setq step (1+ step))
-
-                     ;; Push?
-                     (autogit//output:newline buffer)
-                     (autogit//output:message buffer
-                                              (list :prop :face:highlight
-                                                    :text (list "  %d. " step))
-                                              "Pushing changes:"
-                                              (list :prop :face:path
-                                                    :text changed-str))
-                     (setq step (1+ step))
-                     ;; Just "push" to default...
-                     (autogit//output:message buffer
-                                              (list :prop :face:highlight
-                                                    :text (list "  %d. " step))
-                                              "Git:")
-                     (autogit//magit:git dry-run
-                                         buffer
-                                         nil
-                                         :args-as-msg
-                                         "push")
-                     (setq step (1+ step))
-
-                     ;; Done. Until I find all the edge cases I guess.
-                     ;; Like when push fails?
-                     (autogit//output:newline buffer)
-                     (autogit//output:message buffer
-                                              (list :prop :face:self
-                                                    :text autogit:text:name)
-                                              ": "
-                                              "Committed and pushed (probably?): "
-                                              (list :prop :face:path
-                                                    :text path)
-                                              (list :prop :face:path
-                                                    :text changed-str))
-                     (push (cons path (or changed-str "None.")) results)))))
-
-          ;; Finished pushing commits on autogit locations. Give a rundown.
-          (autogit//output:newline buffer)
-          (autogit//output:message buffer
-                                   (list :prop :face:self
-                                         :text autogit:text:name)
-                                   ": "
-                                   (list :prop :face:success :text "Done")
-                                   "; commit ran on "
-                                   (list :prop :face:highlight :text (list "%d" (length autogit:repos:path/commit)))
-                                   " locations:")
-          (let ((first-result t))
-            (dolist (result results)
-              (if first-result
-                  (setq first-result nil)
-                (autogit//output:newline buffer))
+        (deferred:loop autogit:repos:path/commit
+          (lambda (path)
+            "Function to do the actual status, commit, etc for each repo."
+            (autogit//macro:with-buffer buffer
+              (autogit//output:newline buffer)
               (autogit//output:message buffer
-                                       "  path: "
-                                       (list :prop :face:path
-                                             :text (list "%s" (car result)))
-                                       "\n  changes: "
-                                       (list :prop :face:path
-                                             :text (list "%s" (cdr result)))))))))))
+                                       (list :prop :face:self
+                                             :text autogit:text:name)
+                                       ": "
+                                       "Checking "
+                                       (list :prop :face:path :text (list "%s" path))
+                                       "...")
+
+              ;; Change the default-directory just for this scope...
+              (let* ((default-directory (if (file-directory-p path)
+                                            ;; Already a 'directory' path; is ok.
+                                            path
+                                          ;; Needs a slash?
+                                          (file-name-as-directory path)))
+                     ;; Some silly little message.
+                     (commit-message (format "autogit commit\n\n%s: %s triggered in %s by %s"
+                                             (format-time-string autogit:datetime:format)
+                                             "Auto-commit"
+                                             "emacs/magit"
+                                             "autogit:magit/auto-commit function."))
+                     ;; Full changes.
+                     (alist/changes (autogit//changes:in-subdir default-directory))
+                     ;; Filtered changes or "do-not-commit" reason keyword.
+                     (changes/abs (autogit//changes:commit-filter alist/changes)))
+
+                ;; Not allowed to commit?
+                (cond ((and (keywordp changes/abs)
+                            (eq changes/abs :unmerged))
+                       ;; Save that nothing happened.
+                       (push (cons path "Blocked by unmerged files.") results)
+                       ;; And say why.
+                       (autogit//output:message buffer
+                                                (list :prop :face:failure
+                                                      :text "  Unmerged changes - cannot auto-commit!"))
+                       ;; TODO: Display unmerged paths in alist/changes.
+                       )
+
+                      ;; Not necessary to commit?
+                      ((and (keywordp changes/abs)
+                            (eq changes/abs :no-op))
+                       ;; Save that nothing happened.
+                       (push (cons path "None.") results)
+                       ;; Say why nothing happened.)
+                       (autogit//output:message buffer
+                                                "  No changes to auto-commit: "
+                                                (list :prorp :face:path "%s"
+                                                      :text default-directory)))
+
+                      ;; Ok. Commit.
+                      (t
+                       (let* ((changes/rel
+                               ;; Gather up all changed files, strip out dir prefix.
+                               (mapcar (lambda (x)
+                                         (string-remove-prefix default-directory x))
+                                       changes/abs))
+                              (prefix "\n    + ")
+                              (changed-str (concat
+                                            prefix
+                                            (string-join changes/rel prefix))))
+                         ;; Add!
+                         (autogit//output:message buffer
+                                                  (list :prop :face:highlight
+                                                        :text (list "  %d. " step))
+                                                  "Adding changes found:"
+                                                  (list :prop :face:path
+                                                        :text changed-str))
+                         (setq step (1+ step))
+
+                         ;; "add <path>" or "add -A ." work to add untracked.
+                         ;; "add -A ." == "add ." + "add -u ."
+                         ;; "add ." only adds modified.
+                         (autogit//magit:git dry-run
+                                             buffer
+                                             indent/commands
+                                             :args-as-msg
+                                             "add" "-A" ".")
+                         (setq step (1+ step))
+
+
+                         ;; Commit!
+                         (autogit//output:newline buffer)
+                         ;; TODO: Get list of staged for message? Currently trusting they are
+                         ;; the same as the `changes/abs' - and they /should/ be.
+                         (autogit//output:message buffer
+                                                  (list :prop :face:highlight
+                                                        :text (list "  %d. " step))
+                                                  "Committing changes:"
+                                                  (list :prop :face:path
+                                                        :text changed-str))
+                         (setq step (1+ step))
+
+                         ;; Don't 'commit all' ("commit -a"), so we can commit just whatever
+                         ;; sub-folder we are in.
+                         (autogit//magit:git dry-run
+                                             buffer
+                                             indent/commands
+                                             :args-as-msg
+                                             "commit" "-m" commit-message)
+                         (setq step (1+ step))
+
+                         ;; Push?
+                         (autogit//output:newline buffer)
+                         (autogit//output:message buffer
+                                                  (list :prop :face:highlight
+                                                        :text (list "  %d. " step))
+                                                  "Pushing changes:"
+                                                  (list :prop :face:path
+                                                        :text changed-str))
+                         (autogit//magit:git dry-run
+                                             buffer
+                                             indent/commands
+                                             :args-as-msg
+                                             "push")
+                         (setq step (1+ step))
+
+                         ;; Done. Until I find all the edge cases I guess.
+                         ;; Like when push fails?
+                         (autogit//output:newline buffer)
+                         (autogit//output:message buffer
+                                                  (list :prop :face:self
+                                                        :text autogit:text:name)
+                                                  ": "
+                                                  "Committed and pushed (probably?): "
+                                                  (list :prop :face:path
+                                                        :text path)
+                                                  (list :prop :face:path
+                                                        :text changed-str))
+                         (push (cons path (or changed-str "None.")) results)))))
+
+              ;; Finished pushing commits on autogit locations. Give a rundown.
+              (autogit//output:newline buffer)
+              (autogit//output:message buffer
+                                       (list :prop :face:self
+                                             :text autogit:text:name)
+                                       ": "
+                                       (list :prop :face:success :text "Done")
+                                       "; commit ran on "
+                                       (list :prop :face:highlight :text (list "%d" (length autogit:repos:path/commit)))
+                                       " locations:")
+              (let ((first-result t))
+                (dolist (result results)
+                  (if first-result
+                      (setq first-result nil)
+                    (autogit//output:newline buffer))
+                  (autogit//output:message buffer
+                                           "  path: "
+                                           (list :prop :face:path
+                                                 :text (list "%s" (car result)))
+                                           "\n  changes: "
+                                           (list :prop :face:path
+                                                 :text (list "%s" (cdr result)))))))))
+
+        ;; `deferred:nextc' so that this waits on the loop to finish before printing.
+        (deferred:nextc it
+          (lambda ()
+            (autogit//macro:with-buffer buffer
+              (autogit//output:message buffer
+                                       "\n"
+                                       (list :prop :face:self :text autogit:text:name)
+                                       " "
+                                       (format-time-string autogit:datetime:format)
+                                       ": "
+                                       (list :prop :face:title :text "Commit & Push")
+                                       " - "
+                                       (list :prop :face:success :text "Done.")))))
+        ))))
 ;; (setq autogit:repos:path/commit nil)
 ;; (push "D:/home/spydez/.lily.d" autogit:repos:path/commit)
 ;; (autogit:push 'dry-run)
@@ -285,37 +311,70 @@ uncommitted(/unpushed?) changes."
   (interactive)
 
   (let ((buffer autogit:buffer:name/status))
-    (autogit//macro:with-buffer buffer
+    (deferred:$
       ;;------------------------------
       ;; Title and stuff.
       ;;------------------------------
-      (autogit//output:section-break/auto buffer)
-      (autogit//output:message buffer
-                               (list :prop :face:self :text autogit:text:name)
-                               " "
-                               (format-time-string autogit:datetime:format)
-                               ": "
-                               "Status of "
-                               (list :prop :face:highlight
-                                     :text (list "%d" (length autogit:repos:path/watch)))
-                               " watch locations...")
-      (autogit//buffer:show buffer)
-      ;; TODO: Is there a way to force the buffer to show before this finishes?
-      ;;   - Make this an async func, probably.
+      ;; TODO: instead of section-break/auto, do autogit//output:title function that
+      ;; puts "Status of [...]" message inside of the ASCII box.
+      (deferred:next
+        (lambda ()
+          (autogit//output:section-break/auto buffer)))
+      (deferred:next
+        (lambda ()
+          (autogit//output:message buffer
+                                   (list :prop :face:self :text autogit:text:name)
+                                   " "
+                                   (format-time-string autogit:datetime:format)
+                                   ": "
+                                   (list :prop :face:title :text "Status")
+                                   " of "
+                                   (list :prop :face:highlight
+                                         :text (list "%d" (length autogit:repos:path/watch)))
+                                   " watch locations...")))
+      (deferred:next
+        (lambda ()
+          (autogit//buffer:show buffer)))
+      (deferred:wait 1000) ; 1000 ms
 
       ;;------------------------------
       ;; Get status for each repo.
       ;;------------------------------
-      (dolist (path autogit:repos:path/watch)
-        ;; Get & display the alist of changes based on settings.
-        (autogit//output:message buffer
-                                 "\n"
-                                 (list :prop :face:self :text autogit:text:name)
-                                 ": "
-                                 "Checking "
-                                 (list :prop :face:path :text (list "%s" path))
-                                 "...")
-        (autogit//output:status buffer (autogit//changes:in-subdir path))))))
+      (deferred:loop autogit:repos:path/watch
+        (lambda (path)
+          "Function to display path and status for each repo."
+          ;; Get & display the alist of changes based on settings.
+          (autogit//output:message buffer
+                                   "\n"
+                                   (list :prop :face:self :text autogit:text:name)
+                                   ": "
+                                   ;; TODO: remove "Checking " if not much time between this output and status output.
+                                   "Checking "
+                                   (list :prop :face:path :text (list "%s" path))
+                                   "...")
+          (autogit//output:status buffer (autogit//changes:in-subdir path))))
+      (deferred:error it
+        (lambda (err)
+          (message "`autogit:status' errored while looping on status repos: %S" err)))
+
+      ;; TODO: if full status, maybe repeat the short status strings here?
+      ;; [AUTOGIT]: Status Summary:
+      ;;   <some/path-0>:    •00 +00 ¬00 ⊥00
+      ;;   <another/path-1>: •00 +08 ¬25 ⊥00
+      ;;   <etc.>:           [etc.]
+
+      ;; `deferred:nextc' so that this waits on the loop to finish before printing.
+      (deferred:nextc it
+        (lambda ()
+          (autogit//output:message buffer
+                                   "\n"
+                                   (list :prop :face:self :text autogit:text:name)
+                                   " "
+                                   (format-time-string autogit:datetime:format)
+                                   ": "
+                                   (list :prop :face:title :text "Status")
+                                   " - "
+                                   (list :prop :face:success :text "Done.")))))))
 ;; (autogit:status)
 
 

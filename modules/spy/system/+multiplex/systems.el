@@ -34,64 +34,24 @@
 ;; home/2017/desk::ab48e5-886ff
 ;;   via WSL2
 ;;---
-(let* ((hash "ab48e5-886ff0")
-       (id   (concat "home/2017/desk::" hash))
-       (path/root "~/.config/spydez/secret/")
-       (path/doom.rel "emacs/doom")
-       (path/doom.abs (spy:path/to-dir path/root path/doom.rel)))
-
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret 'root)
-                  :value path/root
-                  :docstr "Root for .secret.d")
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret 'emacs)
-                  :value path/doom.abs
-                  :docstr "Root for Per-Computer Set-Up of Emacs")
-  (spy:system/set :hash hash
-                  :keys (list 'id)
-                  :value id
-                  :docstr "Home desktop PC built in 2017.")
-
-  ;; Have to set path per-system since work comps have restrictions on where
-  ;; things can be, and home comps tend to have a random number of hard drives
-  ;; just wherever.
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret id)
-                  :value  (spy:system/path path/doom.abs id)
-                  :docstr "Home desktop PC built in 2017."))
+(spy:system/define :hash "ab48e5-886ff0"
+                   :domain "home"
+                   :date "2017"
+                   :type "desk"
+                   :description "(Windows/WSL) Home desktop PC built in 2017."
+                   :path/secret/root "~/.config/spydez/secret")
 
 
 ;;---
 ;; home/2017/desk::5730ce-91e149
 ;;   via Windows 10
 ;;---
-(let* ((hash "5730ce-91e149")
-       (id   (concat "home/2017/desk::" hash))
-       (path/root "d:/home/spydez/.secret.d/")
-       (path/doom.rel "emacs/doom")
-       (path/doom.abs (spy:path/to-dir path/root path/doom.rel)))
-
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret 'root)
-                  :value path/root
-                  :docstr "Root for .secret.d")
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret 'emacs)
-                  :value path/doom.abs
-                  :docstr "Root for Per-Computer Set-Up of Emacs")
-  (spy:system/set :hash hash
-                  :keys (list 'id)
-                  :value id
-                  :docstr "Home desktop PC built in 2017.")
-
-  ;; Have to set path per-system since work comps have restrictions on where
-  ;; things can be, and home comps tend to have a random number of hard drives
-  ;; just wherever.
-  (spy:system/set :hash hash
-                  :keys (list 'path 'secret 'system)
-                  :value  (spy:system/path path/doom.abs id)
-                  :docstr "Home desktop PC built in 2017."))
+(spy:system/define :hash "5730ce-91e149"
+                   :domain "home"
+                   :date "2017"
+                   :type "desk"
+                   :description "(Windows) Home desktop PC built in 2017."
+                   :path/secret/root "~/.config/spydez/secret")
 
 
 ;; Generate a new system's UID using this:

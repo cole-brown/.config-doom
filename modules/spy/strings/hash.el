@@ -114,6 +114,27 @@ slices. Otherwise uses `spy:hash/join/slices'."
 ;; (spy:hash/pretty "jeff")
 
 
+(defun spy:hash/recreate (prefixes pretty-hash)
+  "Like `spy:hash', with PRETTY-HASH instead of a created hash.
+
+PREFIXES should be: string, symbol, or list of strings/symbols.
+
+PRETTY-HASH should be a string like `spy:hash/pretty' outputs.
+
+This joins all PREFIXES together into a string separated with
+`spy:hash/join/prefixes'.
+
+Then it joins the prefix string to the PRETTY-HASH string with
+`spy:hash/join/prepend'."
+  ;; Create prepend string from prefixes...
+  (concat (apply #'spy:string/concat spy:hash/join/prefixes prefixes)
+          ;; ...add prepend separator...
+          spy:hash/join/prepend
+          ;; ...and finish with the pretty hash.
+          pretty-hash))
+;; (spy:hash/recreate '(jeff compy) "cab3d6-bad38c")
+
+
 (defun spy:hash (prefixes inputs)
   "PREFIXES and INPUTS should be: string, symbol, or list of strings/symbols.
 

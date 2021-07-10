@@ -5,10 +5,17 @@
 ;;--                     What computer is this anyways?                       --
 ;;--------------------------(probably the wrong one)----------------------------
 
+(require 'cl-lib) ;; cl-defun for '&keys'
+
 (imp:require :jerky)
 (imp:require :modules 'spy 'strings 'normalize)
 (imp:require :modules 'spy 'strings 'hash)
 (imp:require :modules 'spy 'file 'path)
+
+
+;;------------------------------------------------------------------------------
+;; Constants & Variables
+;;------------------------------------------------------------------------------
 
 
 ;;------------------------------------------------------------------------------
@@ -161,6 +168,156 @@ on the UNIQUE-ID of the system and the ROOT path.
                                              (replace-regexp-in-string "/" "-"
                                                                        unique-id))))
 ;; (spy:system/path "c:/foo" ":bar")
+
+
+;;------------------------------------------------------------------------------
+;; Define a System
+;;------------------------------------------------------------------------------
+
+
+
+(cl-defun spy:system/define (&key hash
+                                  domain
+                                  date
+                                  type
+                                  description
+                                  (path/secret/root "~/.config/secret")
+                                  (path/secret/init "emacs/doom")
+                                  (debug nil))
+  "Defines a system based on the keywords.
+
+HASH - /MUST/ be a static string of a system's hash from `spy:system/hash',
+       not a return value from dynamically calling `spy:system/hash'.
+
+DOMAIN - A string/symbol of \"home\", \"work\", or whatever domain names you use.
+
+DATE - A string/symbol of the year, or year-month-day, to identify similar systems.
+
+TYPE - Another string/symbol for identifying the system.
+       \"desk\", \"desktop\", \"lap\", etc.
+
+DOMAIN, DATE, and TYPE are combined with forward slashes to create the
+human-readable part of the system's ID. The HASH is applied after these:
+  id = \"<domain>/<date>/<type>::<hash>\"
+    e.g. \"home/2021/desk::12345-abcdef\"
+  - See `spy:hash/recreate'
+
+DESCRIPTION - A short string for the 'docstr' of the ID and the path.
+
+PATH/SECRET/ROOT - Absolute path to the specified system's secret folder.
+
+PATH/SECRET/INIT - Relative path from PATH/SECRET/ROOT to the Emacs init files
+                   for this system.
+                 - NOTE: Can be the init for the specified system, or for all
+                         systems, depending on how your secret's init is itself
+                         set up.
+
+DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
+  ;;------------------------------
+  ;; Error Checking
+  ;;------------------------------
+  (let (errors)
+    (unless (stringp hash)
+      (push (format "HASH must be a string. Got type %S: %S"
+                    (type-of hash)
+                    hash)
+            errors))
+    (unless (or (stringp domain)
+                (symbolp domain))
+      (push (format "DOMAIN must be a string or symbol. Got type: %S"
+                    (type-of domain)
+                    domain)
+            errors))
+    (unless (or (stringp date)
+                (symbolp date))
+      (push (format "DATE must be a string or symbol. Got type: %S"
+                    (type-of date)
+                    date)
+            errors))
+    (unless (or (stringp type)
+                (symbolp type))
+      (push (format "TYPE must be a string or symbol. Got type: %S"
+                    (type-of type)
+                    type)
+            errors))
+    (unless (stringp description)
+      (push (format "DESCRIPTION must be a string. Got type %S: %S"
+                    (type-of description)
+                    description)
+            errors))
+    (unless (stringp path/secret/root)
+      (push (format "PATH/SECRET/ROOT must be a string. Got type %S: %S"
+                    (type-of path/secret/root)
+                    path/secret/root)
+            errors))
+    (unless (stringp path/secret/init)
+      (push (format "PATH/SECRET/INIT must be a string. Got type %S: %S"
+                    (type-of path/secret/init)
+                    path/secret/init)
+            errors))
+
+    (if errors
+        (error (concat "spy:system/define: Invalid parameter"
+                       (when (!= 1 (length errors))
+                         "s")
+                       ": "
+                       (mapconcat #'identity
+                                  errors
+                                  "\n")))))
+
+
+  (let* ((id (spy:hash/recreate (list domain date type) hash))
+         (path/secret/init.abs (spy:path/to-dir path/secret/root path/secret/init)))
+    ;;------------------------------
+    ;; Debug?
+    ;;------------------------------
+    (if debug
+        (message (concat "System:\n"
+                         "  -> hash:          %S\n"
+                         "  -> domain:        %S\n"
+                         "  -> date:          %S\n"
+                         "  -> type:          %S\n"
+                         "  -> description:   %S\n"
+                         "  -> path/root:     %S\n"
+                         "  -> path/init:     %S\n"
+                         "  <- id:            %S\n"
+                         "  <- path/init.abs: %S")
+                 hash domain date type description
+                 path/secret/root path/secret/init
+                 id path/secret/init.abs)
+
+      ;;------------------------------
+      ;; Define the System.
+      ;;------------------------------
+
+      (spy:system/set :hash hash
+                      :keys (list 'path 'secret 'root)
+                      :value path/secret/root
+                      :docstr "Root for .secret.d")
+      (spy:system/set :hash hash
+                      :keys (list 'path 'secret 'emacs)
+                      :value path/secret/init.abs
+                      :docstr "Root for Per-Computer Set-Up of Emacs")
+      (spy:system/set :hash hash
+                      :keys (list 'id)
+                      :value id
+                      :docstr description)
+
+      ;; Have to set path per-system since work comps have restrictions on where
+      ;; things can be, and home comps tend to have a random number of hard drives
+      ;; just wherever.
+      (spy:system/set :hash hash
+                      :keys (list 'path 'secret 'system)
+                      :value  (spy:system/path path/secret/init.abs id)
+                      :docstr description))))
+;; (spy:system/define :debug t
+;;                    :hash "123456-abcdef"
+;;                    :domain "home"
+;;                    :date "2021"
+;;                    :type "desk"
+;;                    :description "test description"
+;;                    :path/secret/root "~/.config/spydez/secret"
+;;                    :path/secret/init "path/emacs/doom")
 
 
 ;;------------------------------------------------------------------------------

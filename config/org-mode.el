@@ -284,6 +284,18 @@
 
   )
 
+;;------------------------------
+;; Undo Doom hacks to Org-Mode
+;;------------------------------
+(after! evil-org
+  ;; Make [TAB] cycle through all (sub)tree visibilities (the default behavior) instead of just current tree.
+  ;;   - https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/org/README.org#hacks
+  (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
+
+  ;; Make 'open link' open file in other window like org-mode defaults to doing.
+  ;; Doom changes this to #'find-file.
+  (setf (alist-get 'file org-link-frame-setup) #'find-file-other-window))
+
 
 ;;---------------------
 ;; TODO: Do these work well with Evil?

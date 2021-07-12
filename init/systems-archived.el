@@ -1,14 +1,16 @@
-;;; spy/system/+multiplex/systems-archived.el -*- lexical-binding: t; -*-
+;;; init/systems-archived.el -*- lexical-binding: t; -*-
 
 ;;----------------------Retirement Home for Old Systems.------------------------
 ;;--                          What's that, Sonny?                             --
 ;;---------------------------(Yell - they're old.)------------------------------
 
 
-;;---
-;; work/2013/desk::4c4925-0b54bd
-;;   via Windows 10
-;;---
+;;------------------------------------------------------------------------------
+;; Archived: 2021-06-30
+;; Domain:   Work
+;; ID:       work/2013/desk::4c4925-0b54bd
+;; OS:       Windows 7
+;;------------------------------------------------------------------------------
 (let* ((hash "4c4925-0b54bd")
        (id   (concat "work/2013/desk::" hash))
        (path/root "c:/home/cole/.secret.d/")

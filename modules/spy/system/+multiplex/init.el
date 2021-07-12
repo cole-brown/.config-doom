@@ -22,6 +22,21 @@
 ;; Getter/Setter for jerky system keys.
 ;;------------------------------------------------------------------------------
 
+(defun sss:systems/add (hash)
+  "Add HASH to the list of system hashes if not already present."
+  (let ((hashes (jerky/get 'system 'hashes)))
+    (when (not (member hash hashes))
+      (jerky/set 'system 'hashes
+                 :value (cons hash hashes)
+                 :docstr "List of all system hashes."))))
+
+
+(defun sss:systems/hashes ()
+  "Get a list of all system hashes."
+  (jerky/get 'system 'hashes))
+;; (sss:systems/hashes)
+
+
 (defun spy:system/set (&rest plist)
   "For setting a system's multiplex settings.
 
@@ -55,6 +70,7 @@ PLIST is a plist with keys:
                 (stringp hash)
                 (stringp value)
                 (string= hash value))
+           (sss:systems/add hash)
            (jerky/set 'system 'hash
                       :value value))
 
@@ -72,6 +88,7 @@ PLIST is a plist with keys:
 
           ;; Valid - save it.
           (t
+           (sss:systems/add hash)
            (if docstr
                (jerky/set 'system hash keys
                           :value value
@@ -173,8 +190,6 @@ on the UNIQUE-ID of the system and the ROOT path.
 ;;------------------------------------------------------------------------------
 ;; Define a System
 ;;------------------------------------------------------------------------------
-
-
 
 (cl-defun spy:system/define (&key hash
                                   domain
@@ -320,11 +335,70 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
 ;;                    :path/secret/init "path/emacs/doom")
 
 
-;;------------------------------------------------------------------------------
-;; Load the System Defs.
-;;------------------------------------------------------------------------------
+(defun spy:system/show (&optional hash)
+  "Displays system info for system identified by HASH.
 
-(load! "systems")
+If HASH is nil, displays all systems' infos."
+  ;;------------------------------
+  ;; Error Checking
+  ;;------------------------------
+  (unless (or (stringp hash)
+              (null hash))
+    (error "spy:system/show: HASH must be a string or nil. Got type %S: %S"
+           (type-of hash)
+           hash))
+
+  ;; Show each system, or just the matching system.
+  (let ((buffer (spy:buffer/special-name "Systems" nil :info)))
+    (if hash
+        (sss:system/show hash buffer)
+
+      (dolist (hash/system (sss:systems/hashes))
+        (sss:system/show hash/system buffer)))))
+;; (spy:system/show)
+
+
+(defun sss:system/show (hash buffer)
+  "Displays system info for system identified by HASH."
+  (with-current-buffer (get-buffer-create buffer)
+    (goto-char (point-max))
+    (let* ((current (string= hash (spy:system/hash)))
+           (id (spy:system/get hash 'id))
+           ;; Split ID up into domain, date, and type.
+           (prefixes (nth 0 (spy:hash/split id)))
+           (domain   (nth 0 prefixes))
+           (date     (nth 1 prefixes))
+           (type     (nth 2 prefixes))
+           (description (jerky/get 'system hash 'id
+                                   :field :docstr))
+           (path/root (spy:system/get hash 'path 'secret 'root))
+           (path/init (spy:system/get hash 'path 'secret 'emacs)))
+      (insert
+       (format (concat "\n\n"
+                       "System %s:\n"
+                       "%s"
+                       "    -> hash:          %s\n"
+                       "    -> domain:        %s\n"
+                       "    -> date:          %s\n"
+                       "    -> type:          %s\n"
+                       "    -> description:   %s\n"
+                       "    -> path/root:     %s\n"
+                       "    -> path/init:     %s")
+               id
+               (if current
+                   "  --> THIS SYSTEM! <--\n"
+                 "")
+               hash domain date type description
+               path/root path/init)))))
+
+
+;; ;;------------------------------------------------------------------------------
+;; ;; Load the System Defs.
+;; ;;------------------------------------------------------------------------------
+;;
+;; (load! "systems")
+;;
+;; [2021-07-11]: This is done in .doom.d/init/systems.el now.
 
 
 ;;------------------------------------------------------------------------------

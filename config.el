@@ -35,15 +35,24 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Pre-Config Init
+;;------------------------------------------------------------------------------
+
+;; Everything required before the config step is run.
+(load! "init/init.el")
+
+
+;;------------------------------------------------------------------------------
 ;; Includes
 ;;------------------------------------------------------------------------------
 
-;;------------------------------
-;; Set-Up imp Roots
-;;------------------------------
-
-(imp:path:root :modules (imp:path:paths->path doom-private-dir "modules"))
-(imp:path:root :config (imp:path:paths->path doom-private-dir "config"))
+;; TODO: delete?
+;; ;;------------------------------
+;; ;; Set-Up imp Roots
+;; ;;------------------------------
+;; Moved to init/init.el
+;; (imp:path:root :modules (imp:path:paths->path doom-private-dir "modules"))
+;; (imp:path:root :config (imp:path:paths->path doom-private-dir "config"))
 
 ;;------------------------------
 ;; Include Some of my 'Packages'

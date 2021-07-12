@@ -29,8 +29,12 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Config/Load Helpers.
+;; Loading Helpers.
 ;;------------------------------------------------------------------------------
+
+;; Always load `init' unless specifically removed.
+(unless (featurep! -init)
+  (load! "+init"))
 
 ;; Always load `config' unless specifically removed.
 (unless (featurep! -config)

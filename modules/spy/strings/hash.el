@@ -154,6 +154,15 @@ Finally, it join prefixes string and inputs hash string with
 ;; (spy:hash '(jeff compy) 'laptop-2020)
 
 
+(defun spy:hash/split (hash/pretty)
+  "Split a pretty hash back up into input prefixes and the pretty hash."
+  (let ((split (split-string hash/pretty spy:hash/join/prepend)))
+    ;; Return: '((prefixes ...) hash)
+    (list (split-string (nth 0 split) spy:hash/join/prefixes)
+          (nth 1 split))))
+;; (spy:hash/split (spy:hash '(jeff compy) 'laptop-2020))
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

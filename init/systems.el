@@ -1,8 +1,10 @@
-;;; spy/system/+multiplex/systems.el -*- lexical-binding: t; -*-
+;;; init/systems.el -*- lexical-binding: t; -*-
 
 ;;------------------Init & Config Help for Multiple Systems.--------------------
 ;;--                     What computer is this anyways?                       --
 ;;--------------------------(probably the wrong one)----------------------------
+
+(imp:require :modules 'spy 'system 'multiplex)
 
 
 ;;------------------------------------------------------------------------------
@@ -51,7 +53,7 @@
                    :date "2017"
                    :type "desk"
                    :description "(Windows) Home desktop PC built in 2017."
-                   :path/secret/root "~/.config/spydez/secret")
+                   :path/secret/root "~/.secret.d")
 
 
 ;; Generate a new system's UID using this:
@@ -61,4 +63,11 @@
 ;;
 ;; (spy:system/unique-id "home" "2017" "desk")
 ;;
-;; Then add it to jerky by copy/modifying a whole `let*' block above.
+;; Then add the system by creating another `spy:system/define' call with the
+;; string ID created.
+
+
+
+;;----------------------------------------------------------
+;; Domain: Work
+;;----------------------------------------------------------

@@ -13,11 +13,10 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Secret-Getter
+;; Initialization
 ;;------------------------------------------------------------------------------
 
-
-(defun sss:secret/init ()
+(defun spy:secret/init ()
   "Load secret's root init.el."
   (let* ((hash (spy:system/hash))
          (id   (spy:system/get hash 'id))
@@ -90,6 +89,19 @@
            (load secret/path/load)))))
 
 
+;;------------------------------------------------------------------------------
+;; Configuration
+;;------------------------------------------------------------------------------
+
+(defun spy:secret/config ()
+  "Configure this system's secrets."
+  (sss:secret/load 'emacs "config"))
+
+
+;;------------------------------------------------------------------------------
+;; Helper Functions for Loading Files
+;;------------------------------------------------------------------------------
+
 (defun sss:secret/load (key file)
   "Load FILE (do not include '.el[c]') from this system's secrets
 directory indicated by KEY, if it has secrets.
@@ -160,18 +172,18 @@ And it must have FILE in <dir>.
 
     ;; Else no hash or id or dir found...
     ;; TODO: warning? quiet? use mis0 or something?
-    (mis0/init/message (concat "No secret '%s' for this system:\n"
-                               "   hash: %s\n"
-                               "     id: %s\n"
-                               "    dir: %s\n"
-                               "   path: %s\n"
-                               "   name: %s\n")
-                       key
-                       hash
-                       id
-                       dir
-                       path
-                       name))
+    (mis0/init/message (mapconcat #'identity
+                                  '("sss:secret/load:"
+                                    "  No secret '%s' for this system."
+                                    "  file: %s"
+                                    "  -> hash: %s"
+                                    "  ->   id: %s"
+                                    "  ->  dir: %s"
+                                    "  -> path: %s"
+                                    "  -> name: %s")
+                               "\n")
+                       key file
+                       hash id dir path name))
   nil)
 
 
@@ -192,10 +204,10 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
       (cond ((or (null filepath)
                  (not (stringp filepath)))
              (mis0/init/message "%s: Cannot load path; it is not a string: %s"
-                                'sss:secret/load
+                                'sss:secret/load.path
                                 filepath)
              (warn "%s: Cannot load path; it is not a string: %s"
-                   'sss:secret/load
+                   'sss:secret/load.path
                    filepath)
              nil)
 
@@ -203,11 +215,11 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
             ;; Add ".el" for actual file check.
             ((not (file-exists-p name))
              (mis0/init/message "%s: Cannot load path; it does not exist: %s"
-                                'sss:secret/load
+                                'sss:secret/load.path
                                 name)
              ;; Don't warn; some just don't exist.
              ;; (warn "%s: Cannot load path; it does not exist: %s"
-             ;;       'sss:secret/load
+             ;;       'sss:secret/load.path
              ;;       name)
              nil)
 
@@ -224,7 +236,7 @@ Appends PATH (do not include '.el[c]' in the last, filename, component).
                                "   root: %s\n"
                                "   path: %s\n"
                                "   name: %s\n")
-                       'sss:secret/load
+                       'sss:secret/load.path
                        path
                        hash
                        id

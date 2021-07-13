@@ -228,6 +228,27 @@ PATH/SECRET/INIT - Relative path from PATH/SECRET/ROOT to the Emacs init files
                          set up.
 
 DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
+  (when debug
+    (message (mapconcat #'identity
+                        '("spy:system/define:"
+                          "  hash:   %S"
+                          "  domain: %S"
+                          "  date:   %S"
+                          "  desc:   %S"
+                          "  root:   %S"
+                          "  init:   %S"
+                          "  debug:  %S"
+                          )
+                        "\n")
+             hash
+             domain
+             date
+             type
+             description
+             path/secret/root
+             path/secret/init
+             debug))
+
   ;;------------------------------
   ;; Error Checking
   ;;------------------------------
@@ -271,7 +292,7 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
                     path/secret/init)
             errors))
 
-    (if errors
+    (when errors
         (error (concat "spy:system/define: Invalid parameter"
                        (when (!= 1 (length errors))
                          "s")
@@ -339,11 +360,12 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
   "Displays system info for system identified by HASH.
 
 If HASH is nil, displays all systems' infos."
+  (interactive)
   ;;------------------------------
   ;; Error Checking
   ;;------------------------------
-  (unless (or (stringp hash)
-              (null hash))
+  (unless (or (null hash)
+              (stringp hash))
     (error "spy:system/show: HASH must be a string or nil. Got type %S: %S"
            (type-of hash)
            hash))
@@ -365,7 +387,9 @@ If HASH is nil, displays all systems' infos."
     (let* ((current (string= hash (spy:system/hash)))
            (id (spy:system/get hash 'id))
            ;; Split ID up into domain, date, and type.
-           (prefixes (nth 0 (spy:hash/split id)))
+           (prefixes (nth 0 (if id
+                                (spy:hash/split id)
+                              nil)))
            (domain   (nth 0 prefixes))
            (date     (nth 1 prefixes))
            (type     (nth 2 prefixes))

@@ -1,5 +1,9 @@
 ;;; init/secrets.el -*- lexical-binding: t; -*-
 
+
+(imp:require :modules 'spy 'secret)
+
+
 ;;--------------------------Initialize Our Secrets.-----------------------------
 ;;--               You're not allowed to know what they are.                  --
 ;;---------------------------------(shhh...)------------------------------------
@@ -10,4 +14,4 @@
 ;;   - A hash & id for this computer.
 ;;   - A valid root init.el for secrets.
 ;; secrets/init.el will do the per-computer stuff.
-(sss:secret/init)
+(spy:secret/init)

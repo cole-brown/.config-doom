@@ -4,19 +4,19 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Requirements
+;; Includes
 ;;------------------------------------------------------------------------------
 
-;; Need load function.
-(imp:require :modules 'spy 'secret)
-(imp:require :jerky)
+;; ;; Need load function.
+;; (imp:require :modules 'spy 'secret)
+;; (imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------
-;; Load our specific system's config, if we have one.
+;; Configuration
 ;;------------------------------------------------------------------------------
 
-(sss:secret/load 'emacs "config")
+;; None, currently.
 
 
 ;;------------------------------------------------------------------------------

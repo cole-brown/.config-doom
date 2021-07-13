@@ -35,34 +35,11 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Pre-Config Init
+;; Pre-Config Init, Includes
 ;;------------------------------------------------------------------------------
 
 ;; Everything required before the config step is run.
-(load! "init/init.el")
-
-
-;;------------------------------------------------------------------------------
-;; Includes
-;;------------------------------------------------------------------------------
-
-;; TODO: delete?
-;; ;;------------------------------
-;; ;; Set-Up imp Roots
-;; ;;------------------------------
-;; Moved to init/init.el
-;; (imp:path:root :modules (imp:path:paths->path doom-private-dir "modules"))
-;; (imp:path:root :config (imp:path:paths->path doom-private-dir "config"))
-
-;;------------------------------
-;; Include Some of my 'Packages'
-;;------------------------------
-
-;; These /should/ all be loaded already via Doom's module init.
-(imp:require :jerky)
-(imp:require :modules 'spy 'file 'path)
-(imp:require :modules 'spy 'system 'config)
-(imp:require :modules 'spy 'system 'package)
+(load! "init/init")
 
 
 ;;------------------------------------------------------------------------------
@@ -79,6 +56,16 @@
 
 ;; TODO: a readme...
 ;;   - func naming scheme
+
+
+;;------------------------------------------------------------------------------
+;; Secrets
+;;------------------------------------------------------------------------------
+
+;; Currently, need to configure my secrets before anything else.
+;; TODO: move some stuff to init, use secrets config for /after/ non-secret
+;; config is done?
+(spy:secret/config)
 
 
 ;;------------------------------------------------------------------------------

@@ -54,6 +54,81 @@ Returns nil if no secrets ID for this system."
 ;; (spy:secret/id)
 
 
+(defun sss:secret/path/root ()
+  "Get secrets' base root dir for all systems."
+  (spy:system/get (spy:secret/hash) 'path 'secret 'root))
+
+
+(defun sss:secret/path/load ()
+  "Get secrets' load root dir for all systems."
+  (spy:system/get (spy:secret/hash) 'path 'secret 'emacs))
+
+
+(defun sss:secret/path/system ()
+  "Get this system's secrets' load dir."
+  (spy:system/get (spy:secret/hash) 'path 'secret 'system))
+
+
+(defun sss:secret/validate (file)
+  "Validate ID, hash, and root directory exist and that FILE exists."
+  (let* (success
+         reason
+         (hash (spy:secret/hash))
+         (id   (spy:secret/id))
+         (dir  (spy:system/get hash 'path 'secret 'system))
+         (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
+         (name (concat path ".el")))
+
+    ;; Check for validity.
+    (cond
+     ((null hash)
+      (setq success nil
+            reason (format "Secrets hash is null for this system.")))
+
+     ((null id)
+      (setq success nil
+            reason (format "Secrets ID is null for this system.")))
+
+     ((or (null dir)
+          (not (stringp dir)))
+      (setq success nil
+            reason (format "Secrets %s for this system (%s) is invalid: %s"
+                           "directory"
+                           id
+                           dir)))
+
+     ;; Does dir even exist?
+     ((not (file-directory-p dir))
+      (setq success nil
+            reason (format "Secrets %s for this system (%s) does not exist: %s"
+                           "directory"
+                           id
+                           dir)))
+
+     ;; What about the filepath?
+     ;; Add ".el" for actual file check.
+     ((not (file-exists-p name))
+      (setq success nil
+            reason (format "Secrets %s for this system (%s) does not exist: %s"
+                           "file"
+                           id
+                           name)))
+
+     ;; File exists; return the load path...
+     (t
+      (setq success t
+            reason nil)))
+
+  ;; Return plist of vars and success/reason.
+  (list :success success
+        :reason reason
+        :hash hash
+        :id id
+        :path/load path
+        :path/name name)))
+;; (sss:secret/validate "init")
+
+
 (defun sss:secret/path (file)
   "Get the path to secrets FILE for this system.
 
@@ -62,98 +137,45 @@ NOTE FILE must be filename sans extension (e.g. \"init\", not \"init.el\")!
 Returns a plist with keys:
   - :id        - `spy:secret/id' string or nil.
   - :path/name - Path to FILE, with extension.
-  - :path/load - Path to FILE, without extension. Use this for loading the file. "
-  (if-let* ((hash (spy:secret/hash))
-            (id   (spy:secret/id))
-            (dir  (spy:system/get hash 'path 'secret 'system))
-            (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
-            (name (concat path ".el")))
-      (progn
-        (mis0/init/message (mapconcat #'identity
-                            '("sss:secret/path(%S)"
-                              "  hash: %S"
-                              "  id:   %S"
-                              "  dir:  %S"
-                              "  path: %S"
-                              "  name: %S")
-                            "\n")
-                 file hash id dir path name)
+  - :path/load - Path to FILE, without extension. Use this for loading the file."
+  (let* ((vars (sss:secret/validate file))
+         (hash (plist-get vars :hash))
+         (id (plist-get vars :id))
+         (path/load (plist-get vars :path/load))
+         (path/name (plist-get vars :path/name)))
+    (if (not (plist-get vars :success))
+        (progn
+          ;; Invalid something or other. Print what.
+          (mis0/init/message (mapconcat #'identity
+                                        '("sss:secret/path(%S)"
+                                          "    hash: %S"
+                                          "    id:   %S"
+                                          "    path: %S"
+                                          "    name: %S"
+                                          "  [FAILURE]: %S")
+                                        "\n")
+                             file hash id path/load path/name
+                             (plist-get vars :reason))
+
+          ;; Return nils on error.
+          (list :id id :path/name nil :path/load nil))
+
+      ;; Valid vars.
+      (mis0/init/message (mapconcat #'identity
+                                    '("sss:secret/path(%S)"
+                                      "    hash: %S"
+                                      "    id:   %S"
+                                      "    path: %S"
+                                      "    name: %S"
+                                      "  [SUCCESS]")
+                                    "\n")
+                         file hash id path/load path/name
+                        (plist-get vars :reason))
 
 
-        ;; We got all the vars from jerky, so check for existance now.
-        ;;    Do we have valid-ish data to check?
-        (cond ((or (null dir)
-                   (not (stringp dir)))
-               (mis0/init/message
-                (concat "%s(%s): "
-                        "Secrets %s for this system (%s) cannot be determined; "
-                        "directory is not a string: %s")
-                "sss:secret/path"
-                file
-                "directory"
-                id
-                dir)
-
-               ;; TODO: warn?
-
-               ;; Return a 'does not exist'.
-               (list :id id :file-name nil :load-path nil))
-
-              ;; Does dir even exist?
-              ((not (file-directory-p dir))
-               (mis0/init/message
-                (concat "%s(%s): "
-                        "Secrets %s for this system (%s) does not exist: %s")
-                "sss:secret/path"
-                file
-                "directory"
-                id
-                dir)
-
-               ;; TODO: warn?
-
-               ;; Return a 'does not exist'.
-               (list :id id :file-name nil :load-path nil))
-
-              ;; What about the filepath?
-              ;; Add ".el" for actual file check.
-              ((not (file-exists-p name))
-               (mis0/init/message
-                (concat "%s(%s): "
-                        "Secrets %s for this system (%s) does not exist: %s")
-                "sss:secret/path"
-                file
-                "file"
-                id
-                name)
-
-               ;; TODO: warn?
-
-               ;; Return a 'does not exist'.
-               (list :id id :file-name nil :load-path nil))
-
-              ;; File exists; return the load path...
-              (t
-               (list :id id :file-name name :load-path path))))
-
-    ;; Else no hash or id or dir found...
-    (mis0/init/message (mapconcat #'identity
-                                  '("sss:secret/load:"
-                                    "  No secret '%s' for this system."
-                                    "  file: %s"
-                                    "  -> hash: %s"
-                                    "  ->   id: %s"
-                                    "  ->  dir: %s"
-                                    "  -> path: %s"
-                                    "  -> name: %s")
-                               "\n")
-                       key file
-                       hash id dir path name)
-
-    ;; TODO: warn?
-
-    ;; Return a 'does not exist'.
-    (list :id id :file-name nil :load-path nil)))
+      ;; Return the load path on success.
+      (list :id id :path/name path/name :path/load path/load))))
+;; (sss:secret/path "init")
 
 
 (defun spy:secret/has ()
@@ -164,7 +186,7 @@ The system is considered to have secrets if:
   - It has an ID.
   - And it has a secrets 'init.el' file."
   (condition-case _
-      (not (null (sss:secret/path "init")))
+      (not (null (plist-get (sss:secret/validate "init") :success)))
     (error nil)))
 ;; (spy:secret/has)
 

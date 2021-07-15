@@ -19,7 +19,7 @@
 (defun spy:secret/init ()
   "Load secret's root init.el."
   (if (spy:secret/has)
-      (sss:secret/load "init")
+      (sss:secret/load.root "init")
 
     ;; No secrets for this system.
     (mis0/init/message (concat "%S %S: "
@@ -39,7 +39,7 @@
 (defun spy:secret/config ()
   "Configure this system's secrets."
   (if (spy:secret/has)
-      (sss:secret/load "config")
+      (sss:secret/load.root "config")
 
     ;; No secrets for this system.
     (mis0/init/message (concat "%S %S: "
@@ -56,26 +56,29 @@
 ;; Helper Functions for Loading Files
 ;;------------------------------------------------------------------------------
 
-(defun sss:secret/load (file)
-  "Load FILE (do not include '.el[c]') from this system's secrets
-directory indicated by KEY, if it has secrets."
-  (let* ((results (sss:secret/path file))
-         (id (plist-get results :id))
-         (path/name (plist-get results :path/file))
-         (path/load (plist-get results :path/load)))
+(defun sss:secret/load.root (file)
+  "Load FILE (do not include '.el[c]') from this system's secrets root
+init/config directory, if it has secrets.
 
-    ;; `sss:secret/path' took care of error cases, so just load if not nil.
-    (when path/load
-      (mis0/init/message "Loading %s secrets...\n   %s" id path/name)
-      (load path/load))))
+Does not check for validity."
+  (load (spy:path/to-file (sss:secret/path/load) file)))
+
+
+(defun sss:secret/load.system (file)
+  "Load FILE (do not include '.el[c]') from this system's secrets
+directory, if it has secrets.
+
+Does not check for validity."
+  (load (spy:path/to-file (sss:secret/path/system) file)))
 
 
 (defun sss:secret/load.path (&rest path)
   "For use in secrets files themselves, to load sub-files.
 
-Attempts to load file at system's 'path/secret/init' as defined by ':spy/system'.
+Attempts to load file at the system's 'path/secret/init' as defined by ':spy/system'.
 
 NOTE: Do not include file's extension ('.el[c]') in PATH."
+  ;; TODO: change to use `sss:secret/path'
   (if-let* ((hash (spy:secret/hash))
             (id   (spy:secret/id))
             (root (spy:system/get hash 'path 'secret 'emacs))

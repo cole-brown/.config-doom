@@ -292,6 +292,14 @@ Example:
 ;; Buffer
 ;;------------------------------------------------------------------------------
 
+(defun autogit//macro:with-buffer//tail (name)
+  "Make sure all windows viewing the buffer are viewing the tail of it."
+  (let ((windows (get-buffer-window-list name nil t)))
+    (while windows
+      (set-window-point (car windows) (point-max))
+      (setq windows (cdr windows)))))
+
+
 (defun autogit//macro:with-buffer//call (name body)
   "This is `autogit//macro:with-buffer' private function. Do not use.
 
@@ -301,10 +309,12 @@ NAME."
            (eq name :messages))
       ;; Just using `message' for the *Messages* buffer.
       `(progn
-         ,@body)
+         ,@body
+         (autogit//macro:with-buffer//tail ,name))
     ;; Create/get buffer to use while executing body.
     `(with-current-buffer (get-buffer-create ,name)
-       ,@body)))
+       ,@body
+       (autogit//macro:with-buffer//tail ,name))))
 
 
 (defmacro autogit//macro:with-buffer (name &rest body)
@@ -325,11 +335,16 @@ execute BODY in its context."
   "Show message buffer or not, depending on settings.
 
 If in Doom Emacs, set up popup rules first."
-  (if (autogit//emacs:doom?)
-      (with-popup-rules! autogit:doom:popup-rules
-        (pop-to-buffer name))
-    ;; Not using Doom & its popup window system, so just pop to the buffer.
-    (pop-to-buffer name)))
+  (display-buffer name)
+
+  ;; (display-buffer-pop-up-window name autogit:doom:popup-rules)
+
+  ;; (if (autogit//emacs:doom?)
+  ;;     (with-popup-rules! autogit:doom:popup-rules
+  ;;       (pop-to-buffer name))
+  ;;   ;; Not using Doom & its popup window system, so just pop to the buffer.
+  ;;   (pop-to-buffer name))
+  )
 ;; (autogit//buffer:show autogit:buffer:name/status)
 
 

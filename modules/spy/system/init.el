@@ -23,9 +23,7 @@
 
 ;; Always load `multiplex' unless specifically removed.
 (unless (featurep! -multiplex)
-  (load! "+multiplex/init")
-  ;; This init file will load the system definitions and whatever else is needed in the "+multiplex" dir.
-  )
+  (load! "+multiplex"))
 
 
 ;;------------------------------------------------------------------------------

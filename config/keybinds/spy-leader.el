@@ -137,21 +137,42 @@ in a mode with a special fill for hydra hinting."
    (t #'fill-paragraph)))
 
 
-(defun spy:cmd:fill/paragraph/per-mode (&optional justify)
+(defun spy:cmd:fill/paragraph/per-mode (&optional justify?)
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
-  (interactive)
-  (funcall (sss:fill/paragraph/fn-for-mode) justify))
+  (interactive (list (yes-or-no-p "Justify? "))
+  (funcall (sss:fill/paragraph/fn-for-mode) justify?))
 
 
-(defun spy:cmd:fill/region/single-line (&optional justify)
+(defun spy:cmd:fill/region/single-line (&optional justify?)
   "Grab start/end of current line and call `fill-region'. i.e.
 \"'Fill Region' on just this line, please.\""
-  (interactive)
+  (interactive (list (yes-or-no-p "Justify? ")))
 
   (let ((from (save-excursion (beginning-of-line) (point)))
         (to   (save-excursion (end-of-line)       (point))))
-    (fill-region from to justify)))
+    (fill-region from to justify?)))
+
+
+(defun spy:cmd:fill/dwim/to-column (fill-to-column &optional justify?)
+  "Fills line/region based on FILL-TO-COLUMN.
+
+e.g. if FILL-TO-COLUMN is 80 and a region is selected, fills that region as if
+the `fill-column' variable was 80.
+
+If no region is active, fills current line."
+  (interactive (list
+                (read-number "Fill to Column: " 80)
+                (yes-or-no-p "Justify? ")))
+
+  (let ((fill-column fill-to-column))
+    ;; DWIM: Region? Fill that.
+    (if (region-active-p)
+        ;; Region selected - fill that.
+        (fill-region (region-beginning) (region-end) justify?)
+
+      ;; No region? Fill this line.
+      (spy:cmd:fill/region/single-line justify?))))
 
 
 ;;------------------------------------------------------------------------------
@@ -235,6 +256,10 @@ If prefix ARG is set, include ignored/hidden files."
         :desc "Individual ¶"  "i" #'fill-individual-paragraphs
         :desc "Non-Uniform ¶" "n" #'fill-nonuniform-paragraphs
         :desc "Default ¶"     "d" #'fill-paragraph
+
+        ;; DWIM
+        :desc "Fill to 80 (line/region)" "8" (cmd! (spy:cmd:fill/dwim/to-column 80))
+        :desc "Fill to... (line/region)" "?" #'spy:cmd:fill/dwim/to-column
 
         ;; Unfill
         :desc "Unfill ¶"      "u" #'spy:cmd:fill/paragraph/unfill)
@@ -338,5 +363,5 @@ If prefix ARG is set, include ignored/hidden files."
        ;; File/Dir Names
        ;;------------------------------
        :desc "Copy Buffer's File Name"    "k" #'spy:cmd:file-or-dir-name/clipboard
-       :desc "Copy Buffer's Dir Name"    "K" (cmd!! #'spy:cmd:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
+       :desc "Copy Buffer's Dir Name"     "K" (cmd!! #'spy:cmd:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
        ))

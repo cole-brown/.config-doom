@@ -227,10 +227,6 @@
     ;; ;; Unused:
     ;; ;; :? "" :layout:evil:scroll-count-reset
 
-    ;;------------------------------
-    ;; TODO: Check/change keys:
-    ;;------------------------------
-
     ;; ;; ──┬────────────────
     ;; ;;   │ Lines
     ;; ;; ──┴────────────────
@@ -249,6 +245,28 @@
     ;; :m  "H"  :layout:evil:goto-line-visible-first
     ;; :m  "M"  :layout:evil:goto-line-visible-middle
     ;; :m  "L"  :layout:evil:goto-line-visible-last
+
+
+    ;; ╔═══════════════════╗
+    ;; ╠═ END: global map ═╣
+    ;; ╚═══════════════════╝
+
+
+    ;; ╔════════════════════════════════════════════════════════════════╗
+    ;; ║ Keymap: evil-org-mode-map                                      ║
+    ;; ╚════════════════════════════════════════════════════════════════╝
+    (:map evil-org-mode-map
+
+     ;; ┌────────────────────────────────┐
+     ;; │ Special Org Versions           │
+     ;; └────────────────────────────────┘
+     (:prefix ("s" . "Evil States")
+      :n   "t"  #'evil-org-open-below)) ;; Replace `evil-open-below' with `evil-org-open-below'.
+
+    ;; ╔══════════════════════════╗
+    ;; ╠═ END: evil-org-mode-map ═╣
+    ;; ╚══════════════════════════╝
+    ))
 
     ;; <<done>>
     ))

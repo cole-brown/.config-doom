@@ -90,19 +90,33 @@
     ;; Unbind from `evil-insert-line'.
     :n "I" :layout:common:undefined
 
+
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-snipe-mode-map / evil-snipe-local-mode-map        ║
     ;; ╚════════════════════════════════════════════════════════════════╝
+    (:map (evil-snipe-mode-map evil-snipe-local-mode-map)
 
-    ;; ┌────────────────────────────────┐
-    ;; │ Prefixes                       │
-    ;; └────────────────────────────────┘
-    ;; Doom or General or someone will complain if bound keys are not
-    ;; unbound before being used for prefixes...
+     ;; ┌────────────────────────────────┐
+     ;; │ Prefixes                       │
+     ;; └────────────────────────────────┘
+     ;; Doom or General or someone will complain if bound keys are not
+     ;; unbound before being used for prefixes...
 
-    ;; Unbind 's' from snipe.
-    :map (evil-snipe-mode-map evil-snipe-local-mode-map)
-    :nvm "s" :layout:common:undefined))
+     ;; Unbind 's' from snipe.
+     :nvm "s" :layout:common:undefined)
+
+
+    ;; ╔════════════════════════════════════════════════════════════════╗
+    ;; ║ Keymap: evil-org-mode-map                                      ║
+    ;; ╚════════════════════════════════════════════════════════════════╝
+    (:map evil-org-mode-map
+
+     ;; ┌────────────────────────────────┐
+     ;; │ Keys                           │
+     ;; └────────────────────────────────┘
+
+     ;; Unbind from `evil-open-below'.
+     :n "o" :layout:common:undefined)))
 
 
 ;;------------------------------

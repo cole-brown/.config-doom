@@ -108,6 +108,7 @@
              "|"
              ,(sss:org/todo.keyword "───────" wrap "n" 'timestamp) ; No one cares.
              ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp) ; Info.
+             ,(sss:org/todo.keyword "MEETING" wrap "e" 'timestamp) ; Meeting Notes.
              ,(sss:org/todo.keyword "MOVED"   wrap "m" 'timestamp) ; Moved somewhere else; no further action here.
              ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp) ; Task completed... whatever.
              ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)     ; Task completed successfully!!!
@@ -120,8 +121,9 @@
              ;; ,(sss:org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
              ,(sss:org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
              ,(sss:org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
-             ,(sss:org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
              "|"
+             ,(sss:org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
+             ,(sss:org/todo.keyword "♫" wrap "E" 'timestamp)    ; Meeting Notes.
              ,(sss:org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
              ,(sss:org/todo.keyword "☇" wrap "M" 'timestamp)    ; Moved somewhere else; no further action here.
              ,(sss:org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
@@ -140,7 +142,9 @@
                 (list (sss:org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
                 (list (sss:org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
                 (list (sss:org/todo.keyword "INFO" wrap)    'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "MEETING" wrap) 'spy:theme.face/org.todo.keyword/info)
                 (list (sss:org/todo.keyword "ⓘ" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "♫" wrap)       'spy:theme.face/org.todo.keyword/info)
                 (list (sss:org/todo.keyword "─" wrap)       'spy:theme.face/org.todo.keyword/null)
                 (list (sss:org/todo.keyword "∅" wrap)       'spy:theme.face/org.todo.keyword/null)
                 (list (sss:org/todo.keyword "?" wrap)       '+org-todo-onhold)

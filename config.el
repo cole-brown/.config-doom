@@ -104,6 +104,7 @@
 ;;------------------------------------------------------------------------------
 
 (spy:config 'emacs)
+(spy:config 'so-long) ;; Speed up Emacs for files with long-ass lines.
 (spy:config 'daemons)
 (spy:config 'completion)
 

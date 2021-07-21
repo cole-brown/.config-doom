@@ -140,7 +140,7 @@ in a mode with a special fill for hydra hinting."
 (defun spy:cmd:fill/paragraph/per-mode (&optional justify?)
   "Mode-aware fill-paragraph so I only have to bind one thing in
 the fill prefix-map."
-  (interactive (list (yes-or-no-p "Justify? "))
+  (interactive (list (yes-or-no-p "Justify? ")))
   (funcall (sss:fill/paragraph/fn-for-mode) justify?))
 
 

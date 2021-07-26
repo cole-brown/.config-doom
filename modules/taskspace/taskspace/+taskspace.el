@@ -1,4 +1,4 @@
-;;; taskspace/+taskspace.el --- Extremely Simple Taskspace/Workspace management  -*- lexical-binding: t; -*-
+;; taskspace/+taskspace.el --- Extremely Simple Taskspace/Workspace management  -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -196,11 +196,13 @@
 ;; §-TODO-§ [2020-02-25]: find/do the todos here?
 ;; §-TODO-§ [2020-08-19]: Use f.el everywhere?
 
-
 (require 'cl-lib) ;; for `some'
 (require 'seq) ;; for `seq-contains'
 (require 'f) ;; for nicer file api
 (require 'dash)
+(require 'imp)
+
+
 
 
 (defgroup taskspace nil
@@ -368,8 +370,8 @@ It should only be set via `taskspace/group/dlv'")
 
 (defun -t//jerky-p ()
   "Returns t if `jerky' and `jerky/dlv' are present as provided features."
-  (and (featurep 'jerky)
-       (featurep 'jerky/dlv)))
+  (and (imp:provided? :jerky)
+       (imp:provided? :jerky 'dlv)))
 ;; (-t//jerky-p)
 
 
@@ -756,37 +758,38 @@ This will return it's value or nil."
   "Try to figure out current group given currently visited buffer.
 
 Set `quiet' to non-nil for nil return on error, else will signal an error.
-`quiet' also suppresses the \"Current Taskspace Group: ...\" message.
-"
-  ;; dired doesn't have a buffer-file-name so use its default-directory.
+`quiet' also suppresses the \"Current Taskspace Group: ...\" message."
+  ;; `-t//path/current' can return nil, so make sure to account for it.
   (let ((path (-t//path/current))
         (current-root nil)
         (current-group nil))
 
-    ;; Search through our groups for something to match to that.
-    ;; Start by getting our group symbols...
-    (setq current-root
-          (car
-           (->> (-map #'car taskspace/groups)
-                ;; and turning into task and notes dirs...
-                (-map (lambda (g) (list
-                                   (-t//config g :dir/tasks)
-                                   (-t//config g :dir/notes))))
-                ;; Have list of tuple lists now; want flat list.
-                (-flatten)
-                ;; Figure out which one is our current root.
-                (-map (lambda (root)
-                        ;; If a child or the same dir as root, keep root.
-                        ;; Otherwise return nil for a "nope, not this one".
-                        (if (or
-                             (f-descendant-of? path root)
-                             (string= (directory-file-name (f-canonical path))
-                                      (directory-file-name (f-canonical root))))
-                            root
-                          nil)))
-                ;; Reduce down to non-nil answer.
-                ;; Assumes there is only one non-nil answer.
-                (-remove #'null))))
+    ;; Do we have enough to get started?
+    (when path
+        ;; Search through our groups for something to match to that.
+        ;; Start by getting our group symbols...
+        (setq current-root
+              (car
+               (->> (-map #'car taskspace/groups)
+                    ;; and turning into task and notes dirs...
+                    (-map (lambda (g) (list
+                                       (-t//config g :dir/tasks)
+                                       (-t//config g :dir/notes))))
+                    ;; Have list of tuple lists now; want flat list.
+                    (-flatten)
+                    ;; Figure out which one is our current root.
+                    (-map (lambda (root)
+                            ;; If a child or the same dir as root, keep root.
+                            ;; Otherwise return nil for a "nope, not this one".
+                            (if (or
+                                 (f-descendant-of? path root)
+                                 (string= (directory-file-name (f-canonical path))
+                                          (directory-file-name (f-canonical root))))
+                                root
+                              nil)))
+                    ;; Reduce down to non-nil answer.
+                    ;; Assumes there is only one non-nil answer.
+                    (-remove #'null)))))
 
     ;; How'd we do?
     (if (not (stringp current-root))
@@ -941,9 +944,14 @@ If NO-MESSAGE, skips output message."
 (defun -t//path/current ()
   "Returns correct 'current filepath' for both dired mode and not.
 "
-  (if (equal major-mode 'dired-mode)
-      default-directory
-    (f-dirname (buffer-file-name))))
+  (cond ((equal major-mode 'dired-mode)
+         default-directory)
+
+        ((buffer-file-name)
+         (f-dirname (buffer-file-name)))
+
+        (t
+         nil)))
 
 
 (defun -t//path/child-of? (child parent)

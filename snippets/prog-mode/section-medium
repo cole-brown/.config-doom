@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # contributor: Cole Brown <git@spydez.com>
-# name: spy-md: prog-mode medium comment section
-# key: spy-md
+# name: section medium: prog-mode "medium"-width (30) comment header
+# key: sec/med
 # --
 
 `(mis0/comment/wrap (make-string 30 ?-) (mis0/string/trim t))`

@@ -1,4 +1,4 @@
-;;;;; init.el --- Init for spy/files doom module. -*- lexical-binding: t; -*-
+;;;;; init.el --- Init for :spy/files doom module. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2020 Cole Brown
 ;;
@@ -15,7 +15,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Initialize the spy/files module.
+;; Initialize the :spy/files module.
 ;;
 ;;; Code:
 
@@ -24,9 +24,9 @@
 ;; Set up a Thing...
 ;;------------------------------------------------------------------------------
 
-(defgroup spy/group nil
+(defgroup spy:group nil
   "General group namespace for the defcustoms in my emacs init."
-  :prefix "spy/"
+  :prefix "spy:"
   ;; not really sure where to stick it
   :group 'convenience)
 
@@ -35,11 +35,12 @@
 ;; ...Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load `require' unless specifically removed.
-(unless (featurep! -require)
-  (load! "+require"))
+;; ;; Always load `strings' unless specifically removed.
+;; (unless (featurep! -strings)
+;;   (load! "+strings"))
 
 
-;; Always load `strings' unless specifically removed.
-(unless (featurep! -strings)
-  (load! "+strings"))
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :modules 'spy 'zero)

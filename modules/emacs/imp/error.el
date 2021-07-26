@@ -5,11 +5,16 @@
 ;;------------------------------------------------------------------------------
 
 (defun iii:error (func string &rest args)
-  "Signal an error with STRING and ARGS passed into `error'.
+  "Prepend FUNC string to STRING (the format-string for ARGS), then pass
+formatted string and ARGS into `imp:error:function'.
 
-STRING will have FUNC prepended."
-  (error "%s: %s" func (apply #'format string args)))
+Or, if `imp:error:function' is nil, just do nothing."
+  (when imp:error:function
+    (funcall imp:error:function
+             "%s: %s" func (apply #'format string args))))
 ;; (iii:error "test:func" "True == %s" "False")
+;; (let ((imp:error:function nil)) (iii:error "test:func" "True == %s" "False"))
+;; (let ((imp:error:function #'message)) (iii:error "test:func" "True == %s" "False"))
 
 
 ;;------------------------------------------------------------------------------

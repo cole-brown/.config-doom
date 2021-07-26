@@ -2,7 +2,7 @@
 
 
 
-(defun -s//buffer/delete.word (arg)
+(defun sss:buffer/delete.word (arg)
   "Avoids kill ring. Kill characters forward until encountering
 the end of a word. Delete ARG number of words.
 "
@@ -12,4 +12,4 @@ the end of a word. Delete ARG number of words.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'buffer 'delete)
+(imp:provide :modules 'spy 'buffer 'delete)

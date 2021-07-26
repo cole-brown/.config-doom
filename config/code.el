@@ -1,8 +1,8 @@
 ;;; config/code.el -*- lexical-binding: t; -*-
 
 
-(spy/require :spy 'hook 'def)
-(spy/require :spy 'jerky)
+(imp:require :modules 'spy 'hook 'def)
+(imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------
@@ -75,6 +75,21 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Defaults for All Programming Modes
+;;------------------------------------------------------------------------------
+
+(spy:hook/defun-and-hooker prog-mode-hook
+    '(:name "prog-mode/settings"
+      :file ".doom.d/config/code.el"
+      :docstr "Settings for all prog-mode derived modes. Non-LSP stuff."
+      :quiet t)
+
+    ;; My 2560x1440 monitor can display around 152 columns when fullscreen with
+    ;; two vertically-split windows, so we'll do 140 as our fill column?
+    (setq fill-column 140))
+
+
+;;------------------------------------------------------------------------------
 ;; Python
 ;;------------------------------------------------------------------------------
 
@@ -92,7 +107,7 @@
                           'symmetric)
 
   ;; Create and add my python-mode hook function to python-mode's hook var.
-  (spy/hook/defun-and-hooker python-mode-hook
+  (spy:hook/defun-and-hooker python-mode-hook
     '(:name "python/settings"
       :file ".doom.d/config/code.el"
       :docstr "Settings for python-mode itself. Non-LSP stuff."
@@ -100,5 +115,37 @@
 
     ;; pycodestyle insists 79 is the One True Fill Column...
     ;; We'll try it for all our python in general.
-    (setq fill-column 79))
-  )
+    (setq fill-column 79)))
+
+
+;;------------------------------------------------------------------------------
+;; Metasyntatic Variables
+;;------------------------------------------------------------------------------
+(setq spy/code/variables.metasyntatic
+      '((:metasyntactic (foo (bar (baz (qux (quux (quuux (quuuux (quuuuux))))))
+                                  (thud (grunt))
+                                  (bletch)
+                                  (fum)
+                                  (bongo)
+                                  (zot)))
+         (bazola (ztesch))
+         (fred (jim (sheila (barney))))
+         (corge (grault (flarp)))
+         (zxc (spqr (wombat)))
+         (shme)
+         (spam (eggs))
+         (snork)
+         (blarg (wibble))
+         (toto (titi (tata (tutu))))
+         (pippo (pluto (paperino)))
+         (aap (noot (mies)))
+         (oogle (foogle (boogle (zork (gork (bork)))))))
+        (:pinky (narf (zort (poit (egad (troz (fiddely-posh)))))))))
+
+
+;; TODO: This?
+;; (defun spy/code/var ()
+;;   "Returns a metasyntatic variable and copies it into the kill ring."
+;;   (interactive)
+;;   ;; TODO: this?
+;;   )

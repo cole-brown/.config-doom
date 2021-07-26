@@ -8,12 +8,12 @@
 ;;- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;;------------------------------------------------------------------------------
 
-(spy/require :spy 'hook 'def)
-(spy/require :spy 'buffer 'search)
-(spy/require :spy 'buffer 'name)
-(spy/require :spy 'path)
-(spy/require :spy 'jerky)
-(spy/provide :spy 'datetime 'format)
+(imp:require :jerky)
+(imp:require :modules 'spy 'hook 'def)
+(imp:require :modules 'spy 'buffer 'search)
+(imp:require :modules 'spy 'buffer 'name)
+(imp:require :modules 'spy 'file 'path)
+(imp:require :modules 'spy 'datetime 'format)
 
 
 ;;------------------------------------------------------------------------------
@@ -43,12 +43,12 @@
   ;;--------------------
 
   ;; Define org-mode hooks.
-  (spy/hook/defun org-mode-hook
+  (spy:hook/defun org-mode-hook
     '(:name "org/jump-to-now-target"
       :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
       :quiet t)
-    (smd/buffer/search.header "[[--now")
+    (spy:cmd:buffer/search.header "[[--now")
 
     (setq yas-indent-line 'fixed))
 
@@ -58,7 +58,7 @@
   ;;--------------------
 
   ;; Connect my hooks up.
-  ((org-mode . -s//hook/org/jump-to-now-target))
+  ((org-mode . sss:hook/org/jump-to-now-target))
 
 
   ;;--------------------
@@ -66,11 +66,11 @@
   ;;--------------------
 
   ;;--------------------
-  ;; customization
+  ;; customization: org-mode
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
-  ;; (org-default-notes-file (spy/path/to-file org-directory "notes.org"))
+  ;; (org-default-notes-file (spy:path/to-file org-directory "notes.org"))
   ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
@@ -100,62 +100,70 @@
         )
     (setq org-todo-keywords
           `((sequence  ;; Big Words sequence.
-             ,(-s//org/todo.keyword "TODO"    wrap "t")  ; A task that needs doing & is ready to do
-             ,(-s//org/todo.keyword "PROJECT" wrap "p")  ; A project, which usually contains other tasks
-             ,(-s//org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
-             ,(-s//org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
-             ,(-s//org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
-             ,(-s//org/todo.keyword "INFO"    wrap "i" 'timestamp)  ; No one cares.
+             ,(sss:org/todo.keyword "TODO"    wrap "t")  ; A task that needs doing & is ready to do
+             ,(sss:org/todo.keyword "PROJECT" wrap "p")  ; A project, which usually contains other tasks
+             ,(sss:org/todo.keyword "CURRENT" wrap "c" 'timestamp)  ; A task that is in progress
+             ,(sss:org/todo.keyword "WAITING" wrap "w" 'timestamp)  ; Something external is holding up this task
+             ,(sss:org/todo.keyword "HOLDING" wrap "h" 'timestamp)  ; This task is paused/on hold because of me
              "|"
-             ,(-s//org/todo.keyword "───────"    wrap "n" 'timestamp)  ; Info.
-             ,(-s//org/todo.keyword "DONE"    wrap "d" 'timestamp)  ; Task completed... whatever.
-             ,(-s//org/todo.keyword "SUCCESS" wrap "s" 'notes)  ; Task completed successfully!!!
-             ,(-s//org/todo.keyword "FAILURE" wrap "f" 'notes)  ; Task was completed the bad way.
-             ,(-s//org/todo.keyword "KILLED"  wrap "k" 'notes)) ; Task was cancelled, aborted, or is no longer applicable.
+             ,(sss:org/todo.keyword "───────" wrap "n" 'timestamp) ; No one cares.
+             ,(sss:org/todo.keyword "INFO"    wrap "i" 'timestamp) ; Info.
+             ,(sss:org/todo.keyword "MEETING" wrap "e" 'timestamp) ; Meeting Notes.
+             ,(sss:org/todo.keyword "MOVED"   wrap "m" 'timestamp) ; Moved somewhere else; no further action here.
+             ,(sss:org/todo.keyword "DONE"    wrap "d" 'timestamp) ; Task completed... whatever.
+             ,(sss:org/todo.keyword "SUCCESS" wrap "s" 'notes)     ; Task completed successfully!!!
+             ,(sss:org/todo.keyword "FAILURE" wrap "f" 'notes)     ; Task was completed the bad way.
+             ,(sss:org/todo.keyword "KILLED"  wrap "k" 'notes))    ; Task was cancelled, aborted, or is no longer applicable.
             (sequence ;; Checkboxes sequence.
-             ,(-s//org/todo.keyword "_" wrap "T")    ; A task that needs doing
-             ,(-s//org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
-             ;; ,(-s//org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
-             ;; ,(-s//org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
-             ,(-s//org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
-             ,(-s//org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
-             ,(-s//org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
+             ,(sss:org/todo.keyword "_" wrap "T")    ; A task that needs doing
+             ,(sss:org/todo.keyword "▶" wrap "C" 'timestamp)    ; Task is in progress
+             ;; ,(sss:org/todo.keyword "-" wrap "C" 'timestamp) ; Task is in progress
+             ;; ,(sss:org/todo.keyword "?" wrap "W" 'timestamp) ; Task is being held up or paused
+             ,(sss:org/todo.keyword "…" wrap "W" 'timestamp)    ; Task is being held up or paused
+             ,(sss:org/todo.keyword "⁈" wrap "H" 'timestamp)    ; Task is on hold
              "|"
-             ,(-s//org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
-             ,(-s//org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
-             ,(-s//org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
-             ,(-s//org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
-             ,(-s//org/todo.keyword "÷" wrap "K" 'notes)))      ; Task was cancelled, aborted, or is no longer applicable.
+             ,(sss:org/todo.keyword "ⓘ" wrap "I" 'timestamp)    ; Info.
+             ,(sss:org/todo.keyword "♫" wrap "E" 'timestamp)    ; Meeting Notes.
+             ,(sss:org/todo.keyword "∅" wrap "N" 'timestamp)    ; Null/No one cares.
+             ,(sss:org/todo.keyword "☇" wrap "M" 'timestamp)    ; Moved somewhere else; no further action here.
+             ,(sss:org/todo.keyword "X" wrap "D" 'timestamp)    ; Task completed... whatever.
+             ,(sss:org/todo.keyword "X" wrap "S" 'notes)        ; Task completed successfully!
+             ,(sss:org/todo.keyword "✘" wrap "F" 'notes)        ; Task completed the bad way.
+             ,(sss:org/todo.keyword "÷" wrap "K" 'notes)))      ; Task was cancelled, aborted, or is no longer applicable.
 
           ;; And set some faces for these. strings.
           org-todo-keyword-faces
-          (list (list (-s//org/todo.keyword "TODO" wrap)    'spy/theme.face/org.todo.keyword/todo)
-                (list (-s//org/todo.keyword "PROJECT" wrap) '+org-todo-project)
+          (list (list (sss:org/todo.keyword "TODO" wrap)    'spy:theme.face/org.todo.keyword/todo)
+                (list (sss:org/todo.keyword "PROJECT" wrap) '+org-todo-project)
 
-                (list (-s//org/todo.keyword "CURRENT" wrap) '+org-todo-active)
-                (list (-s//org/todo.keyword "▶" wrap)       '+org-todo-active)
+                (list (sss:org/todo.keyword "CURRENT" wrap) '+org-todo-active)
+                (list (sss:org/todo.keyword "▶" wrap)       '+org-todo-active)
 
-                (list (-s//org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
-                (list (-s//org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
-                (list (-s//org/todo.keyword "INFO" wrap)    'spy/theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "ⓘ" wrap)       'spy/theme.face/org.todo.keyword/info)
-                (list (-s//org/todo.keyword "─" wrap)       'spy/theme.face/org.todo.keyword/null)
-                (list (-s//org/todo.keyword "∅" wrap)       'spy/theme.face/org.todo.keyword/null)
-                (list (-s//org/todo.keyword "?" wrap)       '+org-todo-onhold)
-                (list (-s//org/todo.keyword "…" wrap)       '+org-todo-onhold)
-                (list (-s//org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "WAITING" wrap) '+org-todo-onhold)
+                (list (sss:org/todo.keyword "HOLDING" wrap) '+org-todo-onhold)
+                (list (sss:org/todo.keyword "INFO" wrap)    'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "MEETING" wrap) 'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "ⓘ" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "♫" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "─" wrap)       'spy:theme.face/org.todo.keyword/null)
+                (list (sss:org/todo.keyword "∅" wrap)       'spy:theme.face/org.todo.keyword/null)
+                (list (sss:org/todo.keyword "?" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "…" wrap)       '+org-todo-onhold)
+                (list (sss:org/todo.keyword "⁈" wrap)       '+org-todo-onhold)
 
-                (list (-s//org/todo.keyword "DONE" wrap)    'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "SUCCESS" wrap) 'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "X" wrap)       'spy/theme.face/org.todo.keyword/done.good)
-                (list (-s//org/todo.keyword "FAILURE" wrap) 'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "✘" wrap)       'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "KILLED" wrap)  'spy/theme.face/org.todo.keyword/done.bad)
-                (list (-s//org/todo.keyword "÷" wrap)       'spy/theme.face/org.todo.keyword/done.bad)))
+                (list (sss:org/todo.keyword "MOVED" wrap)   'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "☇" wrap)       'spy:theme.face/org.todo.keyword/info)
+                (list (sss:org/todo.keyword "DONE" wrap)    'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "SUCCESS" wrap) 'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "X" wrap)       'spy:theme.face/org.todo.keyword/done.good)
+                (list (sss:org/todo.keyword "FAILURE" wrap) 'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "✘" wrap)       'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "KILLED" wrap)  'spy:theme.face/org.todo.keyword/done.bad)
+                (list (sss:org/todo.keyword "÷" wrap)       'spy:theme.face/org.todo.keyword/done.bad)))
 
     ;; I guess this guy is covered by `hl-todo' instead of `org'?
-    ;; (push `(,(-s//org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
+    ;; (push `(,(sss:org/todo.keyword "TODO" wrap) warning bold) hl-todo-keyword-faces)
     ;; ...but `hl-todo' cannot do things that start/end with non-letters...
     ;; So yay.
     )
@@ -202,13 +210,6 @@
   (customize-set-variable 'org-cycle-separator-lines 0
                           "Hide extra newlines between (sub)trees")
 
-  ;; Hide extra newlines between (sub)trees.
-  ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
-  ;; Really useful because I tend to like the bonus whitespace for visually
-  ;; separating one tree from the next...
-  (customize-set-variable 'org-cycle-separator-lines 0
-                          "Hide /all/ extra newlines between (sub)trees.")
-
   ;; Doom already has good abbrevs.
   ;; ;; [[link:tag]] becomes something else.
   ;; ;; e.g.: [[google:test]] becomes link:
@@ -224,12 +225,12 @@
   ;; TODO: Not sure if works well with evil.
   ;; ;; Enable Speed Keys as per my speed-commands predicate function.
   ;; (org-use-speed-commands
-  ;;  #'spy/custom/org-mode/speed-commands-p
+  ;;  #'spy:custom/org-mode/speed-commands-p
   ;;  "Allow speed keys when at any headline *, not just beginning of line.")
 
 
   ;;--------------------
-  ;; configuration
+  ;; configuration: org-mode
   ;;--------------------
 
   ;; Put .org.txt into the mode list for org-mode. Useful for org-mode files in
@@ -237,10 +238,15 @@
   ;; do ".txt".
   (add-to-list 'auto-mode-alist '("\\.org.txt$" . org-mode))
 
+  ;; Keybinds are in: config/keybinds/org-mode.el
+
+  ;; Theme tweaks are in: config/theme/
+
+
   ;; TODO: whitespace-mode fix for org-mode... still needed?
   ;;   ;; This does double the work on the org-indent-strings array, but meh.
   ;;   (require 'cl-lib)
-  ;;   (defun spy/advice/org-indent/prefix-munger ()
+  ;;   (defun spy:advice/org-indent/prefix-munger ()
   ;;     "Initialize the indentation strings so the motherfucking
   ;; `org-indent-boundary-char' is set with a proper face you god damn
   ;; savages."
@@ -262,49 +268,37 @@
   ;;                   nil 'face 'org-indent)
   ;;               ))))
   ;;   (advice-add 'org-indent--compute-prefixes
-  ;;               :after #'spy/advice/org-indent/prefix-munger)
+  ;;               :after #'spy:advice/org-indent/prefix-munger)
 
-  ;; Map some things for org-mode.
-  (map! :after org
-        :map org-mode-map
-        :localleader
-        ;; :map evil-org-mode-map
-        :prefix "l" ;; links
-        :desc "Link as 'here'." "h" #'smd/org/here.link
-        :desc "Paste as 'here' link." "p" #'smd/org/here.yank)
 
-  ;; TODO: Do I want this again?
-  ;; ;; 'C-c <tab>' to show headings only (no top parent notes, no
-  ;; ;; children notes, just headings). Org-Mode had 'C-c <tab>' as
-  ;; ;; outline-show-children, which only shows direct children
-  ;; ;; headings, not all descendants' headings.
-  ;; ;; https://yiufung.net/post/org-mode-hidden-gems-pt1/
-  ;; ("C-c <tab>" . #'org-kill-note-or-show-branches)
+  ;;--------------------
+  ;; customization: org-agenda
+  ;;--------------------
 
-  ;; TODO: If/when Zenburn, see if I want this again:
-  ;;
-  ;; ;; There is a `:custom-face' section of use-packge, but I don't think I can do
-  ;; ;; the zenburn feature check or the `zenburn-with-color-variables' call.
-  ;; ;;
-  ;; ;; Change some headline colors.
-  ;; (require 'with)
-  ;; (with-feature 'zenburn-theme
-  ;;   (zenburn-with-color-variables
-  ;;     ;; I don't like green in these as it confuses me with the "DONE" etc
-  ;;     ;; flags, and I apparently like having my level 2 headings set to DONE and
-  ;;     ;; it was exactly the same color as far as my eyes could tell.
-  ;;     (set-face-foreground 'org-level-1 zenburn-orange)
-  ;;     (set-face-foreground 'org-level-2 zenburn-blue-1)
-  ;;     (set-face-foreground 'org-level-3 zenburn-yellow-2)
-  ;;     (set-face-foreground 'org-level-4 zenburn-cyan)
-  ;;     (set-face-foreground 'org-level-5 zenburn-red-4)
-  ;;     (set-face-foreground 'org-level-6 zenburn-blue-4)
-  ;;     ;; these get a bit weird but we're really super deeper than I've been
-  ;;     (set-face-foreground 'org-level-7 zenburn-cyan)
-  ;;     (set-face-foreground 'org-level-8 zenburn-yellow-2)
-  ;;     ;; and after 8 it repeats from 1
-  ;;     )
+  (when-let ((agenda-files (jerky/get 'path 'org 'agenda)))
+    (customize-set-variable 'org-agenda-files
+                            agenda-files
+                            "My paths to search for agenda items."))
+
+
+  ;;--------------------
+  ;; configuration: org-agenda
+  ;;--------------------
+
+
   )
+
+;;------------------------------
+;; Undo Doom hacks to Org-Mode
+;;------------------------------
+(after! evil-org
+  ;; Make [TAB] cycle through all (sub)tree visibilities (the default behavior) instead of just current tree.
+  ;;   - https://github.com/hlissner/doom-emacs/blob/develop/modules/lang/org/README.org#hacks
+  (remove-hook 'org-tab-first-hook #'+org-cycle-only-current-subtree-h)
+
+  ;; Make 'open link' open file in other window like org-mode defaults to doing.
+  ;; Doom changes this to #'find-file.
+  (setf (alist-get 'file org-link-frame-setup) #'find-file-other-window))
 
 
 ;;---------------------
@@ -323,7 +317,7 @@
 ;;  ;;   https://zzamboni.org/post/my-emacs-configuration-with-commentary/
 ;;  ;; Manual:
 ;;  ;;   https://orgmode.org/manual/Speed-keys.html
-;;  (defun spy/custom/org-mode/speed-commands-p ()
+;;  (defun spy:custom/org-mode/speed-commands-p ()
 ;;    "Allow speed keys when at any headline *, not just beginning of line."
 ;;    (and (looking-at org-outline-regexp) (looking-back "^\**")))
 
@@ -332,6 +326,24 @@
 ;; Org-Journal
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Domain Switcher Macro
+;;------------------------------
+(defmacro sss:org.journal/namespaced (namespace &rest body)
+  "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
+  `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
+                                              :namespace namespace))
+         (org-journal-dir ,(jerky/get 'path 'org 'journal
+                                      :namespace namespace)))
+     ,@body
+     ))
+;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
+;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+
+
+;;------------------------------
+;; Org-Journal Set-Up
+;;------------------------------
 (use-package! org-journal
   :after org
 
@@ -344,7 +356,7 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :home
-             :value (concat (spy/datetime/format.get 'iso-8601 'short)
+             :value (concat (spy:datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'notebook' not quickest to
                             ;; auto-complete to. Find better.
                             ".notebook.org")
@@ -355,25 +367,12 @@
   ;;---
   (jerky/set 'org-journal 'file 'format
              :namespace :work
-             :value (concat (spy/datetime/format.get 'iso-8601 'short)
+             :value (concat (spy:datetime/format.get 'iso-8601 'short)
                             ;; TODO: 'logbook' not quickest to
                             ;; auto-complete to. Find better.
                             ".logbook.org")
              :docstr "`org-journal-file-format' for :work")
 
-  ;;---
-  ;; Domain Switcher
-  ;;---
-  (defmacro -s//org.journal/namespaced (namespace &rest body)
-    "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
-    `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
-                                                :namespace namespace))
-           (org-journal-dir ,(jerky/get 'path 'org 'journal
-                                        :namespace namespace)))
-       ,@body
-       ))
-  ;; (-s//org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-  ;; (-s//org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
 
 
   ;; ;;--------------------
@@ -399,7 +398,7 @@
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
-                          (concat (spy/datetime/format.get 'iso-8601 'short)
+                          (concat (spy:datetime/format.get 'iso-8601 'short)
                                   ", %A"))
   ;; This can be a function if more is wanted. E.g. inserting new header text
   ;; into empty files.
@@ -424,98 +423,10 @@
   ;; configuration
   ;;--------------------
 
-
-  (when (jerky/namespace/has :work)
-    ;; Add `:home' namespaced org-journal stuff.
-    (when (featurep! :lang org +journal)
-      ;; Insert :work dir local variable(s).
-      (jerky/dlv/set nil
-                     (jerky/get 'path 'org 'journal :namespace :work)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :work
-                     :value (jerky/get 'path 'org 'journal :namespace :work)
-                     :docstr "org-journal's :work directory"
-                     :dlv 'full
-                     :safe t)
-      ;; (jerky/dlv/set nil
-      ;;                (jerky/get 'path 'taskspace :namespace :work)
-      ;;                'taskspace-mode
-      ;;                'org-journal-dir
-      ;;                :namespace :work
-      ;;                :value (jerky/get 'path 'org 'journal :namespace :work)
-      ;;                :docstr "org-journal's :work directory"
-      ;;                :dlv 'full
-      ;;                :safe t)
-
-      ;; Insert :work journal shortcuts if appropriate.
-      ;; Add to Doom Leader...
-      (map! :leader
-            ;; :normal, :visual states of evil
-            ;; (not :motion, :emacs, :insert, :operator-pending)
-            (:prefix "n" ;; notes
-             (:prefix "j" ;; ("j" . "journal")
-              ;; Work namespaced commands.
-              (:prefix ("w" . ":work journal")
-
-               :desc ":work - New Entry"           "j" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":work - Visit Journal"       "v" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":work - Search Forever"      "s" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
-
-  ;; Insert :home journal shortcuts if appropriate.
-  (when (jerky/namespace/has :home)
-    ;; Add `:home' namespaced org-journal stuff.
-    (when (featurep! :lang org +journal)
-      ;; Insert :home dir local variable(s).
-      (jerky/dlv/set nil
-                     (jerky/get 'path 'org 'journal :namespace :home)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :home
-                     :value (jerky/get 'path 'org 'journal :namespace :home)
-                     :docstr "org-journal's :home directory"
-                     :dlv 'full
-                     :safe t)
-
-      ;; Insert :home journal shortcuts if appropriate.
-      ;; Add to Doom Leader...
-      (map! :leader
-            ;; :normal, :visual states of evil
-            ;; (not :motion, :emacs, :insert, :operator-pending)
-            (:prefix "n" ;; notes
-             (:prefix "j" ;; journal
-              ;; Home namespaced commands.
-              (:prefix ("h" . ":home journal")
-               :desc ":home - New Entry"           "j" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":home - Visit Journal"       "v" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":home - Search Forever"      "s" (cmd!
-                                                        (-s//org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
+  ;; Keybinds are in: config/keybinds/org-mode.el
   )
+
+
 
 
 ;;------------------------------------------------------------------------------
@@ -527,17 +438,17 @@
 ;;---------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
-(defun -s//org-roam/file-name/timestamp-title (title)
+(defun sss:org-roam/file-name/timestamp-title (title)
   "Return a file name (without extension) for new files.
 
 It uses TITLE and the current timestamp to form a unique title.
 "
-  (let ((timestamp (spy/datetime/string.get 'iso-8601 'file))
+  (let ((timestamp (spy:datetime/string.get 'iso-8601 'file))
         (slug (org-roam--title-to-slug title)))
     (format "%s_%s" timestamp slug)))
 
 
-(defun -s//org-roam/buffer/deactivate ()
+(defun sss:org-roam/buffer/deactivate ()
   "Like `org-roam-buffer-deactivate' but don't delete the window."
   (interactive)
 
@@ -568,7 +479,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;--------------------
 (after! org-roam
   (customize-set-variable 'org-roam-buffer
-                          (spy/buffer/special-name "lily" nil :info))
+                          (spy:buffer/special-name "lily" nil :info))
 
   ;; Doom is a little pesky about keeping the org-roam buffer open.
   ;; It even does it when you close a file and an org buffer is in any visible frame.
@@ -579,7 +490,7 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; ;; Org-Roam filenames need to be uniquely named, but name doesn't matter much?
   ;; ;; Or so they say... So they can just gen file names from the current time.
   ;; (org-roam-filename-noconfirm t)
-  ;; (org-roam-file-name-function #'spy/org-roam/file-name/timestamp-title)
+  ;; (org-roam-file-name-function #'spy:org-roam/file-name/timestamp-title)
 
   ;; If 'right isn't desirable:
   ;; (org-roam-position 'left)
@@ -600,20 +511,7 @@ It uses TITLE and the current timestamp to form a unique title.
   ;; buffer" errors every other time it runs `org-roam-build-cache'.
   (when (eq system-type 'windows-nt)
     ;; default value: 'idle-timer
-    (customize-set-variable 'org-roam-db-update-method 'immediate))
-
-
-  (map! :leader
-        :prefix "nr" ;; notes -> roam
-        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
-        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate)
-  (map! :after org
-        :map org-mode-map
-        :localleader
-        :prefix "m" ;; org-roam is... 'm' here instead of 'r'.
-        ;; and copy the above 'map!':
-        :desc "Kill roam info buffer" "K" #'-s//org-roam/buffer/deactivate
-        :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate))
+    (customize-set-variable 'org-roam-db-update-method 'immediate)))
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(
@@ -651,8 +549,8 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;   :demand t
 ;;
 ;;   :custom
-;;   (org-contacts-files (spy/path/to-file
-;;                        (spy/dirky/path :secrets :secrets/org)
+;;   (org-contacts-files (spy:path/to-file
+;;                        (spy:dirky/path :secrets :secrets/org)
 ;;                        "contacts.org"))
 ;;
 ;;   :config
@@ -682,7 +580,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;  ;;   - Con: This doesn't update until point has moved off the line... Possibly
 ;;  ;;     interacting with my highlight row thing/mode?
 ;;  ;; Nice lil search for symbols: http://www.unicode.org/charts/
-;;  (spy/hook/defun org-mode-hook t
+;;  (spy:hook/defun org-mode-hook t
 ;;      nil "checkboxes" "init/config/configure-org-mode.el"
 ;;    "Beautify Org Checkbox Symbol"
 ;;    (setq prettify-symbols-alist
@@ -711,7 +609,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;----------
 ;;  ;; Show list markers with a middle dot instead of the
 ;;  ;; original character.
-;;  (spy/hook/defun org-mode-hook t
+;;  (spy:hook/defun org-mode-hook t
 ;;      nil "simple-list" "init/config/configure-org-mode.el"
 ;;    "Nice up simple lists - replacing hypen with a unicode middle dot."
 ;;    (font-lock-add-keywords

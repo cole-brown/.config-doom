@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # contributor: Cole Brown <git@spydez.com>
-# name: spy-sm: prog-mode small comment section
-# key: spy-sm
+# name: section small: prog-mode "small"-width (3) comment header
+# key: sec/sm
 # --
 
 `(mis0/comment/wrap (make-string 3 ?-) (mis0/string/trim t))`

@@ -1,7 +1,7 @@
 ;;; config/identity.el -*- lexical-binding: t; -*-
 
 
-(spy/require :spy 'io 'signature)
+(imp:provide :modules 'spy 'io 'signature)
 
 
 ;;------------------------------------------------------------------------------
@@ -18,4 +18,4 @@
 ;; Signatures & Marks
 ;;------------------------------------------------------------------------------
 
-(spy/signature/create "♫" user-full-name)
+(spy:signature/create "♫" user-full-name)

@@ -5,32 +5,36 @@
 
 ;; todo: spy-fan
 
-(spy/require :spy 'jerky)
-(spy/require :spy 'path)
-
-(require 'mis0/message)
-
 
 ;;------------------------------------------------------------------------------
-;; :spy/secret requirements
+;; :spy:secret requirements
 ;;------------------------------------------------------------------------------
 
+(load! "functions")
 (load! "load")
 
 
 ;;------------------------------------------------------------------------------
-;; Configure Secrets
+;; Notes
 ;;------------------------------------------------------------------------------
+;;
+;; User must call both:
+;;   `spy:secret/init'
+;;   `spy:secret/config'
+;;
+;; They should be called in .doom.d/config.el, before anything that may require
+;; their secrets.
+;;
+;; `spy:secret/init' must be called very early on.
+;;
+;; `spy:secret/config' could be called just after `spy:secret/init', or later
+;; on in config, depending on how you use your secrets' init/config.
 
-;; Go get our Secrets if we have the system set up for it.
-;; Only do this if we have:
-;;   - A hash & id for this computer.
-;;   - A valid root init.el for secrets.
-;; secrets/init.el will do the per-computer stuff.
-(spy//secret/load 'emacs "init")
+
+;; Existance of secrets for this system is first checked for in `spy:secret/init'.
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(spy/provide :spy 'secret)
+(imp:provide :modules 'spy 'secret)

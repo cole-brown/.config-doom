@@ -11,7 +11,7 @@
 ;; update them as needed.
 ;;---
 
-(defface spy/theme.face/org.todo.keyword/todo
+(defface spy:theme.face/org.todo.keyword/todo
   (list (cons
          ;; display type
          t
@@ -23,7 +23,7 @@
   :group 'doom-themes)
 
 
-(defface spy/theme.face/org.todo.keyword/background
+(defface spy:theme.face/org.todo.keyword/background
   (list (cons
          ;; display type
          t
@@ -33,7 +33,7 @@
   :group 'doom-themes)
 
 
-(defface spy/theme.face/org.todo.keyword/done.good
+(defface spy:theme.face/org.todo.keyword/done.good
   (list (cons
          ;; display type
          t
@@ -44,7 +44,7 @@
   :group 'doom-themes)
 
 
-(defface spy/theme.face/org.todo.keyword/done.bad
+(defface spy:theme.face/org.todo.keyword/done.bad
   (list (cons
          ;; display type
          t
@@ -55,7 +55,7 @@
   :group 'doom-themes)
 
 
-(defface spy/theme.face/org.todo.keyword/info
+(defface spy:theme.face/org.todo.keyword/info
   (list (cons
          ;; display type
          t
@@ -65,7 +65,7 @@
   "Face for todo keyword in todo sequence."
   :group 'doom-themes)
 
-(defface spy/theme.face/org.todo.keyword/null
+(defface spy:theme.face/org.todo.keyword/null
   (list (cons
          ;; display type
          t
@@ -89,7 +89,7 @@
 (setq doom-theme 'doom-zenburn)
 
 ;; I need the theme loaded now if I want to tweak colors. If it's not loaded,
-;; updating the `spy/theme.face/...' vars will fail silently.
+;; updating the `spy:theme.face/...' vars will fail silently.
 (load-theme doom-theme t)
 
 ;;------------------------------------------------------------------------------
@@ -98,4 +98,4 @@
 
 ;; Zenburn Customizations:
 (when (eq doom-theme 'doom-zenburn)
-  (spy/config 'theme 'zenburn))
+  (spy:config 'theme 'zenburn))

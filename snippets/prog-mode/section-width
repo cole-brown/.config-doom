@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# contributor: Cole Brown <code@brown.dev>
+# expand-env: ((width (mis0/style/width (spy:yas/number/parse-or-default :input 80 "Width: "))))
+# name: section <width>: prog-mode comment header section w/ settable width
+# key: sec//
+# --
+
+${1:$(mis0/comment/line width (mis0/string/indent 'existing) (mis0/string/trim t))}
+`(mis0/comment/wrap ""  width (mis0/string/indent 'existing) (mis0/string/trim t))` $1
+${1:$(mis0/comment/line width (mis0/string/indent 'existing) (mis0/string/trim t))}$0`(spy:yas/number/clear)`

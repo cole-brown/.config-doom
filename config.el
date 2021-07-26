@@ -35,25 +35,38 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Includes
+;; Pre-Config Init, Includes
 ;;------------------------------------------------------------------------------
 
-(spy/require :spy 'jerky)
-(spy/require :spy 'path)
-(spy/require :spy 'config)
-(spy/require :spy 'package)
+;; Everything required before the config step is run.
+(load! "init/init")
 
+
+;;------------------------------------------------------------------------------
+;; NOTE: Function Naming
+;;------------------------------------------------------------------------------
 
 ;; NOTE: My functions are named thusly:
-;;   - "spy/<name>": A "public" function.
-;;   - "-s//<name>": A "private" function - I don't want 'em all polluting the
-;;                   auto-complete, help, etc for "spy/".
-;;   - "smd/<name>": aka "spy cmd"
-;;                   A "public" and also /interactive/ function.
+;;   - "spy:<category>/<func>": A *public* function in "category" namespace.
+;;   - "sss:<category>/<func>": A *private* function in "category" namespace.
+;;     + I don't want 'em all polluting the auto-complete, help, etc for "spy:".
+;;   - "spy:cmd:<category>/<func>": aka "spy cmd"
+;;     + A *public* and also /interactive/ function.
 
 
 ;; TODO: a readme...
 ;;   - func naming scheme
+
+
+;;------------------------------------------------------------------------------
+;; Secrets
+;;------------------------------------------------------------------------------
+
+;; Currently, need to configure my secrets before anything else.
+;; TODO: move some stuff to init, use secrets config for /after/ non-secret
+;; config is done?
+(spy:secret/config)
+
 
 ;;------------------------------------------------------------------------------
 ;; Config Set-Up.
@@ -61,7 +74,7 @@
 
 ;; Our config files for different bits of emacs/doom/packages are in the
 ;; config sub-dir.
-(defun spy/doom/find-user-root ()
+(defun spy:doom/find-user-root ()
   "Finds the user's base doom dir by walking down from this file's path."
   (let* ((file-path-this (if load-in-progress
                              (file-name-directory load-file-name)
@@ -81,34 +94,38 @@
                 directory-path (directory-file-name
                                 (file-name-directory directory-path))))))
     directory-doom))
-;; (spy/doom/find-user-root)
+;; (spy:doom/find-user-root)
 
-(spy/config.root/set (spy/path/join (spy/doom/find-user-root) "config"))
+(spy:config.root/set (spy:path/join (spy:doom/find-user-root) "config"))
 
 
 ;;------------------------------------------------------------------------------
 ;; Emacs Set-Up.
 ;;------------------------------------------------------------------------------
 
-(spy/config 'emacs)
-(spy/config 'daemons)
-(spy/config 'completion)
+(spy:config 'emacs)
+(spy:config 'long-lines) ;; Speed up Emacs for files with long-ass lines.
+(spy:config 'daemons)
+(spy:config 'completion)
+
+;; Get rid of some Doom annoying functionality with respect to parens...
+(spy:config 'parenthesis)
 
 
 ;;------------------------------------------------------------------------------
 ;; Look & Feel
 ;;------------------------------------------------------------------------------
 
-(spy/config 'theme 'config)
-(spy/config 'ui)
-(spy/config 'whitespace)
+(spy:config 'theme 'config)
+(spy:config 'ui)
+(spy:config 'whitespace)
 
 
 ;;------------------------------------------------------------------------------
 ;; Cole Brown, Multi-pass.
 ;;------------------------------------------------------------------------------
 
-(spy/config 'identity)
+(spy:config 'identity)
 
 ;; TODO: need to change whatever snippet doom uses for new .el files. My github
 ;; username is not my computer username.
@@ -118,38 +135,62 @@
 ;; Keybinds
 ;;------------------------------------------------------------------------------
 
-;; (spy/package 'hercules)
-
-;; Changes to Emacs/Evil keybinds.
-(spy/config 'keybinds)
+;;------------------------------
+;; Input Method
+;;------------------------------
 
 ;; Changes to Evil, Evil Settings, etc.
-(spy/config 'evil)
+;;   - No changes to keybinds directly, but this is the most related section?
+(spy:config 'evil)
 
-;; My additions to a new entry in the SPC leader.
-(spy/config 'spy 'keybinds)
 
-;; Get rid of some Doom functionality...
-(spy/config 'parenthesis)
+;;------------------------------
+;; Keyboard Layout
+;;------------------------------
+
+;; Fully controlled by '.doom.d/init.el'.
+;;   - ':input/keyboard' module and its '+layout/spydez' flag.
+
+
+;;------------------------------
+;; Keybind Modifications
+;;------------------------------
+
+;; Whatever isn't big enough or important enough to warrent its own file.
+(spy:config 'keybinds 'misc)
+
+;; Specific things:
+(spy:config 'keybinds 'org-mode)
+
+;; My additions to the overabundance of keybindings:
+(spy:config 'keybinds 'spy-leader)
 
 
 ;;------------------------------------------------------------------------------
 ;; Notes, Org-Mode and Legions, etc.
 ;;------------------------------------------------------------------------------
 
-(spy/config 'taskspace)
-(spy/config 'org-mode)
+(spy:config 'taskspace)
+(spy:config 'org-mode)
 
 
 ;;------------------------------------------------------------------------------
 ;; yasnippet
 ;;------------------------------------------------------------------------------
 
-(spy/config 'yasnippet)
+(spy:config 'yasnippet)
 
 
 ;;------------------------------------------------------------------------------
 ;; Programming & Stuff
 ;;------------------------------------------------------------------------------
 
-(spy/config 'code)
+(spy:config 'code)
+
+
+;;------------------------------------------------------------------------------
+;; The End
+;;------------------------------------------------------------------------------
+
+;; Show warnings if mis0 got any during init.
+(mis0/init/complete 'show-warning)

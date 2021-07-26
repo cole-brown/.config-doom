@@ -1,0 +1,41 @@
+#+TITLE:       Keybind Notes
+#+AUTHOR:      Cole Brown
+#+EMAIL:       code@brown.dev
+#+DATE:        [2021-06-10]
+
+
+
+* Useful Keys I've Found So Far
+
+  - s - snipe - a two char search & goto.
+  - o - insert line below point and go into insert mode there.
+  - e - forward to word end
+  - b - backward to word begin
+  - u - undo
+  - - - previous line that isn't blank
+  - i - insert - switch to insert mode at/before point.
+  - a - append - switch to insert mode just after point.
+  - f - snipe - 1 character forward search
+  - s - snipe - 2 character forward search
+  - ; - repeat forwards
+  - , - repeat backwards
+  - ] SPC - insert newline below
+  - [ SPC - insert newline above
+  - Y - yank - yank to end of line
+  - x - delete character at point
+  - X - delete character before point
+
+  - i - insert before/at point
+  - a - insert after point
+  - o - insert line below point and go into insert mode there.
+    - `evil-open-below'
+
+
+* Explanation of `map!'
+http://github.com/hlissner/doom-emacs/issues/814#issuecomment-414051945
+
+
+
+* keyboard layout
+
+See ":input/keyboard/layout" module.

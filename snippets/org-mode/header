@@ -21,6 +21,6 @@
                                       "_"))
                         (capitalize file-name)))`}
 #+AUTHOR:      ${2:Cole Brown}
-#+EMAIL:       ${3:`(spy/signature/get 'id 'email :namespace (jerky/namespace.get))`}
-#+DATE:        ${4:`(spy/datetime/string.get 'org-inactive)`}
+#+EMAIL:       ${3:`(spy:signature/get 'id 'email :namespace (jerky/namespace.get))`}
+#+DATE:        ${4:`(spy:datetime/string.get 'org-inactive)`}
 $0

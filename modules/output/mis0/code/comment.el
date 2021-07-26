@@ -229,7 +229,7 @@ If there is a :string/indent in the MLIST(S), use that as the indention amount.
           (indent-str (-m//string/indent.get mlists))
           ;; Final Width: Full width minus comment pre/postfixes.
           ;; TODO: Make this just (width (-m//line/width ??? mlists))
-          (width (- (-m//line/width nil)
+          (width (- (-m//line/width mlists)
                     (-m//style/first :border mlists 0)
                     indent-amt
                     (+ (length prefix)

@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
 # contributor: Cole Brown <git@spydez.com>
-# name: spy-fan: prog-mode large, fancy comment section
-# key: spy-fan
+# name: section fancy: fancy prog-mode comment header section
+# key: sec/fancy
 # --
 
 ${1:Will do its thing on exit.$(when yas/moving-away-p (if yas-text

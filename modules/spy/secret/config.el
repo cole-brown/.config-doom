@@ -4,22 +4,23 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Requirements
+;; Includes
 ;;------------------------------------------------------------------------------
 
-;; Need load function.
-(spy/require :spy 'secret)
-(spy/require :spy 'jerky)
+;; ;; Need load function.
+;; (imp:require :modules 'spy 'secret)
+;; (imp:require :jerky)
 
 
 ;;------------------------------------------------------------------------------
-;; Load our specific system's config, if we have one.
+;; Configuration
 ;;------------------------------------------------------------------------------
 
-(spy//secret/load 'emacs "config")
+;; None, currently.
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (spy/provide :spy 'secret 'config)
+;; Already did `imp:provide' in init. Don't think we need to provide
+;; anything here.

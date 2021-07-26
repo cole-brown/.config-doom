@@ -18,6 +18,7 @@
        ;;chinese
        ;;japanese
        ;;layout            ; auie,ctsrnm is the superior home row
+       (keyboard +layout/spydez)
 
        :completion
        company           ; the ultimate code completion backend
@@ -75,6 +76,7 @@
        ;;undo              ; persistent, smarter undo for your inevitable mistakes
 
        vc                ; version-control and Emacs, sitting in a tree
+       imp               ; require/provide with more than one symbol
 
        :term
        ;;eshell            ; the elisp shell that works everywhere
@@ -89,6 +91,7 @@
 
        :tools
        ;;ansible
+       autogit             ; Commit (subdirs of) git repos automatically-ish.
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
        ;;docker
@@ -159,7 +162,7 @@
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
-       ;;rest              ; Emacs as a REST client
+       rest                ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
        (rust +lsp)              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
@@ -197,21 +200,23 @@
 
        :spy
        ;; Functions and Helpers
-       zero                ; spy/zero:     Must be first. spy/require, spy/provide, strings...
-       lisp                ; spy/lisp:     Helpful Elisp stuff.
-       file                ; spy/file:     For helpful path/file/dir functions.
-       buffer              ; spy/buffer:   Buffer, line, point, etc functions.
-       hook                ; spy/hook:     Hook helper macros/functions.
-       org                 ; spy/org:      Org-Mode helpers. Must be after buffer.
-       hydra               ; spy/hydra:    Helpers for Hydra package.
+       zero                ; spy:zero:     Must be first. Funcs needed to start with in init/config...
+       strings             ; spy:strings:  Should be very very early for other modules' use.
+       lisp                ; spy:lisp:     Helpful Elisp stuff.
+       file                ; spy:file:     For helpful path/file/dir functions.
+       buffer              ; spy:buffer:   Buffer, line, point, etc functions.
+       hook                ; spy:hook:     Hook helper macros/functions.
+       org                 ; spy:org:      Org-Mode helpers. Must be after buffer.
+       hydra               ; spy:hydra:    Helpers for Hydra package.
+       collections         ; spy:collections: alists, hash-tables, and... oh my!
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
-       jerky               ; spy/jerky:   For key/value tree.
+       jerky               ; spy:jerky:   For key/value tree.
        ;; Has to Be After jerky:
-       datetime            ; spy/datetime: For dates, times, datetimes, timedates...
+       datetime            ; spy:datetime: For dates, times, datetimes, timedates...
 
        ;; System Setup Init
-       system              ; spy/system:  For one-to-many config-to-computers setup.
-       io                  ; spy/io:      Input and output stuff (e.g. inserting signatures).
-       secret              ; spy/secret:  For per-system things, secret keys, etc.
+       system              ; spy:system:  For one-to-many config-to-computers setup.
+       io                  ; spy:io:      Input and output stuff (e.g. inserting signatures).
+       secret              ; spy:secret:  For per-system things, secret keys, etc.
        )

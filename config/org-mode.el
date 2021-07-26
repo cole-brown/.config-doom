@@ -323,6 +323,26 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Org-Agenda
+;;------------------------------------------------------------------------------
+
+;; Configured in `use-package!' for `org-mode', above.
+
+
+;;------------------------------
+;; Separate Workspace
+;;------------------------------
+;; Org-Agenda opens up a fuckton of org files, so separate it into its own
+;; workspace with an advice function or something?
+
+;; TODO: make advice function, using these:
+;;  - (+workspace-list-names) <- in order
+;;  - (+workspace-current-name)
+;;  - (+workspace-switch INDEX)
+;;  - (+workspace/new NAME)
+
+
+;;------------------------------------------------------------------------------
 ;; Org-Journal
 ;;------------------------------------------------------------------------------
 

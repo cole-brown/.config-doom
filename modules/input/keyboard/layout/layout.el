@@ -242,6 +242,48 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 ;; Layout Derivations
 ;;------------------------------------------------------------------------------
 
+(defun input//kl:layout:derive/search/registered (func registered-binds)
+  "Search REGISTERED-BINDS for a match to the desired FUNC.
+
+FUNC should be the function to search for.
+
+REGISTERED-BINDS should be `input//kl:layout:keybinds'.
+
+Returns keybind string or nil."
+  (let ((debug/tags '(:derive :derive/search))
+        keybind-found
+        (types input//kl:layout:types))
+    ;;------------------------------
+    ;; Types: :evil, :emacs, :common
+    ;;------------------------------
+    (while (and (not keybind-found)
+                types)
+      (let* ((type (caar types)) ;; types is alist, and we want the keys.
+             (keymaps (alist-get type registered-binds)))
+        (setq types (cdr types))
+        (input//kl:debug
+            "input//kl:layout:derive/search/registered"
+            debug/tags
+          "search type: %S" type)
+
+        ;;------------------------------
+        ;; Keymaps
+        ;;------------------------------
+        (let* ((index (if (and (keywordp (car keymaps))
+                               (eq :map (car keymaps)))
+                          2 ;; (:map 'map-symbol ...) <- we want '...'
+                        0)) ;; (...) <- map is nil/'global' and doesn't appear at start of list.
+               (keymaps/len (length keymaps)))
+        (while (and (not keybind-found)
+                    (< index keymaps/len))
+
+          ;; TODO: Work through the registered list looking for the keyword/function.
+          ;;   - Could have to recurse the search. Don't decide that here - just return the 'keybind', which may be a `:derive' list.
+
+          ))))
+    ;; Done searching - return whatever we did (or didn't) find.
+    keybind-found))
+
 
 (defun input//kl:layout:derive/search/in-progress (states func in-progress-map-forms)
   "Search `doom--map-batch-forms' for a match to the desired FUNC.

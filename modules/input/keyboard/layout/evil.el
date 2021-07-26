@@ -68,7 +68,9 @@
   :layout:evil:line-next-1-first-non-blank   #'evil-next-line-1-first-non-blank
   :layout:evil:line-next-first-non-blank     #'evil-next-line-first-non-blank
 
-  :layout:evil:goto-line-first-non-blank     #'evil-goto-line ;; default: last line in buffer
+  :layout:evil:goto-line-first               #'evil-goto-first-line
+  ;; :layout:evil:goto-line-last             #'evil-goto-last-line ;; <-- Does not exist.
+  :layout:evil:goto-line                     #'evil-goto-line ;; default: last line in buffer
   :layout:evil:goto-line-window-first        #'evil-window-top
   :layout:evil:goto-line-window-middle       #'evil-window-middle
   :layout:evil:goto-line-window-last         #'evil-window-bottom

@@ -27,6 +27,7 @@ This is an alist with 3 expected entries:
 
 Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
+;; (pp-macroexpand-expression input//kl:layout:keybinds)
 
 
 (defvar input//kl:layout:unbinds nil
@@ -89,7 +90,7 @@ and `input//kl:layout:registering/valid'):
         '(:config   . (:init :temp))
         '(:active   . (:config :temp))
         '(:inactive . (nil :init :config :temp))
-        '(:temp     . (nil :active :inactive :temp))
+        '(:temp     . (:active :inactive :temp))
 
         ;;---
         ;; Valid to enter from (almost) any state:
@@ -172,7 +173,6 @@ entering DESIRED state."
   (alist-get desired input//kl:layout:registering/valid))
 
 
-
 (defun input//kl:layout:registering/set-if-valid? (to &optional no-set no-error)
   "Returns non-nil if transition of `input//kl:layout:registering' to new TO
 state is valid.
@@ -230,6 +230,28 @@ If NO-ERROR is non-nil, will return nil instead of signaling an error."
 ;; input//kl:layout:registering
 ;; (input//kl:layout:registering/set-if-valid? :active)
 ;; (input//kl:layout:registering/set-if-valid? :active nil t)
+
+
+(defun input//kl:states->keyword (states)
+  "Convert a list of evil STATES symbols into a keyword for `map!'.
+
+The inverse of `doom--map-keyword-to-states'.
+
+For example, (list 'normal 'visual 'insert) will map to `:nvi'. See
+`doom-evil-state-alist' to customize this."
+  (let (keyword/char-list)
+    ;; Convert to list of chararcters...
+    (dolist (state states)
+      (if-let ((state/char (nth 0 (rassoc (doom-unquote state) doom-evil-state-alist))))
+          (push state/char keyword/char-list)
+        (error "input//kl:states->keyword: Invalid state: %S" state)))
+    ;; And now convert our list of chars into a keyword.
+    (if keyword/char-list
+        (intern (apply #'string ?: (nreverse keyword/char-list)))
+      (error (concat "input//kl:states->keyword: No result from states? "
+                     "states: %S -> keyword characters: %S")
+             states keyword/char-list))))
+;; (input//kl:states->keyword '(normal visual))
 
 
 ;;------------------------------------------------------------------------------
@@ -756,19 +778,53 @@ For a complete activation of a keyboard layout, see `input:keyboard/layout:apply
                                '(:eval :sexpr)
                                eval/sexpr))))
         (registering/valids (input//kl:layout:registering/get-valids :temp)))
+    (input//kl:debug "input:keyboard/layout:temp"
+        '(:registering)
+      "map: %S" keybind-map)
+    (input//kl:debug "input:keyboard/layout:temp"
+        '(:registering)
+      "registering: %S, valids: %S, valid? %S"
+      input//kl:layout:registering
+      (input//kl:layout:registering/get-valids :temp)
+      (memq input//kl:layout:registering registering/valids))
+
     (if (not (memq input//kl:layout:registering
                    registering/valids))
-        ;; Explain why we're doing nothing.
-        (input//kl:debug-or-message
-            (format "input:keyboard/layout:temp(%S %S ...)" layout type)
-            '(:register)
-            ;; Message if not in some set-up state, else debug.
-            (not (memq input//kl:layout:registering '(nil :init :config)))
-          (concat "not run due to `%S's state %S. Set to one of these (can do via "
-                  "`input:keyboard/layout:set-registering') to run: %S")
-          'input//kl:layout:registering input//kl:layout:registering
-          registering/valids)
+        ;; We're not allowed to run the temp block.
+        (progn
+          (input//kl:debug "input:keyboard/layout:temp"
+              '(:registering)
+            (concat "Skipping this as not in a valid state for it:\n"
+                    "registering: %S\n"
+                    "valids:      %S\n"
+                    "valid?       %S")
+            input//kl:layout:registering
+            registering/valids
+            (memq input//kl:layout:registering registering/valids))
+
+          ;; Explain why we're doing nothing.
+          (input//kl:debug-or-message
+              (format "input:keyboard/layout:temp(%S %S ...)" layout type)
+              '(:register)
+              ;; Message if not in some set-up state, else debug.
+              (not (memq input//kl:layout:registering '(nil :init :config)))
+            (concat "not run due to `%S's state %S. Set to one of these (can do via "
+                    "`input:keyboard/layout:set-registering') to run: %S")
+            'input//kl:layout:registering input//kl:layout:registering
+            registering/valids))
+
+      ;; We're allowed to run the temp block.
       (prog1
+          (input//kl:debug "input:keyboard/layout:temp"
+              '(:registering)
+            (concat "EXECUTING ':temp' BLOCK!!!\n"
+                    "registering: %S\n"
+                    "valids:      %S\n"
+                    "valid?       %S")
+            input//kl:layout:registering
+            registering/valids
+            (memq input//kl:layout:registering registering/valids))
+
           ;; Have registering be `:temp' at start of each of these calls.
           (let ((input//kl:layout:registering :temp)
                 return-value)

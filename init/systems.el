@@ -45,10 +45,11 @@
 
 
 ;;---
-;; home/2017/desk::5730ce-91e149
+;; home/2017/desk::02d29a-8bdef1
 ;;   via Windows 10
+;;   (formerly known as: home/2017/desk::5730ce-91e149)
 ;;---
-(spy:system/define :hash "5730ce-91e149"
+(spy:system/define :hash "02d29a-8bdef1" ;; Before I renamed it: "5730ce-91e149"
                    :domain "home"
                    :date "2017"
                    :type "desk"

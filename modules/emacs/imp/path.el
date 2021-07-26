@@ -35,13 +35,18 @@ Example:
 
 
 (defun iii:path:root/file (keyword)
-  "Get the root directory from `imp:path:roots' for KEYWORD."
+  "Get the root init file from `imp:path:roots' for KEYWORD."
   (if-let ((paths (iii:alist/general:get keyword imp:path:roots)))
-      (expand-file-name (nth 1 paths) (nth 0 paths))
+      (if (nth 1 paths) ;; Does it even have a filename? Can be nil.
+          ;; `expand-file-name' doesn't like `nil'.
+          (expand-file-name (nth 1 paths) (nth 0 paths))
+        ;; No root file; return nil.
+        nil)
     (iii:error "iii:path:root/file"
                "Root keyword '%S' unknown."
                keyword)))
 ;; (iii:path:root/file :imp)
+;; (iii:path:root/file :modules)
 
 
 (defun iii:path:root/contains? (keyword)
@@ -338,6 +343,7 @@ in `imp:path:roots'.
         (t
          (push (list keyword path-to-root-dir path-to-root-file)
                imp:path:roots))))
+;; (imp:path:root :test "~/.doom.d")
 
 
 ;;------------------------------------------------------------------------------

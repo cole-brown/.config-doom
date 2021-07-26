@@ -16,20 +16,35 @@
 
 If MAX-CHARS is nil, use `sss:buffer/search.header/boundry'.
 "
-  (interactive "s")
-  (search-forward
-     ;; search string
-     string
+  (interactive "sSearch for: ")
+  (let ((max-chars (or max-chars
+                       sss:buffer/search.header/boundry))
+         found-at-point)
+    (save-mark-and-excursion
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (setq found-at-point
+             (search-forward
+              ;; search string
+              string
 
-     ;; search boundry (characters/buffer position)
-     (or max-chars
-         sss:buffer/search.header/boundry)
+              ;; search boundry (characters/buffer position)
+              max-chars
 
-     ;; NOERROR:
-     ;; - nil/default: fail w/ error msg
-     ;; -           t: fail w/ nil return value
-     ;; -       other: fail w/ nil & move point to boundry/end
-     t))
+              ;; NOERROR:
+              ;; - nil/default: fail w/ error msg
+              ;; -           t: fail w/ nil return value
+              ;; -       other: fail w/ nil & move point to boundry/end
+              t))))
+
+    ;; Return whatever we found, and if called interactively, also message it.
+    (when (called-interactively-p)
+        (if found-at-point
+            (message "Found \"%s\" at buffer position: %d"
+                     string found-at-point)
+          (message "No \"%s\" in buffer's first %d chars."
+                   string max-chars)))
+    found-at-point))
 
 
 ;;------------------------------------------------------------------------------

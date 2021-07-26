@@ -64,7 +64,7 @@
 
 
 ;; Buffer management.
-(package! bufler)
+;; (package! bufler)
 
 
 ;; Asynchronous Helpers. AKA 'emacs-deferred'.

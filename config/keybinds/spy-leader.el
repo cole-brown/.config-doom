@@ -332,17 +332,17 @@ If prefix ARG is set, include ignored/hidden files."
           ;; work namespace.
           (:when (spy:signature/exists 'id 'email :namespace :work)
            :desc (concat "work: " (spy:signature 'id 'email :namespace :work))
-           "w" (cmd! (spy:signature/insert 'id 'sigil :namespace :work)))
+           "w" (cmd! (spy:signature/insert 'id 'email :namespace :work)))
 
           ;; home namespace.
           (:when (spy:signature/exists 'id 'email :namespace :home)
            :desc (concat "home: " (spy:signature 'id 'email :namespace :home))
-           "h" (cmd! (spy:signature/insert 'id 'sigil :namespace :home)))
+           "h" (cmd! (spy:signature/insert 'id 'email :namespace :home)))
 
           ;; default namespace.
           (:when (spy:signature/exists 'id 'email :namespace :default)
            :desc (concat "default: " (spy:signature 'id 'email :namespace :default))
-           "c" (cmd! (spy:signature/insert 'id 'sigil :namespace :default)))
+           "c" (cmd! (spy:signature/insert 'id 'email :namespace :default)))
 
 
           ;; TODO: Search for sigil, todo...

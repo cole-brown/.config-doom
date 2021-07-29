@@ -24,9 +24,12 @@
 ;; Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load `path' unless specifically removed.
+;; Always load unless specifically removed.
 (unless (featurep! -path)
   (load! "+path"))
+(unless (featurep! -files)
+  (load! "+files"))
+
 
 
 ;;------------------------------------------------------------------------------

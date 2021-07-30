@@ -31,6 +31,26 @@
 
 
 ;;------------------------------------------------------------------------------------------------------------------------------------------
+;; Org-Agenda
+;;------------------------------------------------------------------------------------------------------------------------------------------
+
+;;---
+;; Thanks to: https://emacs.stackexchange.com/a/20438
+;;---
+
+;; `org-agenda-quit' is evil - it leaves a billion org mode buffers open.
+;; And it's innocently sat there at "q" that apparently nothing in evil overrides...
+(bind-key [remap org-agenda-quit]
+          #'org-agenda-exit
+          org-agenda-keymap)
+;; And this is at "Q".
+(bind-key [remap org-agenda-Quit]
+          #'org-agenda-exit
+          org-agenda-keymap)
+;; Fuck y'all both.
+
+
+;;------------------------------------------------------------------------------------------------------------------------------------------
 ;; Org-Journal
 ;;------------------------------------------------------------------------------------------------------------------------------------------
 

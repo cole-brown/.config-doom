@@ -67,10 +67,15 @@
 ;; (spy:emacs/server:running?)
 
 
+;; TODO [2021-08-04]: This seems to always print out the warning, so... Something is already starting up the server?
+;;   - Figure out what that is and if it is also doing it smartly enough. Or smarter.
+;;   - For now: Downgrading the warning to just a message...
 (if (spy:emacs/server:running?)
     ;; Ignore - already running.
-    (mis0/init/warning "spy:emacs/server:running?"
-                       "[daemons] Server already running: %s"
+    ;; (mis0/init/warning "spy:emacs/server:running?"
+    ;;                    "[daemons] Server already running: %s"
+    ;;                    (spy:emacs/server:path))
+    (mis0/init/message "[daemons] Server already running: %s"
                        (spy:emacs/server:path))
 
   ;; Start up a server.

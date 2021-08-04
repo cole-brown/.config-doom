@@ -68,29 +68,33 @@
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-snipe-mode-map / evil-snipe-local-mode-map        ║
     ;; ╚════════════════════════════════════════════════════════════════╝
-    (:map (evil-snipe-mode-map evil-snipe-local-mode-map)
+    ;; Wait until after `evil-snipe' shows up or else these unbinds will get overwritten by the binds. Hooray lazy loading! :eyeroll:
+    (:after evil-snipe
+     :map (evil-snipe-mode-map evil-snipe-local-mode-map)
 
-     ;; ┌────────────────────────────────┐
-     ;; │ Prefixes                       │
-     ;; └────────────────────────────────┘
-     ;; Doom or General or someone will complain if bound keys are not
-     ;; unbound before being used for prefixes...
+      ;; ┌────────────────────────────────┐
+      ;; │ Prefixes                       │
+      ;; └────────────────────────────────┘
+      ;; Doom or General or someone will complain if bound keys are not
+      ;; unbound before being used for prefixes...
 
-     ;; Unbind 's' from snipe.
-     :nvm "s" :layout:common:undefined)
+      ;; Unbind 's' from snipe.
+      :nvm "s" :layout:common:undefined)
 
 
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-org-mode-map                                      ║
     ;; ╚════════════════════════════════════════════════════════════════╝
-    (:map evil-org-mode-map
+    ;; Wait until after `org' shows up or else these unbinds will get overwritten by the binds. Hooray lazy loading! :eyeroll:
+    (:after org
+     :map evil-org-mode-map
 
-     ;; ┌────────────────────────────────┐
-     ;; │ Keys                           │
-     ;; └────────────────────────────────┘
+      ;; ┌────────────────────────────────┐
+      ;; │ Keys                           │
+      ;; └────────────────────────────────┘
 
-     ;; Unbind from `evil-open-below'.
-     :n "o" :layout:common:undefined)))
+      ;; Unbind from `evil-open-below'.
+      :n "o" :layout:common:undefined)))
 
 
 ;;------------------------------
@@ -229,13 +233,15 @@
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-org-mode-map                                      ║
     ;; ╚════════════════════════════════════════════════════════════════╝
-    (:map evil-org-mode-map
+    ;; Wait until after `org' shows up or else these binds will get overwritten by org-mode. Hooray lazy loading! :eyeroll:
+     (:after org
+     :map evil-org-mode-map
 
-     ;; ┌────────────────────────────────┐
-     ;; │ Special Org Versions           │
-     ;; └────────────────────────────────┘
-     (:prefix ("s" . "Evil States")
-      :n   "t"  #'evil-org-open-below)) ;; Replace `evil-open-below' with `evil-org-open-below'.
+      ;; ┌────────────────────────────────┐
+      ;; │ Special Org Versions           │
+      ;; └────────────────────────────────┘
+      (:prefix ("s" . "Evil States")
+       :n   "t"  #'evil-org-open-below)) ;; Replace `evil-open-below' with `evil-org-open-below'.
 
     ;; ╔══════════════════════════╗
     ;; ╠═ END: evil-org-mode-map ═╣
@@ -285,7 +291,9 @@
 ;;                                   :spydez :evil
 ;;         ;; Keybinds for the `:spydez' layout: a big list of inputs to
 ;;         ;; `input:keyboard/layout:map!'.
-;;         '(;; No unbinds in `magit-mode-map' currently.
+;;         ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
+;;         '(:after magit
+;;
 ;;           ;; ;; ╔════════════════════════════════════════════════════════════════╗
 ;;           ;; ;; ║ Keymap: magit-mode-map                                         ║
 ;;           ;; ;; ╚════════════════════════════════════════════════════════════════╝
@@ -319,7 +327,7 @@
 ;;           ;; ;; ╔═════════════════════════════╗
 ;;           ;; ;; ╠═ END: magit-popup-mode-map ═╣
 ;;           ;; ;; ╚═════════════════════════════╝
-;;           ))
+;;           )))
 
 
 ;;       ;;------------------------------
@@ -330,7 +338,9 @@
 ;;                                   :spydez :evil
 ;;         ;; Keybinds for the `:spydez' layout: a big list of inputs to
 ;;         ;; `input:keyboard/layout:map!'.
-;;         (list
+;;         ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
+;;         (list :after magit
+;;
 ;;          ;; ╔════════════════════════════════════════════════════════════════╗
 ;;          ;; ║ Keymap: magit-mode-map                                         ║
 ;;          ;; ╚════════════════════════════════════════════════════════════════╝

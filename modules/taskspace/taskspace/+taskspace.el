@@ -173,7 +173,7 @@
 ;;                            ;; ready to go
 ;;                            ((-t//config :home :file/notes)
 ;;                             my/taskspace/generate/home))))
-;;     "Custom settings for my `:home' taskspace group.")
+;;     "Custom settings for my `:work' taskspace group.")
 ;;
 ;;   ;;------------------------------
 ;;   :custom
@@ -728,11 +728,17 @@ This sets the automatic group for that dir (and sub-dirs) to GROUP."
                      :value group
                      :docstr "Taskspace's Auto-Group for this directory."
                      :dlv 'full
-                     :safe t)
+                     :safe #'-t//group/valid?)
     (error (concat "%s: Requires `jerky' and `jerky/dlv' features/packages;"
                    "didn't find them. %s %s")
            "taskspace/group/dlv"
            group directory)))
+
+
+;; TODO: use this to validate group in code places.
+(defun -t//group/valid? (group)
+  "Returns non-nil if GROUP is a valid group symbol/name."
+  (keywordp group))
 
 
 (defun -t//group/dlv ()

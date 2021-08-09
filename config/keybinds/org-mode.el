@@ -71,16 +71,7 @@
                      :value (jerky/get 'path 'org 'journal :namespace :work)
                      :docstr "org-journal's :work directory"
                      :dlv 'full
-                     :safe t)
-      ;; (jerky/dlv/set nil
-      ;;                (jerky/get 'path 'taskspace :namespace :work)
-      ;;                'taskspace-mode
-      ;;                'org-journal-dir
-      ;;                :namespace :work
-      ;;                :value (jerky/get 'path 'org 'journal :namespace :work)
-      ;;                :docstr "org-journal's :work directory"
-      ;;                :dlv 'full
-      ;;                :safe t)
+                     :safe 'already)
 
       ;; Insert :work journal shortcuts if appropriate.
       ;; Add to Doom Leader...
@@ -125,7 +116,7 @@
                      :value (jerky/get 'path 'org 'journal :namespace :home)
                      :docstr "org-journal's :home directory"
                      :dlv 'full
-                     :safe t)
+                     :safe 'already)
 
       ;; Insert :home journal shortcuts if appropriate.
       ;; Add to Doom Leader...

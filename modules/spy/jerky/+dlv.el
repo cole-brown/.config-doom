@@ -36,11 +36,7 @@ directory local use'.\"")
 ;; Auto-Namespacing
 ;;------------------------------
 
-(defvar jerky//dlv/namespace-local nil
-  "Directory Local Variable for holding the directory's namespace.")
-
-
-(defvar jerky-dlv-namespace nil
+(defvar jerky//dlv/namespace.local nil
   "Directory Local Variable for holding the directory's namespace.")
 
 
@@ -194,15 +190,15 @@ Returns t on success.
 ;; (jerky//dlv/uid.get)
 
 
-(defun jerky//dlv/dlv.key (namespace class &optional symbol)
-  "Create a jerky key symbol from inputs for using in jDLV.
+(defun jerky/dlv/key.uid (namespace class &optional symbol)
+  "Create a unique jerky key symbol from inputs each time it is called.
 
 CLASS should be the name of a symbol for creating the
 `dir-locals-set-class-variables' or nil.
 
-If CLASS is non-nil, this returns:
+If CLASS is non-nil, this returns a symbol-name from string:
   (jerky//key/normalize 'dlv uid [NAMESPACE] CLASS)
-Else, this returns:
+Else, this returns a symbol-name from string:
   (jerky//key/normalize 'dlv uid [NAMESPACE] SYMBOL)
 where `uid' is a unique integer.
 
@@ -222,9 +218,42 @@ If QUIET is non-nil, return nil instead of raise error signal.
                   (if class
                       (list class)
                     (list symbol))))))))
-;; (jerky//dlv/dlv.key :work 'org-journal)
-;; (jerky//dlv/dlv.key :work nil 'org-journal-dir)
-;; (jerky//dlv/dlv.key nil nil 'org-journal-dir)
+;; (jerky//dlv/key.uid :work nil 'org-journal)
+;; (jerky//dlv/key.uid :work 'class-name 'org-journal-dir)
+;; (jerky//dlv/key.uid nil nil 'org-journal-dir)
+
+
+(defun jerky/dlv/key.static (namespace class &optional symbol)
+  "Create a jerky key symbol from inputs. Return value will be the same for
+the same inputs.
+
+CLASS should be the name of a symbol for creating the
+`dir-locals-set-class-variables' or nil.
+
+If CLASS is non-nil, this returns:
+  (jerky//key/normalize 'dlv [NAMESPACE] CLASS)
+Else, this returns:
+  (jerky//key/normalize 'dlv [NAMESPACE] SYMBOL)
+
+If QUIET is non-nil, return nil instead of raise error signal.
+"
+  (make-symbol
+   (jerky//key/normalize
+    ;; This is a silly way to build this, probably? But it works.
+    (cons :dlv
+          (if namespace
+              (cons namespace
+                    (if class
+                        (list class)
+                      (list symbol)))
+            ;; No namespace - class or symbol?
+            (if class
+                (list class)
+              (list symbol)))))))
+;; (jerky/dlv/key.static :work 'org-class 'org-journal)
+;; (jerky/dlv/key.static :work nil 'org-journal)
+;; (jerky/dlv/key.static :work nil 'org-journal-dir)
+;; (jerky/dlv/key.static nil nil 'org-journal-dir)
 
 
 (defun jerky//dlv/var.create (var value &optional quiet)
@@ -369,7 +398,7 @@ passes the VALIDATION-PREDICATE."
   ;; Add the VALIDATION-PREDICATE function to the SYMBOL's `safe-local-variable' property.
   (put symbol 'safe-local-variable validation-predicate))
 ;; (get 'taskspace//dlv/group 'safe-local-variable)
-;; (get 'jerky//dlv/namespace-local 'safe-local-variable)
+;; (get 'jerky//dlv/namespace.local 'safe-local-variable)
 
 
 ;;------------------------------------------------------------------------------
@@ -380,13 +409,10 @@ passes the VALIDATION-PREDICATE."
   "Create/overwrite a Jerky Directory-Local-Variable (jDLV).
 
 CLASS should be the name of a symbol for creating the
-`dir-locals-set-class-variables', It is also used as the jerky key.
-If nil, it will be set to:
-  (jerky//key/normalize 'dlv namespace symbol)
-e.g.:
-  (jerky/dlv/set nil \"~/jeff/.config/top-secret\"
-                 org-journal-dir ... :namespace :work ...)
-    -> CLASS == 'dlv/work/org-journal-dir
+`dir-locals-set-class-variables'. It is also used as the jerky key.
+You can use `jerky/dlv/key.static' or `jerky/dlv/key.uid' to create a DLV key:
+  (jerky/dlv/key.uid namespace class symbol)
+  (jerky/dlv/key.static namespace class symbol)
 
 DIRECTORY should be the absolute path to the desired directory.
 
@@ -508,7 +534,6 @@ If not provided, they will be nil.
 
             (jerky//debug dbg.func "DLV created `%S': %s" class dlv.class)
 
-            (alist-get 'jerky//dlv.class/namespace '((jerky//dlv.class/namespace (nil (jerky-dlv-namespace . :work)))))
             ;; Update from saved dlv settings?
             (if-let ((alist/dlv.dir (jerky//dlv.class.get directory)))
                 (let* ((alist/dlv.class (alist-get class alist/dlv.dir))
@@ -620,66 +645,37 @@ If not provided, they will be nil.
 
 
 (defun jerky/dlv/namespace.set (directory namespace)
-  "Sets the DIRECTORY's local namespace."
-  (jerky//debug "jerky//dlv/namespace.set" "")
+  "Sets Jerky's local NAMESPACE for the DIRECTORY."
   (jerky//debug "jerky//dlv/namespace.set" "\n  dir: %s \n  ns:  %S"
                 directory namespace)
 
   (if (not (jerky/namespace/has namespace))
       (error "jerky/dlv/namespace.set: No known namespace called '%s'" namespace)
 
-    (jerky//debug "jerky//dlv/namespace.set" "")
-    (jerky//debug "jerky//dlv/namespace.set" "  -> `jerky-dlv-namespace'")
-
+    (jerky//debug "jerky//dlv/namespace.set" "  -> `jerky//dlv/namespace.local'")
     (jerky/dlv/set 'jerky//dlv.class/namespace
                    directory
-                   nil
-                   'jerky-dlv-namespace
-                                        ;:namespace namespace
+                   nil ; all modes
+                   'jerky//dlv/namespace.local
+                   ;; :namespace namespace
                    :value namespace
                    :docstr (format "Jerky's default namespace for directory '%s'"
                                    directory)
                    :dlv 'full
                    :safe #'jerky//namespace/valid)
 
-    (jerky//debug "jerky//dlv/namespace.set" "")
-    (jerky//debug "jerky//dlv/namespace.set" "  -> `jerky//dlv/namespace-local'")
-    (jerky/dlv/set 'jerky//dlv.class/namespace
-                   directory
-                   nil
-                   'jerky//dlv/namespace-local
-                                        ;:namespace namespace
-                   :value namespace
-                   :docstr (format "Jerky's default namespace for directory '%s'"
-                                   directory)
-                   :dlv 'full
-                   :safe #'jerky//namespace/valid)
-
+    ;; TODO: Keep as `message'? Change to `mis0/init/message'? `jerky//debug'?? Delete?!
     (message (concat "jerky/dlv/namespace.set: \n"
                      "  directory:  %S\n"
                      "  namespace:  %S\n"
                      "  dlv-pred:   %S")
              directory
              namespace
-             (get 'jerky//dlv/namespace-local 'safe-local-variable))
-    ))
+             (get 'jerky//dlv/namespace.local 'safe-local-variable))))
 ;; (jerky/get 'path 'org 'journal :namespace :work)
 ;;   -> "d:/home/spydez/.lily.d/logbook/work/"
 ;; (jerky/dlv/namespace.set "d:/home/work/.lily.d/logbook/work/" :work)
 ;; (jerky/dlv/namespace.set "d:/home/work/.lily.d/taskspace/work/" :work)
-
-
-;; Looks ok I think?..
-;;   -> (:key "dlv/17/jerky//dlv/namespace-local"
-;;       :record ((:default
-;;                 :work
-;;                 "Jerky's default namespace for directory 'd:/home/spydez/.lily.d/logbook/work/'"
-;;                 ("d:/home/spydez/.lily.d/logbook/work/" dlv/17/jerky//dlv/namespace-local))))
-;; Basic, normal record (default namespace, "jill" value, no docstr):
-;;  -> (:key "test/jill"
-;;           :record ((:default
-;;                     "jill"
-;;                     nil)))
 
 
 ;;------------------------------------------------------------------------------

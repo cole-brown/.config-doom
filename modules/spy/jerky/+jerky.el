@@ -423,14 +423,14 @@ If QUIET is non-nil, don't output messages/warnings.
   "Looks for a namespace to use.
 
 Checks/returns first to be non-nil of:
-  - `jerky//dlv/namespace-local' if jerky DLV is in use.
+  - `jerky//dlv/namespace.local' if jerky DLV is in use.
   - Jerky key: 'namespace 'system
   - `jerky/custom.namespace/default'
 "
   (let ((namespace
          (if (and (imp:provided? :jerky 'dlv)
-                  (not (null jerky//dlv/namespace-local)))
-             jerky//dlv/namespace-local
+                  (not (null jerky//dlv/namespace.local)))
+             jerky//dlv/namespace.local
 
            (if-let ((system (jerky/get 'namespace 'system)))
                system
@@ -443,7 +443,7 @@ Checks/returns first to be non-nil of:
                           "  default:         %S\n"
                           "  result:          %S")
                   (imp:provided? :jerky 'dlv)
-                  jerky//dlv/namespace-local
+                  jerky//dlv/namespace.local
                   (jerky/get 'namespace 'system)
                   jerky/custom.namespace/default
                   namespace)

@@ -720,7 +720,7 @@ Returns nil or a string in TASKSPACES.
   "Create a directory-local-variable for GROUP and DIRECTORY.
 This sets the automatic group for that dir (and sub-dirs) to GROUP."
   (if (-t//jerky-p)
-      (jerky/dlv/set nil        ; let it auto-create
+      (jerky/dlv/set 'taskspace//dlv.class/group
                      directory
                      nil        ; Set for global mode.
                      'taskspace//dlv/group
@@ -1079,9 +1079,9 @@ Error is all files not generated in alist: ((filename . 'reason')...)
         ;; Get taskname from path to supply to any file content gen funcs.
         (taskname (file-name-nondirectory taskpath)))
     (dolist (entry file-alist errors-alist)
-      (let* ((file (file-name-nondirectory (eval (first entry))))
+      (let* ((file (file-name-nondirectory (eval (cl-first entry))))
              (filepath (-t//path/generate group taskpath file))
-             (str-or-func (second entry)))
+             (str-or-func (cl-second entry)))
 
         (cond
          ;; ERROR: already exists...
@@ -1179,33 +1179,38 @@ unused description.
          (dir-name (-t//naming/make group date number description))
          (dir-full-path (expand-file-name dir-name (-t//config group :dir/tasks))))
 
+    ;; TODO: taskspace debugging func.
     (message "create-dir: %s %s %s %s" date date-dirs number dir-name)
-
     (message "create dir: %s" dir-full-path)
+
     ;; Only create if:
     ;;   - valid description input and
     ;;   - no dupes or accidental double creates
     ;;   - it doesn't exist (this is probably redundant if verify-description
     ;;     works right)
-    (when (and (-t//naming/verify group description)
-               (not (some (lambda (x) (-t//dir= group
+    (if (and (-t//naming/verify group description)
+               (not (cl-some (lambda (x) (-t//dir= group
                                                 description
                                                 x
                                                 'description))
                           date-dirs))
                (not (file-exists-p dir-full-path)))
+        ;; Make it.
+        (progn
 
-      ;; Make it.
-      ;; make-directory helpfully has no data on what it returns or why or when
-      ;; or anything. But it returns nil on success so... super useful guys.
-      (make-directory dir-full-path)
+          ;; make-directory helpfully has no data on what it returns or why or when
+          ;; or anything. But it returns nil on success so... super useful guys.
+          (make-directory dir-full-path)
 
-      ;; How about we report something actually useful maybe?
-      ;; Full path of created dir on... success?
-      ;; Nil on folder non-existance.
-      (if (file-exists-p dir-full-path)
-          dir-full-path
-        nil))))
+          ;; How about we report something actually useful maybe?
+          ;; Full path of created dir on... success?
+          ;; Nil on folder non-existance.
+          (if (file-exists-p dir-full-path)
+              dir-full-path
+            nil))
+
+      ;; Failed check; return nil.
+      nil)))
 ;; (-t//dir/create :work "testcreate" nil)
 
 
@@ -1612,9 +1617,9 @@ Else:
          ((= length-ts 1)
 
           ;; copy & return
-          (-t//kill-and-return (first taskspaces)
+          (-t//kill-and-return (cl-first taskspaces)
                                      "Existing taskspace: %s"
-                                     (first taskspaces)))
+                                     (cl-first taskspaces)))
 
          ;; For now, only give existing choices. User can use a non-dwim create
          ;; func if they want new.
@@ -1861,7 +1866,7 @@ Opens:
 
      ;; If just one, open its notes file.
      ((= length-ts 1)
-      (setq taskpath (first taskspaces))
+      (setq taskpath (cl-first taskspaces))
       (message "Only taskspace: %s" taskpath))
 
      ;; For now, only give existing choices. User can use a non-dwim create func

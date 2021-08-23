@@ -7,6 +7,7 @@
 (require 's)
 (require 'dash)
 (imp:require :jerky 'debug)
+(require 'mis0)
 
 
 ;;------------------------------------------------------------------------------
@@ -664,14 +665,13 @@ If not provided, they will be nil.
                    :dlv 'full
                    :safe #'jerky//namespace/valid)
 
-    ;; TODO: Keep as `message'? Change to `mis0/init/message'? `jerky//debug'?? Delete?!
-    (message (concat "jerky/dlv/namespace.set: \n"
-                     "  directory:  %S\n"
-                     "  namespace:  %S\n"
-                     "  dlv-pred:   %S")
-             directory
-             namespace
-             (get 'jerky//dlv/namespace.local 'safe-local-variable))))
+    (mis0/init/message (concat "jerky/dlv/namespace.set: \n"
+                               "  directory:  %S\n"
+                               "  namespace:  %S\n"
+                               "  dlv-pred:   %S")
+                       directory
+                       namespace
+                       (get 'jerky//dlv/namespace.local 'safe-local-variable))))
 ;; (jerky/get 'path 'org 'journal :namespace :work)
 ;;   -> "d:/home/spydez/.lily.d/logbook/work/"
 ;; (jerky/dlv/namespace.set "d:/home/work/.lily.d/logbook/work/" :work)

@@ -132,8 +132,34 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Notes, Org-Mode and Legions, etc.
+;;------------------------------------------------------------------------------
+
+(spy:config 'taskspace)
+(spy:config 'org-mode)
+
+
+;;------------------------------------------------------------------------------
+;; yasnippet
+;;------------------------------------------------------------------------------
+
+(spy:config 'yasnippet)
+
+
+;;------------------------------------------------------------------------------
+;; Programming & Stuff
+;;------------------------------------------------------------------------------
+
+(spy:config 'code)
+(spy:config 'treemacs)
+
+
+;;------------------------------------------------------------------------------
 ;; Keybinds
 ;;------------------------------------------------------------------------------
+
+;; Last so stuff doesn't get overwritten?
+;; Not sure if that's actually a concern or not...
 
 ;;------------------------------
 ;; Input Method
@@ -156,36 +182,15 @@
 ;; Keybind Modifications
 ;;------------------------------
 
-;; Whatever isn't big enough or important enough to warrent its own file.
-(spy:config 'keybinds 'misc)
-
-;; Specific things:
-(spy:config 'keybinds 'org-mode)
-
 ;; My additions to the overabundance of keybindings:
 (spy:config 'keybinds 'spy-leader)
 
+;; Specific things:
+(spy:config 'keybinds 'org-mode)
+(spy:config 'keybinds 'treemacs)
 
-;;------------------------------------------------------------------------------
-;; Notes, Org-Mode and Legions, etc.
-;;------------------------------------------------------------------------------
-
-(spy:config 'taskspace)
-(spy:config 'org-mode)
-
-
-;;------------------------------------------------------------------------------
-;; yasnippet
-;;------------------------------------------------------------------------------
-
-(spy:config 'yasnippet)
-
-
-;;------------------------------------------------------------------------------
-;; Programming & Stuff
-;;------------------------------------------------------------------------------
-
-(spy:config 'code)
+;; Whatever isn't big enough or important enough to warrent its own file.
+(spy:config 'keybinds 'misc)
 
 
 ;;------------------------------------------------------------------------------

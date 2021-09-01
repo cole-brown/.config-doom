@@ -27,6 +27,7 @@
 ;;------------------------------
 ;; Unbind Keys
 ;;------------------------------
+
 ;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
 ;; (input:keyboard/layout:temp :unbind :eval :spydez :evil
 (input:keyboard/layout:unbind :spydez :evil
@@ -64,6 +65,10 @@
     ;; Unbind from `evil-insert-line'.
     :n "I" :layout:common:undefined
 
+    ;; Unbind from `evil-emacs-state', which is confusing to get out of (need to call w/ negative prefix arg).
+    :im "C-z" :layout:common:undefined
+    ;; Unbind from `suspend-frame', which takes over "C-z" when `evil-emacs-state' gets unbound.
+    "C-z" :layout:common:undefined
 
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-snipe-mode-map / evil-snipe-local-mode-map        ║

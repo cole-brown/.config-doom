@@ -17,6 +17,18 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Documents in General
+;;------------------------------------------------------------------------------
+
+;; Could move out of org-mode setup if we get more doc mode setups.
+
+(jerky/set 'docs 'tab 'short
+           :namespace :default
+           :value 2
+           :docstr "Short tab width is 2 spaces.")
+
+
+;;------------------------------------------------------------------------------
 ;; Org-Mode
 ;;------------------------------------------------------------------------------
 
@@ -43,22 +55,30 @@
   ;;--------------------
 
   ;; Define org-mode hooks.
-  (spy:hook/defun org-mode-hook
+  (spy:hook/defun org-jump-to-now-hook
     '(:name "org/jump-to-now-target"
       :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
       :quiet t)
-    (spy:cmd:buffer/search.header "[[--now")
+    (spy:cmd:buffer/search.header "[[--now"))
 
-    (setq yas-indent-line 'fixed))
+  (spy:hook/defun org-local-settings-hook
+    '(:name "org/local-settings"
+      :file ".doom.d/config/org-mode.el"
+      :docstr "Set up buffer local vars."
+      :quiet t)
+    ;; Automatically becomes buffer local.
+    (setq tab-width (jerky/get 'docs 'tab 'short))
 
+    (setq-local yas-indent-line 'auto))
 
   ;;--------------------
   :hook
   ;;--------------------
 
   ;; Connect my hooks up.
-  ((org-mode . sss:hook/org/jump-to-now-target))
+  ((org-mode . sss:hook/org/jump-to-now-target)
+   (org-mode . sss:hook/org/local-settings))
 
 
   ;;--------------------
@@ -228,6 +248,18 @@
   ;;  #'spy:custom/org-mode/speed-commands-p
   ;;  "Allow speed keys when at any headline *, not just beginning of line.")
 
+  ;;---
+  ;; Indentation
+  ;;---
+
+  (customize-set-variable 'org-indent-indentation-per-level
+                          (jerky/get 'docs 'tab 'short)
+                          "Set indent to tab-width.")
+
+  ;; This should really depend on the source code language...
+  ;; (customize-set-variable 'org-edit-src-content-indentation
+  ;;                         (jerky/get 'docs 'code 'short)
+  ;;                         "Set indent to tab-width.")
 
   ;;--------------------
   ;; configuration: org-mode

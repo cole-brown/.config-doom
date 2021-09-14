@@ -7,6 +7,7 @@
 (require 's)
 (require 'dash)
 
+;; TODO: colons not slashes
 
 ;;------------------------------------------------------------------------------
 ;; Constants
@@ -18,6 +19,16 @@
 
 (defconst dlv//const/safe.valid '(:safe t)
   "Valid constant values for `safe' in `dlv/set'.")
+
+
+(defun dlv/safe?/always (value)
+  "Predicate to declare that any and all values are safe for the variable.
+
+Ignores VALUE; always returns t."
+  (dlv//debug "dlv/safe?/always"
+              "Safe predicated called for value: %S"
+              value)
+  t)
 
 
 ;; ;;------------------------------------------------------------------------------
@@ -142,15 +153,34 @@ CLASS should be the name of a symbol for creating the
 
 (defun dlv//validate/safe (caller safe &optional signal-error)
   "Check that SAFE param is valid for CALLER (probably `dlv/set')."
+  (dlv//debug "dlv//validate/safe"
+              (concat "Inputs:\n"
+                      "  caller: %s\n"
+                      "  safe: %S\n"
+                      "  error?: %S")
+              caller safe signal-error)
+  (dlv//debug "dlv//validate/safe"
+              (concat "`safe' is:\n"
+                      "  functionp: %s\n"
+                      "  memq %S: %s")
+              (functionp safe)
+              dlv//const/safe.valid
+              (memq safe dlv//const/safe.valid))
+
   (cond ((or (functionp safe)
              (memq safe dlv//const/safe.valid))
          t)
 
         ((not (null signal-error))
-         (error "%s: Invalid SAFE value; must be a function or one of: %S. Got: %S"
+         (error (concat "%s: Invalid SAFE value; must be a function or one of:"
+                        "%S. "
+                        "Got: %S. "
+                        "functionp: %S, memq: %S")
                 caller
                 dlv//const/safe.valid
-                safe))
+                safe
+                (functionp safe)
+                (memq safe dlv//const/safe.valid)))
 
         ;; Invalid, but no signaling - return nil.
         (t
@@ -377,6 +407,15 @@ If VALIDATION-PREDICATE is a member of `dlv//const/safe.valid', does nothing.
 
 If VALIDATION-PREDICATE is something else, raises an error signal."
   (let ((func.name "dlv//vars/safe"))
+    (dlv//debug func.name
+                (concat "Inputs:\n"
+                        "  caller:               %S\n"
+                        "  symbol:               %S\n"
+                        "  validation-predicate: %S")
+                caller
+                symbol
+                validation-predicate)
+
     (if (dlv//validate/safe caller validation-predicate :error)
         ;; If it /is/ a member of `dlv//const/safe.valid', we don't need to do anything.
         (if (memq validation-predicate dlv//const/safe.valid)
@@ -437,6 +476,15 @@ Mark symbol as safe-for-DLV via predicate function if SAFE is a function.
 Do nothing if SAFE is a member of `dlv//const/safe.valid'.
 Error otherwise."
   (let ((func.name "dlv//vars/pair.create"))
+    (dlv//debug func.name
+                (concat "Inputs:\n"
+                        "  symbol: %S\n"
+                        "  value:  %S\n"
+                        "  safe:   %S")
+                symbol
+                value
+                safe)
+
     (if (not (and (dlv//validate/var.symbol func.name symbol :error)
                   (dlv//validate/var.value func.name value :error)
                   (dlv//validate/safe func.name safe :error)))
@@ -689,11 +737,15 @@ TUPLES should be an alist of '(symbol value safe) tuples.
                         "  class:     %S\n"
                         "  directory: %S\n"
                         "  mode:      %S\n"
-                        "  tuples:     %S\n")
+                        "  tuples:     %S")
+                        ;; "  symbol:    %S\n"
+                        ;; "  value:     %S")
                 class
                 directory
                 mode
                 tuples)
+                ;; symbol
+                ;; value)
 
     ;;------------------------------
     ;; Validate inputs.
@@ -716,32 +768,72 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     ;; Create the struct for the DLV.
     (let* ((dlv.vars (apply #'dlv//vars/create tuples))
            (dlv.mode (dlv//mode/entry.create mode dlv.vars))
+           (dlv.struct (dlv//create dlv.mode))
            (dlv.class class)
            (dlv.directory directory))
       (dlv//debug func.name
                   (concat "DLV'd:\n"
                           "  dlv.class:     %S\n"
                           "  dlv.directory: %S\n"
-                          "  dlv.mode:      %S\n")
+                          "  dlv.struct:    %S\n"
+                          "   <- dlv.mode:    %S\n"
+                          "      <- dlv.vars: %S\n")
                   dlv.class
                   dlv.directory
-                  dlv.mode)
+                  dlv.struct
+                  dlv.mode
+                  dlv.vars)
 
       ;; Set the class of dlv variables and apply it to the directory.
-      (dlv//set/directory-class func.name dlv.class dlv.directory dlv.mode))))
-;; (let ((dir (jerky/get "path/org/journal" :namespace :work)))
-;;   (dlv/set 'org-journal
-;;                  dir
-;;                  'org-journal-mode
-;;                  'org-journal-dir
-;;                  "path/org/journal"
-;;                  :namespace :work
-;;                  :value dir
-;;                  :docstr "jDLV for Org-Journal directory"
-;;                  :dlv 'full))
+      (dlv//set/directory-class func.name dlv.class dlv.directory dlv.struct))
+
+    ;; ;;------------------------------
+    ;; ;; Check the DLV.
+    ;; ;;------------------------------
+    ;; (dlv//debug func.name
+    ;;             "Getting `%S' value from file '%s': %S"
+    ;;             (nth 0 (nth 0 tuples))
+    ;;             (concat directory filetest)
+    ;;             (with-current-buffer (find-file-noselect (concat directory filetest))
+    ;;               (nth 0 (nth 0 tuples))))
+  ))
 
 
-;; ;;------------------------------------------------------------------------------
-;; ;; The End.
-;; ;;------------------------------------------------------------------------------
-;; (imp:provide:with-emacs :jerky 'dlv)
+(defun dlv/check (filepath symbol expected)
+  "Get SYMBOL's value at PATH in a few different ways."
+
+  (let ((buffer/local (get-buffer-create filepath)))
+    (message (concat "dlv/check:\n"
+                     "  inputs:\n"
+                     "    filepath: %s\n"
+                     "    symbol:   %S\n"
+                     "    EXPECTED: -------------> %S\n"
+                     "  values:\n"
+                     "    `get-buffer-create':     %S\n"
+                     "    `safe-local-variable-p': %S\n"
+                     "    `find-file-noselect':    %S")
+             ;; inputs
+             filepath
+             symbol
+             expected
+             ;; values
+             (with-current-buffer (get-buffer-create filepath)
+               (buffer-local-value symbol buffer/local))
+             (with-current-buffer (get-buffer-create filepath)
+               (safe-local-variable-p dlv//test/variable expected))
+             (with-current-buffer (find-file-noselect filepath)
+               (symbol-value symbol)))))
+;; (let* ((dir "~/dlv-test/")
+;;        (filename (format "locals-%S.txt" (spy:datetime/string.get 'iso-8601 'file)))
+;;        (filepath (concat dir filename))
+;;        (class 'dlv//test/class)
+;;        (mode nil)
+;;        (tuple '(dlv//test/variable :test/local dlv//test/safe-p)))
+;;   (dlv/set class dir mode tuple)
+;;   (dlv/check filepath 'dlv//test/variable :test/local))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide:with-emacs 'dlv)

@@ -201,8 +201,7 @@
 (require 'f) ;; for nicer file api
 (require 'dash)
 (require 'imp)
-
-
+(imp:require :dlv)
 
 
 (defgroup taskspace nil
@@ -363,16 +362,8 @@ multiple taskspaces.
 
 It should only be set via `taskspace/group/dlv'")
 
-
-;;------------------------------------------------------------------------------
-;; Helper for seeing if jerky is available
-;;------------------------------------------------------------------------------
-
-(defun -t//jerky-p ()
-  "Returns t if `jerky' and `jerky/dlv' are present as provided features."
-  (and (imp:provided? :jerky)
-       (imp:provided? :jerky 'dlv)))
-;; (-t//jerky-p)
+;; Mark our DLV variable as safe for DLV use.
+(dlv:var:safe.predicate 'taskspace//dlv/group #'-t//group/valid?)
 
 
 ;;------------------------------------------------------------------------------
@@ -719,17 +710,18 @@ Returns nil or a string in TASKSPACES.
 (defun taskspace/group/dlv (group directory)
   "Create a directory-local-variable for GROUP and DIRECTORY.
 This sets the automatic group for that dir (and sub-dirs) to GROUP."
-  (if (-t//jerky-p)
-      (jerky/dlv/set 'taskspace//dlv.class/group
-                     directory
-                     nil        ; Set for global mode.
-                     'taskspace//dlv/group
-                     :namespace jerky/custom.namespace/default ; default namespace
-                     :value group
-                     :docstr "Taskspace's Auto-Group for this directory."
-                     :dlv 'full
-                     :safe #'-t//group/valid?)
-    (error (concat "%s: Requires `jerky' and `jerky/dlv' features/packages;"
+  (if (imp:provided? :dlv)
+      (dlv:set (dlv:class:symbol.create taskspace
+                                        group
+                                        dlv:const:class:separator
+                                        directory)
+               directory
+               nil ;; global mode
+               (list 'taskspace//dlv/group
+                     group
+                     :safe))
+
+    (error (concat "%s: Requires `dlv' feature/package/module;"
                    "didn't find them. %s %s")
            "taskspace/group/dlv"
            group directory)))

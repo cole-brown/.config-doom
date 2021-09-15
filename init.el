@@ -77,6 +77,7 @@
 
        vc                ; version-control and Emacs, sitting in a tree
        imp               ; require/provide with more than one symbol
+       dlv               ; Directory Local Variables
 
        :term
        ;;eshell            ; the elisp shell that works everywhere

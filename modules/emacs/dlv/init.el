@@ -21,9 +21,11 @@
 ;; Constants
 ;;------------------------------------------------------------------------------
 
-(defconst dlv:const:normalize:separator "/"
+(defconst dlv:const:class:separator "://"
   "Used to create keys in `dlv:key.create'.")
 
+(defconst int<dlv>:const:normalize:separator "/"
+  "Used to create keys in `dlv:key.create'.")
 
 (defconst int<dlv>:const:safe.valid '(:safe t)
   "Valid constant values for `safe' in `dlv:set'.")
@@ -60,28 +62,36 @@
 ;; DLV Class Symbol Creation
 ;;------------------------------------------------------------------------------
 
+(defun int<dlv>:class:normalize.prefix (str)
+  "Remove unwanted prefixes from STR."
+  (replace-regexp-in-string
+   (rx string-start (one-or-more (any ":" "/" "\\")))
+   ""
+   str))
+;; (int<dlv>:class:normalize.prefix "://hi")
+;; (int<dlv>:class:normalize.prefix "greet://hi")
+
+
 (defun int<dlv>:class:normalize.str (str)
   "Normalize a string."
-  ;; Get rid of some unacceptable chars.
-  (let ((replaced
-         ;; NOTE: Should we replace tilde (~)? It's valid in a symbol name,
-         ;; e.g. (setq ~/test 42)
+  (if (string= str dlv:const:normalize:separator.path)
+      ;; Allow special strings through even if they aren't "valid".
+      str
 
-         ;; backslash -> slash
-         (replace-regexp-in-string
-          (rx "\\")
-          "/"
-          ;; Delete any control chars.
-          (replace-regexp-in-string
-           (rx (one-or-more control))
-           ""
-           str))))
+    ;; Fix any undesired prefixes.
+    (int<dlv>:class:normalize.prefix
+     ;; NOTE: Should we replace tilde (~)? It's valid in a symbol name,
+     ;; e.g. (setq ~/test 42)
 
-    ;; Make it not a keyword?
-    (if (s-starts-with? ":" replaced)
-        (substring replaced 1 nil)
-      ;; It's fine as is.
-      replaced)))
+     ;; backslash -> slash
+     (replace-regexp-in-string
+      (rx "\\")
+      "/"
+      ;; Delete any control chars.
+      (replace-regexp-in-string
+       (rx (one-or-more control))
+       ""
+       str)))))
 ;; As-is:
 ;;   (int<dlv>:class:normalize.str "jeff")
 ;;   (int<dlv>:class:normalize.str "d:/foo")
@@ -125,28 +135,40 @@ class symbol."
 (int<dlv>:key.normalize '(\"a/b\" c))
   -> a/b/c
 (int<dlv>:key.normalize '(\"a\" b c))
-  -> a/b/c
-"
-  (string-join
-   (if (listp args)
-       ;; Normalize a list:
-       (-filter (lambda (x) (not (null x))) ;; Ignore nils from conversion.
-                ;; Convert a list of whatever into a list of strings.
-                (-map #'int<dlv>:class:normalize.any args))
-     ;; Normalize a thing into a list of string:
-     (list (funcall #'int<dlv>:class:normalize.any args)))
-   dlv:const:normalize:separator))
+  -> a/b/c"
+  ;; Nuke `int<dlv>:const:normalize:separator' for special args.
+  (replace-regexp-in-string
+   (rx-to-string (list 'sequence
+                       int<dlv>:const:normalize:separator
+                       dlv:const:class:separator
+                       int<dlv>:const:normalize:separator)
+                 :no-group)
+   dlv:const:class:separator
+
+   ;; Combine all the normalized args w/ our separator.
+   (string-join
+    (if (listp args)
+        ;; Normalize a list:
+        (-filter (lambda (x) (not (null x))) ;; Ignore nils from conversion.
+                 ;; Convert a list of whatever into a list of strings.
+                 (-map #'int<dlv>:class:normalize.any args))
+      ;; Normalize a thing into a list of string:
+      (list (funcall #'int<dlv>:class:normalize.any args)))
+    int<dlv>:const:normalize:separator)))
 ;; (int<dlv>:class:normalize.all "hi")
 ;; (int<dlv>:class:normalize.all 'hi)
 ;; (int<dlv>:class:normalize.all '(h i))
 ;; (int<dlv>:class:normalize.all '(:h :i))
+;; (int<dlv>:class:normalize.all (list :hello dlv:const:class:separator :there))
 
 
 (defun dlv:class:symbol.create (&rest args)
   "Create a DLV 'class' symbol from ARGS.
 
 ARGS can be a path, strings, symbols, functions...
-  - Functions should take no args and return a string."
+  - Functions should take no args and return a string.
+
+Can use `dlv:const:class:separator' to split up e.g. symbol and path if desired. "
   (make-symbol
    (int<dlv>:class:normalize.all args)))
 ;; (dlv:class:symbol.create 'org-class 'org-journal)
@@ -500,6 +522,22 @@ If VALIDATION-PREDICATE is something else, raises an error signal."
 ;; (setq test/local t)
 ;; (int<dlv>:vars:safe "test-01" 'test/local :safe)
 ;; (get 'test/local 'safe-local-variable)
+
+
+(defun dlv:var:safe.predicate (symbol predicate)
+  "Mark SYMBOL as safe using PREDICATE function for
+Directory Local Variables."
+  (if (not (functionp predicate))
+      (error "dlv:var:safe.predicate: Cannot mark SYMBOL (%S) as safe; PREDICATE is not a function? %S"
+             symbol
+             predicate)
+    (int<dlv>:vars:safe "dlv:var:safe.function" symbol predicate)))
+
+
+(defun dlv:var:safe.value (symbol value)
+  "Add SYMBOL and VALUE as a known-safe combination for
+Directory Local Variables."
+  (push (cons symbol value) safe-local-variable-values))
 
 
 ;;------------------------------------------------------------------------------

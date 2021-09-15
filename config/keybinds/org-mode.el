@@ -86,15 +86,15 @@
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :work dir local variable(s).
-      (jerky/dlv/set 'sss:dlv.class/org
+      (dlv:set (dlv:class:symbol.create :work
+                                        'org-journal
+                                        dlv:const:class:separator
+                                        (jerky/get 'path 'org 'journal :namespace :work))
+               (jerky/get 'path 'org 'journal :namespace :work)
+               'org-journal-mode
+               (list 'org-journal-dir
                      (jerky/get 'path 'org 'journal :namespace :work)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :work
-                     :value (jerky/get 'path 'org 'journal :namespace :work)
-                     :docstr "org-journal's :work directory"
-                     :dlv 'full
-                     :safe 'already)
+                     :safe))
 
       ;; Insert :work journal shortcuts if appropriate.
       ;; Add to Doom Leader...
@@ -131,15 +131,15 @@
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :home dir local variable(s).
-      (jerky/dlv/set 'sss:dlv.class/org
+      (dlv:set (dlv:class:symbol.create :home
+                                        'org-journal
+                                        dlv:const:class:separator
+                                        (jerky/get 'path 'org 'journal :namespace :home))
+               (jerky/get 'path 'org 'journal :namespace :home)
+               'org-journal-mode
+               (list 'org-journal-dir
                      (jerky/get 'path 'org 'journal :namespace :home)
-                     'org-journal-mode
-                     'org-journal-dir
-                     :namespace :home
-                     :value (jerky/get 'path 'org 'journal :namespace :home)
-                     :docstr "org-journal's :home directory"
-                     :dlv 'full
-                     :safe 'already)
+                     :safe))
 
       ;; Insert :home journal shortcuts if appropriate.
       ;; Add to Doom Leader...

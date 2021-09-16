@@ -354,19 +354,6 @@ multiple taskspaces.
 
 
 ;;------------------------------------------------------------------------------
-;; Variables
-;;------------------------------------------------------------------------------
-
-(defvar taskspace//dlv/group nil
-  "This should always be nil unless used via directory-local-variables.
-
-It should only be set via `taskspace/group/dlv'")
-
-;; Mark our DLV variable as safe for DLV use.
-(dlv:var:safe.predicate 'taskspace//dlv/group #'-t//group/valid?)
-
-
-;;------------------------------------------------------------------------------
 ;; Per-Group Config/Settings Helpers
 ;;------------------------------------------------------------------------------
 
@@ -711,7 +698,7 @@ Returns nil or a string in TASKSPACES.
   "Create a directory-local-variable for GROUP and DIRECTORY.
 This sets the automatic group for that dir (and sub-dirs) to GROUP."
   (if (imp:provided? :dlv)
-      (dlv:set (dlv:class:symbol.create taskspace
+      (dlv:set (dlv:class:symbol.create :taskspace
                                         group
                                         dlv:const:class:separator
                                         directory)
@@ -2026,6 +2013,19 @@ TODO:      - (\"t\" (\"n\" (\"t\" . \"taskspace\")))
 ;; TODO: prefix:            (list :desc description
 ;; TODO: prefix:                  key
 ;; TODO: prefix:                  rest)))))
+
+
+;;------------------------------------------------------------------------------
+;; Directory Local Variables
+;;------------------------------------------------------------------------------
+
+(defvar taskspace//dlv/group nil
+  "This should always be nil unless used via directory-local-variables.
+
+It should only be set via `taskspace/group/dlv'")
+
+;; Mark our DLV variable as safe for DLV use.
+(dlv:var:safe.predicate 'taskspace//dlv/group #'-t//group/valid?)
 
 
 ;;------------------------------------------------------------------------------

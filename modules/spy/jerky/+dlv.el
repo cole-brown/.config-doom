@@ -18,6 +18,7 @@
 
 ;; Mark our DLV variable as safe for DLV use.
 (dlv:var:safe.predicate 'jerky//dlv/namespace.local #'jerky//namespace/valid)
+;; (get 'jerky//dlv/namespace.local 'safe-local-variable)
 
 
 ;;------------------------------------------------------------------------------
@@ -51,3 +52,9 @@
 ;; (jerky/get 'path 'org 'journal :namespace :work)
 ;;   -> "d:/home/spydez/.lily.d/logbook/work/"
 ;; (jerky/dlv/namespace.set "d:/home/work/.lily.d/logbook/work/" :work)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide:with-emacs :jerky '+dlv)

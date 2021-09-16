@@ -13,6 +13,9 @@
 (imp:require :modules 'spy 'lisp)
 (imp:require :jerky 'debug)
 
+;; Optional:
+;; (imp:optional :jerky '+dlv)
+
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
 ;; TODO [2020-11-06]: Change get/set to take only one keys arg. list or str.

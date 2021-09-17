@@ -12,6 +12,7 @@
 (load! "string")
 (load! "normalize")
 
+(load! "random") ;; Requires 'string.
 
 (load! "hash")
 

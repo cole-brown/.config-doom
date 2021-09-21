@@ -6,9 +6,6 @@
 (imp:require :str 'regex)
 
 
-;; TODO: int<str> the private stuff.
-
-
 ;;------------------------------------------------------------------------------
 ;; Regexes
 ;;------------------------------------------------------------------------------
@@ -55,10 +52,15 @@ SEPARATORS should be:
   - a keyword for `int<str>:case:rx:build.flags',
   - a list of separator strings,
   - a list for `rx',
-  - or nil (to use defaults)."
+  - the keyword `:none' (for 'no separators allowed'),
+  - `:default' or nil (to use defaults)."
   (declare (pure t) (side-effect-free t))
 
   (cond
+   ((and (keywordp separators)
+         (eq :none separators))
+    "")
+
    ;; String: assume it's a regex already.
    ((stringp separators)
     separators)
@@ -78,6 +80,7 @@ SEPARATORS should be:
    (t
     str:rx:default:separators.word)))
 ;; (int<str>:case:rx:build.separators nil)
+;; (int<str>:case:rx:build.separators :none)
 
 
 (defun int<str>:case:rx:build.words (regex word-separators docstr)
@@ -94,26 +97,52 @@ WORD-SEPARATORS should be:
 
 Returns a lambda function to use to match a string with the document
 string DOCSTR and a return value of `string-match-p' function's return value."
-  (declare (pure t) (side-effect-free t))
+  (declare (pure t)
+           (side-effect-free t)
+           (doc-string 3))
+  ;; What regex lambda do we want to create?
+  ;; With allowed WORD-SEPARATORS or without?
   ;; Return a lambda that does the regex checking and returns match/nil.
-  (lambda (check/string)
-    docstr
-    (save-match-data
-      ;; Check the string with our regex.
-      (string-match-p
-       ;; Regex with the allowed WORD-SEPARATORS.
-       (rx-to-string `(sequence
-                       string-start
-                       (one-or-more word-boundary
-                                    ;; The passed in regex for each word:
-                                    (group ,regex)
-                                    ;; Word separator?
-                                    (optional ,(int<str>:case:rx:build.separators word-separators))
-                                    word-boundary)
-                       string-end)
-                     :no-group)
-       check/string))))
+  (if (and (keywordp word-separators)
+           (eq :none word-separators))
+      ;; Build lambda for regex match /WITHOUT/ WORD-SEPARATORS.
+      (lambda (check/string)
+        docstr
+        (save-match-data
+          ;; Check the string with our regex.
+          (string-match-p
+           ;; Skip the word separators part of the regex.
+           (rx-to-string `(sequence
+                           string-start
+                           (one-or-more word-boundary
+                                        ;; The passed in regex for each word:
+                                        (group ,regex)
+                                        ;; NO WORD SEPARATORS!
+                                        word-boundary)
+                           string-end)
+                         :no-group)
+           check/string)))
+
+    ;; Build lambda for regex match with WORD-SEPARATORS.
+    (lambda (check/string)
+      docstr
+      (save-match-data
+        ;; Check the string with our regex.
+        (string-match-p
+         ;; Use optional word separators in the regex.
+         (rx-to-string `(sequence
+                         string-start
+                         (one-or-more word-boundary
+                                      ;; The passed in regex for each word:
+                                      (group ,regex)
+                                      ;; Word separator?
+                                      (optional ,(int<str>:case:rx:build.separators word-separators))
+                                      word-boundary)
+                         string-end)
+                       :no-group)
+         check/string)))))
 ;; (int<str>:case:rx:build.words '(or "hi" "hello") nil "hi")
+;; (int<str>:case:rx:build.words '(or "hi" "hello") :none "hi")
 ;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello there")
 ;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello")
 ;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello hello")
@@ -139,7 +168,9 @@ WORD-SEPARATORS should be:
 
 Returns a lambda function to use to match a string with the document
 string DOCSTR and a return value of `string-match-p' function's return value."
-  (declare (pure t) (side-effect-free t))
+  (declare (pure t)
+           (side-effect-free t)
+           (doc-string 3))
   (lambda (check/string)
     docstr
     (save-match-data
@@ -180,14 +211,12 @@ string DOCSTR and a return value of `string-match-p' function's return value."
 
 (defconst int<str>:case:rx:lower
   '(:rx (one-or-more (any lower-case digit)))
-  "An rx sexpr for lowercase words."
-  :group 'str:group)
+  "An rx sexpr for lowercase words.")
 
 
 (defconst int<str>:case:rx:upper
   '(:rx (one-or-more (any upper-case digit)))
-  "An rx sexpr for UPPERCASE WORDS."
-  :group 'str:group)
+  "An rx sexpr for UPPERCASE WORDS.")
 
 
 (defconst int<str>:case:rx:title
@@ -197,8 +226,84 @@ string DOCSTR and a return value of `string-match-p' function's return value."
          upper-case
          ;; ...and the rest are not capital.
          (one-or-more ,(int<str>:case:rx:get int<str>:case:rx:lower :rx))))
-  "An rx sexpr for Title Cased Words."
-  :group 'str:group)
+  "An rx sexpr for Title Cased Words.")
+
+
+;;;---
+;; Case Type: CamelCase
+;;---
+
+(defconst int<str>:case:rx:camel/grouping.upper
+  '((zero-or-more digit)
+    ;; Exactly one uppercase letter.
+    upper-case
+    ;; After first uppercase, must have at least one lowercase.
+    (zero-or-more digit)
+    (one-or-more lower-case))
+  "An `rx' list of a CamelCase group of letters.
+e.g. 'Camel'Case or Camel'Case'
+
+NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
+
+
+(defconst int<str>:case:rx:camel.upper
+  `(:rx (sequence
+         ;; UpperCaseCamel must start with a camel hump.
+         ,@int<str>:case:rx:camel.grouping
+         ;; Then it can continue on with the same 'one upper then some lower' pattern.
+         (zero-or-more
+          ,@int<str>:case:rx:camel.grouping))
+    :separators :none)
+  "An rx sexpr for lower-cased CamelCaseWords.")
+
+
+(defconst int<str>:case:rx:camel.lower
+  `(:rx (sequence
+         ;; lowerCaseCamel must start with a lowercase group before the camel humps.
+         (zero-or-more digit)
+         (one-or-more lower-case)
+         ;; Then it can continue on with the same 'one upper then some lower' pattern.
+         (zero-or-more
+          ,@int<str>:case:rx:camel.grouping))
+    :separators :none)
+  "An rx sexpr for lower-cased CamelCaseWords.")
+
+
+(defconst int<str>:case:rx:camel.any
+  `(:rx (or ,(int<str>:case:rx:get int<str>:case:rx:camel.lower :rx)
+            ,(int<str>:case:rx:get int<str>:case:rx:camel.upper :rx))
+    :separators :none)
+  "An rx sexpr for camel_case_words, either lowerCamelCase or UpperCamelCase.")
+
+
+;;---
+;; Case Type: snake_case
+;;---
+
+(defconst int<str>:case:rx:snake.lower
+  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:lower :rx)
+    :separators ("_"))
+  "An rx sexpr for lower-cased snake_case_words.")
+
+
+(defconst int<str>:case:rx:snake.upper
+  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:upper :rx)
+    :separators ("_"))
+  "An rx sexpr for upper-cased SNAKE_CASE_WORDS.")
+
+
+(defconst int<str>:case:rx:snake.title
+  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:title :rx)
+    :separators ("_"))
+  "An rx sexpr for title-cased Snake_Case_Words.")
+
+
+(defconst int<str>:case:rx:snake.any
+  `(:rx (or ,(int<str>:case:rx:get int<str>:case:rx:snake.lower :rx)
+            ,(int<str>:case:rx:get int<str>:case:rx:snake.upper :rx)
+            ,(int<str>:case:rx:get int<str>:case:rx:snake.title :rx))
+    :separators ("_"))
+  "An rx sexpr for snake_case_words, either all upper-case or all lower-case.")
 
 
 ;;---
@@ -207,7 +312,7 @@ string DOCSTR and a return value of `string-match-p' function's return value."
 
 (defconst int<str>:case:rx:alternating.lower
   ;; Can start off with not-a-letter, but first letter must be lowercase.
-  `(:rx (sequence
+  '(:rx (sequence
          (zero-or-more digit)
          lower-case
          ;; After first lowercase, must have at least one upper.
@@ -220,14 +325,13 @@ string DOCSTR and a return value of `string-match-p' function's return value."
           (or lower-case word-end)
           (zero-or-more digit)
           (or upper-case word-end)))
-    :separators ,str:rx:default:separators.word)
-  "An rx sexpr for \"lOwErCaSe AlTeRnAtInG WoRdS\"."
-  :group 'str:group)
+    :separators :default)
+  "An rx sexpr for \"lOwErCaSe AlTeRnAtInG WoRdS\".")
 
 
 (defconst int<str>:case:rx:alternating.upper
   ;; Can start off with not-a-letter, but first letter must be uppercase.
-  `(:rx (sequence
+  '(:rx (sequence
          (zero-or-more digit)
          upper-case
          ;; After first lowercase, must have at least one upper.
@@ -240,51 +344,15 @@ string DOCSTR and a return value of `string-match-p' function's return value."
           (or upper-case word-end)
           (zero-or-more digit)
           (or lower-case word-end)))
-    :separators ,str:rx:default:separators.word)
-  "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\"."
-  :group 'str:group)
+    :separators :default)
+  "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\".")
 
 
 (defconst int<str>:case:rx:alternating.any
   `(:rx (or ,(int<str>:case:rx:get int<str>:case:rx:alternating.lower :rx)
             ,(int<str>:case:rx:get int<str>:case:rx:alternating.upper :rx))
-    :separators ,str:rx:default:separators.word)
-  "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\" or \"lOwErCaSe AlTeRnAtInG WoRdS\"."
-  :group 'str:group)
-
-
-;;---
-;; Case Type: snake_case
-;;---
-
-(defconst int<str>:case:rx:snake.lower
-  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:lower :rx)
-    :separators ("_"))
-  "An rx sexpr for lower-cased snake_case_words."
-  :group 'str:group)
-
-
-(defconst int<str>:case:rx:snake.upper
-  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:upper :rx)
-    :separators ("_"))
-  "An rx sexpr for upper-cased SNAKE_CASE_WORDS."
-  :group 'str:group)
-
-
-(defconst int<str>:case:rx:snake.title
-  `(:rx ,(int<str>:case:rx:get int<str>:case:rx:title :rx)
-    :separators ("_"))
-  "An rx sexpr for title-cased Snake_Case_Words."
-  :group 'str:group)
-
-
-(defconst int<str>:case:rx:snake.any
-  `(:rx (or ,(int<str>:case:rx:get int<str>:case:rx:snake.lower :rx)
-            ,(int<str>:case:rx:get int<str>:case:rx:snake.upper :rx)
-            ,(int<str>:case:rx:get int<str>:case:rx:snake.title :rx))
-    :separators ("_"))
-  "An rx sexpr for snake_case_words, either all upper-case or all lower-case."
-  :group 'str:group)
+    :separators :default)
+  "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\" or \"lOwErCaSe AlTeRnAtInG WoRdS\".")
 
 
 ;;---
@@ -292,63 +360,92 @@ string DOCSTR and a return value of `string-match-p' function's return value."
 ;;---
 
 (defconst int<str>:rx:plist/cases
-  (list :lower (int<str>:case:rx:build.words
-                (int<str>:case:rx:get int<str>:case:rx:lower :rx)
-                (int<str>:case:rx:get int<str>:case:rx:lower :separators)
-                "Match 'lowercase' strings.")
+  (list
+   ;;------------------------------
+   ;; Cases: Simple
+   ;;------------------------------
+   :lower (int<str>:case:rx:build.words
+           (int<str>:case:rx:get int<str>:case:rx:lower :rx)
+           (int<str>:case:rx:get int<str>:case:rx:lower :separators)
+           "Match 'lowercase' strings.")
 
-        :upper (int<str>:case:rx:build.words
-                (int<str>:case:rx:get int<str>:case:rx:upper :rx)
-                (int<str>:case:rx:get int<str>:case:rx:upper :separators)
-                "Match 'UPPERCASE' strings.")
+   :upper (int<str>:case:rx:build.words
+           (int<str>:case:rx:get int<str>:case:rx:upper :rx)
+           (int<str>:case:rx:get int<str>:case:rx:upper :separators)
+           "Match 'UPPERCASE' strings.")
 
-        :title (int<str>:case:rx:build.words
-                (int<str>:case:rx:get int<str>:case:rx:title :rx)
-                (int<str>:case:rx:get int<str>:case:rx:title :separators)
-                "Match 'Title Case' strings.")
+   :title (int<str>:case:rx:build.words
+           (int<str>:case:rx:get int<str>:case:rx:title :rx)
+           (int<str>:case:rx:get int<str>:case:rx:title :separators)
+           "Match 'Title Case' strings.")
 
-        :snake (int<str>:case:rx:build.words
-                (int<str>:case:rx:get int<str>:case:rx:snake.any :rx)
-                (int<str>:case:rx:get int<str>:case:rx:snake.any :separators)
-                "Match any type of 'snake_case' strings.")
+   ;;------------------------------
+   ;; Cases: Camel
+   ;;------------------------------
+   :camel (int<str>:case:rx:build.words
+           (int<str>:case:rx:get int<str>:case:rx:camel.any :rx)
+           (int<str>:case:rx:get int<str>:case:rx:camel.any :separators)
+           "Match 'CamelCase' strings.")
 
-        :snake.lower (int<str>:case:rx:build.words
-                      (int<str>:case:rx:get int<str>:case:rx:snake.lower :rx)
-                      (int<str>:case:rx:get int<str>:case:rx:snake.lower :separators)
-                      "Match 'lower_snake_case' strings.")
+   :camel.lower (int<str>:case:rx:build.words
+                 (int<str>:case:rx:get int<str>:case:rx:camel.lower :rx)
+                 (int<str>:case:rx:get int<str>:case:rx:camel.lower :separators)
+                 "Match 'CamelCase' strings.")
 
-        :snake.upper (int<str>:case:rx:build.words
-                      (int<str>:case:rx:get int<str>:case:rx:snake.upper :rx)
-                      (int<str>:case:rx:get int<str>:case:rx:snake.upper :separators)
-                      "Match 'UPPER_SNAKE_CASE' strings.")
+   :camel.upper (int<str>:case:rx:build.words
+                 (int<str>:case:rx:get int<str>:case:rx:camel.upper :rx)
+                 (int<str>:case:rx:get int<str>:case:rx:camel.upper :separators)
+                 "Match 'CamelCase' strings.")
 
-        :snake.title (int<str>:case:rx:build.words
-                      (int<str>:case:rx:get int<str>:case:rx:snake.title :rx)
-                      (int<str>:case:rx:get int<str>:case:rx:snake.title :separators)
-                      "Match 'UPPER_SNAKE_CASE' strings.")
+   ;;------------------------------
+   ;; Cases: Snake
+   ;;------------------------------
+   :snake (int<str>:case:rx:build.words
+           (int<str>:case:rx:get int<str>:case:rx:snake.any :rx)
+           (int<str>:case:rx:get int<str>:case:rx:snake.any :separators)
+           "Match any type of 'snake_case' strings.")
 
-        :alternating.lower (int<str>:case:rx:build.no-separators
-                            (int<str>:case:rx:get int<str>:case:rx:alternating.lower :rx)
-                            (int<str>:case:rx:get int<str>:case:rx:alternating.lower :separators)
-                            "Match 'aLtErNaTiNg LoWeRcAsE' strings.")
+   :snake.lower (int<str>:case:rx:build.words
+                 (int<str>:case:rx:get int<str>:case:rx:snake.lower :rx)
+                 (int<str>:case:rx:get int<str>:case:rx:snake.lower :separators)
+                 "Match 'lower_snake_case' strings.")
 
-        :alternating.upper (int<str>:case:rx:build.no-separators
-                            (int<str>:case:rx:get int<str>:case:rx:alternating.upper :rx)
-                            (int<str>:case:rx:get int<str>:case:rx:alternating.upper :separators)
-                            "Match 'AlTeRnAtInG uPpErCaSe' strings."))
-  "A plist of all our fully-qualified case keywords and their identifying regex functions."
-  :group 'str:group)
+   :snake.upper (int<str>:case:rx:build.words
+                 (int<str>:case:rx:get int<str>:case:rx:snake.upper :rx)
+                 (int<str>:case:rx:get int<str>:case:rx:snake.upper :separators)
+                 "Match 'UPPER_SNAKE_CASE' strings.")
+
+   :snake.title (int<str>:case:rx:build.words
+                 (int<str>:case:rx:get int<str>:case:rx:snake.title :rx)
+                 (int<str>:case:rx:get int<str>:case:rx:snake.title :separators)
+                 "Match 'UPPER_SNAKE_CASE' strings.")
+
+   ;;------------------------------
+   ;; Cases: Alternating
+   ;;------------------------------
+   :alternating.lower (int<str>:case:rx:build.no-separators
+                       (int<str>:case:rx:get int<str>:case:rx:alternating.lower :rx)
+                       (int<str>:case:rx:get int<str>:case:rx:alternating.lower :separators)
+                       "Match 'aLtErNaTiNg LoWeRcAsE' strings.")
+
+   :alternating.upper (int<str>:case:rx:build.no-separators
+                       (int<str>:case:rx:get int<str>:case:rx:alternating.upper :rx)
+                       (int<str>:case:rx:get int<str>:case:rx:alternating.upper :separators)
+                       "Match 'AlTeRnAtInG uPpErCaSe' strings."))
+  "A plist of all our fully-qualified case keywords and their identifying regex functions.")
 ;; (pp int<str>:rx:plist/cases)
 
 
 (defconst str:cases:rx/types
   '(:lower :upper :title :snake :camel :alternating)
-  "A list of keywords of our general types of cases."
-  :group 'str:group)
+  "A list of keywords of our general types of cases.")
+
 
 (defconst str:cases:rx/all
   '(;; simple types
-    :lower :upper :title
+    :lower
+    :upper
+    :title
     ;; snake_case_types
     :snake
     :snake.lower
@@ -362,8 +459,7 @@ string DOCSTR and a return value of `string-match-p' function's return value."
     :alternating
     :alternating.lower
     :alternating.upper)
-  "A list of keywords of our general types of cases."
-  :group 'str:group)
+  "A list of keywords of our general types of cases.")
 
 
 ;;------------------------------
@@ -411,6 +507,7 @@ Example:
      ;; Return whatever we matched.
      matches)))
 ;; (str:case:identify "hello_there")
+;; (str:case:identify "HelloThere")
 ;; (str:case:identify "hello there")
 ;; (str:case:identify "Hello")
 ;; (str:case:identify "hElL")
@@ -520,7 +617,7 @@ CALLER is used when signaling an error message."
   (apply #'str:join ""
          (mapcar #'capitalize
                  (int<str>:case:normalize->list "str:case/string:to:camel.string"
-                                                upper-or-list))))
+                                                string-or-list))))
 ;; (str:case/string:to:camel.upper "hello there")
 
 

@@ -555,6 +555,28 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
     ;; AlTeRnAtInG cAsE tYpEs
     :alternating
     :alternating.lower
+    :alternating.upper
+    :alternating.random)
+  "A list of keywords of our general types of cases.")
+
+
+(defconst str:cases:rx/types.identify
+  '(;; simple types
+    :lower
+    :upper
+    :title
+    ;; snake_case_types
+    :snake
+    :snake.lower
+    :snake.upper
+    :snake.title
+    ;; CamelCaseTypes
+    :camel
+    :camel.lower
+    :camel.upper
+    ;; AlTeRnAtInG cAsE tYpEs
+    :alternating
+    :alternating.lower
     :alternating.upper)
   "A list of keywords of our general types of cases.")
 
@@ -642,8 +664,8 @@ PROPERTY can be: `:rx.id', `:separators', or `:rx.full'"
   "Identifies case type(s) of STRING.
 
 If TYPES is non-nil, uses that list of type keywords instead of
-`str:cases:rx/types.all'. See:
-  - `str:cases:rx/types.all' for all possible type keywords.
+`str:cases:rx/types.identify'. See:
+  - `str:cases:rx/types.identify' for all identifiable type keywords.
   - `str:cases:rx/types.base' for the general type keywords.
 
 Returns a plist of: '(:types <list> :separators <plist-or-nil>)

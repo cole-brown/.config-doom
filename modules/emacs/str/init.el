@@ -47,7 +47,10 @@
 (load! "string")
 
 (unless (featurep! -case)
-  (load! "+case"))
+  (load! "+case")
+
+  (unless (featurep! -hydra)
+    (load! "+case-hydra")))
 
 
 ;;------------------------------------------------------------------------------

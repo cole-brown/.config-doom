@@ -2,6 +2,7 @@
 
 
 (require 'rx)
+(require 'dash)
 (imp:require :str 'string)
 (imp:require :str 'regex)
 
@@ -14,12 +15,33 @@
 ;; regex string builders
 ;;------------------------------
 
-(defun int<str>:case:rx:build.flags (flags)
+(defun int<str>:case:rx:build.flags (&rest flags)
   "Build optional keyword/string FLAGS into an `rx' expr."
   (declare (pure t) (side-effect-free t))
-  (let (regex)
-    (dolist (flag flags)
-      (cond ((eq :whitespace flag)
+  (let (regex
+        done
+        flag)
+    (while (and flags
+                (not done))
+      (setq flag (car flags)
+            flags (cdr flags))
+      ;;---
+      ;; Overrides first.
+      ;;---
+      (cond ((eq :none flag)
+             ;; Override anything already parsed, set our regex and force ourselves to the end of the loop.
+             (setq regex ""
+                   flags nil
+                   done t))
+            ((eq :default flag)
+             ;; Override anything already parsed, set our regex and force ourselves to the end of the loop.
+             (setq regex str:rx:default:separators.word
+                   flags nil
+                   done t))
+            ;;---
+            ;; Normal additive flags.
+            ;;---
+            ((eq :whitespace flag)
              (push 'whitespace regex))
             ((eq :punctuation flag)
              (push 'punctuation regex))
@@ -28,19 +50,24 @@
             (t
              (error "int<str>:case:rx:build.flags: Flag '%S' not implemented."
                     flag))))
-
+    ;; Build and return the regex list/string.
     (cond
-     ((= (length flags) 1)
+     ;; Already finished? Return as-is.
+     (done
+      regex)
+     ;; Still need to finalize.
+     ((= (length regex) 1)
       (nth 0 regex))
-     ((> (length flags) 1)
+     ((> (length regex) 1)
       (apply #'list 'any regex))
      (t
       (error "int<str>:case:rx:build.flags: No regex items to build? %S -> %S"
              flags regex)))))
-;; (int<str>:case:rx:build.flags '(:whitespace))
-;; (int<str>:case:rx:build.flags '(:punctuation))
-;; (int<str>:case:rx:build.flags '(:whitespace :punctuation))
-;; (int<str>:case:rx:build.flags '(:whitespace :punctuation "-"))
+;; (int<str>:case:rx:build.flags :default)
+;; (int<str>:case:rx:build.flags :whitespace)
+;; (int<str>:case:rx:build.flags :punctuation)
+;; (int<str>:case:rx:build.flags :whitespace :punctuation)
+;; (int<str>:case:rx:build.flags :whitespace :punctuation "-")
 
 
 (defun int<str>:case:rx:build.separators (separators)
@@ -57,14 +84,6 @@ SEPARATORS should be:
   (declare (pure t) (side-effect-free t))
 
   (cond
-   ((and (keywordp separators)
-         (eq :none separators))
-    "")
-
-   ((and (keywordp separators)
-         (eq :default separators))
-    str:rx:default:separators.word)
-
    ;; String: assume it's a regex already.
    ((stringp separators)
     separators)
@@ -92,7 +111,7 @@ SEPARATORS should be:
 ;; (int<str>:case:rx:build.separators :none)
 
 
-(defun int<str>:case:rx:build.words (regex word-separators docstr)
+(defun int<str>:case:rx:compile.words (regex word-separators docstr)
   "Build a predicate for matching an entire string where each word must meet REGEX.
 
 REGEX should be a regex string or an rx expression list.
@@ -150,19 +169,19 @@ string DOCSTR and a return value of `string-match-p' function's return value."
                          string-end)
                        :no-group)
          check/string)))))
-;; (int<str>:case:rx:build.words '(or "hi" "hello") nil "hi")
-;; (int<str>:case:rx:build.words '(or "hi" "hello") :none "hi")
-;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello there")
-;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello")
-;; (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") "hello hello")
+;; (int<str>:case:rx:compile.words '(or "hi" "hello") nil "hi")
+;; (int<str>:case:rx:compile.words '(or "hi" "hello") :none "hi")
+;; (funcall (int<str>:case:rx:compile.words (rx "hello") nil "docstr") "hello there")
+;; (funcall (int<str>:case:rx:compile.words (rx "hello") nil "docstr") "hello")
+;; (funcall (int<str>:case:rx:compile.words (rx "hello") nil "docstr") "hello hello")
 ;; (let ((string "hello hello"))
-;;   (funcall (int<str>:case:rx:build.words (rx "hello") nil "docstr") string)
+;;   (funcall (int<str>:case:rx:compile.words (rx "hello") nil "docstr") string)
 ;;   (list (match-string 0 string)
 ;;         (match-string 1 string)
 ;;         (match-string 2 string)))
 
 
-(defun int<str>:case:rx:build.no-separators (regex word-separators docstr)
+(defun int<str>:case:rx:compile.no-separators (regex word-separators docstr)
   "Build a predicate for matching an alternating case regex to a string of words.
 The WORD-SEPARATORS will be removed from the string befoer the REGEX is run on the string.
 
@@ -206,6 +225,38 @@ string DOCSTR and a return value of `string-match-p' function's return value."
                                    :fixedcase))))))
 
 
+(defun int<str>:case:rx:compile (var.case &rest plist/override)
+  "Compile VAR.CASE's full regex string.
+
+PLIST/OVERRIDE is a plist of optional key/values. Allowed keys are:
+  - `:rx.id'
+  - `:rx.compiler'
+  - `:separators'
+  - `:docstr'
+
+If any of these are set, they override VAR.CASE's plist values of the same key."
+  (declare (pure t)
+           (side-effect-free t)
+           (doc-string 3))
+  ;; Get optional overrides...
+  (-let* (((&plist :rx.compiler :rx.id :separators :docstr) plist/override)
+          ;; Set up values to use based on overrides, VAR.CASE values, and defaults.
+          (rx.compiler (or rx.compiler
+                           (int<str>:case:property.get var.case :rx.compiler)
+                           #'int<str>:case:rx:compile.words))
+          (rx.id (or rx.id
+                     (int<str>:case:property.get var.case :rx.id)))
+          (separators (or separators
+                          (int<str>:case:property.get var.case :separators)))
+          (docstr (or docstr
+                      (int<str>:case:property.get var.case :docstr))))
+    ;; Create the regex.
+    (funcall rx.compiler
+             rx.id
+             separators
+             docstr)))
+
+
 ;;------------------------------
 ;; `rx' plists
 ;;------------------------------
@@ -225,49 +276,48 @@ string DOCSTR and a return value of `string-match-p' function's return value."
 ;; Case Type: Simple (lower, UPPER, Title)
 ;;---
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:lower
-  '(:rx.id (one-or-more (any lower-case digit)))
+  '(:rx.id (one-or-more (any lower-case digit))
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'lowercase' strings.")
   "An rx sexpr for lowercase words.")
-
 
 (int<str>:case:property.set
  int<str>:case:lower
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:lower :rx.id)
-                               (int<str>:case:property.get int<str>:case:lower :separators)
-                               "Match 'lowercase' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:lower))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:upper
-  '(:rx.id (one-or-more (any upper-case digit)))
+  '(:rx.id (one-or-more (any upper-case digit))
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'UPPERCASE' strings.")
   "An rx sexpr for UPPERCASE WORDS.")
 
 
 (int<str>:case:property.set
  int<str>:case:upper
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:upper :rx.id)
-                               (int<str>:case:property.get int<str>:case:upper :separators)
-                               "Match 'UPPERCASE' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:upper))
 
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:title
   `(:rx.id (sequence
             (zero-or-more digit)
             ;; Each word must start with one capital.
             upper-case
             ;; ...and the rest are not capital.
-            (one-or-more ,(int<str>:case:property.get int<str>:case:lower :rx.id))))
+            (one-or-more ,(int<str>:case:property.get int<str>:case:lower :rx.id)))
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'Title Case' strings.")
   "An rx sexpr for Title Cased Words.")
 
 
 (int<str>:case:property.set
  int<str>:case:title
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:title :rx.id)
-                               (int<str>:case:property.get int<str>:case:title :separators)
-                               "Match 'Title Case' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:title))
 
 
 ;;;---
@@ -287,6 +337,7 @@ e.g. 'Camel'Case or Camel'Case'
 NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:camel.lower
   `(:rx.id (sequence
             ;; lowerCaseCamel must start with a lowercase group before the camel humps.
@@ -295,18 +346,18 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
             ;; Then it can continue on with the same 'one upper then some lower' pattern.
             (zero-or-more
              ,@int<str>:case:camel/grouping.upper))
-    :separators :none)
-  "An rx sexpr for lower-cased CamelCaseWords.")
+    :separators :none
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'lowerCamelCase' strings.")
+  "An rx sexpr for lowerCaseWords.")
 
 
 (int<str>:case:property.set
  int<str>:case:camel.lower
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:camel.lower :rx.id)
-                               (int<str>:case:property.get int<str>:case:camel.lower :separators)
-                               "Match 'CamelCase' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:camel.lower))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:camel.upper
   `(:rx.id (sequence
             ;; UpperCaseCamel must start with a camel hump.
@@ -314,99 +365,99 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
             ;; Then it can continue on with the same 'one upper then some lower' pattern.
             (zero-or-more
              ,@int<str>:case:camel/grouping.upper))
-    :separators :none)
-  "An rx sexpr for lower-cased CamelCaseWords.")
+    :separators :none
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'UpperCamelCase' strings.")
+  "An rx sexpr for UpperCamelCaseWords.")
 
 
 (int<str>:case:property.set
  int<str>:case:camel.upper
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:camel.upper :rx.id)
-                               (int<str>:case:property.get int<str>:case:camel.upper :separators)
-                               "Match 'UpperCamelCase' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:camel.upper))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:camel.any
   `(:rx.id (or ,(int<str>:case:property.get int<str>:case:camel.lower :rx.id)
                ,(int<str>:case:property.get int<str>:case:camel.upper :rx.id))
-    :separators :none)
-  "An rx sexpr for camel_case_words, either lowerCamelCase or UpperCamelCase.")
+    :separators :none
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match any 'CamelCase' strings.")
+  "An rx sexpr for CamelCaseWords, either lowerCamelCase or UpperCamelCase.")
 
 
 (int<str>:case:property.set
  int<str>:case:camel.any
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:camel.any :rx.id)
-                               (int<str>:case:property.get int<str>:case:camel.any :separators)
-                               "Match 'CamelCase' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:camel.any))
 
 
 ;;---
 ;; Case Type: snake_case
 ;;---
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:snake.lower
   `(:rx.id ,(int<str>:case:property.get int<str>:case:lower :rx.id)
-    :separators ("_"))
+    :separators ("_")
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'lower_snake_case' strings.")
   "An rx sexpr for lower-cased snake_case_words.")
 
 
 (int<str>:case:property.set
  int<str>:case:snake.lower
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:snake.lower :rx.id)
-                               (int<str>:case:property.get int<str>:case:snake.lower :separators)
-                               "Match 'lower_snake_case' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:snake.lower))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:snake.upper
   `(:rx.id ,(int<str>:case:property.get int<str>:case:upper :rx.id)
-    :separators ("_"))
+    :separators ("_")
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'UPPER_SNAKE_CASE' strings.")
   "An rx sexpr for upper-cased SNAKE_CASE_WORDS.")
 
 
 (int<str>:case:property.set
  int<str>:case:snake.upper
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:snake.upper :rx.id)
-                               (int<str>:case:property.get int<str>:case:snake.upper :separators)
-                               "Match 'UPPER_SNAKE_CASE' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:snake.upper))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:snake.title
   `(:rx.id ,(int<str>:case:property.get int<str>:case:title :rx.id)
-    :separators ("_"))
+    :separators ("_")
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match 'Title_Snake_Case' strings.")
   "An rx sexpr for title-cased Snake_Case_Words.")
 
 
 (int<str>:case:property.set
  int<str>:case:snake.title
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:snake.title :rx.id)
-                               (int<str>:case:property.get int<str>:case:snake.title :separators)
-                               "Match 'Title_Snake_Case' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:snake.title))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:snake.any
   `(:rx.id (or ,(int<str>:case:property.get int<str>:case:snake.lower :rx.id)
                ,(int<str>:case:property.get int<str>:case:snake.upper :rx.id)
                ,(int<str>:case:property.get int<str>:case:snake.title :rx.id))
-    :separators ("_"))
+    :separators ("_")
+    :rx.compiler int<str>:case:rx:compile.words
+    :docstr "Match any type of 'snake_case' strings.")
   "An rx sexpr for snake_case_words, either all upper-case or all lower-case.")
 
 
 (int<str>:case:property.set
  int<str>:case:snake.any
- :rx.full
- (int<str>:case:rx:build.words (int<str>:case:property.get int<str>:case:snake.any :rx.id)
-                               (int<str>:case:property.get int<str>:case:snake.any :separators)
-                               "Match any type of 'snake_case' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:snake.any))
 
 
 ;;---
 ;; Case Type: aLtErNaTiNg
 ;;---
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:alternating.lower
   ;; Can start off with not-a-letter, but first letter must be lowercase.
   '(:rx.id (sequence
@@ -422,18 +473,18 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
              (or lower-case word-end)
              (zero-or-more digit)
              (or upper-case word-end)))
-    :separators :default)
+    :separators :default
+    :rx.compiler int<str>:case:rx:compile.no-separators
+    :docstr "Match 'aLtErNaTiNg LoWeRcAsE' strings.")
   "An rx sexpr for \"lOwErCaSe AlTeRnAtInG WoRdS\".")
 
 
 (int<str>:case:property.set
  int<str>:case:alternating.lower
- :rx.full
- (int<str>:case:rx:build.no-separators (int<str>:case:property.get int<str>:case:alternating.lower :rx.id)
-                                       (int<str>:case:property.get int<str>:case:alternating.lower :separators)
-                                       "Match 'aLtErNaTiNg LoWeRcAsE' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:alternating.lower))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:alternating.upper
   ;; Can start off with not-a-letter, but first letter must be uppercase.
   '(:rx.id (sequence
@@ -449,43 +500,42 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
              (or upper-case word-end)
              (zero-or-more digit)
              (or lower-case word-end)))
-    :separators :default)
+    :separators :default
+    :rx.compiler int<str>:case:rx:compile.no-separators
+    :docstr "Match 'AlTeRnAtInG uPpErCaSe' strings.")
   "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\".")
 
 
 (int<str>:case:property.set
  int<str>:case:alternating.upper
- :rx.full
- (int<str>:case:rx:build.no-separators (int<str>:case:property.get int<str>:case:alternating.upper :rx.id)
-                                       (int<str>:case:property.get int<str>:case:alternating.upper :separators)
-                                       "Match 'AlTeRnAtInG uPpErCaSe' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:alternating.upper))
 
 
+;; :rx.full will be created by `int<str>:case:rx:compile'.
 (defconst int<str>:case:alternating.any
   `(:rx.id (or ,(int<str>:case:property.get int<str>:case:alternating.lower :rx.id)
                ,(int<str>:case:property.get int<str>:case:alternating.upper :rx.id))
-    :separators :default)
+    :separators :default
+    :rx.compiler int<str>:case:rx:compile.no-separators
+    :docstr "Match 'UpPeRcAsE aLtErNaTiNg wOrDs' or 'lOwErCaSe AlTeRnAtInG WoRdS' strings.")
   "An rx sexpr for \"UpPeRcAsE aLtErNaTiNg wOrDs\" or \"lOwErCaSe AlTeRnAtInG WoRdS\".")
 
 
 (int<str>:case:property.set
  int<str>:case:alternating.any
- :rx.full
- (int<str>:case:rx:build.no-separators (int<str>:case:property.get int<str>:case:alternating.any :rx.id)
-                                       (int<str>:case:property.get int<str>:case:alternating.any :separators)
-                                       "Match 'UpPeRcAsE aLtErNaTiNg wOrDs' or 'lOwErCaSe AlTeRnAtInG WoRdS' strings."))
+ :rx.full (int<str>:case:rx:compile int<str>:case:alternating.any))
 
 
 ;;---
 ;; Case Types
 ;;---
 
-(defconst str:cases:rx/types
+(defconst str:cases:rx/types.base
   '(:lower :upper :title :snake :camel :alternating)
   "A list of keywords of our general types of cases.")
 
 
-(defconst str:cases:rx/all
+(defconst str:cases:rx/types.all
   '(;; simple types
     :lower
     :upper
@@ -586,12 +636,13 @@ PROPERTY can be: `:rx.id', `:separators', or `:rx.full'"
 ;; General
 ;;------------------------------
 
-(defun str:case:identify (string)
+(defun str:case:identify (string &optional types)
   "Returns identifying list of keywords for STRING's case.
 
-See:
-  - `str:cases:rx/all' for all possible keywords.
-  - `str:cases:rx/types' for all the case type keywords.
+If TYPES is non-nil, uses that list of type keywords instead of
+`str:cases:rx/types.all'. See:
+  - `str:cases:rx/types.all' for all possible type keywords.
+  - `str:cases:rx/types.base' for the general type keywords.
 
 TODO: Returning the delimiter for types with one.
 
@@ -611,7 +662,8 @@ Example:
   (str:rx:with/case.sensitive
    ;; Force to a string.
    (let ((str (format "%s" string))
-         (types str:cases:rx/all)
+         (types (or types
+                    str:cases:rx/types.all))
          matches)
      ;; Check all regexs in `int<str>:case:rx'.
      (while types

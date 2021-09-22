@@ -177,9 +177,9 @@ string DOCSTR and a return value of `string-match' function's return value."
                                 (optional ,(int<str>:case:rx:build.separators separators)))
                        (zero-or-more word-boundary
                                      ;; The passed in regex for each word:
-                                    ,regex
-                                    ;; Word separator?
-                                    (optional ,(int<str>:case:rx:build.separators separators)))
+                                     ,regex
+                                     ;; Word separator?
+                                     (optional ,(int<str>:case:rx:build.separators separators)))
                        word-end
                        string-end)
                      :no-group)
@@ -759,14 +759,14 @@ CALLER is used when signaling an error message."
 ;; Simple
 ;;------------------------------
 
-(defun str:case/string:to:lower (string-or-list)
+(defun str:case/string:to:lower (string-or-list &optional _unused:separator)
   "Convert STRING-OR-LIST to lowercase."
   (declare (pure t) (side-effect-free t))
   (downcase (int<str>:case:normalize->str "str:case/string:to:lower" string-or-list)))
 ;; (str:case/string:to:lower "HELLO")
 
 
-(defun str:case/string:to:upper (string-or-list)
+(defun str:case/string:to:upper (string-or-list &optional _unused:separator)
   "Convert STRING-OR-LIST to uppercase."
   (declare (pure t) (side-effect-free t))
   (upcase (int<str>:case:normalize->str "str:case/string:to:upper" string-or-list)))
@@ -778,7 +778,7 @@ CALLER is used when signaling an error message."
 ;; Title Case
 ;;------------------------------
 
-(defun str:case/string:to:title (string-or-list)
+(defun str:case/string:to:title (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"title case\" to \"Title Case\"."
   (declare (pure t) (side-effect-free t))
   (apply #'str:join " "
@@ -793,7 +793,7 @@ CALLER is used when signaling an error message."
 ;; CamelCase
 ;;------------------------------
 
-(defun str:case/string:to:camel.lower (string-or-list)
+(defun str:case/string:to:camel.lower (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"lower camel case\" to \"lowerCamelCase\"."
   (declare (pure t) (side-effect-free t))
   (let ((words (int<str>:case:normalize->list "str:case/string:to:camel.lower" string-or-list)))
@@ -802,9 +802,10 @@ CALLER is used when signaling an error message."
            ;; Titlecase the rest for CamelHumps.
            (mapcar #'capitalize (cdr words)))))
 ;; (str:case/string:to:camel.lower "hello there")
+;; (str:case/string:to:camel.lower '("hello" "there"))
 
 
-(defun str:case/string:to:camel.upper (string-or-list)
+(defun str:case/string:to:camel.upper (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"upper camel case\" to \"UpperCamelCase\"."
   (declare (pure t) (side-effect-free t))
   (apply #'str:join ""
@@ -818,45 +819,63 @@ CALLER is used when signaling an error message."
 ;; snake_case
 ;;------------------------------
 
-(defun str:case/string:from:snake (string)
-  "Convert STRING from \"snake_case\" to \"snake case\"."
+(defun str:case/string:from:snake (string &optional separator)
+  "Convert STRING from \"snake_case\" (or \"snake-case\", or whatever
+SEPARATOR is) to \"snake case\"."
   (declare (pure t) (side-effect-free t))
-  (save-match-data
-    (replace-regexp-in-string (rx (one-or-more "_"))
-                              " "
-                              string)))
+  (let ((separator (or separator
+                       "_")))
+    (save-match-data
+      (replace-regexp-in-string (rx-to-string `(one-or-more ,separator))
+                                " "
+                                string))))
+;; (str:case/string:from:snake "hello_there")
+;; (str:case/string:from:snake "hello-there" "-")
 
 
-(defun str:case/string:to:snake.lower (string-or-list)
+(defun str:case/string:to:snake.lower (string-or-list &optional separator)
   "Convert STRING-OR-LIST list or string from '(\"snake\" \"case\") or \"snake case\" to \"snake_case\"."
   (declare (pure t) (side-effect-free t))
-  (if (listp string-or-list)
-      (string-join string-or-list "_")
-    (save-match-data
-      (replace-regexp-in-string (rx (one-or-more space))
-                                "_"
-                                string-or-list))))
+  (let ((separator (or separator
+                       "_")))
+    (if (listp string-or-list)
+        (string-join string-or-list separator)
+      (save-match-data
+        (replace-regexp-in-string (rx (one-or-more space))
+                                  separator
+                                  string-or-list)))))
 ;; (str:case/string:to:snake.lower "lower snake case")
+;; (str:case/string:to:snake.lower "lower snake case" "-")
 
 
-(defun str:case/string:to:snake.upper (string-or-list)
+(defun str:case/string:to:snake.upper (string-or-list &optional separator)
   "Convert STRING-OR-LIST from \"upper snake case\" to \"UPPER_SNAKE_CASE\"."
   (declare (pure t) (side-effect-free t))
-  (save-match-data
-    (replace-regexp-in-string (rx (one-or-more space))
-                              "_"
-                              (str:case/string:to:upper string-or-list))))
+  (let ((separator (or separator
+                       "_")))
+    (if (listp string-or-list)
+        (string-join string-or-list separator)
+      (save-match-data
+        (replace-regexp-in-string (rx (one-or-more space))
+                                  separator
+                                  (str:case/string:to:upper string-or-list))))))
 ;; (str:case/string:to:snake.upper "upper snake case")
+;; (str:case/string:to:snake.upper "upper snake case" "-")
 
 
-(defun str:case/string:to:snake.title (string-or-list)
+(defun str:case/string:to:snake.title (string-or-list &optional separator)
   "Convert STRING-OR-LIST from \"title snake case\" to \"Title_Snake_Case\"."
   (declare (pure t) (side-effect-free t))
-  (save-match-data
-    (replace-regexp-in-string (rx (one-or-more space))
-                              "_"
-                              (str:case/string:to:title string-or-list))))
+  (let ((separator (or separator
+                       "_")))
+    (if (listp string-or-list)
+        (string-join string-or-list separator)
+      (save-match-data
+        (replace-regexp-in-string (rx (one-or-more space))
+                                  separator
+                                  (str:case/string:to:title string-or-list))))))
 ;; (str:case/string:to:snake.title "title snake case")
+;; (str:case/string:to:snake.title "title snake case" "-")
 
 
 ;;------------------------------
@@ -911,19 +930,19 @@ lower case character."
 ;; (str:case/string:to:alternating.general "hello" nil)
 
 
-(defun str:case/string:to:alternating.upper (string-or-list)
+(defun str:case/string:to:alternating.upper (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"alternating case\" to \"AlTeRnAtInG cAsE\"."
   (declare (pure t) (side-effect-free t))
   (str:case/string:to:alternating.general string-or-list nil))
 
 
-(defun str:case/string:to:alternating.lower (string-or-list)
+(defun str:case/string:to:alternating.lower (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"alternating case\" to \"aLtErNaTiNg CaSe\"."
   (declare (pure t) (side-effect-free t))
   (str:case/string:to:alternating.general string-or-list t))
 
 
-(defun str:case/string:to:alternating.random (string-or-list)
+(defun str:case/string:to:alternating.random (string-or-list &optional _separator)
   "Convert STRING-OR-LIST from \"alternating case\" to either
 \"AlTeRnAtInG cAsE\" or \"aLtErNaTiNg CaSe\"."
   (declare (pure t) (side-effect-free t))
@@ -945,7 +964,7 @@ lower case character."
   "Case types that are taken care of in the 'convert from' step by the conversion to lower-case.")
 
 
-(defun str:case/string:from (string)
+(defun str:case/string:from (string &optional separator)
   "Process string for conversion by converting it from whatever it is into a list of string words."
   (declare (pure t) (side-effect-free t))
 
@@ -961,7 +980,7 @@ lower case character."
         str.working)
 
        (:snake
-        (setq str.working (str:case/string:from:snake str.working)))
+        (setq str.working (str:case/string:from:snake str.working separator)))
 
        (t
         ;; Haven't coded a conversion for that yet...
@@ -973,109 +992,156 @@ lower case character."
 (defun str:case/string:to (string &rest cases)
   "Convert STRING according to CASES keywords.
 
+If CASES has keyword `:separator', the item following it must be a string of
+the separator to use.
+Example:
+  (str:case/string:to \"hello there\" :snake :upper :separator \"-\")
+    -> \"HELLO-THERE\"
+
 Can print unused CASES keywords if `:print' CASE keyword is used."
   (declare (pure t) (side-effect-free t))
 
-  (unless cases
-    (error (concat "%s: Require CASES keywords to convert string! "
-                   "string: '%s', cases: %S")
-           "str:case/string:to"
-           string
-           cases))
+  (let (cases/to
+        print?
+        skip
+        separator)
 
-  (let ((words.lower (str:case/string:from string))
-        (cases.remaining cases))
-    (prog1
-        ;; Return the string created from this:
-        (cond
-         ;;------------------------------
-         ;; UPPER/Title/LOWER cases
-         ;;------------------------------
-         ((memq :upper cases)
-          (setq cases.remaining (remove :upper cases.remaining))
-          (str:case/string:to:upper words.lower))
+    ;; Parse CASES out into case types and optional separator.
+    (dotimes (index (length cases))
+      (if skip
+          (setq skip nil)
 
-         ((memq :title cases)
-          (setq cases.remaining (remove :title cases.remaining))
-          (str:case/string:to:title words.lower))
+        (let ((curr (elt cases index))
+              (next (elt cases (1+ index))))
+          (cond
+           ;; Our special keyword.
+           ((and (keywordp curr)
+                 (eq :print curr))
+            (setq print? t))
 
-         ((memq :lower cases)
-          (setq cases.remaining (remove :lower cases.remaining))
-          (str:case/string:to:lower words.lower))
+           ;; A case type; copy to our working list.
+           ((memq curr str:cases:rx/types.all)
+            (push curr cases/to))
 
-         ;;------------------------------
-         ;; snake_cases
-         ;;------------------------------
-         ;; Check non-default for a case type first. e.g. UPPER_SNAKE_CASE.
-         ((and (memq :snake cases)
-               (memq :upper cases))
-          (setq cases.remaining (remove :snake cases.remaining))
-          (setq cases.remaining (remove :upper cases.remaining))
-          (str:case/string:to:snake.upper words.lower))
+           ;; Save separator to use.
+           ((eq :separator curr)
+            (if (and next
+                     (stringp next))
+                (setq separator next
+                      skip t)
+              (error "str:case/string:to: Separator must be a string, got: %S"
+                     next)))
 
-         ((and (memq :snake cases)
-               (memq :title cases))
-          (setq cases.remaining (remove :snake cases.remaining))
-          (setq cases.remaining (remove :title cases.remaining))
-          (str:case/string:to:snake.title words.lower))
+           ;; ERROR!
+           (t
+            (error "str:case/string:to: unknown case: %S"
+                   curr))))))
 
-         ;; Default snake_case.
-         ((memq :snake cases)
-          (setq cases.remaining (remove :snake cases.remaining))
-          (setq cases.remaining (remove :lower cases.remaining))
-          (str:case/string:to:snake.lower words.lower))
+    ;; Get the case types back to the order supplied.
+    (setq cases/to (nreverse cases/to))
 
-         ;;------------------------------
-         ;; CamelCases
-         ;;------------------------------
-         ((and (memq :camel cases)
-               (memq :upper cases))
-          (setq cases.remaining (remove :camel cases.remaining))
-          (setq cases.remaining (remove :upper cases.remaining))
-          (str:case/string:to:camel.upper words.lower))
+    (unless cases/to
+      (error (concat "%s: Require CASES keywords to convert string! "
+                     "string: '%s', cases: %S")
+             "str:case/string:to"
+             string
+             cases/to))
+
+    (let ((words.lower (str:case/string:from string))
+          (cases.remaining cases/to))
+      (prog1
+          ;; Return the string created from this:
+          (cond
+           ;;------------------------------
+           ;; snake_cases
+           ;;------------------------------
+           ;; Check non-default for a case type first. e.g. UPPER_SNAKE_CASE.
+           ((and (memq :snake cases/to)
+                 (memq :upper cases/to))
+            (setq cases.remaining (remove :snake cases.remaining))
+            (setq cases.remaining (remove :upper cases.remaining))
+            (str:case/string:to:snake.upper words.lower separator))
+
+           ((and (memq :snake cases/to)
+                 (memq :title cases/to))
+            (setq cases.remaining (remove :snake cases.remaining))
+            (setq cases.remaining (remove :title cases.remaining))
+            (str:case/string:to:snake.title words.lower separator))
+
+           ;; Default snake_case.
+           ((memq :snake cases/to)
+            (setq cases.remaining (remove :snake cases.remaining))
+            (setq cases.remaining (remove :lower cases.remaining))
+            (str:case/string:to:snake.lower words.lower separator))
+
+           ;;------------------------------
+           ;; CamelCases
+           ;;------------------------------
+           ((and (memq :camel cases/to)
+                 (memq :upper cases/to))
+            (setq cases.remaining (remove :camel cases.remaining))
+            (setq cases.remaining (remove :upper cases.remaining))
+            (str:case/string:to:camel.upper words.lower separator))
 
 
-         ;; Default camel_case.
-         ((memq :camel cases)
-          (setq cases.remaining (remove :camel cases.remaining))
-          (setq cases.remaining (remove :lower cases.remaining))
-          (str:case/string:to:camel.lower words.lower))
+           ;; Default camel_case.
+           ((memq :camel cases/to)
+            (setq cases.remaining (remove :camel cases.remaining))
+            (setq cases.remaining (remove :lower cases.remaining))
+            (str:case/string:to:camel.lower words.lower separator))
 
-         ;;------------------------------
-         ;; AlTeRnAtInG cases
-         ;;------------------------------
-         ((or (memq :alternating.upper cases)
-              (and  (memq :alternating cases)
-                    (memq :upper cases)))
-          (setq cases.remaining (remove :alternating.upper cases.remaining))
-          (setq cases.remaining (remove :alternating cases.remaining))
-          (setq cases.remaining (remove :upper cases.remaining))
-          (str:case/string:to:alternating.upper words.lower))
+           ;;------------------------------
+           ;; AlTeRnAtInG cases
+           ;;------------------------------
+           ((or (memq :alternating.upper cases/to)
+                (and  (memq :alternating cases/to)
+                      (memq :upper cases/to)))
+            (setq cases.remaining (remove :alternating.upper cases.remaining))
+            (setq cases.remaining (remove :alternating cases.remaining))
+            (setq cases.remaining (remove :upper cases.remaining))
+            (str:case/string:to:alternating.upper words.lower separator))
 
-         ;; Default aLtErNaTiNg CaSe.
-         ((or (memq :alternating.lower cases)
-              (and  (memq :alternating cases)
-                    (memq :lower cases))
-              (memq :alternating cases))
-          (setq cases.remaining (remove :alternating.lower cases.remaining))
-          (setq cases.remaining (remove :alternating cases.remaining))
-          (setq cases.remaining (remove :lower cases.remaining))
-          (str:case/string:to:alternating.lower words.lower))
+           ;; Default aLtErNaTiNg CaSe.
+           ((or (memq :alternating.lower cases/to)
+                (and  (memq :alternating cases/to)
+                      (memq :lower cases/to))
+                (memq :alternating cases/to))
+            (setq cases.remaining (remove :alternating.lower cases.remaining))
+            (setq cases.remaining (remove :alternating cases.remaining))
+            (setq cases.remaining (remove :lower cases.remaining))
+            (str:case/string:to:alternating.lower words.lower separator))
 
-         ((or (memq :alternating.random cases)
-              (and (memq :alternating cases)
-                   (memq :random cases)))
-          (setq cases.remaining (remove :alternating.random cases.remaining))
-          (setq cases.remaining (remove :alternating cases.remaining))
-          (setq cases.remaining (remove :random cases.remaining))
-          (str:case/string:to:alternating.random words.lower)))
+           ((or (memq :alternating.random cases/to)
+                (and (memq :alternating cases/to)
+                     (memq :random cases/to)))
+            (setq cases.remaining (remove :alternating.random cases.remaining))
+            (setq cases.remaining (remove :alternating cases.remaining))
+            (setq cases.remaining (remove :random cases.remaining))
+            (str:case/string:to:alternating.random words.lower separator))
 
-      ;; Print unused cases?
-      (when (memq :print cases)
-        (setq cases.remaining (remove :print cases.remaining))
-        (message "str:case/string:to: Unused cases keywords: %S"
-                 cases.remaining)))))
+           ;;------------------------------
+           ;; UPPER/Title/LOWER cases
+           ;;------------------------------
+           ;; Do these last so they don't steal from e.g. '(:snake :upper).
+           ((memq :upper cases/to)
+            (setq cases.remaining (remove :upper cases.remaining))
+            (str:case/string:to:upper words.lower separator))
+
+           ((memq :title cases/to)
+            (setq cases.remaining (remove :title cases.remaining))
+            (str:case/string:to:title words.lower separator))
+
+           ((memq :lower cases/to)
+            (setq cases.remaining (remove :lower cases.remaining))
+            (str:case/string:to:lower words.lower separator)))
+
+        ;; Print unused cases?
+        (when print?
+          (setq cases.remaining (remove :print cases.remaining))
+          (message "str:case/string:to: Unused cases keywords: %S"
+                   cases.remaining))))))
 ;; (str:case/string:to "Hello_There" :snake :upper)
+;; (str:case/string:to "Hello_There" :separator "-" :snake :upper)
 ;; (str:case/string:to "Hello_There" :snake :upper :print)
 
 

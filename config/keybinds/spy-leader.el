@@ -5,6 +5,7 @@
 
 
 (imp:require :modules 'spy 'io 'signature)
+(imp:require :str 'hydra 'case)
 (spy:config 'spy 'art)
 (spy:config 'spy 'join)
 
@@ -294,6 +295,13 @@ If prefix ARG is set, include ignored/hidden files."
        ;;------------------------------
        ;; Hydra
        :desc "Unicode Box"                  "b" #'spy:art.box/draw
+
+
+       ;;------------------------------
+       ;; Case Conversion
+       ;;------------------------------
+       ;; Hydra
+       :desc "Case Conversion"              "c" #'str:hydra:case/body
 
 
        ;;------------------------------

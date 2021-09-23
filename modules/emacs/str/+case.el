@@ -581,6 +581,15 @@ NOTE: Does not match \"IPAddress / DNSConn\" type of BASTARDIZEDCamelCase.")
   "A list of keywords of our general types of cases.")
 
 
+(defun int<str>:case:validate/case (keyword &optional types.valid)
+  "Validate case KEYWORD.
+
+If TYPES.VALID is non-nil, it should be a list of valid keywords
+(e.g. `str:cases:rx/types.base'). Defaults to using `str:cases:rx/types.all'."
+  (memq keyword (or types.valid
+                    str:cases:rx/types.all)))
+
+
 (defun int<str>:case:type.get (type property)
   "Get PROPERTY for case TYPE.
 
@@ -1178,12 +1187,14 @@ Can print unused CASES keywords if `:print' CASE keyword is used."
 (defun str:case/region:to:lower (start end)
   "Convert region in current buffer described by START and END
 integers/markers to lowercase."
+  (interactive "r")
   (downcase-region start end))
 
 
 (defun str:case/region:to:upper (start end)
   "Convert region in current buffer described by START and END
 integers/markers to uppercase."
+  (interactive "r")
   (upcase-region start end))
 
 
@@ -1194,7 +1205,8 @@ integers/markers to uppercase."
 (defun str:case/region:to:title (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"title case\" to \"Title Case\"."
-  (int<str>:region->region start end #'str:case/string:to:title))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:title))
 
 
 ;;------------------------------
@@ -1204,13 +1216,15 @@ integers/markers from \"title case\" to \"Title Case\"."
 (defun str:case/region:to:camel.lower (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"lower camel case\" to \"lowerCamelCase\"."
-  (int<str>:region->region start end #'str:case/string:to:camel.lower))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:camel.lower))
 
 
 (defun str:case/region:to:camel.upper (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"upper camel case\" to \"UpperCamelCase\"."
-  (int<str>:region->region start end #'str:case/string:to:camel.upper))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:camel.upper))
 
 
 ;;------------------------------
@@ -1220,26 +1234,30 @@ integers/markers from \"upper camel case\" to \"UpperCamelCase\"."
 (defun str:case/region:from:snake (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"snake_case\" to \"snake case\"."
-  (int<str>:region->region start end #'str:case/string:from:snake))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:from:snake))
 
 
 (defun str:case/region:to:snake.lower (start end)
   "Convert region in current buffer described by START and END
 integers/markers list or string from '(\"snake\" \"case\") or \"snake case\" to \"snake_case\"."
-  (int<str>:region->region start end #'str:case/string:from:snake.lower))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:from:snake.lower))
 ;; (str:case/region:to:snake.lower "lower snake case")
 
 
 (defun str:case/region:to:snake.upper (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"upper snake case\" to \"UPPER_SNAKE_CASE\"."
-  (int<str>:region->region start end #'str:case/string:from:snake.upper))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:from:snake.upper))
 
 
 (defun str:case/region:to:snake.title (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"title snake case\" to \"Title_Snake_Case\"."
-  (int<str>:region->region start end #'str:case/string:from:snake.title))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:from:snake.title))
 
 
 ;;------------------------------
@@ -1252,26 +1270,30 @@ integers/markers from \"alternating case\" to \"AlTeRnAtInG cAsE\".
 
 If FIRST-CHAR-LOWER is non-nil, alternating case will start off with a
 lower case character."
-  (int<str>:region->region start end #'str:case/string:to:alternating.general first-char-lower))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:alternating.general first-char-lower))
 
 
 (defun str:case/region:to:alternating.upper (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"alternating case\" to \"AlTeRnAtInG cAsE\"."
-  (int<str>:region->region start end #'str:case/string:to:alternating.upper))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:alternating.upper))
 
 
 (defun str:case/region:to:alternating.lower (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"alternating case\" to \"aLtErNaTiNg CaSe\"."
-  (int<str>:region->region start end #'str:case/string:to:alternating.lower))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:alternating.lower))
 
 
 (defun str:case/region:to:alternating.random (start end)
   "Convert region in current buffer described by START and END
 integers/markers from \"alternating case\" to either
 \"AlTeRnAtInG cAsE\" or \"aLtErNaTiNg CaSe\"."
-  (int<str>:region->region start end #'str:case/string:to:alternating.random))
+  (interactive "r")
+  (str:region->region start end #'str:case/string:to:alternating.random))
 
 
 ;;------------------------------
@@ -1281,43 +1303,25 @@ integers/markers from \"alternating case\" to either
 (defun str:case/region:to (start end &rest cases)
   "Convert region in current buffer described by START and END
 integers/marker according to CASES keywords."
-  (apply #'int<str>:region->region start end #'str:case/string:to cases))
+  (interactive "r\nsCases: ")
+
+  ;; Convert interactive string to keywords?
+  (when (and (= (length cases) 1)
+             (stringp (car cases)))
+    ;; Split and convert each into a keyword.
+    (setq cases (mapcar #'str:normalize->keyword
+                        (str:split " " cases)))
+    ;; Check that they're all valid.
+    (unless (-all? #'int<str>:case:validate/case cases)
+      (error "Not all cases are valid! See `str:cases:rx/types.all' for valids. cases: %S" cases)))
+
+  ;; Run the conversion(s) on the region.
+  (apply #'str:region->region start end #'str:case/string:to cases))
 
 
 ;;------------------------------------------------------------------------------
 ;; from Ye Olde .emacs.d
 ;;------------------------------------------------------------------------------
-
-;; (defun spydez/case/alternating/region (start end)
-;;   "Use this function to display how very serious and unmockable you find
-;; something.
-;; Will convert the region selected between point and mark (START
-;; and END) into alternating case. Randomly decides between starting
-;; off with first letter as uppercase or lowercase.
-;; aka Alternating Caps
-;; aka Studly Caps
-;; aka 'Mocking SpongeBob'
-;; "
-;;   (interactive "r")
-
-;;   (if (not (use-region-p))
-;;       (message "No active region to change.")
-
-;;     ;; Do the conversion.
-;;     (save-excursion
-;;       (let ((to-upper (spydez/random/bool))
-;;             (string (buffer-substring-no-properties start end)))
-;;         (dotimes (i (length string))
-;;           (goto-char (+ start i))
-;;           ;; Case conversion toggle on only visible characters.
-;;           (when (string-match (rx graphic) string i)
-;;             (if to-upper
-;;                 (spydez/case/upper/char 1)
-;;               (spydez/case/lower/char 1))
-
-;;             ;; Toggle case for next letter.
-;;             (setq to-upper (not to-upper))))))))
-
 
 ;; (defun spydez/case/alternating/word ()
 ;;   "Use this function to display how very serious and unmockable you find

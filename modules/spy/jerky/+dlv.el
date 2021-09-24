@@ -34,11 +34,7 @@
       (error "jerky/dlv/namespace.set: No known namespace called '%s'" namespace)
 
     (jerky//debug "jerky//dlv/namespace.set" "  -> `jerky//dlv/namespace.local'")
-    (dlv:set (dlv:class:symbol.create :jerky
-                                      namespace
-                                      dlv:const:class:separator
-                                      directory)
-             directory
+    (dlv:set directory
              nil ;; global mode
              (list 'jerky//dlv/namespace.local
                    namespace

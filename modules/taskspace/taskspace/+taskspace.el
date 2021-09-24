@@ -698,11 +698,7 @@ Returns nil or a string in TASKSPACES.
   "Create a directory-local-variable for GROUP and DIRECTORY.
 This sets the automatic group for that dir (and sub-dirs) to GROUP."
   (if (imp:provided? :dlv)
-      (dlv:set (dlv:class:symbol.create :taskspace
-                                        group
-                                        dlv:const:class:separator
-                                        directory)
-               directory
+      (dlv:set directory
                nil ;; global mode
                (list 'taskspace//dlv/group
                      group

@@ -507,11 +507,13 @@ Must be a cons with a valid path and valid mode entries."
 (defun int<dlv>:validate:emacs.dlv:dir.path (caller path &optional signal-error)
   "Checks that PATH is not an emacs DLV path yet."
   (let ((path (expand-file-name path)))
-    (if (dir-locals-find-file path)
+    ;; NOTE: Do not use `dir-locals-find-file' - it will give you a dir's parents' DLVs and that's a false positive (probably?).
+    (if (assoc path dir-locals-directory-cache)
         ;; Already exists in dir-locals - so we can't create another one here.
         (if (not (null signal-error))
-            (error "%s: `path' is already in Emacs dir-locals! %S"
+            (error "%s(%S): `path' is already in Emacs dir-locals! %S"
                    caller
+                   signal-error
                    path)
           ;; Don't want an error, so just return false.
           nil)
@@ -1011,7 +1013,7 @@ example for \"d:\\foo\\bar\":
     ;;---
     ;; Might as well run through path validation... And don't let the validation function
     ;; error, since we want this to 'fail' (return 'already a class for that dir').
-    (when (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" directory nil)
+    (when (int<dlv>:validate:emacs.dlv:dir.path func.name directory nil)
       (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
              func.name
              directory))
@@ -1082,6 +1084,15 @@ Emacs DLV's 'class' symbol for the directory will be created to be:
 example for \"d:\\foo\\bar\":
   (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
     -> dlv:class://d:/foo/bar/"
+  (message (concat "dlv:set:\n"
+                   "  dir:  %s\n"
+                   "  mode: %S\n"
+                   "  tuples:")
+           directory mode)
+  (pp tuples)
+  (message "\ndlv classes:")
+  (pp dir-locals-class-alist)
+
   (if (int<dlv>:exists? directory)
       (apply #'dlv:update directory mode tuples)
     (apply #'dlv:create directory mode tuples)))
@@ -1156,7 +1167,23 @@ example for \"d:\\foo\\bar\":
 ;;   (dlv:check filepath 'int<dlv>:test:variable :test/local))
 
 
-(defun dlv:show-all (filepath)
+(defun dlv:buffer-locals/show-all ()
+  "Show all the buffer-local variables and values for the buffer.
+
+NOTE: Huge alist!"
+  (interactive)
+  (int<dlv>:message:boxed.xml :start "dlv:buffer-locals/show-all"
+                              (cons "buffer" (buffer-name))
+                              (cons "path" (buffer-file-name)))
+  (message "")
+
+  (pp (buffer-local-variables))
+
+  (message "")
+  (int<dlv>:message:boxed.xml :end "dlv:buffer-locals/show-all"))
+
+
+(defun dlv:dir-locals/show-all (filepath)
   "Show all DLVs for filepath."
   (interactive (list (read-directory-name "Path: "
                                           buffer-file-name)))
@@ -1188,7 +1215,7 @@ example for \"d:\\foo\\bar\":
       (setq dlv.class-alist (funcall indent (funcall char-to-str dlv.class-alist)))
       (setq dlv.safe-local-vars (funcall indent (funcall char-to-str dlv.safe-local-vars))))
 
-    (int<dlv>:message:boxed.xml :start "dlv:show-all" (cons "path" filepath))
+    (int<dlv>:message:boxed.xml :start "dlv:dir-locals/show-all" (cons "path" filepath))
     (message "")
 
     (message "`enable-local-variables': %S"
@@ -1209,7 +1236,7 @@ example for \"d:\\foo\\bar\":
     (int<dlv>:message:line ?─)
     (message "`safe-local-variable-values':\n%s"
              dlv.safe-local-vars)
-    (int<dlv>:message:boxed.xml :end "dlv:show-all")))
+    (int<dlv>:message:boxed.xml :end "dlv:dir-locals/show-all")))
 
 
 ;; TODO: move to mis?
@@ -1236,92 +1263,92 @@ Trims string of leading/trailing whitespace before returning."
          string.indented)
     (string-trim
      (dolist (line (split-string str "\n") string.indented)
-      (setq indented (concat indented
-                             (format indent.fmt line)
-                             "\n"))))))
+       (setq indented (concat indented
+                              (format indent.fmt line)
+                              "\n"))))))
 
 
 ;; TODO: move to mis?
 (defun int<dlv>:message:line (char)
   "Print an ASCII box line to the *Messages* buffer."
-    (let ((width.usable 80))
-      (message "\n%s\n"
-               (make-string width.usable char))))
+  (let ((width.usable 80))
+    (message "\n%s\n"
+             (make-string width.usable char))))
 
 
 ;; TODO: move to mis?
 (defun int<dlv>:message:boxed.xml (start? title &rest kvp)
-    "Print an ASCII boxed message to the *Messages* buffer that is XML-ish formatted.
+  "Print an ASCII boxed message to the *Messages* buffer that is XML-ish formatted.
 
 If START? is nil or `:end', it will be an end tag.
 
 TITLE will be the 'XML tag name'.
 
 KVP, if not nil, should be 2-tuples (cons) of field-name and field-value strings."
-    (let* ((width.total 80)
-           (width.sides 2)
-           (width.padding 2)
-           (indent.fields 2)
-           (width.usable (- 80 width.sides width.padding)) ;; 'Usable' has to account for sides of box and padding.
-           (line.width.middle (make-string (- width.total width.sides) ?═))
-           (format.width.title (concat "%-" (int-to-string width.usable) "s"))
-           (format.width.fields (concat "%-" (int-to-string (- width.usable indent.fields)) "s")))
+  (let* ((width.total 80)
+         (width.sides 2)
+         (width.padding 2)
+         (indent.fields 2)
+         (width.usable (- 80 width.sides width.padding)) ;; 'Usable' has to account for sides of box and padding.
+         (line.width.middle (make-string (- width.total width.sides) ?═))
+         (format.width.title (concat "%-" (int-to-string width.usable) "s"))
+         (format.width.fields (concat "%-" (int-to-string (- width.usable indent.fields)) "s")))
 
-      ;;------------------------------
-      ;; Top of box.
-      ;;------------------------------
-      (message "%s%s%s"
-               "╔"
-               line.width.middle
-               "╗")
+    ;;------------------------------
+    ;; Top of box.
+    ;;------------------------------
+    (message "%s%s%s"
+             "╔"
+             line.width.middle
+             "╗")
 
-      ;;------------------------------
-      ;; Box's message lines.
-      ;;------------------------------
-      (if (null kvp)
-          ;; Just the title.
-          (message "%s %s %s"
-                   "║"
-                   (format format.width.title
-                           (concat "<"
-                                   (if start? "" "/")
-                                   title
-                                   ">"))
-                   "║")
-
-        ;; Title on first line...
+    ;;------------------------------
+    ;; Box's message lines.
+    ;;------------------------------
+    (if (null kvp)
+        ;; Just the title.
         (message "%s %s %s"
                  "║"
                  (format format.width.title
                          (concat "<"
+                                 (if start? "" "/")
                                  title
-                                 ;; Don't close the tag.
-                                 " "))
+                                 ">"))
                  "║")
 
-        ;; KVPs each on separate line.
-        (let ((length.kvp (length kvp)))
-          (dotimes (index length.kvp)
-            (let ((key (car (elt kvp index)))
-                  (value (cdr (elt kvp index)))
-                  (final (= index (1- length.kvp))))
-              (message "%s   %s %s"
-                       "║"
-                       (format format.width.fields (concat key
-                                                           "=\""
-                                                           value
-                                                           "\""
-                                                           (if final ">" " ")))
-                       "║")))))
+      ;; Title on first line...
+      (message "%s %s %s"
+               "║"
+               (format format.width.title
+                       (concat "<"
+                               title
+                               ;; Don't close the tag.
+                               " "))
+               "║")
 
-      ;;------------------------------
-      ;; Bottom of box.
-      ;;------------------------------
-      (message "%s%s%s"
-               "╚"
-               line.width.middle
-               "╝")
-      nil))
+      ;; KVPs each on separate line.
+      (let ((length.kvp (length kvp)))
+        (dotimes (index length.kvp)
+          (let ((key (car (elt kvp index)))
+                (value (cdr (elt kvp index)))
+                (final (= index (1- length.kvp))))
+            (message "%s   %s %s"
+                     "║"
+                     (format format.width.fields (concat key
+                                                         "=\""
+                                                         value
+                                                         "\""
+                                                         (if final ">" " ")))
+                     "║")))))
+
+    ;;------------------------------
+    ;; Bottom of box.
+    ;;------------------------------
+    (message "%s%s%s"
+             "╚"
+             line.width.middle
+             "╝")
+    nil))
 ;; (int<dlv>:message:boxed.xml "testing")
 ;; (int<dlv>:message:boxed.xml "testing" (cons "hello" "there"))
 ;; (int<dlv>:message:boxed.xml "testing" (cons "hello" "there") (cons "general" "kenobi"))

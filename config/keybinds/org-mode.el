@@ -86,11 +86,7 @@
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :work dir local variable(s).
-      (dlv:set (dlv:class:symbol.create :work
-                                        'org-journal
-                                        dlv:const:class:separator
-                                        (jerky/get 'path 'org 'journal :namespace :work))
-               (jerky/get 'path 'org 'journal :namespace :work)
+      (dlv:set (jerky/get 'path 'org 'journal :namespace :work)
                'org-journal-mode
                (list 'org-journal-dir
                      (jerky/get 'path 'org 'journal :namespace :work)
@@ -131,11 +127,7 @@
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :home dir local variable(s).
-      (dlv:set (dlv:class:symbol.create :home
-                                        'org-journal
-                                        dlv:const:class:separator
-                                        (jerky/get 'path 'org 'journal :namespace :home))
-               (jerky/get 'path 'org 'journal :namespace :home)
+      (dlv:set (jerky/get 'path 'org 'journal :namespace :home)
                'org-journal-mode
                (list 'org-journal-dir
                      (jerky/get 'path 'org 'journal :namespace :home)

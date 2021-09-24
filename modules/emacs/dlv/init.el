@@ -21,11 +21,15 @@
 ;; Constants
 ;;------------------------------------------------------------------------------
 
-(defconst dlv:const:class:separator "://"
-  "Used to create keys in `dlv:key.create'.")
+(defconst int<dlv>:const:class:prefix "dlv:class"
+  "Used to create DLV class symbols in `int<dlv>:class:symbol.create'.")
+
+(defconst int<dlv>:const:class:separator "://"
+  "Used to create DLV class symbols in `int<dlv>:class:normalize.str' and
+`int<dlv>:class:normalize.all'.")
 
 (defconst int<dlv>:const:normalize:separator "/"
-  "Used to create keys in `dlv:key.create'.")
+  "Used to create DLV class symbols in `int<dlv>:class:normalize.all'.")
 
 (defconst int<dlv>:const:safe.valid '(:safe t)
   "Valid constant values for `safe' in `dlv:set'.")
@@ -59,6 +63,22 @@
 
 
 ;;------------------------------------------------------------------------------
+;; DLV Directory Path
+;;------------------------------------------------------------------------------
+
+(defun int<dlv>:dir:normalize (dir)
+  "Normalize DIR into an absolute path with '/' separators and ending in a '/'.
+
+Example:
+  (int<dlv>:dir:normalize \"D:\\foo\\bar\")
+    -> \"d:/foo/bar/\""
+  ;; Finish by ensuring we have a trailing '/'.
+  (file-name-as-directory
+   ;; `expand-file-name' lowercases Windows drive letters and converts backslash to forwardslash.
+   (expand-file-name dir)))
+
+
+;;------------------------------------------------------------------------------
 ;; DLV Class Symbol Creation
 ;;------------------------------------------------------------------------------
 
@@ -74,7 +94,7 @@
 
 (defun int<dlv>:class:normalize.str (str)
   "Normalize a string."
-  (if (string= str dlv:const:class:separator)
+  (if (string= str int<dlv>:const:class:separator)
       ;; Allow special strings through even if they aren't "valid".
       str
 
@@ -140,10 +160,10 @@ class symbol."
   (replace-regexp-in-string
    (rx-to-string (list 'sequence
                        int<dlv>:const:normalize:separator
-                       dlv:const:class:separator
+                       int<dlv>:const:class:separator
                        int<dlv>:const:normalize:separator)
                  :no-group)
-   dlv:const:class:separator
+   int<dlv>:const:class:separator
 
    ;; Combine all the normalized args w/ our separator.
    (string-join
@@ -159,23 +179,41 @@ class symbol."
 ;; (int<dlv>:class:normalize.all 'hi)
 ;; (int<dlv>:class:normalize.all '(h i))
 ;; (int<dlv>:class:normalize.all '(:h :i))
-;; (int<dlv>:class:normalize.all (list :hello dlv:const:class:separator :there))
+;; (int<dlv>:class:normalize.all (list :hello int<dlv>:const:class:separator :there))
 
 
-(defun dlv:class:symbol.create (&rest args)
+(defun int<dlv>:class:symbol.build (&rest args)
   "Create a DLV 'class' symbol from ARGS.
 
 ARGS can be a path, strings, symbols, functions...
   - Functions should take no args and return a string.
-
-Can use `dlv:const:class:separator' to split up e.g. symbol and path if desired. "
-  (make-symbol
+  - Can use `int<dlv>:const:class:separator' to split up e.g. symbol and path."
+  ;; Use `intern' instead of `make-symbol' so we can assert thing easier in ERT unit tests.
+  ;; Fun fact: `make-symbol' keywords are not `eq' to each other?! I thought keywords were unique in that they were constant but I guess if
+  ;; not in the object array they're not keywords.
+  ;;   (eq (make-symbol ":foo") (make-symbol ":foo"))
+  (intern
    (int<dlv>:class:normalize.all args)))
-;; (dlv:class:symbol.create 'org-class 'org-journal)
-;; (dlv:class:symbol.create 'org-journal)
-;; (dlv:class:symbol.create 'org-journal-dir)
-;; (dlv:class:symbol.create "D:\\foo\\bar")
-;; (dlv:class:symbol.create "~/foo/bar")
+;; (int<dlv>:class:symbol.build 'org-class 'org-journal)
+;; (int<dlv>:class:symbol.build 'org-journal)
+;; (int<dlv>:class:symbol.build 'org-journal-dir)
+;; (int<dlv>:class:symbol.build "D:\\foo\\bar")
+;; (int<dlv>:class:symbol.build "~/foo/bar")
+
+
+(defun int<dlv>:class:symbol.create (dir.normalized)
+  "Create a DLV 'class' symbol for the DIR.NORMALIZED path.
+
+DIR.NORMALIZED should be:
+  - A path string.
+  - A return value from `int<dlv>:dir:normalize'.
+
+Uses `int<dlv>:const:class:separator' to split up const prefix string and path."
+  (int<dlv>:class:symbol.build int<dlv>:const:class:prefix
+                               int<dlv>:const:class:separator
+                               dir.normalized))
+;; (int<dlv>:class:symbol.create (int<dlv>:dir:normalize "D:\\foo\\bar"))
+;; (int<dlv>:class:symbol.create (int<dlv>:dir:normalize "~/foo/bar"))
 
 
 ;;------------------------------------------------------------------------------
@@ -462,6 +500,26 @@ Must be a cons with a valid path and valid mode entries."
     valid))
 
 
+;;------------------------------
+;; Emacs Dir Locals
+;;------------------------------
+
+(defun int<dlv>:validate:emacs.dlv:dir.path (caller path &optional signal-error)
+  "Checks that PATH is not an emacs DLV path yet."
+  (let ((path (expand-file-name path)))
+    (if (dir-locals-find-file path)
+        ;; Already exists in dir-locals - so we can't create another one here.
+        (if (not (null signal-error))
+            (error "%s: `path' is already in Emacs dir-locals! %S"
+                   caller
+                   path)
+          ;; Don't want an error, so just return false.
+          nil)
+
+      ;; Return something truthy. We expanded the path, so maybe that?
+      path)))
+
+
 ;;------------------------------------------------------------------------------
 ;; Mark as Safe for DLV
 ;;------------------------------------------------------------------------------
@@ -593,52 +651,25 @@ Error otherwise."
 ;; ;; (int<dlv>:vars:pair.get 'jeff '((jill . "hello there") (jeff . 42)))
 
 
-;;---
-;; NOTE: Commented out until this is needed or at least tested.
-;;---
-;; (defun int<dlv>:vars:pair.set (pair dlv.vars)
-;;   "Updates or adds the PAIR entry into the variables DLV.VARS.
-;;
-;; PAIR should be a certain format, which `int<dlv>:pair.create' returns.
-;;
-;; Returns the updated alist."
-;;   (let ((func.name "int<dlv>:vars:pair.set"))
-;;     (if (not (int<dlv>:validate:var.pair func.name pair :error))
-;;         ;; Should have already errored, but just in case:
-;;         (error "%s: `pair' failed validation! %S"
-;;                func.name pair)
-;;
-;;       ;; Valid - set/update the var in the alist.
-;;       (if (null (assoc (car pair) dlv.vars))
-;;           (push pair dlv.vars)
-;;         (setf (alist-get (car pair) dlv.vars) (cdr pair)))
-;;       dlv.vars)))
-;; ;; (let ((an-alist '((baz . qux)))) (int<dlv>:pair.set '(foo bar) an-alist))
+(defun int<dlv>:vars:pair.set (pair dlv.vars)
+  "Updates or adds the PAIR entry into the variables DLV.VARS.
 
+PAIR should be a certain format, which `int<dlv>:pair.create' returns.
 
-;;---
-;; NOTE: Commented out until this is needed or at least tested.
-;;---
-;; (defun int<dlv>:mode:vars.get (mode dlv-alist)
-;;   "Get the MODE's alist of variables from the directory local variables DLV-ALIST."
-;;   (let ((func.name "int<dlv>:mode:vars.get"))
-;;     (if (not (int<dlv>:validate:mode.symbol func.name mode :error))
-;;         (error "%s: `mode' must be a symbol! %S"
-;;                func.name
-;;                mode))
-;;
-;;     (alist-get mode dlv-alist)))
-;; ;; (let ((alist '((nil . ((indent-tabs-mode . t)
-;; ;;                        (fill-column . 80)
-;; ;;                        (mode . auto-fill)))
-;; ;;                (c-mode . ((c-file-style . "BSD")
-;; ;;                           (subdirs . nil)))
-;; ;;                ("src/imported"
-;; ;;                 . ((nil . ((change-log-default-name
-;; ;;                             . "ChangeLog.local"))))))))
-;; ;;   (int<dlv>:mode:vars.get 'c-mode alist))
-;; ;;
-;; ;; (int<dlv>:mode:vars.get 'c-mode (int<dlv>:mode.create 'c-mode (list (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr")))))
+Returns the updated alist."
+  (let ((func.name "int<dlv>:vars:pair.set"))
+    (if (not (int<dlv>:validate:var.pair func.name pair :error))
+        ;; Should have already errored, but just in case:
+        (error "%s: `pair' failed validation! %S"
+               func.name pair)
+
+      ;; Valid - set/update the var in the alist.
+      (if (null (assoc (car pair) dlv.vars))
+          (push pair dlv.vars)
+        (setf (alist-get (car pair) dlv.vars) (cdr pair)))
+      dlv.vars)))
+;; (let ((an-alist '((baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
+;; (let ((an-alist '((foo . foo) (baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
 
 
 (defun int<dlv>:vars:create (&rest tuples)
@@ -704,36 +735,55 @@ MODE should be an Emacs mode symbol or nil for global mode (all modes)."
            ;; Create just the alist assoc/pair/entry/whatever of this mode and its vars.
            (cons mode
                  vars)))))
-;; (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr"))))
+;; (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var (:ns-jeff 42 "docstr") :safe)))
 
 
-;;---
-;; NOTE: Commented out until this is needed or at least tested.
-;;---
-;; (defun int<dlv>:mode:set (mode-entry dlv)
-;;   "Set the MODE-ENTRY's entry into the DLV.
+(defun int<dlv>:mode:vars.get (mode dlv-alist)
+  "Get the MODE's alist of variables from the directory local variables DLV-ALIST."
+  (let ((func.name "int<dlv>:mode:vars.get"))
+    (if (not (int<dlv>:validate:mode.symbol func.name mode :error))
+        (error "%s: `mode' must be a symbol! %S"
+               func.name
+               mode))
+
+    (alist-get mode dlv-alist)))
+;; (let ((alist '((nil . ((indent-tabs-mode . t)
+;;                        (fill-column . 80)
+;;                        (mode . auto-fill)))
+;;                (c-mode . ((c-file-style . "BSD")
+;;                           (subdirs . nil)))
+;;                ("src/imported"
+;;                 . ((nil . ((change-log-default-name
+;;                             . "ChangeLog.local"))))))))
+;;   (int<dlv>:mode:vars.get 'c-mode alist))
 ;;
-;; The DLV alist should be a certain format, which `int<dlv>:struct:create' returns.
-;;
-;; Returns the updated DLV alist."
-;;   (let ((func.name "int<dlv>:mode:set"))
-;;     (cond ((not (int<dlv>:validate:mode.entry func.name mode-entry :error))
-;;            (error "%s: `mode-entry' must be valid! %S"
-;;                   func.name
-;;                   mode-entry))
-;;
-;;           ;; Not in DLV alist so just add it.
-;;           ((eq :mode-not-found
-;;                (alist-get (car mode-entry) dlv :mode-not-found))
-;;            (push mode-entry dlv))
-;;
-;;           ;; Update it in the alist.
-;;           (t
-;;            (setf (alist-get (car mode-entry) dlv) (cdr mode-entry)))))
-;;
-;;   dlv)
-;; ;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr")))) '((nil . ((a . t) (b . "hello")))))
-;; ;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr")))) '((c-mode . ((a . t) (b . "hello")))))
+;; (int<dlv>:mode:vars.get 'c-mode (int<dlv>:struct:create (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe)))))
+
+
+(defun int<dlv>:mode:set (mode-entry dlv)
+  "Set the MODE-ENTRY's entry into the DLV.
+
+The DLV alist should be a certain format, which `int<dlv>:struct:create' returns.
+
+Returns the updated DLV alist."
+  (let ((func.name "int<dlv>:mode:set"))
+    (cond ((not (int<dlv>:validate:mode.entry func.name mode-entry :error))
+           (error "%s: `mode-entry' must be valid! %S"
+                  func.name
+                  mode-entry))
+
+          ;; Not in DLV alist so just add it.
+          ((eq :mode-not-found
+               (alist-get (car mode-entry) dlv :mode-not-found))
+           (push mode-entry dlv))
+
+          ;; Update it in the alist.
+          (t
+           (setf (alist-get (car mode-entry) dlv) (cdr mode-entry)))))
+
+  dlv)
+;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe))) '((nil . ((a . t) (b . "hello")))))
+;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe))) '((c-mode . ((a . t) (b . "hello")))))
 
 
 ;;------------------------------
@@ -783,12 +833,22 @@ MODE should be an Emacs mode symbol or nil for global mode (all modes)."
 ;; (int<dlv>:struct:create (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr")))))
 
 
+(defun int<dlv>:exists? (directory &optional class)
+  "Does the dir-locals CLASS exist for this DIRECTORY?
+
+Builds the class symbol using DIRECTORY & `int<dlv>:class:symbol.create'
+if CLASS is nil."
+  (not (null (dir-locals-get-class-variables
+              (or class
+                  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize directory)))))))
+
+
 ;;------------------------------------------------------------------------------
 ;; DLV API
 ;;------------------------------------------------------------------------------
 
-(defun int<dlv>:set:directory-class (caller dlv.class dlv.directory dlv.struct)
-  "Set DLV structure as CLASS for DIRECTORY.
+(defun int<dlv>:directory-class.create (caller dlv.class dlv.directory dlv.struct)
+  "Set DLV.STRUCT structure as CLASS for DIRECTORY.
 
 Does no error checking/validation."
   ;; Set the class of dlv variables and apply it to the directory.
@@ -803,13 +863,22 @@ Does no error checking/validation."
   dlv.class)
 
 
-(defun dlv:set (class directory mode &rest tuples)
-  "Create/overwrite a Directory-Local-Variable (DLV).
+(defun int<dlv>:directory-class.update (caller dlv.class dlv.struct)
+  "Update the DLV.STRUCT structure CLASS.
 
-CLASS should be the name of a symbol for creating the
-`dir-locals-set-class-variables'.
-You can use `dlv:key.create' to create the DLV key:
-  (dlv:key.create namespace class symbol)
+Does no error checking/validation."
+  ;; Only set the class -> dlv variables. Directory -> class should already exist.
+  (int<dlv>:debug caller "Setting class variables `%S': %s" dlv.class dlv.struct)
+  (dir-locals-set-class-variables dlv.class dlv.struct)
+  (int<dlv>:debug caller "Getting dir class via `dir-locals-get-directory-class':\n  %S"
+                  (dir-locals-get-class-variables dlv.class))
+
+  ;; Return something?
+  dlv.class)
+
+
+(defun dlv:create (directory mode &rest tuples)
+  "Create a Directory-Local-Variable (DLV) class.
 
 DIRECTORY should be the absolute path to the desired directory.
 
@@ -822,34 +891,44 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     + If a function, store that predicate in the symbol's `safe-local-variable'
       slot for Emacs to use.
     + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
-      for Directory Local Value use."
-  (let ((func.name "dlv:set"))
+      for Directory Local Value use.
+
+Emacs DLV's 'class' symbol for the directory will be created to be:
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
+
+example for \"d:\\foo\\bar\":
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
+    -> dlv:class://d:/foo/bar/"
+  (let* ((func.name "dlv:create")
+         (directory (int<dlv>:dir:normalize directory))
+         (dlv.class (int<dlv>:class:symbol.create directory)))
     (int<dlv>:debug func.name
                     (concat "Inputs:\n"
-                            "  class:     %S\n"
                             "  directory: %S\n"
                             "  mode:      %S\n"
                             "  tuples:     %S")
                     ;; "  symbol:    %S\n"
                     ;; "  value:     %S")
-                    class
                     directory
                     mode
                     tuples)
-    ;; symbol
-    ;; value)
 
     ;;------------------------------
     ;; Validate inputs.
     ;;------------------------------
     ;; Some inputs will be validate when building the DLV structure, so just validate the rest.
 
-    (unless (int<dlv>:validate:class.symbol func.name class :error)
-      (error "%s: CLASS must be valid! Got: %S"
-             func.name class))
+    (unless (int<dlv>:validate:class.symbol func.name dlv.class :error)
+      (error "%s: `dlv.class' must be valid! Got: %S"
+             func.name dlv.class))
     (unless (int<dlv>:validate:dir.path func.name directory :error)
       (error "%s: DIRECTORY must be valid! Got: %S"
              func.name directory))
+    ;; Creating, so don't allow if one already exists for the dir.
+    (unless (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" directory :error)
+      (error "%s: Cannot create entry for directory; Emacs DLV already exists for it. DIRECTORY: '%s'"
+             func.name
+             directory))
 
     ;; MODE, TUPLES validated in `let*', below.
 
@@ -861,7 +940,6 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     (let* ((dlv.vars (apply #'int<dlv>:vars:create tuples))
            (dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
            (dlv.struct (int<dlv>:struct:create dlv.mode))
-           (dlv.class class)
            (dlv.directory directory))
       (int<dlv>:debug func.name
                       (concat "DLV'd:\n"
@@ -877,18 +955,136 @@ TUPLES should be an alist of '(symbol value safe) tuples.
                       dlv.vars)
 
       ;; Set the class of dlv variables and apply it to the directory.
-      (int<dlv>:set:directory-class func.name dlv.class dlv.directory dlv.struct))
+      (int<dlv>:directory-class.create func.name dlv.class dlv.directory dlv.struct))))
 
-    ;; ;;------------------------------
-    ;; ;; Check the DLV.
-    ;; ;;------------------------------
-    ;; (int<dlv>:debug func.name
-    ;;             "Getting `%S' value from file '%s': %S"
-    ;;             (nth 0 (nth 0 tuples))
-    ;;             (concat directory filetest)
-    ;;             (with-current-buffer (find-file-noselect (concat directory filetest))
-    ;;               (nth 0 (nth 0 tuples))))
-    ))
+
+(defun dlv:update (directory mode &rest tuples)
+  "Update an existing Directory-Local-Variable (DLV) class.
+
+DIRECTORY should be the absolute path to the desired directory.
+
+MODE should be the mode the DLV applies to, or `nil' for global mode.
+
+TUPLES should be an alist of '(symbol value safe) tuples.
+  - symbol - the symbol to set as a DLV
+  - value  - the symbol's directory local value
+  - safe   - a predicate function or `t'/`:safe'
+    + If a function, store that predicate in the symbol's `safe-local-variable'
+      slot for Emacs to use.
+    + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
+      for Directory Local Value use.
+
+Emacs DLV's 'class' symbol for the directory will be created to be:
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
+
+example for \"d:\\foo\\bar\":
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
+    -> dlv:class://d:/foo/bar/"
+  (let* ((func.name "dlv:update")
+         (directory (int<dlv>:dir:normalize directory))
+         (dlv.class (int<dlv>:class:symbol.create directory))
+         (existing/dlv.struct (dir-locals-get-class-variables dlv.class)))
+    (int<dlv>:debug func.name
+                    (concat "Inputs:\n"
+                            "  directory: %S\n"
+                            "  mode:      %S\n"
+                            "  tuples:     %S")
+                    ;; "  symbol:    %S\n"
+                    ;; "  value:     %S")
+                    directory
+                    mode
+                    tuples)
+
+    ;;------------------------------
+    ;; Validate inputs.
+    ;;------------------------------
+    ;; Some inputs will be validate when building the DLV structure, so just validate the rest.
+
+    (unless (int<dlv>:validate:class.symbol func.name dlv.class :error)
+      (error "%s: `dlv.class' must be valid! Got: %S"
+             func.name dlv.class))
+    (unless (int<dlv>:validate:dir.path func.name directory :error)
+      (error "%s: DIRECTORY must be valid! Got: %S"
+             func.name directory))
+    ;;---
+    ;; Class should already exist.
+    ;;---
+    ;; Might as well run through path validation... And don't let the validation function
+    ;; error, since we want this to 'fail' (return 'already a class for that dir').
+    (when (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" directory nil)
+      (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
+             func.name
+             directory))
+
+    ;; Updating, so don't allow if one /does not/ exists for the dir.
+    (unless existing/dlv.struct
+      (error (concat "%s: Cannot update entry for directory; "
+                     "an existing Emacs DLV class was not found for it. "
+                     "expected class symbol: %S, "
+                     "directory: '%s', "
+                     "existing/dlv.struct: %S"
+                     func.name
+                     dlv.class
+                     directory
+                     existing/dlv.struct)))
+
+    ;; MODE, TUPLES validated in `let*', below.
+
+    ;;------------------------------
+    ;; Update the DLV.
+    ;;------------------------------
+
+    ;; Break the existing DLV struct down, so that we can update the new pieces.
+    ;; Also create our DLV vars.
+    (let* ((existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
+           (dlv.vars (apply #'int<dlv>:vars:create tuples))
+           dlv.mode)
+      (if existing/dlv.vars
+          ;; Add or update vars.
+          (progn
+            (dolist (kvp dlv.vars)
+              (setq existing/dlv.vars
+                    (int<dlv>:vars:pair.set kvp existing/dlv.vars)))
+            (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+
+        ;; No vars for the mode, so... Create the mode.
+        (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+
+      ;; Now that `dlv.vars' is the updated vars, create a new dlv.mode entry for it.
+      (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+
+      ;; Set the new/updated mode entry into the dlv struct.
+      (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
+
+      ;; And now we can replace the DLV struct in Emacs.
+      (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct))))
+
+
+(defun dlv:set (directory mode &rest tuples)
+  "Create or update a Directory-Local-Variable (DLV) class.
+
+DIRECTORY should be the absolute path to the desired directory.
+
+MODE should be the mode the DLV applies to, or `nil' for global mode.
+
+TUPLES should be an alist of '(symbol value safe) tuples.
+  - symbol - the symbol to set as a DLV
+  - value  - the symbol's directory local value
+  - safe   - a predicate function or `t'/`:safe'
+    + If a function, store that predicate in the symbol's `safe-local-variable'
+      slot for Emacs to use.
+    + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
+      for Directory Local Value use.
+
+Emacs DLV's 'class' symbol for the directory will be created to be:
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
+
+example for \"d:\\foo\\bar\":
+  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
+    -> dlv:class://d:/foo/bar/"
+  (if (int<dlv>:exists? directory)
+      (apply #'dlv:update directory mode tuples)
+    (apply #'dlv:create directory mode tuples)))
 
 
 (defun dlv:check (filepath symbol expected)

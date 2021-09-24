@@ -49,6 +49,30 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Enable / Disable DLVs
+;;------------------------------------------------------------------------------
+
+(defun dlv:enable (enable)
+  "Set Emacs' `enable-local-variables' to enable/disable
+Directory Local Variables.
+
+Valid values for ENABLE are:
+  - t
+    + DLVs are used if safe; user is queried if some are unsafe.
+  - nil
+    + DLVs are never used.
+  - :safe
+    + Safe DLVs are used; unsafe DLVs are ignored.
+  - :all
+    + All DLVs are always used (not recommended).
+  - <anything else>
+    + Always asks user.
+
+See `enable-local-variables' for an in-depth explanation."
+  (setq enable-local-variables enabled))
+
+
+;;------------------------------------------------------------------------------
 ;; DLV Directory Path
 ;;------------------------------------------------------------------------------
 
@@ -587,20 +611,107 @@ The validness of VALUE is checked via `safe-local-variable-p'."
   (get symbol 'safe-local-variable))
 
 
-(defun dlv:var:safe.predicate (symbol predicate)
-  "Mark SYMBOL as safe using PREDICATE function for
-Directory Local Variables."
-  (if (not (functionp predicate))
-      (error "dlv:var:safe.predicate: Cannot mark SYMBOL (%S) as safe; PREDICATE is not a function? %S"
-             symbol
-             predicate)
-    (int<dlv>:vars:safe "dlv:var:safe.function" symbol predicate)))
+(defun dlv:var:risky? (symbol &optional only-prop)
+  "Returns non-nil if the SYMBOL considered risky for DLVs.
+
+If ONLY-PROP is non-nil, only checks the SYMBOL's `risky-local-variable' property.
+Otherwise does the full check via `risky-local-variable-p'."
+  (if only-prop
+      (get symbol 'risky-local-variable)
+    (risky-local-variable-p symbol)))
 
 
-(defun dlv:var:safe.value (symbol value)
+(defun int<dlv>:var:risky.remove (caller symbol remove-type info-func fail-func)
+  "Attempts to remove riskiness of SYMBOL.
+
+If it can, it does so by deleting the `risky-local-variable' property.
+If it cannot, it will call FAIL-FUNC (use `error', `message', etc) with info.
+
+If REMOVE-TYPE is `:quiet', just delete its risky property quietly.
+Otherwise, calls INFO-FUNC with a warning/info message."
+  ;; Ignore non-risky vars.
+  (when (risky-local-variable-p symbol)
+    ;; What kind of risky is it? The kind we can undo?
+    (if-let ((prop.risky (dlv:var:risky? symbol :only-prop)))
+        ;; Ok - can de-risk this. Should we complain about it?
+        (progn
+          (unless (eq remove-type :quiet)
+            (funcall message-func
+                     "%s: '%S': Deleting `risky-local-variable' property (current value: %S)."
+                     func.name
+                     symbol
+                     prop.risky))
+          ;; Delete its risky property.
+          (put symbol 'risky-local-variable nil))
+
+      ;; Cannot de-risk it. Give return of `risky-local-variable-p' for maybe some info?
+      (funcall fail-func
+               (concat "%s: '%S': "
+                       "Cannot undo the symbol's riskiness - "
+                       "it's not considered risky via the `risky-local-variable' property. "
+                       "`(risky-local-variable-p %S)' -> %S")
+               func.name
+               symbol
+               symbol
+               (risky-local-variable-p symbol)))))
+
+
+(defun dlv:var:safe.predicate (symbol predicate &optional remove-risky)
+  "Mark SYMBOL as safe using PREDICATE function for Directory Local Variables.
+
+If REMOVE-RISKY is non-nil, will set `risky-local-variable' property to nil.
+
+If REMOVE-RISKY is nil and the SYMBOL is considered risky, this will signal
+an error.
+
+When de-risking SYMBOL, if REMOVE-RISKY is `:quiet', just delete its
+risky property quietly. Otherwise, `message' a warning.
+
+NOTE: if a symbol is considered risky for some reason other than the
+`risky-local-variable' property, REMOVE-RISKY will not work and will signal an error."
+  (let ((func.name "dlv:var:safe.predicate"))
+    ;; Check some errors first.
+    (cond ((not (functionp predicate))
+           (error "%s: Cannot mark SYMBOL (%S) as safe; PREDICATE is not a function? %S"
+                  func.name
+                  symbol
+                  predicate))
+          ((and (risky-local-variable-p symbol)
+                (null remove-risky))
+           (error ": Cannot mark SYMBOL (%S) as safe; It is considered risky: %S"
+                  func.name
+                  symbol
+                  (risky-local-variable-p symbol)))
+          ;; Passed error checks; do it.
+          (t
+           ;; Force to not risky?
+           (when remove-risky
+             ;; `message' if not quiet, `error' if cannot remove the riskiness.
+             (int<dlv>:var:risky.remove func.name
+                                        symbol
+                                        remove-risky
+                                        #'message
+                                        #'error))
+
+           ;; Set the safe predicate.
+           (int<dlv>:vars:safe "dlv:var:safe.function" symbol predicate)))))
+
+
+(defun dlv:var:safe.value (symbol value &optional remove-risky)
   "Add SYMBOL and VALUE as a known-safe combination for
 Directory Local Variables."
-  (push (cons symbol value) safe-local-variable-values))
+  (let ((func.name "dlv:var:safe.value"))
+    ;; Force to not risky?
+    (when remove-risky
+      ;; `message' if not quiet, `error' if cannot remove the riskiness.
+      (int<dlv>:var:risky.remove func.name
+                                 symbol
+                                 remove-risky
+                                 #'message
+                                 #'error))
+
+    ;; Add the key-value pair to the safe alist.
+    (push (cons symbol value) safe-local-variable-values)))
 
 
 ;;------------------------------------------------------------------------------

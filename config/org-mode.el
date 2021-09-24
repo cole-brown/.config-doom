@@ -427,6 +427,8 @@
   (customize-set-variable 'org-journal-dir
                           (jerky/get 'path 'org 'journal
                                      :namespace (jerky/get 'namespace 'system)))
+  (unless (dlv:var:safe/predicate? 'org-journal-dir)
+    (dlv:var:safe.predicate 'org-journal-dir #'file-directory-p))
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format

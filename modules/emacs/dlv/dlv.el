@@ -570,6 +570,23 @@ If VALIDATION-PREDICATE is something else, raises an error signal."
 ;; (get 'test/local 'safe-local-variable)
 
 
+(defun dlv:var:safe/value? (symbol value)
+  "Returns non-nil if SYMBOL is considered safe for VALUE.
+
+SYMBOL is safe if either:
+  - It has a predicate in its `safe-local-variable' property,
+    AND that predicate returns non-nil for VALUE.
+  - It has an entry in the `safe-local-variable-values' alist that matches VALUE.
+
+The validness of VALUE is checked via `safe-local-variable-p'."
+  (safe-local-variable-p symbol value))
+
+
+(defun dlv:var:safe/predicate? (symbol)
+  "Returns SYMBOL's `safe-local-variable' property."
+  (get symbol 'safe-local-variable))
+
+
 (defun dlv:var:safe.predicate (symbol predicate)
   "Mark SYMBOL as safe using PREDICATE function for
 Directory Local Variables."

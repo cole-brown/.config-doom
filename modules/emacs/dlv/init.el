@@ -1084,15 +1084,6 @@ Emacs DLV's 'class' symbol for the directory will be created to be:
 example for \"d:\\foo\\bar\":
   (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
     -> dlv:class://d:/foo/bar/"
-  (message (concat "dlv:set:\n"
-                   "  dir:  %s\n"
-                   "  mode: %S\n"
-                   "  tuples:")
-           directory mode)
-  (pp tuples)
-  (message "\ndlv classes:")
-  (pp dir-locals-class-alist)
-
   (if (int<dlv>:exists? directory)
       (apply #'dlv:update directory mode tuples)
     (apply #'dlv:create directory mode tuples)))
@@ -1178,6 +1169,36 @@ NOTE: Huge alist!"
   (message "")
 
   (pp (buffer-local-variables))
+
+  (message "")
+  (int<dlv>:message:boxed.xml :end "dlv:buffer-locals/show-all"))
+
+
+(defun dlv:buffer-locals/show-dlvs ()
+  "Show the dir-local (and file-local) variables and values from the
+buffer-local variable alist.
+
+A very much reduced list from `dlv:buffer-locals/show-all'."
+  (interactive)
+  (int<dlv>:message:boxed.xml :start "dlv:buffer-locals/show-dlvs"
+                              (cons "buffer" (buffer-name))
+                              (cons "path" (buffer-file-name)))
+  (message "")
+
+  (let* ((all-locals (buffer-local-variables))
+         (dir-locals (alist-get 'dir-local-variables-alist
+                                all-locals))
+         (file-locals (alist-get 'file-local-variables-alist
+                                 all-locals)))
+
+    (int<dlv>:message:line ?─)
+    (message "dir-local-variables-alist:")
+    (pp dir-locals)
+
+    (message "")
+    (int<dlv>:message:line ?─)
+    (message "file-local-variables-alist:")
+    (pp file-locals))
 
   (message "")
   (int<dlv>:message:boxed.xml :end "dlv:buffer-locals/show-all"))

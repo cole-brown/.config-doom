@@ -1,17 +1,18 @@
-;;; spy/strings/random.el -*- lexical-binding: t; -*-
+;;; emacs/str/+random.el -*- lexical-binding: t; -*-
 
-;; http://ergoemacs.org/emacs/elisp_insert_random_number_string.html
-;; http://ergoemacs.org/emacs/elisp_generate_uuid.html
+;; Some of this is derived from:
+;;   - http://ergoemacs.org/emacs/elisp_insert_random_number_string.html
+;;   - http://ergoemacs.org/emacs/elisp_generate_uuid.html
 
 
-(imp:require :modules 'spy 'strings 'string)
+(imp:require :str 'string)
 
 
 ;;------------------------------------------------------------------------------
 ;; Random: Insert
 ;;------------------------------------------------------------------------------
 
-(defun spy:str:random:number/insert (length)
+(defun str:random:number/insert (length)
   "Insert LENGTH random digits. LENGTH default to 5.
 
 Call `universal-argument' before for different count.
@@ -21,13 +22,13 @@ Version 2017-05-24"
   (interactive "P")
   (let ((charset "1234567890" )
         (charset.length 10))
-    (message "spy:str:random:number/insert(%S)" length)
+    (message "str:random:number/insert(%S)" length)
     (dotimes (_ (if (numberp length) (abs length) 5 ))
       (insert (elt charset (random charset.length))))))
-;; (spy:str:random:number/insert 10)
+;; (str:random:number/insert 10)
 
 
-(defun spy:str:random:hex/insert (length)
+(defun str:random:hex/insert (length)
   "Insert LENGTH random hexadecimal digits. LENGTH default to 5.
 
 Call `universal-argument' before for different count.
@@ -37,10 +38,10 @@ Version 2017-08-03"
   (interactive "P")
   (let ((n (if (numberp length) (abs length) 5 )))
     (insert (format  (concat "%0" (number-to-string n) "x" ) (random (1- (expt 16 n)))))))
-;; (spy:str:random:hex/insert 10)
+;; (str:random:hex/insert 10)
 
 
-(defun spy:str:random:string/insert (length)
+(defun str:random:string/insert (length)
   "Insert a random alphanumerics string of length 5.
 The possible chars are: A to Z, a to z, 0 to 9.
 
@@ -53,10 +54,10 @@ Version 2018-08-03"
          (charset.length (length charset)))
     (dotimes (_ (if (numberp length) (abs length) 5))
       (insert (elt charset (random charset.length))))))
-;; (spy:str:random:string/insert 10)
+;; (str:random:string/insert 10)
 
 
-(defun spy:str:random:uuid/insert ()
+(defun str:random:uuid/insert ()
   "Insert a UUID.
 This commands calls “uuidgen” on MacOS, Linux, and calls PowelShell on Microsoft Windows.
 
@@ -91,14 +92,14 @@ Version 2020-06-04"
                       (format "%x" (+ 8 (random 4)))
                       (substring myStr 17 20)
                       (substring myStr 20 32)))))))
-;; (spy:str:random:uuid/insert)
+;; (str:random:uuid/insert)
 
 
 ;;------------------------------------------------------------------------------
 ;; Random: String
 ;;------------------------------------------------------------------------------
 
-(defun spy:str:random:number/string (length)
+(defun str:random:number/string (length)
   "Returns a string of LENGTH random digits. LENGTH default to 5.
 
 Call `universal-argument' before for different count.
@@ -106,11 +107,11 @@ Call `universal-argument' before for different count.
 URL `http://ergoemacs.org/emacs/elisp_insert_random_number_string.html'
 Version 2017-05-24"
   (interactive "P")
-  (int<spy>:str:insert->str #'spy:str:random:number/insert length))
-;; (spy:str:random:number/string 10)
+  (int<str>:insert->str #'str:random:number/insert length))
+;; (str:random:number/string 10)
 
 
-(defun spy:str:random:hex/string (length)
+(defun str:random:hex/string (length)
   "Returns a string of LENGTH random hexadecimal digits. LENGTH default to 5.
 
 Call `universal-argument' before for different count.
@@ -118,11 +119,11 @@ Call `universal-argument' before for different count.
 URL `http://ergoemacs.org/emacs/elisp_insert_random_number_string.html'
 Version 2017-08-03"
   (interactive "P")
-  (int<spy>:str:insert->str #'spy:str:random:hex/insert length))
-;; (spy:str:random:hex/string 10)
+  (int<str>:insert->str #'str:random:hex/insert length))
+;; (str:random:hex/string 10)
 
 
-(defun spy:str:random:string/string (length)
+(defun str:random:string/string (length)
   "Returns a string of a random alphanumerics string of length 5.
 The possible chars are: A to Z, a to z, 0 to 9.
 
@@ -131,23 +132,23 @@ Call `universal-argument' before for different count.
 URL `http://ergoemacs.org/emacs/elisp_insert_random_number_string.html'
 Version 2018-08-03"
   (interactive "P")
-  (int<spy>:str:insert->str #'spy:str:random:string/insert length))
-;; (spy:str:random:string/string 10)
+  (int<str>:insert->str #'str:random:string/insert length))
+;; (str:random:string/string 10)
 
 
-(defun spy:str:random:uuid/string ()
+(defun str:random:uuid/string ()
   "Returns a string of a UUID.
 This commands calls “uuidgen” on MacOS, Linux, and calls PowelShell on Microsoft Windows.
 
 URL `http://ergoemacs.org/emacs/elisp_generate_uuid.html'
 Version 2020-06-04"
   (interactive)
-  (int<spy>:str:insert->str #'spy:str:random:uuid/insert length))
-;; (spy:str:random:uuid/string)
+  (int<str>:insert->str #'str:random:uuid/insert length))
+;; (str:random:uuid/string)
 
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'strings 'random)
+(imp:provide :str 'random)

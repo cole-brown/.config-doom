@@ -3,6 +3,7 @@
 
 (require 'rx)
 (require 'dash)
+(imp:require :str 'normalize)
 (imp:require :str 'string)
 (imp:require :str 'regex)
 
@@ -1309,7 +1310,7 @@ integers/marker according to CASES keywords."
   (when (and (= (length cases) 1)
              (stringp (car cases)))
     ;; Split and convert each into a keyword.
-    (setq cases (mapcar #'str:normalize->keyword
+    (setq cases (mapcar #'str:normalize:name->keyword
                         (str:split " " cases)))
     ;; Check that they're all valid.
     (unless (-all? #'int<str>:case:validate/case cases)
@@ -1320,39 +1321,31 @@ integers/marker according to CASES keywords."
 
 
 ;;------------------------------------------------------------------------------
-;; from Ye Olde .emacs.d
+;; Words
 ;;------------------------------------------------------------------------------
 
-;; (defun spydez/case/alternating/word ()
-;;   "Use this function to display how very serious and unmockable you find
-;; something.
-;; Will convert starting at point. Randomly decides between starting
-;; off with first letter as uppercase or lowercase.
-;; aka Alternating Caps
-;; aka Studly Caps
-;; aka 'Mocking SpongeBob'
-;; "
-;;   (interactive)
+;; TODO: ->word func for each ->region func.
 
-;;   ;; Do the conversion.
-;;   (save-excursion
-;;     (let ((pos (point))
-;;           (to-upper (spydez/random/bool)))
+;;------------------------------
+;; General Conversion
+;;------------------------------
 
-;;       ;; Case conversion toggle on only visible characters.
-;;       (while (string-match (rx graphic) (char-to-string (char-after)))
-;;         ;; Actually convert.
-;;         (if to-upper
-;;             (spydez/case/upper/char 1)
-;;           (spydez/case/lower/char 1))
-;;         ;; Set-up for next char.
-;;         (goto-char pos)
-;;         (setq pos (1+ pos)
-;;               ;; Toggle case for next letter.
-;;               to-upper (not to-upper))))))
+(defun str:case/word:to (&rest cases)
+  "Convert word at point according to CASES keywords."
+  (interactive "sCases: ")
+
+  (apply #'str:word-at-point->region #'str:case/region:to cases))
+
+
+;;------------------------------------------------------------------------------
+;; TODO: DWIM interactive funcs.
+;;------------------------------------------------------------------------------
+
+;; TODO: ->word or ->region depending on point/mark.
+;; TODO: Change hydra to use DWIMs.
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide:with-emacs :str 'case)
+(imp:provide :str 'case)

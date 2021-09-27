@@ -5,7 +5,6 @@
 ;; General Constants
 ;;------------------------------------------------------------------------------
 
-;; TODO: defconst w/ docstr when settled
 (defcustom str:rx:default:separators.word
   '(any "-" "_" " ")
   "An `rx' list for what is considered 'word-separators'."

@@ -1,35 +1,38 @@
-;;; spy/strings/hash.el -*- lexical-binding: t; -*-
+;;; emacs/str/hash.el -*- lexical-binding: t; -*-
+
+(imp:require :str 'normalize)
+(imp:require :str 'string)
 
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defconst spy:hash/default 'sha512
-  "Default hashing function to use for spy:hash-input.")
+(defconst str:hash:default 'sha512
+  "Default hashing function to use for str:hash-input.")
 
-(defconst spy:hash/slice 6
-  "Default hashing slice size to use for `spy:hash/pretty'.")
+(defconst str:hash:slice 6
+  "Default hashing slice size to use for `str:hash:pretty'.")
 
-(defconst spy:hash/join/slices "-"
-  "Default slice join string for `spy:hash/pretty'.")
+(defconst str:hash:join/slices "-"
+  "Default slice join string for `str:hash:pretty'.")
 
-(defconst spy:hash/join/prefixes "/"
-  "Default join string to use for joining prefixes together in `spy:hash'.")
+(defconst str:hash:join/prefixes "/"
+  "Default join string to use for joining prefixes together in `str:hash'.")
 
-(defconst spy:hash/join/prepend "::"
-  "Default join string to use for joining prefixes to hash in `spy:hash'.")
+(defconst str:hash:join/prepend "::"
+  "Default join string to use for joining prefixes to hash in `str:hash'.")
 
 
 ;;------------------------------------------------------------------------------
 ;; Hashes
 ;;------------------------------------------------------------------------------
 
-(defun sss:hash/input->str (input)
+(defun int<str>:hash:input->str (input)
   "Converts a single INPUT (string or symbol) into a string."
   (cond ((null input)
          (error "%s: Cannot hash 'nil' INPUT. %s Input: %s"
-                "sss:hash/input->str"
+                "int<str>:hash:input->str"
                 "Not a string, symbol, or list of strings/symbols."
                 input))
 
@@ -44,21 +47,21 @@
          ;; Fallthrough: Bad Input.
          (t
           (error "%s: Don't know what to do with INPUT. %s Input: %s"
-                 "sss:hash/input->str"
+                 "int<str>:hash:input->str"
                  "Not a string, symbol, or list of strings/symbols?"
                  input))))
-;; (sss:hash/input->str "jeff")
-;; (sss:hash/input->str 'jeff)
+;; (int<str>:hash:input->str "jeff")
+;; (int<str>:hash:input->str 'jeff)
 
 
-(defun spy:hash/full (input &optional hash)
+(defun str:hash:full (input &optional hash)
   "Returns the full hash string of INPUT (can be string, symbol or list of
 strings/symbols). Uses HASH algorithm (see `(secure-hash-algorithms)' for
 available algorithms.
 
-If HASH is nil, this will use the default defined in `spy:hash/default'."
+If HASH is nil, this will use the default defined in `str:hash:default'."
   ;; Set hash to default if unspecified.
-  (let ((hash (or hash spy:hash/default))
+  (let ((hash (or hash str:hash:default))
         (input-string nil))
     ;; Make sure hash exists as a supported algorithm.
     (unless (member hash (secure-hash-algorithms))
@@ -73,11 +76,11 @@ If HASH is nil, this will use the default defined in `spy:hash/default'."
           ;; String or symbol? Turn it into a string.
           ((or (stringp input)
                (symbolp input))
-           (setq input-string (sss:hash/input->str input)))
+           (setq input-string (str:normalize:value->list input)))
 
           ;; A list? Stringify and concat together.
           ((listp input)
-           (setq input-string (mapconcat #'sss:hash/input->str input " ")))
+           (setq input-string (mapconcat #'int<str>:hash:input->str input " ")))
 
           ;; Fallthrough: Bad Input.
           (t
@@ -86,84 +89,86 @@ If HASH is nil, this will use the default defined in `spy:hash/default'."
                   input)))
 
     (secure-hash hash input-string)))
-;; (spy:hash/full "jeff")
-;; (spy:hash/full 'jeff)
-;; (spy:hash/full '(jeff jeff))
-;; (spy:hash/full nil)
+;; (str:hash:full "jeff")
+;; (str:hash:full 'jeff)
+;; (str:hash:full '(jeff jeff))
+;; (str:hash:full nil)
 
 
-(defun spy:hash/pretty (input &optional hash slice join)
+(defun str:hash:pretty (input &optional hash slice join)
   "Hash INPUT (can be string, symbol or list of strings/symbols).
 
 If HASH is non-nil, will use that HASH algorithm (see `(secure-hash-algorithms)'
-for available algorithms. Otherwise uses `spy:hash/default'.
+for available algorithms. Otherwise uses `str:hash:default'.
 
 If SLICE is non-nil, will use that (integer) to break the hash up into slices.
-Otherwise uses `spy:hash/slice'. The slices it uses are the first SLICE
+Otherwise uses `str:hash:slice'. The slices it uses are the first SLICE
 characters and the last SLICE characters.
 
 If JOIN is non-nil, will use that (string) to join back together the hash
-slices. Otherwise uses `spy:hash/join/slices'."
-  (let* ((hash-full (spy:hash/full input hash))
-         (slice (or slice spy:hash/slice))
-         (join (or join spy:hash/join/slices)))
+slices. Otherwise uses `str:hash:join/slices'."
+  (let* ((hash-full (str:hash:full input hash))
+         (slice (or slice str:hash:slice))
+         (join (or join str:hash:join/slices)))
 
     (concat (substring hash-full 0 slice)
             join
             (substring hash-full (- slice) nil))))
-;; (spy:hash/pretty "jeff")
+;; (str:hash:pretty "jeff")
 
 
-(defun spy:hash/recreate (prefixes pretty-hash)
-  "Like `spy:hash', with PRETTY-HASH instead of a created hash.
+(defun str:hash:recreate (prefixes pretty-hash)
+  "Like `str:hash', with PRETTY-HASH instead of a created hash.
 
 PREFIXES should be: string, symbol, or list of strings/symbols.
 
-PRETTY-HASH should be a string like `spy:hash/pretty' outputs.
+PRETTY-HASH should be a string like `str:hash:pretty' outputs.
 
 This joins all PREFIXES together into a string separated with
-`spy:hash/join/prefixes'.
+`str:hash:join/prefixes'.
 
 Then it joins the prefix string to the PRETTY-HASH string with
-`spy:hash/join/prepend'."
+`str:hash:join/prepend'."
   ;; Create prepend string from prefixes...
-  (concat (apply #'spy:string/concat spy:hash/join/prefixes prefixes)
+  (concat (apply #'str:join str:hash:join/prefixes
+                 (apply #'str:normalize:value->list prefixes))
           ;; ...add prepend separator...
-          spy:hash/join/prepend
+          str:hash:join/prepend
           ;; ...and finish with the pretty hash.
           pretty-hash))
-;; (spy:hash/recreate '(jeff compy) "cab3d6-bad38c")
+;; (str:hash:recreate '(jeff compy) "cab3d6-bad38c")
 
 
-(defun spy:hash (prefixes inputs)
+(defun str:hash (prefixes inputs)
   "PREFIXES and INPUTS should be: string, symbol, or list of strings/symbols.
 
 This joins all PREFIXES together into a string separated with
-`spy:hash/join/prefixes'.
+`str:hash:join/prefixes'.
 
-Then it hash INPUTS using `spy:hash/pretty' function.
+Then it hash INPUTS using `str:hash:pretty' function.
 
 Finally, it join prefixes string and inputs hash string with
-`spy:hash/join/prepend'."
+`str:hash:join/prepend'."
   ;; Create prepend string from prefixes...
-  (concat (apply #'spy:string/concat spy:hash/join/prefixes prefixes)
+  (concat (apply #'str:join str:hash:join/prefixes
+                 (apply #'str:normalize:value->list prefixes))
           ;; ...add prepend separator...
-          spy:hash/join/prepend
+          str:hash:join/prepend
           ;; ...and finish with the pretty hash.
-          (spy:hash/pretty inputs)))
-;; (spy:hash '(jeff compy) 'laptop-2020)
+          (str:hash:pretty inputs)))
+;; (str:hash '(jeff compy) 'laptop-2020)
 
 
-(defun spy:hash/split (hash/pretty)
+(defun str:hash:split (hash:pretty)
   "Split a pretty hash back up into input prefixes and the pretty hash."
-  (let ((split (split-string hash/pretty spy:hash/join/prepend)))
+  (let ((split (split-string hash:pretty str:hash:join/prepend)))
     ;; Return: '((prefixes ...) hash)
-    (list (split-string (nth 0 split) spy:hash/join/prefixes)
+    (list (split-string (nth 0 split) str:hash:join/prefixes)
           (nth 1 split))))
-;; (spy:hash/split (spy:hash '(jeff compy) 'laptop-2020))
+;; (str:hash:split (str:hash '(jeff compy) 'laptop-2020))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'strings 'hash)
+(imp:provide :str 'hash)

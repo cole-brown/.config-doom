@@ -1,9 +1,15 @@
 ;;; emacs/str/string.el -*- lexical-binding: t; -*-
 
+
+;;------------------------------------------------------------------------------
+;; Words
+;;------------------------------------------------------------------------------
+
 ;;------------------------------------------------------------------------------
 ;; Regions
 ;;------------------------------------------------------------------------------
 
+;; TODO: move to 'buffer.el'?
 (defun str:region->region (start end func &rest args)
   "Convert region from START to END by appling FUNC to that substring and then
 replacing the region with the function's results.
@@ -15,8 +21,21 @@ FUNC should be a function that returns a string and should have parameters:
                              (apply func (buffer-substring-no-properties (point-min) (point-max)) args))))
 
 
-;; TODO: (str:word-at-point->region ...)
-;; or (str:thing-at-point->region thing-type ...)
+;; TODO: (str:thing-at-point->region thing-type ...)
+
+
+(defun str:word-at-point->region (func &rest cases)
+  "Get word at point, then use `str:region->region' to apply the FUNC and ARGS."
+  (save-excursion
+    ;; We might be in the middle of the word, so go to the end, save that point, and then go back to the start of the word.
+    (forward-word)
+     (let (start
+           (end (point)))
+       (backward-word)
+       (setq start (point))
+
+       ;; Have a region now, so just call `str:case/region:to'.
+       (apply #'str:region->region start end func cases))))
 
 
 ;;------------------------------------------------------------------------------
@@ -49,41 +68,24 @@ case sensitivity!"
 
 
 ;;------------------------------------------------------------------------------
-;; Conversion
+;; To String
 ;;------------------------------------------------------------------------------
 
-(defun str:normalize->keyword (input)
-  "Convert INPUT to a keyword.
+(defun int<str>:str:print->str (func &rest args)
+  "Calls FUNC with ARGS, returns `standard-output' as a string."
+  (with-output-to-string
+    (apply func args)))
 
-If INPUT is already a keyword, return as-is.
-If INPUT is nil, return nil.
-If INPUT is a symbol, get its `symbol-name', and convert to a keyword.
-If INPUT is a string (leading ':' is optional), convert to a keyword."
-  (cond ((null input)
-         nil)
-        ((keywordp input)
-         input)
-        ((or (stringp input)
-             (symbolp input))
-         (intern
-          ;; INPUT only optionally has a ":", so ensure a ":" by:
-          ;;   1) Removing the leading ":" if it exists.
-          ;;   2) Always prefixing a new ":".
-          (concat ":"
-                  ;; Remove keyword's leading ":"?
-                  (string-remove-prefix
-                   ":"
-                   ;; Make sure we have a string.
-                   (if (stringp input)
-                         input
-                     (symbol-name input))))))
-        (t
-         (error "Unsupported INPUT type of '%S': %S"
-                (type-of input)
-                input))))
+
+(defun int<str>:str:insert->str (func &rest args)
+  "Calls FUNC with ARGS in a temp buffer, then returns the temp buffer's
+contents as a string."
+  (with-temp-buffer
+    (apply func args)
+    (buffer-string)))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide:with-emacs :str 'string)
+(imp:provide :str 'string)

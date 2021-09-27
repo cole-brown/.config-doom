@@ -43,14 +43,21 @@
 ;; Load files.
 ;;------------------------------------------------------------------------------
 
+(load! "normalize")
 (load! "regex")
 (load! "string")
+(load! "hash")
 
+ ;; Requires 'normalize', 'regex', and 'string'.
 (unless (featurep! -case)
   (load! "+case")
 
   (unless (featurep! -hydra)
     (load! "+case-hydra")))
+
+;; Requires 'string'.
+(unless (featurep! -random)
+  (load! "+random"))
 
 
 ;;------------------------------------------------------------------------------

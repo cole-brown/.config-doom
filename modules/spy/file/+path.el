@@ -16,15 +16,15 @@
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
-NEXT is normalized via `spy:string/normalize.name', so
+NEXT is normalized via `str:normalize:name->list', so
 keywords or symbol names can be used as well as strings."
   ;; Use next's string value, or symbol name.
-  (let ((next (car (spy:string/normalize.name next))))
+  (let ((next (car (str:normalize:name->list next))))
     (if (null parent)
         next
       (concat (file-name-as-directory parent) next))))
 ;; (sss:path/append nil "jeff")
-;; (spy:string/normalize.name "jill")
+;; (str:normalize:name->list "jill")
 ;; (sss:path/append "jeff" "jill")
 ;; (sss:path/append "jeff/" "jill")
 ;; (sss:path/append "jeff/" :jill)

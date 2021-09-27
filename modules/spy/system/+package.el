@@ -42,11 +42,12 @@ This will load file: \"package/jeff/jill.el(c)\"
   (let ((path-input (make-symbol "temp-path")))
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
     ;; Eval inputs once.
-    `(let* ((,path-input (spy:string/normalize.name ,@path))
+    `(let* ((,path-input (str:normalize:name->list ,@path))
             ;; Non-inputs:
             (root        (jerky/get sss:package.jerky.key))
             (final-name  (apply #'spy:path/join root ,path-input))
-            (package-name (apply #'spy:string/concat "/" ,path-input)))
+            (package-name (apply #'str:join "/"
+                                 (apply #'str:normalize:value->list ,path-input))))
 
        ;; Say something...
        (if (string= final-name package-name)

@@ -69,7 +69,7 @@ sss:taskspace/generate' and see what file it's defined in."
   ;; "Home" Domain
   ;;---
   (let* ((group :home) ; taskspace "group" == jerky "namespace"
-         (group-str (spy:string/normalize.symbol group)))
+         (group-str (str:normalize:symbol->string group)))
 
     ;; Alias our function here in case we want to redefine it later.
     ;; We'll just have to redefine it instead of edit the taskspace settings again.
@@ -84,7 +84,7 @@ sss:taskspace/generate' and see what file it's defined in."
                  :value (spy:path/to-dir
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
-                         (spy:string/normalize.symbol group))
+                         (str:normalize:symbol->string group))
                  :docstr (format "directory for %s taskspace notes" group-str))
       (jerky/set 'path 'taskspace 'root
                  :namespace group
@@ -121,7 +121,7 @@ sss:taskspace/generate' and see what file it's defined in."
   ;; "Work" Domain
   ;;---
   (let* ((group :work) ; taskspace "group" == jerky "namespace"
-         (group-str (spy:string/normalize.symbol group)))
+         (group-str (str:normalize:symbol->string group)))
 
     ;; Alias our function here in case we want to redefine it later.
     ;; We'll just have to redefine it instead of edit the taskspace settings again.
@@ -136,7 +136,7 @@ sss:taskspace/generate' and see what file it's defined in."
                  :value (spy:path/to-dir
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
-                         (spy:string/normalize.symbol group))
+                         (str:normalize:symbol->string group))
                  :docstr (format "directory for %s taskspace notes" group-str))
       (jerky/set 'path 'taskspace 'root
                  :namespace group

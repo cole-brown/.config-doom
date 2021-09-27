@@ -460,7 +460,7 @@ Checks/returns first to be non-nil of:
 ;; Key Functions
 ;;------------------------------------------------------------------------------
 
-(defalias 'jerky//key/symbol->str 'spy:string/normalize.symbol
+(defalias 'jerky//key/symbol->str 'str:normalize:symbol->string
   "Convert a symbol to a string. Removes ':' from keywords.")
 
 

@@ -8,6 +8,13 @@
 (imp:require :str 'regex)
 
 
+
+;; TODO: Note or func or something for:
+;; Separate CamelCase & snake_case into separate words.
+;; (subword-mode t)
+;; TODO: Maybe a toggle in the case hydra?
+
+
 ;;------------------------------------------------------------------------------
 ;; Regexes
 ;;------------------------------------------------------------------------------

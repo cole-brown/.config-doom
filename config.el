@@ -150,7 +150,7 @@
 ;; Programming & Stuff
 ;;------------------------------------------------------------------------------
 
-(spy:config 'code)
+(spy:config 'code 'config)
 (spy:config 'treemacs)
 
 

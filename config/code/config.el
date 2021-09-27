@@ -1,8 +1,17 @@
-;;; config/code.el -*- lexical-binding: t; -*-
+;;; config/code/config.el -*- lexical-binding: t; -*-
 
 
 (imp:require :modules 'spy 'hook 'def)
 (imp:require :jerky)
+
+
+;;------------------------------
+;; NOTE:
+;;----------
+;; 1) Set up some vars, defaults.
+;; 2) Call out to other files to set up other modes.
+;;    - Base 'prog-mode' should be set up first.
+;;------------------------------
 
 
 ;;------------------------------------------------------------------------------
@@ -18,6 +27,11 @@
            :namespace :default
            :value 2
            :docstr "Short tab width is 2 spaces.")
+
+
+;; Use spaces instead of tabs.
+;; NOTE: Already set to nil.
+;; (setq indent-tabs-mode nil)
 
 
 ;;------------------------------------------------------------------------------
@@ -42,6 +56,8 @@
 ;; Auto-Formatting
 ;;------------------------------------------------------------------------------
 
+;; TODO: Change into a func call so various mode configs can do it themselves?
+
 ;; Update doom's presets for :format/+onsave's enabled modes.
 (setq +format-on-save-enabled-modes
       ;; Starting with `not' inverts this list's meaning to "everything except:"
@@ -50,12 +66,15 @@
             tex-mode         ; latexindent is broken
             latex-mode
             python-mode      ; Don't even want to know what this would do if it has one.
-            csharp-mode))    ; Work has its own formatting style.
+            csharp-mode))    ; TODO: Should I enable for this?
 
 
 ;;------------------------------------------------------------------------------
 ;; Comments
 ;;------------------------------------------------------------------------------
+
+;; TODO: Should be in keybinds?
+;; TODO: Unmap both as `g c' works good?
 
 ;; Comment/Uncomment
 ;; C-x C-; is super awkward on dvorak w/ CAPS-as-ctrl...
@@ -89,33 +108,6 @@
     (setq fill-column 140))
 
 
-;;------------------------------------------------------------------------------
-;; Python
-;;------------------------------------------------------------------------------
-
-(use-package! python
-
-  ;;-----
-  :config
-  ;;-----
-
-  (customize-set-variable 'python-indent-offset
-                          (jerky/get 'code 'tab 'normal)
-                          "Set indent to tab-width.")
-
-  (customize-set-variable 'python-fill-docstring-style
-                          'symmetric)
-
-  ;; Create and add my python-mode hook function to python-mode's hook var.
-  (spy:hook/defun-and-hooker python-mode-hook
-    '(:name "python/settings"
-      :file ".doom.d/config/code.el"
-      :docstr "Settings for python-mode itself. Non-LSP stuff."
-      :quiet t)
-
-    ;; pycodestyle insists 79 is the One True Fill Column...
-    ;; We'll try it for all our python in general.
-    (setq fill-column 79)))
 
 
 ;;------------------------------------------------------------------------------
@@ -149,3 +141,11 @@
 ;;   (interactive)
 ;;   ;; TODO: this?
 ;;   )
+
+
+;;------------------------------------------------------------------------------
+;; Programming Mode Configs
+;;------------------------------------------------------------------------------
+
+(load! "+c-and-cpp")
+(load! "+python")

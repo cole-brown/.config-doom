@@ -74,6 +74,12 @@
 ;; Spotify management.
 (package! smudge)
 
+
+;; Ripgrep searching.
+(package! deadgrep)
+
+
+
 ;;------------------------------------------------------------------------------
 ;;                              !!!>- NOTE -<!!!
 ;;                            --------------------

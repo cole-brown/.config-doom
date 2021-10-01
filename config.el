@@ -111,6 +111,8 @@
 ;; Get rid of some Doom annoying functionality with respect to parens...
 (spy:config 'parenthesis)
 
+(spy:config 'search)
+
 
 ;;------------------------------------------------------------------------------
 ;; Look & Feel
@@ -132,7 +134,7 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Notes, Org-Mode and Legions, etc.
+;; Notes, Org-Mode and its Minions, etc.
 ;;------------------------------------------------------------------------------
 
 (spy:config 'taskspace)
@@ -194,8 +196,9 @@
 
 ;; Specific things:
 (spy:config 'keybinds 'org-mode)
-(spy:config 'keybinds 'treemacs)
+(spy:config 'keybinds 'search)
 (spy:config 'keybinds 'spotify)
+(spy:config 'keybinds 'treemacs)
 
 ;; Whatever isn't big enough or important enough to warrent its own file.
 (spy:config 'keybinds 'misc)

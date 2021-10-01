@@ -97,7 +97,7 @@
        autogit             ; Commit (subdirs of) git repos automatically-ish.
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
-       ;;docker
+       docker              ; docker.el, dockerfile-mode, and docker-tramp
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)

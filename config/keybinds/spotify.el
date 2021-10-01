@@ -60,7 +60,7 @@ Each assoc in alist is: '(:KEYWORD UNICODE-SYMBOL RAW-STRING nil/FORMATTED-STRIN
 
 
 (defun int<spy>:spotify:hydra/fmt.name (add subtract)
-  "Create a format string given width `int<spy>:spotify:hydra/width'.
+  "Create a format string given width `int<spy>:spotify:hydra/width.name'.
 
 Adds ADD list, subtracts SUBTRACT list."
   (let ((width (number-to-string
@@ -275,7 +275,7 @@ If ADD or SUBTRACT are non-nil: Adds ADD list to width, subtracts SUBTRACT list.
              (concat "?"
                      keybind
                      "?"
-                     (make-string int<spy>:spotify:hydra/width ?^))))))
+                     (make-string int<spy>:spotify:hydra/width.name ?^))))))
 ;; (int<spy>:spotify:hydra/description:shortcut :play/pause)
 ;; (int<spy>:spotify:hydra/description:shortcut :repeat)
 

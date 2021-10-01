@@ -78,6 +78,9 @@ BODY is the code to run in the hook.
 (defmacro spy:hook/defun (hook-var options &rest body)
   "Macro that `defun's a function called 'sss:hook/<hook-name>'.
 
+HOOK-VAR isn't use; currently here for consistency with `spy:hook/defun-and-hooker'.
+TODO: Remove HOOK-VAR.
+
 OPTIONS is a plist of optional vars:
   :name     - Hook function should be named 'sss:hook/<name>'.
               If no `:name', name will be set to `(symbol-name HOOK-VAR)'

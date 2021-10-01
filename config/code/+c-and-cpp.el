@@ -15,6 +15,18 @@
 ;; Use-Package
 ;;----------------------------------------------------------------------------
 
+;;------------------------------
+;; NOTE:
+;; -----
+;; C Mode currently has block style ('/* */') commenting.
+;;   - This can be toggled by `c-toggle-comment-style' command.
+;;     + If ARG is positive: set to style block ('/* */').
+;;     + If ARG is negative: set to line style ('//').
+;;
+;; If you want to change this, do something about the `sss:hook/align-block-commenting' hook.
+;;------------------------------
+
+
 ;; TODO: Check this?
 ;;   https://github.com/dholm/dotemacs/blob/master/.emacs.d/lisp/modes/c-c%2B%2B.el
 ;;   CEDET and stuff...
@@ -64,7 +76,8 @@
   :hook
   ;;--------------------
   ((c++-mode . sss:hook/c-and-cpp/settings)
-   (c-mode . sss:hook/c-and-cpp/settings))
+   (c-mode . sss:hook/c-and-cpp/settings)
+   (c-mode . sss:hook/align-block-commenting))
 
   ;;--------------------
   :config

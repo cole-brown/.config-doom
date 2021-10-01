@@ -93,6 +93,30 @@
  :desc "Comment/Uncomment" "C-/" #'evilnc-comment-or-uncomment-lines)
 
 
+;;------------------------------
+;; Block Commenting Style
+;;------------------------------
+
+;; Only use for languages that have ending comments, like C's /* */.
+(spy:hook/defun unused-arg
+    '(:name "align-block-commenting"
+      :file ".doom.d/config/code.el"
+      :docstr "Set comment style for start/end line comment languages (C, HTML, ...)."
+      :quiet t)
+
+    ;; `aligned' is like (default) `indent' but also aligns end-of-line comment chars if the language has them.
+    (setq 'comment-style 'aligned))
+
+;;---
+;; Add hook to languages that need it.
+;;---
+
+;; `html-mode-hook' (HTML mode) or `mhtml-mode-hook' (HTML+ mode (derived from HTML mode))?
+(add-hook 'html-mode-hook 'sss:hook/align-block-commenting)
+
+;; C-mode hook added (or not) in "+c-and-cpp.el".
+
+
 ;;------------------------------------------------------------------------------
 ;; Defaults for All Programming Modes
 ;;------------------------------------------------------------------------------

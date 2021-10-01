@@ -108,9 +108,9 @@ The extension '.el' is used to check for file existance."
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))
     ;;     (load! path)
-    ;;   (warn (input//kl:error-message "input:keyboard/layout:load-file"
-    ;;                                  "Could not find "
-    ;;                                  "'%s' file for '%s'. path: %s")
+    ;;   (warn (input//kl:error/format "input:keyboard/layout:load-file"
+    ;;                                 "Could not find "
+    ;;                                 "'%s' file for '%s'. path: %s")
     ;;         load-name
     ;;         flag
     ;;         (concat path ".el")))

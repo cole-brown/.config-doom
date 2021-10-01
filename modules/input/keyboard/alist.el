@@ -46,9 +46,9 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (stringp ,mmm:key)
-         (error (input//kl:error-message "input//kl:alist/update"
-                                         "String key '%s' won't work... "
-                                         "Use `input//kl:alist/string/update' for string keys.")
+         (error (input//kl:error/format "input//kl:alist/update"
+                                        "String key '%s' won't work... "
+                                        "Use `input//kl:alist/string/update' for string keys.")
                 ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
        (when ,set-alist
@@ -76,9 +76,9 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (stringp ,mmm:key)
-         (error (input//kl:error-message "input//kl:alist/update"
-                                         "String key '%s' won't work... "
-                                         "Use `input//kl:alist/string/update' for string keys.")
+         (error (input//kl:error/format "input//kl:alist/update"
+                                        "String key '%s' won't work... "
+                                        "Use `input//kl:alist/string/update' for string keys.")
                 ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) value)
        (when ,set-alist
@@ -103,10 +103,10 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (stringp ,mmm:key)
-         (error (input//kl:error-message "input//kl:alist/update"
-                                         "String key '%s' won't work... "
-                                         "Use `input//kl:alist/string/update' "
-                                         "for string keys.")
+         (error (input//kl:error/format "input//kl:alist/update"
+                                        "String key '%s' won't work... "
+                                        "Use `input//kl:alist/string/update' "
+                                        "for string keys.")
                 ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
        (when ,set-alist
@@ -126,18 +126,18 @@ Returns ALIST."
 
 If KEY is not in the alist, nil or DEFAULT will be returned."
   (when (not (stringp key))
-    (error (input//kl:error-message "input//kl:alist/string/get"
-                                    "Only string keys allowed. "
-                                    "Use `input//kl:alist/get' for non-string keys.")))
+    (error (input//kl:error/format "input//kl:alist/string/get"
+                                   "Only string keys allowed. "
+                                   "Use `input//kl:alist/get' for non-string keys.")))
   (alist-get key alist default nil #'string=))
 
 
 (defun input//kl:alist/string/entry (key alist)
   "Get full assoc/entry of KEY in ALIST."
   (when (not (stringp key))
-    (error (input//kl:error-message "input//kl:alist/string/get"
-                                    "Only string keys allowed. "
-                                    "Use `input//kl:alist/get' for non-string keys.")))
+    (error (input//kl:error/format "input//kl:alist/string/get"
+                                   "Only string keys allowed. "
+                                   "Use `input//kl:alist/get' for non-string keys.")))
   (assoc key alist #'string=))
 
 
@@ -159,9 +159,9 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (not (stringp ,mmm:key))
-         (error (input//kl:error-message "input//kl:alist/string/update"
-                                         "Only string keys allowed. "
-                                         "Use `input//kl:alist/update' for non-string key %S.")
+         (error (input//kl:error/format "input//kl:alist/string/update"
+                                        "Only string keys allowed. "
+                                        "Use `input//kl:alist/update' for non-string key %S.")
                 ,mmm:key))
 
        (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) ,value)
@@ -190,9 +190,9 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (not (stringp ,mmm:key))
-         (error (input//kl:error-message "input//kl:alist/string/update"
-                                         "Only string keys allowed. "
-                                         "Use `input//kl:alist/update' for non-string key %S.")
+         (error (input//kl:error/format "input//kl:alist/string/update"
+                                        "Only string keys allowed. "
+                                        "Use `input//kl:alist/update' for non-string key %S.")
                 ,mmm:key))
 
        (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) value)
@@ -220,9 +220,9 @@ Returns ALIST."
        ;; Error Checking
        ;;---
        (when (not (stringp ,mmm:key))
-         (error (input//kl:error-message "input//kl:alist/string/update"
-                                         "Only string keys allowed. "
-                                         "Use `input//kl:alist/update' for non-string key %S.")
+         (error (input//kl:error/format "input//kl:alist/string/update"
+                                        "Only string keys allowed. "
+                                        "Use `input//kl:alist/update' for non-string key %S.")
                 ,mmm:key))
 
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove #'string=) nil)

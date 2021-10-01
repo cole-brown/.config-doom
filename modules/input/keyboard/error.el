@@ -14,13 +14,13 @@
 ;; Error Helper
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:error-message (func-name &rest message-format)
+(defun input//kl:error/format (func-name &rest message-format)
   "Combines FUNC-NAME and error MESSAGE-FORMAT into one string for sending to
 `error' with MESSAGE-FORMAT's args.
 
 NOTE: Is just for the error /message/. Args should be passed to `error', `warn',
 etc.
-  (error (input//kl:error-message
+  (error (input//kl:error/format
           \"input//kl:example-function\"
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
@@ -31,6 +31,13 @@ etc.
          func-name
          ": "
          message-format))
+
+
+(defun input//kl:error:normalize/key (key)
+  "Normalizes KEY to a human-friendly string for a debug message."
+  (if (stringp key)
+      key
+    (key-description key)))
 
 
 ;;------------------------------------------------------------------------------

@@ -45,7 +45,10 @@
 ;; Load Files.
 ;;------------------------------------------------------------------------------
 
-(load! "dlv")
+(load! "path")
+(load! "class") ;; requires path
+
+(load! "dlv") ;; requires path, class,
 
 ;; Always load unless specifically removed.
 (unless (featurep! -display)

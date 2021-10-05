@@ -3,6 +3,7 @@
 ;; TODO: Remove this dependency if I package this up?
 (require 'dash)
 
+(imp:require :dlv 'debug)
 (imp:require :dlv 'path)
 (imp:require :dlv 'class)
 
@@ -13,33 +14,6 @@
 
 (defconst int<dlv>:const:safe.valid '(:safe t)
   "Valid constant values for `safe' in `dlv:set'.")
-
-
-;;------------------------------------------------------------------------------
-;; Debugging Help
-;;------------------------------------------------------------------------------
-
-(defvar int<dlv>:debug/enabled? nil
-  "Debug flag.")
-
-
-(defun int<dlv>:debug:toggle ()
-  "Toggle debugging for DLV."
-  (interactive)
-  (setq int<dlv>:debug/enabled? (not int<dlv>:debug/enabled?))
-  (message "DLV debugging: %s"
-           (if int<dlv>:debug/enabled?
-               "enabled"
-             "disabled")))
-
-
-(defun int<dlv>:debug (func msg &rest args)
-  "Print out a debug message if debugging."
-  (when int<dlv>:debug/enabled?
-    (apply #'message
-           (concat func ": " msg)
-           args)))
-;; (int<dlv>:debug "test")
 
 
 ;;------------------------------------------------------------------------------
@@ -481,9 +455,9 @@ Otherwise, calls INFO-FUNC with a warning/info message."
         ;; Ok - can de-risk this. Should we complain about it?
         (progn
           (unless (eq remove-type :quiet)
-            (funcall message-func
+            (funcall info-func
                      "%s: '%S': Deleting `risky-local-variable' property (current value: %S)."
-                     func.name
+                     caller
                      symbol
                      prop.risky))
           ;; Delete its risky property.
@@ -495,7 +469,7 @@ Otherwise, calls INFO-FUNC with a warning/info message."
                        "Cannot undo the symbol's riskiness - "
                        "it's not considered risky via the `risky-local-variable' property. "
                        "`(risky-local-variable-p %S)' -> %S")
-               func.name
+               caller
                symbol
                symbol
                (risky-local-variable-p symbol)))))

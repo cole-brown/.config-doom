@@ -2,6 +2,8 @@
 
 ;; TODO: Remove this dependency if I package this up?
 (require 'dash)
+
+(imp:require :dlv 'debug)
 (imp:require :dlv 'path)
 
 

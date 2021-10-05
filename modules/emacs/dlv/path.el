@@ -1,5 +1,7 @@
 ;;; emacs/dlv/path.el -*- lexical-binding: t; -*-
 
+(imp:require :dlv 'debug)
+
 
 ;;------------------------------------------------------------------------------
 ;; DLV Directory Path

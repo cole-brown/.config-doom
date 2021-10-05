@@ -76,16 +76,160 @@ See `enable-local-variables' for an in-depth explanation."
 ;; DLV Directory Path
 ;;------------------------------------------------------------------------------
 
-(defun int<dlv>:dir:normalize (dir)
+(defun int<dlv>:path:expand (path &optional as-dir)
+  "Expands PATH using `expand-file-name', then reverts any \"~\" expansion.
+
+- Lowercases Windows drive letters.
+- Converts Windows backslashes to forwardslashes.
+- Resolves any \"..\" and \".\" in the path.
+- etc.
+
+If AS-DIR is non-nil, PATH will be resolved as a directory path. "
+  (when (or (null path)
+            (not (stringp path)))
+    (error "int<dlv>:path:expand: PATH must be a string! Got: %S %S"
+           (type-of path)
+           path))
+
+  (let ((path/abs (expand-file-name
+                   (if as-dir
+                       (file-name-as-directory path)
+                     path))))
+    ;; Check _original_ `path'.
+    (if (string-prefix-p "~" path)
+        ;; Return expanded but with "~" still.
+        (replace-regexp-in-string (expand-file-name "~")
+                                  "~"
+                                  path/abs)
+      ;; Return expanded as-is.
+      path/abs)))
+;; (int<dlv>:path:expand "~/foo/../bar")
+;; (int<dlv>:path:expand "~/foo/../bar" :dir)
+;; (int<dlv>:path:expand "d:/home/work/foo/../bar")
+;; (int<dlv>:path:expand nil)
+
+
+(defun int<dlv>:dir:normalize (dir &optional preserve-tilde)
   "Normalize DIR into an absolute path with '/' separators and ending in a '/'.
+
+NOTE: Loses the \"~\" unless PRESERVE-TILDE is non-nil!
 
 Example:
   (int<dlv>:dir:normalize \"D:\\foo\\bar\")
+    -> \"d:/foo/bar/\"
+
+  (int<dlv>:dir:normalize \"D:\\home\\work\\foo\\bar\")
+    -> \"d:/home/work/foo/bar/\"
+
+  (int<dlv>:dir:normalize \"D:\\home\\work\\foo\\bar\")
+    -> \"d:/foo/bar/\"
+
+  (int<dlv>:dir:normalize \"D:\\home\\work\\foo\\bar\")
+    -> \"d:/foo/bar/\"
+
+  (int<dlv>:dir:normalize \"D:\\home\\work\\foo\\bar\")
     -> \"d:/foo/bar/\""
   ;; Finish by ensuring we have a trailing '/'.
   (file-name-as-directory
-   ;; `expand-file-name' lowercases Windows drive letters and converts backslash to forwardslash.
-   (expand-file-name dir)))
+   ;; Do we want to preserve "~"?
+   (if preserve-tilde
+       (int<dlv>:path:expand dir)
+     ;; `expand-file-name' lowercases Windows drive letters and converts backslash to forwardslash.
+     ;; It also converts "~" into the absolute path, which isn't really desired in this case...
+     (expand-file-name dir))))
+;; (int<dlv>:dir:normalize "D:\\foo\\bar")
+;; (int<dlv>:dir:normalize "~/foo/bar")
+;; (int<dlv>:dir:normalize "~/foo/bar" :preserve)
+
+
+(defun int<dlv>:path:multiplex (path &optional as-dir)
+  "Returns PATH split up into: '(prefix-list rest-str)
+
+If AS-DIR is non-nil, PATH will be resolved as a directory path.
+
+`prefix-list' will be either list of strings or nil.
+`rest-str' will be either remainder of path (to concat onto prefix list members)
+or entire expanded path.
+
+example:
+  (int<dlv>:path:multiplex \"~/foo/bar\")
+    -> '((\"~/\" \"/home/jeff/\") \"foo/bar\")
+
+  (int<dlv>:path:multiplex \"/home/jeff\")
+    -> '((\"~/\" \"/home/jeff/\") \"\")
+
+  (int<dlv>:path:multiplex \"/some/path/foo/bar\")
+    -> '((nil) \"/some/path/foo/bar\")"
+  (let ((func.name "int<dlv>:path:multiplex"))
+    ;;------------------------------
+    ;; Error Checks
+    ;;------------------------------
+    (when (null path)
+      (error "%s: PATH must not be nil! path: %S"
+             func.name
+             path))
+
+    (when (not (stringp path))
+      (error "%s: PATH must be a string! path: %S %S"
+             func.name
+             (type-of path)
+             path))
+
+    ;;------------------------------
+    ;; Figure out path/paths.
+    ;;------------------------------
+    (let* ((path/home.abbrev "~")
+           (path/home.abs (expand-file-name "~"))
+           (path/abs (int<dlv>:path:expand path as-dir)))
+
+      ;; If it's one of the home paths, output two paths.
+      ;;   - "~" needs to be both "~" and the absolute/expanded path.
+      ;;   - ...and vice versa.
+      (cond
+       ;; "~" in resolved PATH.
+       ((string-prefix-p path/home.abbrev path/abs)
+        (let ((dir/prefix
+               (file-name-as-directory path/home.abbrev)))
+          ;; Remove leading part of path that is covered by the prefixes.
+          (message "'~': replace-regex: %S %S %S -> %S"
+                   (concat dir/prefix "?")
+                   ""
+                   path/abs
+                   (replace-regexp-in-string (concat dir/prefix "?")
+                                             ""
+                                             path/abs))
+          (list (list dir/prefix
+                      (file-name-as-directory path/home.abs))
+                ;; Remove prefix.
+                (replace-regexp-in-string (concat dir/prefix "?") ;; May or may not have the final "/".
+                                          ""
+                                          path/abs))))
+
+       ;; "/home/jeff" in resolved PATH.
+       ((string-prefix-p path/home.abs path/abs)
+        (let ((dir/prefix
+               (file-name-as-directory path/home.abs)))
+          ;; Remove leading part of path that is covered by the prefixes.
+          (message "'/home': replace-regex: %S %S %S -> %S"
+                   (concat dir/prefix "?")
+                   ""
+                   path/abs
+                   (replace-regexp-in-string (concat dir/prefix "?")
+                                             ""
+                                             path/abs))
+          (list (list (file-name-as-directory path/home.abbrev)
+                      dir/prefix)
+                ;; Remove prefix.
+                (replace-regexp-in-string (concat dir/prefix "?") ;; May or may not have the final "/".
+                                          ""
+                                          path/abs))))
+       ;; Not a home path; ok as-is - just make it fit the return.
+       (t
+        (list nil
+              path/abs))))))
+;; (int<dlv>:path:multiplex "~/foo/bar")
+;; (int<dlv>:path:multiplex "d:/home/work")
+;; (int<dlv>:path:multiplex "d:/some/path/foo/bar")
 
 
 ;;------------------------------------------------------------------------------
@@ -224,6 +368,53 @@ Uses `int<dlv>:const:class:separator' to split up const prefix string and path."
                                dir.normalized))
 ;; (int<dlv>:class:symbol.create (int<dlv>:dir:normalize "D:\\foo\\bar"))
 ;; (int<dlv>:class:symbol.create (int<dlv>:dir:normalize "~/foo/bar"))
+
+
+(defun int<dlv>:class:get (dir)
+  "Get all the paths that need to be set for DIR, along with a DLV class symbol.
+
+For example, if user's home is \"/home/jeff\":
+  (int<dlv>:dir:paths \"~/foo/bar\")
+    -> (list (cons \"~/foo/bar\"
+                   (int<dlv>:class:symbol.create \"~/foo/bar\"))
+             (cons \"/home/jeff/foo/bar\"
+                   (int<dlv>:class:symbol.create \"/home/jeff/foo/bar\")))"
+  (let ((func.name "int<dlv>:class:get"))
+    ;;------------------------------
+    ;; Check for errors.
+    ;;------------------------------
+    (cond ((null dir)
+           (error "%s: DIR must not be nil! dir: %S"
+                  func.name
+                  dir))
+          ((not (stringp dir))
+           (error "%s: DIR must be a string! dir: %S %S"
+                  func.name
+                  (type-of dir)
+                  dir))
+
+          ;;------------------------------
+          ;; Is a string - OK.
+          ;;------------------------------
+          (t
+           ;; `int<dlv>:path:multiplex' will split up DIR path if it's a problematic one.
+           ;; We need to make sure to make a class symbol for all paths we get.
+           (let* ((dir/multiplex (int<dlv>:path:multiplex dir :dir))
+                  (dir/prefixes  (or (car dir/multiplex) ""))
+                  (dir/path      (cdr dir/multiplex))
+                  dirs-and-classes)
+
+             ;; Create a class symbol for each dir.
+             (dolist (prefix dir/prefixes)
+               (let ((dir/class (concat prefix dir/path)))
+                 (push (cons dir/class
+                             (int<dlv>:class:symbol.create dir/class))
+                       dirs-and-classes)))
+
+             (nreverse dirs-and-classes))))))
+;; (int<dlv>:class:get "d:/some/path/foo/bar/")
+;; (int<dlv>:class:get "d:/home/work/foo/bar/")
+;; (int<dlv>:class:get "~/foo/bar")
 
 
 ;;------------------------------------------------------------------------------
@@ -438,8 +629,13 @@ Must be a cons with a valid mode and valid vars."
            nil))
 
         ((not (directory-name-p path))
-         ;; Is absolute; needs fixed to have final slash.
-         (file-name-as-directory path))
+         ;; Is absolute; but needs fixed to have final slash.
+         (if (not (null signal-error))
+             (error (concat "%s: Directory path missing trailing slash. "
+                            "Missing call to `int<dlv>:class:get'/`int<dlv>:path:expand'. "
+                            "path %s")
+                    caller path)
+           nil))
 
         ;; Ok as-is.
         (t
@@ -949,14 +1145,17 @@ Returns the updated DLV alist."
 ;; (int<dlv>:struct:create (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create (int<dlv>:vars:pair.create 'jeff/var '(:ns-jeff 42 "docstr")))))
 
 
-(defun int<dlv>:exists? (directory &optional class)
-  "Does the dir-locals CLASS exist for this DIRECTORY?
+(defun int<dlv>:exists? (directory)
+  "Does the dir-locals class exist for this DIRECTORY?
 
-Builds the class symbol using DIRECTORY & `int<dlv>:class:symbol.create'
-if CLASS is nil."
-  (not (null (dir-locals-get-class-variables
-              (or class
-                  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize directory)))))))
+Returns a list of paths (which are DIRECTORY) that have a DLV class already."
+  (let ((dirs-and-classes (int<dlv>:class:get directory))
+        existing)
+    (dolist (dir-and-class dirs-and-classes)
+      (when (dir-locals-get-class-variables (cdr dir-and-class))
+        (push (car dir-and-class) existing)))
+
+    existing))
 
 
 ;;------------------------------------------------------------------------------
@@ -1007,24 +1206,13 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     + If a function, store that predicate in the symbol's `safe-local-variable'
       slot for Emacs to use.
     + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
-      for Directory Local Value use.
-
-Emacs DLV's 'class' symbol for the directory will be created to be:
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
-
-example for \"d:\\foo\\bar\":
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
-    -> dlv:class://d:/foo/bar/"
-  (let* ((func.name "dlv:create")
-         (directory (int<dlv>:dir:normalize directory))
-         (dlv.class (int<dlv>:class:symbol.create directory)))
+      for Directory Local Value use."
+  (let ((func.name "dlv:create"))
     (int<dlv>:debug func.name
                     (concat "Inputs:\n"
                             "  directory: %S\n"
                             "  mode:      %S\n"
                             "  tuples:     %S")
-                    ;; "  symbol:    %S\n"
-                    ;; "  value:     %S")
                     directory
                     mode
                     tuples)
@@ -1034,44 +1222,56 @@ example for \"d:\\foo\\bar\":
     ;;------------------------------
     ;; Some inputs will be validate when building the DLV structure, so just validate the rest.
 
-    (unless (int<dlv>:validate:class.symbol func.name dlv.class :error)
-      (error "%s: `dlv.class' must be valid! Got: %S"
-             func.name dlv.class))
     (unless (int<dlv>:validate:dir.path func.name directory :error)
       (error "%s: DIRECTORY must be valid! Got: %S"
              func.name directory))
-    ;; Creating, so don't allow if one already exists for the dir.
-    (unless (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" directory :error)
-      (error "%s: Cannot create entry for directory; Emacs DLV already exists for it. DIRECTORY: '%s'"
-             func.name
-             directory))
 
-    ;; MODE, TUPLES validated in `let*', below.
-
-    ;;------------------------------
-    ;; Make the DLV.
-    ;;------------------------------
-
-    ;; Create the struct for the DLV.
-    (let* ((dlv.vars (apply #'int<dlv>:vars:create tuples))
-           (dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
-           (dlv.struct (int<dlv>:struct:create dlv.mode))
-           (dlv.directory directory))
+    (let ((dirs-and-classes (int<dlv>:class:get directory)))
       (int<dlv>:debug func.name
-                      (concat "DLV'd:\n"
-                              "  dlv.class:     %S\n"
-                              "  dlv.directory: %S\n"
-                              "  dlv.struct:    %S\n"
-                              "   <- dlv.mode:    %S\n"
-                              "      <- dlv.vars: %S\n")
-                      dlv.class
-                      dlv.directory
-                      dlv.struct
-                      dlv.mode
-                      dlv.vars)
+                      (concat "Dirs & Classes:\n"
+                              "  %S")
+                      dirs-and-classes)
 
-      ;; Set the class of dlv variables and apply it to the directory.
-      (int<dlv>:directory-class.create func.name dlv.class dlv.directory dlv.struct))))
+      ;; Validate dlv class symbol and directory for each created.
+      ;; Can have more than one for e.g. paths in $HOME.
+      (dolist (dir-and-class dirs-and-classes)
+        (unless (int<dlv>:validate:class.symbol func.name (cdr dir-and-class) :error)
+          (error "%s: `dlv.class' must be valid! Got: %S for directory '%s'"
+                 func.name (cdr dir-and-class) (car dir-and-class)))
+        ;; Creating, so don't allow if one already exists for the dir.
+        (unless (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" (car dir-and-class) :error)
+          (error "%s: Cannot create entry for directory; Emacs DLV already exists for it. DIRECTORY: '%s'"
+                 func.name
+                 (car dir-and-class))))
+
+      ;; MODE, TUPLES validated in `let*', below.
+
+      ;;------------------------------
+      ;; Make the DLV(s).
+      ;;------------------------------
+
+      (dolist (dir-and-class dirs-and-classes)
+        ;; Create the struct for the DLV.
+        (let* ((dlv.directory (car dir-and-class))
+               (dlv.class (cdr dir-and-class))
+               (dlv.vars (apply #'int<dlv>:vars:create tuples))
+               (dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+               (dlv.struct (int<dlv>:struct:create dlv.mode)))
+          (int<dlv>:debug func.name
+                          (concat "DLV'd:\n"
+                                  "  dlv.class:     %S\n"
+                                  "  dlv.directory: %S\n"
+                                  "  dlv.struct:    %S\n"
+                                  "   <- dlv.mode:    %S\n"
+                                  "      <- dlv.vars: %S\n")
+                          dlv.class
+                          dlv.directory
+                          dlv.struct
+                          dlv.mode
+                          dlv.vars)
+
+          ;; Set the class of dlv variables and apply it to the directory.
+          (int<dlv>:directory-class.create func.name dlv.class dlv.directory dlv.struct))))))
 
 
 (defun dlv:update (directory mode &rest tuples)
@@ -1088,25 +1288,13 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     + If a function, store that predicate in the symbol's `safe-local-variable'
       slot for Emacs to use.
     + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
-      for Directory Local Value use.
-
-Emacs DLV's 'class' symbol for the directory will be created to be:
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
-
-example for \"d:\\foo\\bar\":
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
-    -> dlv:class://d:/foo/bar/"
-  (let* ((func.name "dlv:update")
-         (directory (int<dlv>:dir:normalize directory))
-         (dlv.class (int<dlv>:class:symbol.create directory))
-         (existing/dlv.struct (dir-locals-get-class-variables dlv.class)))
+      for Directory Local Value use."
+  (let ((func.name "dlv:update"))
     (int<dlv>:debug func.name
                     (concat "Inputs:\n"
                             "  directory: %S\n"
                             "  mode:      %S\n"
                             "  tuples:     %S")
-                    ;; "  symbol:    %S\n"
-                    ;; "  value:     %S")
                     directory
                     mode
                     tuples)
@@ -1116,64 +1304,76 @@ example for \"d:\\foo\\bar\":
     ;;------------------------------
     ;; Some inputs will be validate when building the DLV structure, so just validate the rest.
 
-    (unless (int<dlv>:validate:class.symbol func.name dlv.class :error)
-      (error "%s: `dlv.class' must be valid! Got: %S"
-             func.name dlv.class))
     (unless (int<dlv>:validate:dir.path func.name directory :error)
       (error "%s: DIRECTORY must be valid! Got: %S"
              func.name directory))
-    ;;---
-    ;; Class should already exist.
-    ;;---
-    ;; Might as well run through path validation... And don't let the validation function
-    ;; error, since we want this to 'fail' (return 'already a class for that dir').
-    (when (int<dlv>:validate:emacs.dlv:dir.path func.name directory nil)
-      (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
-             func.name
-             directory))
 
-    ;; Updating, so don't allow if one /does not/ exists for the dir.
-    (unless existing/dlv.struct
-      (error (concat "%s: Cannot update entry for directory; "
-                     "an existing Emacs DLV class was not found for it. "
-                     "expected class symbol: %S, "
-                     "directory: '%s', "
-                     "existing/dlv.struct: %S"
-                     func.name
-                     dlv.class
-                     directory
-                     existing/dlv.struct)))
+    (let ((dirs-and-classes (int<dlv>:class:get directory)))
+      (int<dlv>:debug func.name
+                      (concat "Dirs & Classes:\n"
+                              "  %S")
+                      dirs-and-classes)
 
-    ;; MODE, TUPLES validated in `let*', below.
+      ;;---
+      ;; Class should already exist.
+      ;;---
+      ;; Might as well run through path validation... And don't let the validation function
+      ;; error, since we want this to 'fail' (return 'already a class for that dir').
+      (dolist (dir-and-class dirs-and-classes)
+        (let ((dir (car dir-and-class))
+              (class (cdr dir-and-class)))
+          (when (int<dlv>:validate:emacs.dlv:dir.path func.name dir nil)
+            (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
+                   func.name
+                   dir))
 
-    ;;------------------------------
-    ;; Update the DLV.
-    ;;------------------------------
+          ;; Updating, so don't allow if one /does not/ exists for the dir.
+          (unless existing/dlv.struct
+            (error (concat "%s: Cannot update entry for directory; "
+                           "an existing Emacs DLV class was not found for it. "
+                           "expected class symbol: %S, "
+                           "directory: '%s', "
+                           "existing/dlv.struct: %S"
+                           func.name
+                           class
+                           dir
+                           existing/dlv.struct)))))
 
-    ;; Break the existing DLV struct down, so that we can update the new pieces.
-    ;; Also create our DLV vars.
-    (let* ((existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
-           (dlv.vars (apply #'int<dlv>:vars:create tuples))
-           dlv.mode)
-      (if existing/dlv.vars
-          ;; Add or update vars.
-          (progn
-            (dolist (kvp dlv.vars)
-              (setq existing/dlv.vars
-                    (int<dlv>:vars:pair.set kvp existing/dlv.vars)))
+      ;; MODE, TUPLES validated in `let*', below.
+
+      ;;------------------------------
+      ;; Update the DLV.
+      ;;------------------------------
+
+      (dolist (dir-and-class dirs-and-classes)
+        ;; Break the existing DLV struct down, so that we can update the new pieces.
+        ;; Also create our DLV vars.
+        (let* (;; (dlv.directory (car dir-and-class)) ;; not used currently
+               (dlv.class (cdr dir-and-class))
+               (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
+               (existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
+               (dlv.vars (apply #'int<dlv>:vars:create tuples))
+               dlv.mode)
+
+          (if existing/dlv.vars
+              ;; Add or update vars.
+              (progn
+                (dolist (kvp dlv.vars)
+                  (setq existing/dlv.vars
+                        (int<dlv>:vars:pair.set kvp existing/dlv.vars)))
+                (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+
+            ;; No vars for the mode, so... Create the mode.
             (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
 
-        ;; No vars for the mode, so... Create the mode.
-        (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+          ;; Now that `dlv.vars' is the updated vars, create a new dlv.mode entry for it.
+          (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
 
-      ;; Now that `dlv.vars' is the updated vars, create a new dlv.mode entry for it.
-      (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+          ;; Set the new/updated mode entry into the dlv struct.
+          (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
 
-      ;; Set the new/updated mode entry into the dlv struct.
-      (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
-
-      ;; And now we can replace the DLV struct in Emacs.
-      (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct))))
+          ;; And now we can replace the DLV struct in Emacs.
+          (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct))))))
 
 
 (defun dlv:set (directory mode &rest tuples)
@@ -1190,14 +1390,7 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     + If a function, store that predicate in the symbol's `safe-local-variable'
       slot for Emacs to use.
     + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
-      for Directory Local Value use.
-
-Emacs DLV's 'class' symbol for the directory will be created to be:
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize DIRECTORY))
-
-example for \"d:\\foo\\bar\":
-  (int<dlv>:class:symbol.create (int<dlv>:dir:normalize \"d:\\foo\\bar\"))
-    -> dlv:class://d:/foo/bar/"
+      for Directory Local Value use."
   (if (int<dlv>:exists? directory)
       (apply #'dlv:update directory mode tuples)
     (apply #'dlv:create directory mode tuples)))

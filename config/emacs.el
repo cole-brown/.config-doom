@@ -27,6 +27,17 @@
 (random t)
 
 
+;;------------------------------
+;; Buffer: *Messages*
+;;------------------------------
+
+;; Default is 1000.
+;; Is 10,000 too much?
+(customize-set-variable 'messages-buffer-max-lines
+                        10000
+                        "Increase the size of the *Messages* buffer.")
+
+
 ;;------------------------------------------------------------------------------
 ;; File Time Formats
 ;;------------------------------------------------------------------------------

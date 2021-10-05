@@ -101,26 +101,19 @@
              (:prefix "j" ;; ("j" . "journal")
               ;; Work namespaced commands.
               (:prefix ("w" . ":work journal")
-               :desc ":work - New Entry"           "w" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":work - New Entry"           "j" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":work - New Scheduled Entry" "J" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":work - Visit Journal"       "v" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":work - Search Forever"      "s" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :work
-                                                         (funcall-interactively #'org-journal-search-forever nil)))))))))
+               :desc ":work - New Entry"           "w" (cmd! (sss:org.journal/namespaced :work
+                                                                                         #'org-journal-new-entry
+                                                                                         current-prefix-arg))
+               :desc ":work - New Entry"           "j" (cmd! (sss:org.journal/namespaced :work
+                                                                                         #'org-journal-new-entry
+                                                                                         current-prefix-arg))
+               :desc ":work - New Scheduled Entry" "J" (cmd! (sss:org.journal/namespaced :work
+                                                                                         #'org-journal-new-scheduled-entry
+                                                                                         current-prefix-arg))
+               :desc ":work - Visit Journal"       "v" (cmd! (sss:org.journal/namespaced :work
+                                                                                         #'org-journal-open-current-journal-file))
+               :desc ":work - Search Forever"      "s" (cmd! (sss:org.journal/namespaced :work
+                                                                                         #'org-journal-search-forever nil))))))))
 
   ;; Insert :home journal shortcuts if appropriate.
   (when (jerky/namespace/has :home)
@@ -142,26 +135,20 @@
              (:prefix "j" ;; journal
               ;; Home namespaced commands.
               (:prefix ("h" . ":home journal")
-               :desc ":home - New Entry"           "h" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":home - New Entry"           "j" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-entry current-prefix-arg)))
-               :desc ":home - New Scheduled Entry" "J" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-new-scheduled-entry current-prefix-arg)))
-               :desc ":home - Visit Journal"       "v" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-open-current-journal-file)))
-               :desc ":home - Search Forever"      "s" (cmd!
-                                                        (sss:org.journal/namespaced
-                                                         :home
-                                                         (funcall-interactively #'org-journal-search-forever nil))))))))))
+               :desc ":home - New Entry"           "h" (cmd! (sss:org.journal/namespaced :home
+                                                                                         #'org-journal-new-entry
+                                                                                         current-prefix-arg))
+               :desc ":home - New Entry"           "j" (cmd! (sss:org.journal/namespaced :home
+                                                                                         #'org-journal-new-entry
+                                                                                         current-prefix-arg))
+               :desc ":home - New Scheduled Entry" "J" (cmd! (sss:org.journal/namespaced :home
+                                                                                         #'org-journal-new-scheduled-entry
+                                                                                         current-prefix-arg))
+               :desc ":home - Visit Journal"       "v" (cmd! (sss:org.journal/namespaced :home
+                                                                                         #'org-journal-open-current-journal-file))
+               :desc ":home - Search Forever"      "s" (cmd! (sss:org.journal/namespaced :home
+                                                                                         #'org-journal-search-forever
+                                                                                         nil)))))))))
 
 (spy:secret/if "config/keybinds/org-mode.el"
     '(:skip "Skipping org-journal keybind config."
@@ -178,12 +165,7 @@
   ;;   "SPC n j ww" still a problem
 
   ;; Set up the org-journal keybinds - want them to exist before org-journal is auto-loaded.
-  (sss:keybinds/org-journal)
-
-  ;; Also set up the keybinds after `org-journal' loaded?
-  ;; TODO: Figure out the not-just-a-bandaid solution?
-  (after! org-journal
-    (sss:keybinds/org-journal)))
+  (sss:keybinds/org-journal))
 
 
 ;;------------------------------------------------------------------------------------------------------------------------------------------

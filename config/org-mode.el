@@ -359,18 +359,21 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; Domain Switcher Macro
+;; Namespaced Commands
 ;;------------------------------
-(defmacro sss:org.journal/namespaced (namespace &rest body)
-  "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
-  `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
-                                              :namespace namespace))
-         (org-journal-dir ,(jerky/get 'path 'org 'journal
-                                      :namespace namespace)))
-     ,@body
-     ))
-;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+(defun sss:org.journal/namespaced (namespace command &rest args)
+  "Run an org-journal COMMAND in NAMESPACE.
+
+Sets (lexical context) all org-journal custom vars related to NAMESPACE.
+Then runs COMMAND interactively with ARGS."
+  (interactive)
+  (let ((org-journal-file-format (jerky/get 'org-journal 'file 'format
+                                            :namespace namespace))
+        (org-journal-dir (jerky/get 'path 'org 'journal
+                                    :namespace namespace)))
+    (apply #'funcall-interactively command args)))
+;; (sss:org.journal/namespaced :home #'message "%s %s" org-journal-file-format org-journal-dir)
+;; (sss:org.journal/namespaced :work #'message "%s %s" org-journal-file-format org-journal-dir)
 
 
 ;;------------------------------

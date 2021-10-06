@@ -176,7 +176,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                      "input:keyboard/layout:define/keywords"
                      "Type '%S' is not a valid type. "
                      "Must be one of: %S")
-                    type input//kl:layout:types))
+                    type int<keyboard>:layout:types))
 
             (t
              nil))
@@ -265,13 +265,13 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 
 FUNC should be the function to search for.
 
-REGISTERED-BINDS should be `input//kl:layout:keybinds'.
+REGISTERED-BINDS should be `(input//kl:registrar:get registrar :keybinds)'.
 
 Returns keybind string or nil."
   (let ((debug/tags '(:derive :derive/search))
         (func (input//kl:layout:normalize->func func))
         keybind-found
-        (types input//kl:layout:types))
+        (types int<keyboard>:layout:types))
     ;;------------------------------
     ;; Types: :evil, :emacs, :common
     ;;------------------------------
@@ -300,7 +300,7 @@ Returns keybind string or nil."
         "\n>>> [absent]: %S" keybind-found))
     keybind-found))
 ;; `registered-binds' example:
-;; (pp input//kl:layout:keybinds)
+;; (pp (input//kl:registrar:get registrar :keybinds))
 ;; (input//kl:layout:derive/search/registered
 ;;  'evil-org-open-below
 ;;  ;; :layout:evil:state-insert-before
@@ -711,7 +711,7 @@ KEYBINDS/IN-PROGRESS should be all the current/in-progress
 
 KEYBINDS/REGISTERED should be all the registered-but-not-yet-applied
 `input//kl:layout:map-process' keybinds.
-  - Which should be `input//kl:layout:keybinds'.
+  - Which should be `(input//kl:registrar:get registrar :keybinds)'.
 
 We will look through that and bound keys to figure out the correct derivation,
 preferring `existing' over currently bound keys.
@@ -1117,7 +1117,7 @@ Used for side-effects; just returns non-nil (`t')."
           "-->map-bind derived: %S <- %S"
           (input//kl:layout:derive states
                                    doom--map-batch-forms
-                                   input//kl:layout:keybinds
+                                   (input//kl:registrar:get registrar :keybinds)
                                    (cdr keybind))
           keybind)
         (let ((debug-orig keybind))
@@ -1125,7 +1125,7 @@ Used for side-effects; just returns non-nil (`t')."
                 ;; We've guarenteed that `states' is a list of at least `nil'.
                 (input//kl:layout:derive states
                                          doom--map-batch-forms
-                                         input//kl:layout:keybinds
+                                         (input//kl:registrar:get registrar :keybinds)
                                          (cdr keybind)))
           (input//kl:debug
               "input//kl:layout:map-bind"

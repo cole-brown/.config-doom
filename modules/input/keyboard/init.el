@@ -73,7 +73,8 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 (load! "debug")
 (load! "load")
 (load! "alist")
-(load! "register")
+(load! "registrars")
+(load! "registration")
 
 
 ;;------------------------------------------------------------------------------
@@ -227,3 +228,4 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard)

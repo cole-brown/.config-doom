@@ -29,8 +29,8 @@
 ;;------------------------------
 
 ;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
-;; (input:keyboard/layout:temp :unbind :eval :spydez :evil
-(input:keyboard/layout:unbind :spydez :evil
+;; (test<keyboard>:layout:unbind :eval :spydez :evil
+(keyboard:layout:unbind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
@@ -107,9 +107,9 @@
 ;; NEW: ESDF position keys (shifted-WASD left-hand, index on home key)
 ;;------------------------------
 ;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
-;; (input:keyboard/layout:temp :bind :eval ; :pp-sexpr
+;; (test<keyboard>:layout:bind :bind :eval ; :pp-sexpr
 ;;                             :spydez :evil
-(input:keyboard/layout:bind :spydez :evil
+(keyboard:layout:bind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
@@ -254,7 +254,7 @@
     ;; ╠═ END: evil-org-mode-map ═╣
     ;; ╚══════════════════════════╝
     ))
-;; (pp-macroexpand-expression input//kl:layout:keybinds)
+;; (pp-macroexpand-expression (input//kl:registrar:get :actual :keybinds))
 
 
 ;;------------------------------------------------------------------------------
@@ -265,10 +265,7 @@
 (when nil
   ;; Can't bind our magit keys until after evil-collection loads its stuff for them.
   (after! '(evil-collection magit)
-    ;; Don't know when this will run, so set ourself to a registering state that
-    ;; will avoid running the `input:keyboard/layout:temp' block.
-    (let ((input//kl:layout:registering nil))
-      ;; Try to set states via `evil-collection' vars, fallback to a default.
+    ;; Try to set states via `evil-collection' vars, fallback to a default.
       (let ((states
              (input//kl:states->keyword
               ;; When does evil-collection overwrite all the magit keys?
@@ -293,8 +290,8 @@
         ;;------------------------------
         ;; Magit: Unbind Keys
         ;;------------------------------
-        ;; (input:keyboard/layout:unbind :spydez :evil
-        (input:keyboard/layout:temp :bind :pp-sexpr ; :eval
+        ;; (keyboard:layout:bind :spydez :evil
+        (test<keyboard>:layout:bind :pp-sexpr ; :eval
                                     :spydez :evil
           ;; Keybinds for the `:spydez' layout: a big list of inputs to
           ;; `input:keyboard/layout:map!'.
@@ -342,8 +339,8 @@
         ;;------------------------------
         ;; Magit: Bind Keys
         ;;------------------------------
-        ;; (input:keyboard/layout:bind :spydez :evil
-        (input:keyboard/layout:temp :bind :pp-sexpr ; :eval
+        ;; (keyboard:layout:bind :spydez :evil
+        (test<keyboard>:layout:bind :pp-sexpr ; :eval
                                     :spydez :evil
           ;; Keybinds for the `:spydez' layout: a big list of inputs to
           ;; `input:keyboard/layout:map!'.
@@ -589,11 +586,10 @@
           ;; ╠═ END: magit-log-mode-map ═╣
           ;; ╚═══════════════════════════╝
 
-          ) ;; /`input:keyboard/layout:temp', or possibly `input:keyboard/layout:bind'
+          ) ;; /`test<keyboard>:layout:bind', or possibly `keyboard:layout:bind'
         ;; <EVAL-THIS kbd="C-x C-e">
         ) ;; /set `states' from `evil-collection'.
       ;; </EVAL-THIS>
-      ) ;; /set `input//kl:layout:registering' to nil
     ) ;; /`after!' evil-collection and magit
   ) ;; /when nil
 

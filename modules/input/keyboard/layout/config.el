@@ -32,7 +32,7 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
         (push :evil types)
       (push :emacs types))
     ;; Activate the keybinds for types.
-    (input:keyboard/layout:activate :full types)))
+    (int<keyboard>:layout:activate :actual :full types)))
 
 
 ;;------------------------------------------------------------------------------

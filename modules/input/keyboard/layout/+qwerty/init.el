@@ -21,7 +21,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Set our evil keybinds. Does not configure the keybinds; just saves it for now.
-(input:keyboard/layout:bind :qwerty :evil
+(keyboard:layout:bind :qwerty :evil
   ;; Keybinds for the `:qwerty' layout: a big list of inputs to
   ;; `input:keyboard/layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗

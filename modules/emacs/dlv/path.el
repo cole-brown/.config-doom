@@ -74,7 +74,7 @@ Example:
 
 
 (defun int<dlv>:path:multiplex (path &optional as-dir)
-  "Returns PATH split up into: '(prefix-list rest-str)
+  "Returns PATH split up into: '(prefix-list . rest-str)
 
 If AS-DIR is non-nil, PATH will be resolved as a directory path.
 
@@ -122,13 +122,6 @@ example:
         (let ((dir/prefix
                (file-name-as-directory path/home.abbrev)))
           ;; Remove leading part of path that is covered by the prefixes.
-          (message "'~': replace-regex: %S %S %S -> %S"
-                   (concat dir/prefix "?")
-                   ""
-                   path/abs
-                   (replace-regexp-in-string (concat dir/prefix "?")
-                                             ""
-                                             path/abs))
           (cons (list dir/prefix
                       (file-name-as-directory path/home.abs))
                 ;; Remove prefix.
@@ -141,13 +134,6 @@ example:
         (let ((dir/prefix
                (file-name-as-directory path/home.abs)))
           ;; Remove leading part of path that is covered by the prefixes.
-          (message "'/home': replace-regex: %S %S %S -> %S"
-                   (concat dir/prefix "?")
-                   ""
-                   path/abs
-                   (replace-regexp-in-string (concat dir/prefix "?")
-                                             ""
-                                             path/abs))
           (cons (list (file-name-as-directory path/home.abbrev)
                       dir/prefix)
                 ;; Remove prefix.

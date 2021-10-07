@@ -190,7 +190,7 @@ For example, if user's home is \"/home/jeff\":
            ;; `int<dlv>:path:multiplex' will split up DIR path if it's a problematic one.
            ;; We need to make sure to make a class symbol for all paths we get.
            (let* ((dir/multiplex (int<dlv>:path:multiplex dir :dir))
-                  (dir/prefixes  (or (car dir/multiplex) ""))
+                  (dir/prefixes  (or (car dir/multiplex) '("")))
                   (dir/path      (cdr dir/multiplex))
                   dirs-and-classes)
 

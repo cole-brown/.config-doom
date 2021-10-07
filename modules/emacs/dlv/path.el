@@ -84,13 +84,13 @@ or entire expanded path.
 
 example:
   (int<dlv>:path:multiplex \"~/foo/bar\")
-    -> '((\"~/\" \"/home/jeff/\") \"foo/bar\")
+    -> '((\"~/\" \"/home/jeff/\") . \"foo/bar\")
 
   (int<dlv>:path:multiplex \"/home/jeff\")
-    -> '((\"~/\" \"/home/jeff/\") \"\")
+    -> '((\"~/\" \"/home/jeff/\") . \"\")
 
   (int<dlv>:path:multiplex \"/some/path/foo/bar\")
-    -> '((nil) \"/some/path/foo/bar\")"
+    -> '((nil) . \"/some/path/foo/bar\")"
   (let ((func.name "int<dlv>:path:multiplex"))
     ;;------------------------------
     ;; Error Checks
@@ -129,7 +129,7 @@ example:
                    (replace-regexp-in-string (concat dir/prefix "?")
                                              ""
                                              path/abs))
-          (list (list dir/prefix
+          (cons (list dir/prefix
                       (file-name-as-directory path/home.abs))
                 ;; Remove prefix.
                 (replace-regexp-in-string (concat dir/prefix "?") ;; May or may not have the final "/".
@@ -148,7 +148,7 @@ example:
                    (replace-regexp-in-string (concat dir/prefix "?")
                                              ""
                                              path/abs))
-          (list (list (file-name-as-directory path/home.abbrev)
+          (cons (list (file-name-as-directory path/home.abbrev)
                       dir/prefix)
                 ;; Remove prefix.
                 (replace-regexp-in-string (concat dir/prefix "?") ;; May or may not have the final "/".
@@ -156,7 +156,7 @@ example:
                                           path/abs))))
        ;; Not a home path; ok as-is - just make it fit the return.
        (t
-        (list nil
+        (cons nil
               path/abs))))))
 ;; (int<dlv>:path:multiplex "~/foo/bar")
 ;; (int<dlv>:path:multiplex "d:/home/work")

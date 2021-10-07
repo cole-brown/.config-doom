@@ -943,8 +943,9 @@ TUPLES should be an alist of '(symbol value safe) tuples.
       ;; Might as well run through path validation... And don't let the validation function
       ;; error, since we want this to 'fail' (return 'already a class for that dir').
       (dolist (dir-and-class dirs-and-classes)
-        (let ((dir (car dir-and-class))
-              (class (cdr dir-and-class)))
+        (let* ((dir (car dir-and-class))
+               (class (cdr dir-and-class))
+               (existing/dlv.struct (dir-locals-get-class-variables class)))
           (when (int<dlv>:validate:emacs.dlv:dir.path func.name dir nil)
             (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
                    func.name

@@ -176,10 +176,10 @@ and `int<keyboard>:registration:valid'):
       registrar-keyword
 
     ;; Invalid registrar symbol!
-    (error (input//kl:error/format "int<keyboard>:registrar:valid?"
-                                   "REGISTRAR is not a valid registrar keyword. "
-                                   "Must be one of: %S; "
-                                   "got: %S")
+    (error (int<keyboard>:error:format "int<keyboard>:registrar:valid?"
+                                       "REGISTRAR is not a valid registrar keyword. "
+                                       "Must be one of: %S; "
+                                       "got: %S")
            (mapcar (lambda (registrar-assoc)
                      "Get registrar keywords for error message."
                      (car registrar-assoc))
@@ -206,10 +206,10 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
           (symbol-value symbol)
 
         ;; Invalid registrar symbol!
-        (error (input//kl:error/format "int<keyboard>:registrar:get"
-                                       "KEYWORD is not a valid variable keyword. "
-                                       "Must be one of: %S; "
-                                       "got: %S")
+        (error (int<keyboard>:error:format "int<keyboard>:registrar:get"
+                                           "KEYWORD is not a valid variable keyword. "
+                                           "Must be one of: %S; "
+                                           "got: %S")
                (mapcar (lambda (vars-assoc)
                          "Get registrar keywords for error message."
                          (car vars-assoc))
@@ -217,10 +217,10 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
                keyword))
 
     ;; Invalid registrar symbol!
-    (error (input//kl:error/format "int<keyboard>:registrar:get"
-                                   "REGISTRAR is not a valid registrar keyword. "
-                                   "Must be one of: %S; "
-                                   "got: %S")
+    (error (int<keyboard>:error:format "int<keyboard>:registrar:get"
+                                       "REGISTRAR is not a valid registrar keyword. "
+                                       "Must be one of: %S; "
+                                       "got: %S")
            (mapcar (lambda (registrar-assoc)
                      "Get registrar keywords for error message."
                      (car registrar-assoc))
@@ -246,10 +246,10 @@ NOTE: Does not validate/error check VALUE."
           (set symbol value)
 
         ;; Invalid registrar symbol!
-        (error (input//kl:error/format "int<keyboard>:registrar:set"
-                                       "KEYWORD is not a valid variable keyword. "
-                                       "Must be one of: %S; "
-                                       "got: %S")
+        (error (int<keyboard>:error:format "int<keyboard>:registrar:set"
+                                           "KEYWORD is not a valid variable keyword. "
+                                           "Must be one of: %S; "
+                                           "got: %S")
                (mapcar (lambda (vars-assoc)
                          "Get registrar keywords for error message."
                          (car vars-assoc))
@@ -257,10 +257,10 @@ NOTE: Does not validate/error check VALUE."
                keyword))
 
     ;; Invalid registrar symbol!
-    (error (input//kl:error/format "int<keyboard>:registrar:set"
-                                   "REGISTRAR is not a valid registrar keyword. "
-                                   "Must be one of: %S; "
-                                   "got: %S")
+    (error (int<keyboard>:error:format "int<keyboard>:registrar:set"
+                                       "REGISTRAR is not a valid registrar keyword. "
+                                       "Must be one of: %S; "
+                                       "got: %S")
            (mapcar (lambda (registrar-assoc)
                      "Get registrar keywords for error message."
                      (car registrar-assoc))

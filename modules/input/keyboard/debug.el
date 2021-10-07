@@ -196,7 +196,7 @@ ARGS-LIST should be the `message' arguments."
 
 
 ;; Alias so we can use `debug' in debug things.
-(defalias 'input//kl:debug:normalize/key 'input//kl:error:normalize/key)
+(defalias 'input//kl:debug:normalize/key 'int<keyboard>:error:normalize/key)
 
 
 ;;------------------------------------------------------------------------------

@@ -103,14 +103,14 @@ The extension '.el' is used to check for file existance."
                                load-name)))
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-   (when (input//kl:file/exists? (concat path ".el"))
+    (when (input//kl:file/exists? (concat path ".el"))
       (load! path))
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))
     ;;     (load! path)
-    ;;   (warn (input//kl:error/format "input:keyboard/layout:load-file"
-    ;;                                 "Could not find "
-    ;;                                 "'%s' file for '%s'. path: %s")
+    ;;   (warn (int<keyboard>:error:format "input:keyboard/layout:load-file"
+    ;;                                     "Could not find "
+    ;;                                     "'%s' file for '%s'. path: %s")
     ;;         load-name
     ;;         flag
     ;;         (concat path ".el")))

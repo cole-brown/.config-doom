@@ -8,12 +8,12 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load "base.el")
+(load! "base.el")
 
 ;;---
 ;; Keyboard Files:
 ;;---
-(load "../error.el")
+(load! "../output.el")
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗
@@ -27,49 +27,73 @@
 ;; Tests: Functions
 ;;------------------------------------------------------------------------------
 
-;; TODO: from here
 ;;------------------------------
-;; int<keyboard>:error:normalize/key
+;; Output Redirection
 ;;------------------------------
 
-(ert-deftest test<keyboard/error>::int<keyboard>:error:normalize/key ()
-  "Test that `int<keyboard>:error:normalize/key' behaves."
+(ert-deftest test<keyboard/output>::output-redirection ()
+  "Test that our output redirection for testing works."
 
   (test<keyboard>:fixture
       ;; Test name, teardown func.
-      "test<keyboard/error>:simple/stupid"
+      "test<keyboard/output>::output-redirection"
       nil
       nil
 
-    ;; Run the test.
+    ;; Make sure that they at least simply work.
+    (let ((test-data '((:error . "error output")
+                       (:warn  . "Warn Output")
+                       (:debug . "DEBUG OUTPUT"))))
+      (dolist (data test-data)
+        (int<keyboard>:output test-name
+                              (car data)
+                              (cdr data))
+        (test<keyboard>:assert:output test-name
+                                      (car data)
+                                      (list (cdr data)))))))
+
+
+;;------------------------------
+;; int<keyboard>:output:normalize/key
+;;------------------------------
+
+(ert-deftest test<keyboard/output>::int<keyboard>:output:normalize/key ()
+  "Test that `int<keyboard>:output:normalize/key' behaves."
+
+  (test<keyboard>:fixture
+      ;; Test name, teardown func.
+      "test<keyboard/output>:simple/stupid"
+      nil
+      nil
 
     ;;---
     ;; Good values:
     ;;---
-
     (should (string= "foo"
-                     (int<keyboard>:error:normalize/key "foo")))
+                     (int<keyboard>:output:normalize/key "foo")))
     (should (string= "<RET>"
-                     (int<keyboard>:error:normalize/key '[RET])))
+                     (int<keyboard>:output:normalize/key '[RET])))
 
     ;;---
     ;; Bad values get converted to string and warning message.
     ;;---
-    ;;
-    ;; TODO
-    (should t)))
+    (let ((value '(bad . value)))
+      (should (string= (format "%S" value)
+                       (int<keyboard>:output:normalize/key value)))
+      (test<keyboard>:assert:output test-name :warn 1))))
 
 
 ;;------------------------------
-;; int<keyboard>:error:format
+;; int<keyboard>:output:format
 ;;------------------------------
 
-(ert-deftest test<keyboard/error>::int<keyboard>:error:format ()
-  "Test that `int<keyboard>:error:format' behaves."
+;; TODO: from here
+(ert-deftest test<keyboard/output>::int<keyboard>:output:format ()
+  "Test that `int<keyboard>:output:format' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, teardown func.
-      "test<keyboard/error>:simple/stupid"
+      "test<keyboard/output>:simple/stupid"
       nil
 
     ;; Run the test.
@@ -78,15 +102,15 @@
 
 
 ;;------------------------------
-;; int<keyboard>:error:message
+;; int<keyboard>:output:message
 ;;------------------------------
 
-(ert-deftest test<keyboard/error>::int<keyboard>:error:message ()
-  "Test that `int<keyboard>:error:message' behaves."
+(ert-deftest test<keyboard/output>::int<keyboard>:output:message ()
+  "Test that `int<keyboard>:output:message' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, teardown func.
-      "test<keyboard/error>:simple/stupid"
+      "test<keyboard/output>:simple/stupid"
       nil
 
     ;; Run the test.

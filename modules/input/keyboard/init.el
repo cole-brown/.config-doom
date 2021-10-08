@@ -69,7 +69,7 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 ;;------------------------------------------------------------------------------
 
 ;; NOTE: Order could matter - take care if modifying.
-(load! "error")
+(load! "output")
 (load! "debug")
 (load! "load")
 (load! "alist")

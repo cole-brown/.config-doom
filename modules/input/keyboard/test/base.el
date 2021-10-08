@@ -13,8 +13,19 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
+(defvar test<keyboard>:output:error nil
+  "A list of `:error' output messages if we are stealing `:error' verbosity.")
+
+
 (defvar test<keyboard>:output:warn nil
-  "A list of `warn' output messages if we are stealing `warn' calls.")
+  "A list of `:warn' output messages if we are stealing `:warn' verbosity.")
+;; test<keyboard>:output:warn
+;; (length test<keyboard>:output:warn)
+
+(defvar test<keyboard>:output:debug nil
+  "A list of `:debug' output messages if we are stealing `:debug' verbosity.
+NOTE: Does not include /test/ debug messages - just the normal keyboard
+debugging messages.")
 
 
 ;;------------------------------
@@ -23,6 +34,7 @@
 
 (defvar test<keyboard>:suite:func/setup nil
   "Set-up function to run for the current testing suite.")
+
 
 (defvar test<keyboard>:suite:func/teardown nil
   "Tear-down function to run for the current testing suite.")
@@ -101,40 +113,68 @@ value as tests' debugging toggle."
 ;; (test<keyboard>:debug/toggle '(4))
 
 
+(defun test<keyboard>:debug (test-name msg &rest args)
+  "debug message"
+  (message "[TEST<KEYBOARD>]::%s: %s"
+           test-name
+           (apply #'format msg args)))
+;; (test<keyboard>:debug "test?" "hello %s" "there")
+
+
 ;;------------------------------------------------------------------------------
 ;; Test Helpers
 ;;------------------------------------------------------------------------------
 
-(defun test<keyboard>:redirect/warn:advice/override (&rest args)
-  "Steals all calls to `warn' and puts them into `test<keyboard>:output:warn' list instead."
-  (push (format "%s" args) test<keyboard>:output:warn)
-  args)
+(defun test<keyboard>:redirect/output:error (msg &rest args)
+  "Steals all calls to `int<keyboard>:output' for `:error' level and puts them
+into `test<keyboard>:output:error' list instead."
+  (push (format msg args) test<keyboard>:output:error))
 
 
-(defun test<keyboard>:redirect/warn:setup ()
-  "Steals all calls to `warn' and puts them into `test<keyboard>:output:warn' list instead."
-  (advice-add 'warn :override #'test<keyboard>:redirect/warn:advice/override))
-;; (warn "hi 0")
-;; (test<keyboard>:redirect/warn:setup)
-;; (warn "hi 1")
-;; test<keyboard>:output:warn
-;; (setq test<keyboard>:output:warn nil)
+(defun test<keyboard>:redirect/output:warn (msg &rest args)
+  "Steals all calls to `int<keyboard>:output' for `:warn' level and puts them
+into `test<keyboard>:output:warn' list instead."
+  (push (apply #'format msg args) test<keyboard>:output:warn))
+;; (test<keyboard>:redirect/output:warn "hello %s" "there")
 
 
-(defun test<keyboard>:redirect/warn:teardown ()
-  "Removes our `warn' override."
-  (advice-remove 'warn #'test<keyboard>:redirect/warn:advice/override))
-;; (warn "hi 2")
-;; (test<keyboard>:redirect/warn:teardown)
-;; (warn "hi 3")
-;; test<keyboard>:output:warn
-;; (setq test<keyboard>:output:warn nil)
+(defun test<keyboard>:redirect/output:debug (msg &rest args)
+  "Steals all calls to `int<keyboard>:output' for `:debug' level and puts them
+into `test<keyboard>:output:debug' list instead."
+  (push (format msg args) test<keyboard>:output:debug))
 
 
-(defun test<keyboard>:assert:warn (should-warn)
-  "Assert that warnings were/were not issued during the test.
+(defconst test<keyboard>:redirect/output:verbose
+  '(;; Not in test-debugging - save to our lists and squelch output.
+    (nil . ((:error . test<keyboard>:redirect/output:error)
+            (:warn  . test<keyboard>:redirect/output:warn)
+            (:debug . test<keyboard>:redirect/output:debug)))
+    ;; Debugging the tests - save to our lists and also allow to output as usual.
+    (t   . ((:error . (test<keyboard>:redirect/output:error t))
+            (:warn  . (test<keyboard>:redirect/output:warn  t))
+            (:debug . (test<keyboard>:redirect/output:debug t)))))
+  "Replace the normal output based on `test<keyboard>:debugging' flag.")
 
-SHOULD-WARN can be:
+
+(defun test<keyboard>:redirect/output:setup ()
+  "Steals all calls to `int<keyboard>:output' and puts them into `test<keyboard>:output:...' lists instead.
+
+Will also allow the normal output if `test<keyboard>:debugging'."
+  (setq int<keyboard>:output:verbose (alist-get test<keyboard>:debugging
+                                                test<keyboard>:redirect/output:verbose)))
+
+
+(defun test<keyboard>:redirect/output:teardown ()
+  "Removes our output override."
+  (int<keyboard>:output:vars/reset))
+
+
+(defun test<keyboard>:assert:output (caller level should-be)
+  "Assert that LEVEL outputs were/were not issued during the test.
+
+LEVEL should be one of: (:error :warn :debug)
+
+SHOULD-BE can be:
   - a number
     +  Number of warnings must match this.
   - a list of strings
@@ -143,20 +183,31 @@ SHOULD-WARN can be:
     + Must be some warnings.
   - falsy (nil)
     + Must be no warnings."
-  (cond ((numberp should-warn)
-         (should (= should-warn
-                    (length test<keyboard>:output:warn))))
-        ((listp should-warn)
-         (should (= (length should-warn)
-                    (length test<keyboard>:output:warn)))
-         (dotimes (i (length should-warn))
-           (string= (nth i should-warn)
-                    (nth i test<keyboard>:output:warn))))
-        ((not should-warn)
-         (should-not test<keyboard>:output:warn))
+  (let ((outputs (pcase level
+                   (:error test<keyboard>:output:error)
+                   (:warn  test<keyboard>:output:warn)
+                   (:debug test<keyboard>:output:debug)
+                   (_
+                    (error "test<keyboard>:assert:output: Unknown level '%S'. Caller: %S"
+                           level caller)))))
+
+  (should outputs)
+  (should (listp outputs))
+
+  (cond ((numberp should-be)
+         (should (= should-be
+                    (length outputs))))
+        ((listp should-be)
+         (should (= (length should-be)
+                    (length outputs)))
+         (dotimes (i (length should-be))
+           (string= (nth i should-be)
+                    (nth i outputs))))
+        ((not should-be)
+         (should-not outputs))
         (t
-         (should test<keyboard>:output:warn))))
-;; (test<keyboard>:assert:warn nil)
+         (should outputs)))))
+;; (test<keyboard>:assert:output "test" :warn nil)
 
 
 ;;------------------------------------------------------------------------------
@@ -185,7 +236,10 @@ FUNC/TEARDOWN will run as first step in tear-down."
 
 (defun test<keyboard>:setup/vars ()
   "Any setup of consts/vars needed per test."
-  (setq test<keyboard>:output:warn nil))
+  ;; Reset these at start of test so they can be manually inspected after a test is run.
+  (setq test<keyboard>:output:error nil)
+  (setq test<keyboard>:output:warn  nil)
+  (setq test<keyboard>:output:debug nil))
 
 
 (defun test<keyboard>:setup (name func/setup func/teardown)
@@ -193,8 +247,8 @@ FUNC/TEARDOWN will run as first step in tear-down."
 
 FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
   (test<keyboard>:setup/vars)
+  (test<keyboard>:redirect/output:setup)
 
-  (test<keyboard>:advice/replace:warn)
   (test<keyboard>:setup/suite func/setup func/teardown)
 
   ;; Always last:
@@ -210,7 +264,13 @@ FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
 (defun test<keyboard>:teardown/vars ()
   "Clear out/clean up vars used during testing so next test or normal Emacs
 usage isn't affected."
-  (setq test<keyboard>:output:warn nil))
+
+  ;;------------------------------
+  ;; `test<keyboard>:output:...'
+  ;;------------------------------
+  ;; Reset these vars at set-up so they can be inspected after a test is run.
+  ;; Do nothing to them here.
+  )
 
 
 (defun test<keyboard>:teardown (name)
@@ -221,7 +281,7 @@ usage isn't affected."
         (funcall test<keyboard>:suite:func/teardown name)))
 
   ;; Generally in reverse order from set-up.
-  (test<keyboard>:advice/replace:warn)
+  (test<keyboard>:redirect/output:setup)
   (test<keyboard>:teardown/vars))
 
 
@@ -237,13 +297,13 @@ If TEST-TEARDOWN-FN is non-nil, it is /always/ called after the test is run
 (even if it errors out/fails/etc). TEST-TEARDOWN-FN should take one parameter:
 NAME."
   (declare (indent 3))
-  ;; `unwind-protect' lets us run teardown even if errors, etc.
   `(let ((test-name ,name))
+     ;; `unwind-protect' lets us run teardown even if errors, etc.
      (unwind-protect
+         ;; Run test set-up, then the test.
          (progn
            (test<keyboard>:setup test-name ,func/setup ,func/teardown)
 
            ,@body)
-       (when test<keyboard>:with:fixture/teardown-fn
-         (test<keyboard>:with:fixture/teardown-fn test-name))
-       (test<keyboard>:teardown))))
+       ;; Always run tear-down.
+       (test<keyboard>:teardown test-name))))

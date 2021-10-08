@@ -5,6 +5,12 @@
 ;; Simple debugging functionality for layout.
 
 
+;; TODO:
+;; TODO: Rework to use new output stuff!
+;; TODO:
+
+;; TODO: rename funcs to int<keyboard>:debug:...
+
 ;;------------------------------------------------------------------------------
 ;; Notes
 ;;------------------------------------------------------------------------------

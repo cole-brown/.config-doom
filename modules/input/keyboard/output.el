@@ -73,8 +73,8 @@ Valid values:
 ;; Save the default values to a symbol property.
 ;; This allows the unit tests to reset it easily.
 ;;---
-(put 'int<keyboard>:output:verbose :default int<keyboard>:output:verbose)
-(put 'int<keyboard>:output:default :default int<keyboard>:output:default)
+(put 'int<keyboard>:output:verbose :default (copy-alist int<keyboard>:output:verbose))
+(put 'int<keyboard>:output:default :default (copy-alist int<keyboard>:output:default))
 
 
 (defun int<keyboard>:output:vars/reset ()

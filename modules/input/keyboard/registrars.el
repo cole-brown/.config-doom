@@ -193,8 +193,8 @@ and `int<keyboard>:registration:valid'):
 ;; Get vars based on registrar desired.
 ;;------------------------------
 
-(defun int<keyboard>:registrar:get (registrar keyword)
-  "Get a registrar variable's value based on REGISTRAR type and
+(defun int<keyboard>:registrar:symbol (registrar keyword)
+  "Get a registrar variable's symbol based on REGISTRAR type and
 variable identifier KEYWORD.
 
 REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
@@ -202,8 +202,8 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
   (if-let ((registrar.vars (alist-get registrar input//kl:registrars)))
       ;; Return the var or signal error if we didn't find anything.
       (if-let ((symbol (alist-get keyword registrar.vars)))
-          ;; Return the symbol's value.
-          (symbol-value symbol)
+          ;; Return the symbol itself.
+          symbol
 
         ;; Invalid registrar symbol!
         (error (int<keyboard>:error:format "int<keyboard>:registrar:get"
@@ -226,9 +226,19 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
                      (car registrar-assoc))
                    input//kl:registrars)
            registrar)))
+
+
+(defun int<keyboard>:registrar:get (registrar keyword)
+  "Get a registrar variable's value based on REGISTRAR type and
+variable identifier KEYWORD.
+
+REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
+  ;; Get the symbol and then return its value.
+  ;; `int<keyboard>:registrar:symbol' will error on anything invalid.
+  (symbol-value (int<keyboard>:registrar:symbol registrar keyword)))
 ;; (int<keyboard>:registrar:get :actual :state)
 ;; (int<keyboard>:registrar:get :debug :state)
-
+;; (int<keyboard>:registrar:get :actual :keybinds)
 
 
 (defun int<keyboard>:registrar:set (registrar keyword value)

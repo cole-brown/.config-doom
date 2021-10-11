@@ -181,7 +181,11 @@ earlier."
 
   ;; Ok - errors checked; set it.
   (setq input//kl:layout/active layout)
-  (input//kl:alist/update type keybind-map (int<keyboard>:registrar:get registrar :keybinds) t))
+  ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
+  (input//kl:alist/update type
+                          keybind-map
+                          (int<keyboard>:registrar:symbol registrar :keybinds)
+                          t))
 
 
 (defun keyboard:layout:bind (layout type keybind-map)

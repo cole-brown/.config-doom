@@ -281,7 +281,7 @@ usage isn't affected."
         (funcall test<keyboard>:suite:func/teardown name)))
 
   ;; Generally in reverse order from set-up.
-  (test<keyboard>:redirect/output:setup)
+  (test<keyboard>:redirect/output:teardown)
   (test<keyboard>:teardown/vars))
 
 

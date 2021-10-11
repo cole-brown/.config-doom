@@ -220,9 +220,8 @@
 ;; int<keyboard>:output:format
 ;;------------------------------
 
-;; TODO: from here
 (ert-deftest test<keyboard/output>::int<keyboard>:output:format ()
-  "Test that `int<keyboard>:output:format' behaves."
+  "Test that `int<keyboard>:output:format' creates a formatting message for error/warn/debug outputs."
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
@@ -230,9 +229,18 @@
       nil
       nil
 
-    ;; Run the test.
-    ;; TODO
-    (should t)))
+    ;; Not much I want to test about this...
+    (let* ((fmt.args '("Hello, " "%S.")) ;; Some args for creating a formatting string.
+           (expected.substrs (list "Hello, %S." ;; Expected formatting string still w/ '%S'.
+                                   test-name))  ;; Expected caller name string.
+           (formatted (apply #'int<keyboard>:output:format test-name fmt.args)))
+      ;; Should have got back some sort of string.
+      (should formatted)
+      (should (stringp formatted))
+
+      ;; Should have our message and our test name in it somewhere.
+      (dolist (expected expected.substrs)
+        (should (string-match-p expected formatted))))))
 
 
 ;;------------------------------

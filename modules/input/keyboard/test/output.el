@@ -156,6 +156,67 @@
 
 
 ;;------------------------------
+;; int<keyboard>:output:message
+;;------------------------------
+
+(ert-deftest test<keyboard/output>::int<keyboard>:output:message ()
+  "Test that `int<keyboard>:output:message' sends output to the correct place based on verbosity."
+
+  ;;------------------------------
+  ;; Test Actual Error signals error
+  ;;------------------------------
+  ;; Non-testing error output should signal an error.
+  (should-error (int<keyboard>:output/message :error "hello there" nil))
+
+  ;;------------------------------
+  ;; Test w/ Unit-Testing hooks in-place.
+  ;;------------------------------
+  (test<keyboard>:fixture
+      ;; Test name, setup func, teardown func.
+      "test<keyboard/output>::int<keyboard>:output:message"
+      nil
+      nil
+
+    ;; Each verbosity level should go to its separate list of intercepted messages.
+    (let ((msg.error "[ERROR] Hello there.")
+          (msg.warn  "[WARN]  Hello there.")
+          (msg.debug "[DEBUG] Hello there."))
+
+      ;;------------------------------
+      ;; Test Error
+      ;;------------------------------
+      ;; This should /not/ error this time.
+      (should (int<keyboard>:output/message :error msg.error nil))
+
+      ;; Error should have its message.
+      (test<keyboard>:assert:output test-name :error msg.error)
+      ;; Warn and debug should have nothing so far.
+      (test<keyboard>:assert:output test-name :warn  nil)
+      (test<keyboard>:assert:output test-name :debug nil)
+
+      ;;------------------------------
+      ;; Test Warning
+      ;;------------------------------
+      (should (int<keyboard>:output/message :warn msg.warn nil))
+
+      ;; Error & Warn should have their messages now.
+      (test<keyboard>:assert:output test-name :error msg.error)
+      ;; Debug should still have nothing.
+      (test<keyboard>:assert:output test-name :warn  msg.warn)
+      (test<keyboard>:assert:output test-name :debug nil)
+
+      ;;------------------------------
+      ;; Test Debug
+      ;;------------------------------
+      (should (int<keyboard>:output/message :debug msg.debug nil))
+
+      ;; All three should have their messages.
+      (test<keyboard>:assert:output test-name :error msg.error)
+      (test<keyboard>:assert:output test-name :warn  msg.warn)
+      (test<keyboard>:assert:output test-name :debug msg.debug))))
+
+
+;;------------------------------
 ;; int<keyboard>:output:format
 ;;------------------------------
 
@@ -165,7 +226,7 @@
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
-      "test<keyboard/output>:simple/stupid"
+      "test<keyboard/output>::int<keyboard>:output:format"
       nil
       nil
 
@@ -175,15 +236,16 @@
 
 
 ;;------------------------------
-;; int<keyboard>:output:message
+;; int<keyboard>:output
 ;;------------------------------
 
-(ert-deftest test<keyboard/output>::int<keyboard>:output:message ()
-  "Test that `int<keyboard>:output:message' behaves."
+;; TODO: from here
+(ert-deftest test<keyboard/output>::int<keyboard>:output ()
+  "Test that `int<keyboard>:output' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
-      "test<keyboard/output>:simple/stupid"
+      "test<keyboard/output>::int<keyboard>:output"
       nil
       nil
 

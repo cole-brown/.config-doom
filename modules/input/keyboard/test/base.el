@@ -176,37 +176,76 @@ LEVEL should be one of: (:error :warn :debug)
 
 SHOULD-BE can be:
   - a number
-    +  Number of warnings must match this.
+    +  Number of LEVEL outputs must match this.
+  - a string
+    + Exactly 1 LEVEL output messages.
+    + The LEVEL message must match SHOULD-BE.
   - a list of strings
-    + Number of warnings must match list length and each warning must match a string.
+    + Number of LEVEL messages must match list length and each warning must match a string in the list.
+      - NOTE: Currently ordered. Could convert to an unordered search if desired.
   - truthy (other non-nil value)
-    + Must be some warnings.
+    + Must be some LEVEL messages.
   - falsy (nil)
-    + Must be no warnings."
-  (let ((outputs (pcase level
-                   (:error test<keyboard>:output:error)
-                   (:warn  test<keyboard>:output:warn)
-                   (:debug test<keyboard>:output:debug)
-                   (_
-                    (error "test<keyboard>:assert:output: Unknown level '%S'. Caller: %S"
-                           level caller)))))
+    + Must be no LEVEL messages."
+  (let* ((outputs (pcase level
+                    (:error test<keyboard>:output:error)
+                    (:warn  test<keyboard>:output:warn)
+                    (:debug test<keyboard>:output:debug)
+                    (_
+                     (error "test<keyboard>:assert:output: Unknown level '%S'. Caller: %S"
+                            level caller))))
+         (func/assert-list (lambda ()
+                             "Assert that the output list exists/is non-nil."
+                             (should outputs)
+                             (should (listp outputs)))))
+    ;; See what level is when debugging.
+    (should (format "test<keyboard>:assert:output: level: %S, should-be: %S" level should-be))
 
-  (should outputs)
-  (should (listp outputs))
+    (cond
+     ;;---
+     ;; Falsy: Nothing should exist.
+     ;;---
+     ;; NOTE: Must be before listp since `nil' is a list.
+     ((not should-be)
+      (should-not outputs))
 
-  (cond ((numberp should-be)
-         (should (= should-be
-                    (length outputs))))
-        ((listp should-be)
-         (should (= (length should-be)
-                    (length outputs)))
-         (dotimes (i (length should-be))
-           (string= (nth i should-be)
-                    (nth i outputs))))
-        ((not should-be)
-         (should-not outputs))
-        (t
-         (should outputs)))))
+     ;;---
+     ;; Number: Exactly that amount of messages in the output list.
+     ;;---
+     ((numberp should-be)
+      ;; Zero is a special case; don't want to assert `outputs' exists.
+      (when (> 0 should-be)
+        (funcall func/assert-list))
+      (should (= should-be
+                 (length outputs))))
+
+     ;;---
+     ;; String: Should be exactly one message in the output list and it should equal this string.
+     ;;---
+     ((stringp should-be)
+      (funcall func/assert-list)
+      (should (= 1
+                 (length outputs)))
+      (should (string= should-be
+                       (nth 0 outputs))))
+
+     ;;---
+     ;; List: Match the messages in the parameter to the messages in the output.
+     ;;---
+     ((listp should-be)
+      (funcall func/assert-list)
+      (should (= (length should-be)
+                 (length outputs)))
+      (dotimes (i (length should-be))
+        (string= (nth i should-be)
+                 (nth i outputs))))
+
+     ;;---
+     ;; Truthy: ...Something should exist?
+     ;;---
+     (t
+      (funcall func/assert-list)
+      (should (> (length outputs) 1))))))
 ;; (test<keyboard>:assert:output "test" :warn nil)
 
 

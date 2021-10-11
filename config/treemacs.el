@@ -211,15 +211,12 @@
      (treemacs-git-mode 'simple)))
 
   ;; Don't hide gitignored files.
-  ;; TODO: This is an undefined symbol in Doom's current version of treemacs?
-  ;;   - So I guess try using it when it shows up some day...
+  ;; NOTE [2021-10-11]: This is an undefined symbol in older Doom version of treemacs.
+  ;;   - TODO: eventually delete the `when' check.
   (when (and (boundp 'treemacs-hide-gitignored-files-mode)
              (functionp 'treemacs-hide-gitignored-files-mode))
-    (warn (concat "Doom's Treemacs was updated to have the `treemacs-hide-gitignored-files-mode' function.\n"
-                  "Do you want to set it now?\n"
-                  "file: %s")
-          (or load-file-name buffer-file-name)))
-  ;; (treemacs-hide-gitignored-files-mode nil)
+    ;; Disable hiding ignored files.
+    (treemacs-hide-gitignored-files-mode -1))
 
 
   ;;------------------------------

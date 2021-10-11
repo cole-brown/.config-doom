@@ -57,6 +57,27 @@
                    :path/secret/root "~/.secret.d")
 
 
+;;--------------------
+;; work/2021/lap
+;;   Host OS:  Ubuntu 20.04 LTS
+;;   Guests:   Windows 10
+;;--------------------
+
+
+;;---
+;; work/2021/lap::e29fbd-0d21c7
+;;   via Ubuntu 20.04
+;;   (formerly known as: home/2017/desk::5730ce-91e149)
+;;---
+(spy:system/define :hash "e29fbd-0d21c7"
+                   :domain "work"
+                   :date "2021"
+                   :type "lap"
+                   :description "Dell XPS 13 laptop"
+                   :path/secret/root "~/.config/secret")
+
+
+
 ;; Generate a new system's UID using this:
 ;; - "home", "work", other domain
 ;; - year, or YYYY-MM-DD

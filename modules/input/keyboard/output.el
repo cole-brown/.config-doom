@@ -37,6 +37,18 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Output Message Prefixes
+;;------------------------------------------------------------------------------
+
+(defconst int<keyboard>:output:message/prefix
+  '((:error . "[ERROR] ':input/keyboard': ")
+    (:warn  . "[WARN ] ':input/keyboard': ")
+    ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
+    (:debug . "<<<debug>>> "))
+  "Prefixes for output messages per verbosity level.")
+
+
+;;------------------------------------------------------------------------------
 ;; Verbosity
 ;;------------------------------------------------------------------------------
 ;; This allows our tests to take over output easier.
@@ -162,7 +174,7 @@ ARGS based on current verbosity for the level."
 ;; Output API - Errors, Warnings, etc
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:output:format (caller &rest message-format)
+(defun int<keyboard>:output:format (caller level &rest message-format)
   "Combines CALLER and error MESSAGE-FORMAT into one string for sending to
 `error' with MESSAGE-FORMAT's args.
 
@@ -173,9 +185,9 @@ etc.
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
           some-string something some-integer)
-    -> \"Doom Module ':input/keyboard/layout': int<keyboard>:example-function: <...>\""
+    -> \"[ERROR] ':input/keyboard/layout': int<keyboard>:example-function: <...>\""
   (apply #'concat
-         "Doom Module ':input/keyboard/layout': "
+         (alist-get level int<keyboard>:output:message/prefix)
          caller
          ": "
          message-format))
@@ -222,7 +234,7 @@ signaled."
      ;;---
      ((listp formatting)
       (int<keyboard>:output/message level
-                                    (apply #'int<keyboard>:output:format caller formatting)
+                                    (apply #'int<keyboard>:output:format caller level formatting)
                                     args))
 
      ((stringp formatting)

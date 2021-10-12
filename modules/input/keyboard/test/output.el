@@ -92,7 +92,7 @@
 
 
 ;;------------------------------
-;; int<keyboard>:output:format
+;; int<keyboard>:output:vars/reset
 ;;------------------------------
 
 (ert-deftest test<keyboard/output>::int<keyboard>:output:vars/reset ()
@@ -229,18 +229,26 @@
       nil
       nil
 
-    ;; Not much I want to test about this...
+    ;;------------------------------
+    ;; Test that it applies formatting to args.
+    ;;------------------------------
     (let* ((fmt.args '("Hello, " "%S.")) ;; Some args for creating a formatting string.
            (expected.substrs (list "Hello, %S." ;; Expected formatting string still w/ '%S'.
                                    test-name))  ;; Expected caller name string.
-           (formatted (apply #'int<keyboard>:output:format test-name fmt.args)))
+           (formatted (apply #'int<keyboard>:output:format test-name :error fmt.args)))
       ;; Should have got back some sort of string.
       (should formatted)
       (should (stringp formatted))
 
       ;; Should have our message and our test name in it somewhere.
       (dolist (expected expected.substrs)
-        (should (string-match-p expected formatted))))))
+        (should (string-match-p expected formatted))))
+
+    ;;------------------------------
+    ;; Test different prefixes.
+    ;;------------------------------
+    (should-not (string= (int<keyboard>:output:format test-name :error "Hello, %s.")
+                         (int<keyboard>:output:format test-name :debug "Hello, %s.")))))
 
 
 ;;------------------------------

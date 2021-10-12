@@ -188,6 +188,8 @@ to toggle.")
 ;; (length (input//kl:debug:fill 42))
 
 
+;; TODO: switch to just using output's func:
+;;   (int<keyboard:output caller :debug msg args)
 (defun input//kl:debug:message (func msg args-list)
   "Returns a sexpr for creating a debug `message'.
 
@@ -201,6 +203,7 @@ ARGS-LIST should be the `message' arguments."
     ,@args-list))
 
 
+;; TODO: switch to just using output's func.
 ;; Alias so we can use `debug' in debug things.
 (defalias 'input//kl:debug:normalize/key 'int<keyboard>:error:normalize/key)
 

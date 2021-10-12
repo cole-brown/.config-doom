@@ -128,7 +128,7 @@ value as tests' debugging toggle."
 (defun test<keyboard>:redirect/output:error (msg &rest args)
   "Steals all calls to `int<keyboard>:output' for `:error' level and puts them
 into `test<keyboard>:output:error' list instead."
-  (push (format msg args) test<keyboard>:output:error))
+  (push (apply #'format msg args) test<keyboard>:output:error))
 
 
 (defun test<keyboard>:redirect/output:warn (msg &rest args)
@@ -141,7 +141,7 @@ into `test<keyboard>:output:warn' list instead."
 (defun test<keyboard>:redirect/output:debug (msg &rest args)
   "Steals all calls to `int<keyboard>:output' for `:debug' level and puts them
 into `test<keyboard>:output:debug' list instead."
-  (push (format msg args) test<keyboard>:output:debug))
+  (push (apply #'format msg args) test<keyboard>:output:debug))
 
 
 (defconst test<keyboard>:redirect/output:verbose
@@ -176,17 +176,16 @@ LEVEL should be one of: (:error :warn :debug)
 
 SHOULD-BE can be:
   - a number
-    +  Number of LEVEL outputs must match this.
+    + Number of LEVEL outputs must match this.
+    + USING
   - a string
     + Exactly 1 LEVEL output messages.
     + The LEVEL message must match SHOULD-BE.
-  - a list of strings
-    + Number of LEVEL messages must match list length and each warning must match a string in the list.
-      - NOTE: Currently ordered. Could convert to an unordered search if desired.
-  - truthy (other non-nil value)
-    + Must be some LEVEL messages.
-  - falsy (nil)
-    + Must be no LEVEL messages."
+    + USING
+  - a list of lists of strings
+    + Each list of strings should be expected substrings in the LEVEL output message.
+  - nil/falsy
+    + LEVEL should have no output messages."
   (let* ((outputs (pcase level
                     (:error test<keyboard>:output:error)
                     (:warn  test<keyboard>:output:warn)
@@ -230,22 +229,37 @@ SHOULD-BE can be:
                        (nth 0 outputs))))
 
      ;;---
-     ;; List: Match the messages in the parameter to the messages in the output.
+     ;; List (of lists of strings): match substrings in output list.
      ;;---
-     ((listp should-be)
+     ((listp should-be) ;; Suck all lists into this case, then validate.
+      ;;---
+      ;; Must be valid list of lists of strings.
+      ;;---
+      ;; Should have the correct number of substring lists for the messages.
+      (should (> (length should-be) 0))
+      ;; Each element in list should be a sub-list...
+      (should (-all? #'listp should-be))
+      ;; ...and each element in each sub-list should be a string.
+      (should (-all? (lambda (sublist) (-all? #'stringp sublist))
+                     should-be))
+
+      ;; Outputs should be valid, match expected in length.
       (funcall func/assert-list)
       (should (= (length should-be)
                  (length outputs)))
-      (dotimes (i (length should-be))
-        (string= (nth i should-be)
-                 (nth i outputs))))
+
+      ;; Should find all the expected substrings in the expected message.
+      (dotimes (i (length should-be)) ;; For each message...
+        (let ((substrings (nth i should-be))
+              (output (nth i outputs)))
+          (dotimes (j (length substrings)) ;; For each expected substring...
+            (should (string-match-p (nth j substrings) output))))))
 
      ;;---
-     ;; Truthy: ...Something should exist?
+     ;; Didn't match anything expected.
      ;;---
      (t
-      (funcall func/assert-list)
-      (should (> (length outputs) 1))))))
+      (error "test<keyboard>:assert:output: Unknown SHOULD-BE: %S" should-be)))))
 ;; (test<keyboard>:assert:output "test" :warn nil)
 
 

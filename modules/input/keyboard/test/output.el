@@ -257,6 +257,48 @@
       nil
       nil
 
-    ;; Run the test.
-    ;; TODO
-    (should t)))
+    ;;------------------------------
+    ;; Test Error Level
+    ;;------------------------------
+    (int<keyboard>:output test-name
+                          :error
+                          '("Hello " "%s... there is a minor case of severe erroring.")
+                          "there")
+
+    (test<keyboard>:assert:output test-name
+                                  :error
+                                  ;; Expect one error message with:
+                                  ;;   - test-name
+                                  ;;   - formatted output message
+                                  (list (list test-name "Hello there... there is a minor case of severe erroring.")))
+
+    ;;------------------------------
+    ;; Test Warn Level
+    ;;------------------------------
+    (int<keyboard>:output test-name
+                          :warn
+                          "Hello %s; %s."
+                          "there"
+                          "this is your final warning")
+
+    (test<keyboard>:assert:output test-name
+                                  :warn
+                                  ;; Expect one warn message with:
+                                  ;;   - test-name
+                                  ;;   - formatted output message
+                                  (list (list test-name "Hello there; this is your final warning.")))
+
+    ;;------------------------------
+    ;; Test Debug Level
+    ;;------------------------------
+    (int<keyboard>:output test-name
+                          :debug
+                          "I'm afraid I'm infested with bugs, %s..."
+                          "Dave")
+
+    (test<keyboard>:assert:output test-name
+                                  :debug
+                                  ;; Expect one debug message with:
+                                  ;;   - test-name
+                                  ;;   - formatted output message
+                                  (list (list test-name "I'm afraid I'm infested with bugs, Dave...")))))

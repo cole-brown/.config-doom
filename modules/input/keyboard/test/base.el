@@ -48,7 +48,7 @@ debugging messages.")
   "Debug toggle specifically for test debugging.
 Non-nil means debugging is active.
 
-Does not affect `input//kl:debugging' in any way.")
+Does not affect `int<keyboard>:debugging' in any way.")
 
 
 (defun test<keyboard>:debug/toggle (prefix)
@@ -58,7 +58,7 @@ With prefix arg, will also toggle ':input/keyboard' debugging to same on/off
 value as tests' debugging toggle."
   (interactive "P")
   (let* ((name/var.test "test<keyboard>:debugging")
-         (name/var.code "input//kl:debugging")
+         (name/var.code "int<keyboard>:debugging")
          (state/enabled "[ENABLED]")
          (state/disabled "[-------]")
          (fmt/name (concat "%"
@@ -70,7 +70,7 @@ value as tests' debugging toggle."
     ;; Toggle debug flag(s).
     (setq test<keyboard>:debugging (not test<keyboard>:debugging))
     (when also-normal-debug
-      (setq input//kl:debugging test<keyboard>:debugging))
+      (setq int<keyboard>:debugging test<keyboard>:debugging))
 
     ;; Notify user what state they're in.
     (message fmt/toggle
@@ -91,21 +91,21 @@ value as tests' debugging toggle."
                                  ;; "transitioned"
                                  " -> "
                                  ;; State of normal debugging.
-                                 (if input//kl:debugging
+                                 (if int<keyboard>:debugging
                                      state/enabled
                                    state/disabled)
                                  ;; Normal debugging tags.
-                                 (if input//kl:debugging
-                                     (if (not input//kl:debug/tags)
+                                 (if int<keyboard>:debugging
+                                     (if (not int<keyboard>:debug:tags)
                                          " (all debug output)"
-                                       (format " with tags: %S" input//kl:debug/tags))
+                                       (format " with tags: %S" int<keyboard>:debug:tags))
                                    ""))
                        ;; Else only say if normal debugging is enabled?
                        (format fmt/toggle
                                name/var.code
                                ;; "did not change"
                                " == "
-                               (if input//kl:debugging
+                               (if int<keyboard>:debugging
                                    state/enabled
                                  state/disabled)
                                ""))))))

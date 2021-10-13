@@ -67,21 +67,21 @@ If NO-ERROR is non-nil, will return nil instead of signaling an error."
     ;; Check for errors.
     (cond ((not (memq registration/current
                       int<keyboard>:layout:registering/states))
-           (input//kl:debug
-               "input//kl:layout:registering/set-if-valid?"
-               '(:registering)
-             "From (%S) is not a valid state: %S"
-             registration/current
-             int<keyboard>:layout:registering/states)
+           (int<keyboard>:debug
+            "input//kl:layout:registering/set-if-valid?"
+            '(:registering)
+            "From (%S) is not a valid state: %S"
+            registration/current
+            int<keyboard>:layout:registering/states)
            nil)
 
           ((not (memq to int<keyboard>:layout:registering/states))
-           (input//kl:debug
-               "input//kl:layout:registering/set-if-valid?"
-               '(:registering)
-             "To (%S) is not a valid state: %S"
-             to
-             int<keyboard>:layout:registering/states)
+           (int<keyboard>:debug
+            "input//kl:layout:registering/set-if-valid?"
+            '(:registering)
+            "To (%S) is not a valid state: %S"
+            to
+            int<keyboard>:layout:registering/states)
            nil)
 
           ;;------------------------------
@@ -457,17 +457,17 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     ;;------------------------------
     ;; Small thing: if only unbinding, and we got here, and we have a nil
     ;; return-value and nil NO-EVAL... it's ok; that's valid. Change to t.
-    (input//kl:debug
-        func.name
-        debug/tags
-      "Returning for `no-eval'=%S: return-value? %S, no-eval? %S, unbind? %S -> sexprs? %S"
-      no-eval
-      return-value
-      no-eval
-      bind/unbind
-      (and (not return-value)
-           (null no-eval)
-           (eq bind/unbind :unbind)))
+    (int<keyboard>:debug
+     func.name
+     debug/tags
+     "Returning for `no-eval'=%S: return-value? %S, no-eval? %S, unbind? %S -> sexprs? %S"
+     no-eval
+     return-value
+     no-eval
+     bind/unbind
+     (and (not return-value)
+          (null no-eval)
+          (eq bind/unbind :unbind)))
     (if (and (not return-value)
              (null no-eval)
              (eq bind/unbind :unbind))
@@ -521,22 +521,22 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                       (if no-eval
                           ;; Not applying the keybinds - returning the sexprs instead.
                           (progn
-                            (input//kl:debug
-                                "input//kl:activate/type"
-                                debug/tags
-                              "no-eval input for map-process: %S" keybinds)
-                            (input//kl:debug
-                                "input//kl:activate/type"
-                                debug/tags
-                              "no-eval: %S"
-                              (input//kl:layout:map-process keybinds))
+                            (int<keyboard>:debug
+                             "input//kl:activate/type"
+                             debug/tags
+                             "no-eval input for map-process: %S" keybinds)
+                            (int<keyboard>:debug
+                             "input//kl:activate/type"
+                             debug/tags
+                             "no-eval: %S"
+                             (input//kl:layout:map-process keybinds))
                             (setq return-value (input//kl:layout:map-process keybinds)))
                         ;; We are applying the keybinds.
-                        (input//kl:debug
-                            "input//kl:activate/type"
-                            debug/tags
-                          "eval: %S"
-                          (input//kl:layout:map-process keybinds))
+                        (int<keyboard>:debug
+                         "input//kl:activate/type"
+                         debug/tags
+                         "eval: %S"
+                         (input//kl:layout:map-process keybinds))
                         (eval
                          ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
                          ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
@@ -546,13 +546,13 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;;------------------------------
       ;; Invalid or didn't find keybinds...
       ;;------------------------------
-      (input//kl:debug
-          "input//kl:activate/type"
-          debug/tags
-        (concat "Cannot activate keybinds for %S.\n"
-                "  valid?    %S\n"
-                "  keybinds: %S")
-        type (not (null valid)) keybinds)
+      (int<keyboard>:debug
+       "input//kl:activate/type"
+       debug/tags
+       (concat "Cannot activate keybinds for %S.\n"
+               "  valid?    %S\n"
+               "  keybinds: %S")
+       type (not (null valid)) keybinds)
       ;; NOTE: Currently not an error as common/emacs may not have any keybinds.
       ;; Should probably return to being an error in the future?
       ;; (int<keyboard>:output :error
@@ -565,10 +565,10 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;; Return nil for invalid case.
       (setq return-value nil))
 
-    (input//kl:debug
-        "input//kl:activate/type"
-        debug/tags
-      "Returning for `no-eval': %S" no-eval)
+    (int<keyboard>:debug
+     "input//kl:activate/type"
+     debug/tags
+     "Returning for `no-eval': %S" no-eval)
     ;; Return t/nil normally, or the map-process output if `no-eval'.
     (if no-eval
         return-value
@@ -733,53 +733,53 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
 
-    (input//kl:debug func.name
-        '(:registering)
-      "map: %S" keybind-map)
-    (input//kl:debug func.name
-        '(:registering)
-      "registering: %S, valids: %S, valid? %S"
-      registration/current
-      registration/valids
-      (memq registration/current registration/valids))
+    (int<keyboard>:debug func.name
+                         '(:registering)
+                         "map: %S" keybind-map)
+    (int<keyboard>:debug func.name
+                         '(:registering)
+                         "registering: %S, valids: %S, valid? %S"
+                         registration/current
+                         registration/valids
+                         (memq registration/current registration/valids))
 
     (if (not (memq registration/current
                    registration/valids))
         ;; [FAIL]: Current registration state doesn't allowed running the temp block.
         (progn
-          (input//kl:debug func.name
-              '(:registering)
-            (concat "Skipping this as not in a valid state for it:\n"
-                    "registering: %S\n"
-                    "valids:      %S\n"
-                    "valid?       %S")
-            registration/current
-            registration/valids
-            (memq registration/current registration/valids))
+          (int<keyboard>:debug func.name
+                               '(:registering)
+                               (concat "Skipping this as not in a valid state for it:\n"
+                                       "registering: %S\n"
+                                       "valids:      %S\n"
+                                       "valid?       %S")
+                               registration/current
+                               registration/valids
+                               (memq registration/current registration/valids))
 
           ;; Explain why we're doing nothing.
-          (input//kl:debug-or-message
-              (format "%s(%S %S ...)" func.name layout type)
-              '(:register)
-              ;; Message if not in some set-up state, else debug.
-              (not (memq registration/current '(nil :init :config)))
-            (concat "not run due to current registration state %S. "
-                    "Set to one of these (can do via "
-                    "`test<keyboard>:layout:set-registering') to run: %S")
-            registration/current
-            registration/valids))
+          (int<keyboard>:debug/message?
+           (format "%s(%S %S ...)" func.name layout type)
+           '(:register)
+           ;; Message if not in some set-up state, else debug.
+           (not (memq registration/current '(nil :init :config)))
+           (concat "not run due to current registration state %S. "
+                   "Set to one of these (can do via "
+                   "`test<keyboard>:layout:set-registering') to run: %S")
+           registration/current
+           registration/valids))
 
       ;; [ OK ]: Run the temp block.
       (prog1
-          (input//kl:debug func.name
-              '(:registering)
-            (concat "EXECUTING 'temp binds' BLOCK!!!\n"
-                    "registering: %S\n"
-                    "valids:      %S\n"
-                    "valid?       %S")
-            registration/current
-            registration/valids
-            (memq registration/current registration/valids))
+          (int<keyboard>:debug func.name
+                               '(:registering)
+                               (concat "EXECUTING 'temp binds' BLOCK!!!\n"
+                                       "registering: %S\n"
+                                       "valids:      %S\n"
+                                       "valid?       %S")
+                               registration/current
+                               registration/valids
+                               (memq registration/current registration/valids))
 
         (let (return-value)
           ;; Apply the keybinds.
@@ -842,53 +842,53 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
 
-    (input//kl:debug func.name
-        '(:registering)
-      "map: %S" keybind-map)
-    (input//kl:debug func.name
-        '(:registering)
-      "registering: %S, valids: %S, valid? %S"
-      registration/current
-      registration/valids
-      (memq registration/current registration/valids))
+    (int<keyboard>:debug func.name
+                         '(:registering)
+                         "map: %S" keybind-map)
+    (int<keyboard>:debug func.name
+                         '(:registering)
+                         "registering: %S, valids: %S, valid? %S"
+                         registration/current
+                         registration/valids
+                         (memq registration/current registration/valids))
 
     (if (not (memq registration/current
                    registration/valids))
         ;; [FAIL]: Current registration state doesn't allowed running the temp block.
         (progn
-          (input//kl:debug func.name
-              '(:registering)
-            (concat "Skipping this as not in a valid state for it:\n"
-                    "registering: %S\n"
-                    "valids:      %S\n"
-                    "valid?       %S")
-            registration/current
-            registration/valids
-            (memq registration/current registration/valids))
+          (int<keyboard>:debug func.name
+                               '(:registering)
+                               (concat "Skipping this as not in a valid state for it:\n"
+                                       "registering: %S\n"
+                                       "valids:      %S\n"
+                                       "valid?       %S")
+                               registration/current
+                               registration/valids
+                               (memq registration/current registration/valids))
 
           ;; Explain why we're doing nothing.
-          (input//kl:debug-or-message
-              (format "%s(%S %S ...)" func.name layout type)
-              '(:register)
-              ;; Message if not in some set-up state, else debug.
-              (not (memq registration/current '(nil :init :config)))
-            (concat "not run due to current registration state %S. "
-                    "Set to one of these (can do via "
-                    "`test<keyboard>:layout:set-registering') to run: %S")
-            registration/current
-            registration/valids))
+          (int<keyboard>:debug/message?
+           (format "%s(%S %S ...)" func.name layout type)
+           '(:register)
+           ;; Message if not in some set-up state, else debug.
+           (not (memq registration/current '(nil :init :config)))
+           (concat "not run due to current registration state %S. "
+                   "Set to one of these (can do via "
+                   "`test<keyboard>:layout:set-registering') to run: %S")
+           registration/current
+           registration/valids))
 
       ;; [ OK ]: Run the temp block.
       (prog1
-          (input//kl:debug func.name
-              '(:registering)
-            (concat "EXECUTING 'temp binds' BLOCK!!!\n"
-                    "registering: %S\n"
-                    "valids:      %S\n"
-                    "valid?       %S")
-            registration/current
-            registration/valids
-            (memq registration/current registration/valids))
+          (int<keyboard>:debug func.name
+                               '(:registering)
+                               (concat "EXECUTING 'temp binds' BLOCK!!!\n"
+                                       "registering: %S\n"
+                                       "valids:      %S\n"
+                                       "valid?       %S")
+                               registration/current
+                               registration/valids
+                               (memq registration/current registration/valids))
 
         (let (return-value)
           ;; Apply the unbinds.

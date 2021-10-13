@@ -77,14 +77,14 @@
     (:after evil-snipe
      :map (evil-snipe-mode-map evil-snipe-local-mode-map)
 
-      ;; ┌────────────────────────────────┐
-      ;; │ Prefixes                       │
-      ;; └────────────────────────────────┘
-      ;; Doom or General or someone will complain if bound keys are not
-      ;; unbound before being used for prefixes...
+     ;; ┌────────────────────────────────┐
+     ;; │ Prefixes                       │
+     ;; └────────────────────────────────┘
+     ;; Doom or General or someone will complain if bound keys are not
+     ;; unbound before being used for prefixes...
 
-      ;; Unbind 's' from snipe.
-      :nvm "s" :layout:common:undefined)
+     ;; Unbind 's' from snipe.
+     :nvm "s" :layout:common:undefined)
 
 
     ;; ╔════════════════════════════════════════════════════════════════╗
@@ -95,12 +95,12 @@
      :after evil-org
      :map evil-org-mode-map
 
-      ;; ┌────────────────────────────────┐
-      ;; │ Keys                           │
-      ;; └────────────────────────────────┘
+     ;; ┌────────────────────────────────┐
+     ;; │ Keys                           │
+     ;; └────────────────────────────────┘
 
-      ;; Unbind from `evil-open-below'.
-      :n "o" :layout:common:undefined)))
+     ;; Unbind from `evil-open-below'.
+     :n "o" :layout:common:undefined)))
 
 
 ;;------------------------------
@@ -244,11 +244,11 @@
      :after evil-org
      :map evil-org-mode-map
 
-      ;; ┌────────────────────────────────┐
-      ;; │ Special Org Versions           │
-      ;; └────────────────────────────────┘
-      (:prefix ("s" . "Evil States")
-       :n   "t"  #'evil-org-open-below)) ;; Replace `evil-open-below' with `evil-org-open-below'.
+     ;; ┌────────────────────────────────┐
+     ;; │ Special Org Versions           │
+     ;; └────────────────────────────────┘
+     (:prefix ("s" . "Evil States")
+      :n   "t"  #'evil-org-open-below)) ;; Replace `evil-open-below' with `evil-org-open-below'.
 
     ;; ╔══════════════════════════╗
     ;; ╠═ END: evil-org-mode-map ═╣
@@ -266,330 +266,330 @@
   ;; Can't bind our magit keys until after evil-collection loads its stuff for them.
   (after! '(evil-collection magit)
     ;; Try to set states via `evil-collection' vars, fallback to a default.
-      (let ((states
-             (input//kl:states->keyword
-              ;; When does evil-collection overwrite all the magit keys?
-              ;;   - Does it overwrite them? Or does Doom do it differently somewhere else?
-              (condition-case-unless-debug signal-raised
-                  ;; Get list of states from 'evil-collection'?
-                  (if evil-collection-magit-use-y-for-yank
-                      (list evil-collection-magit-state 'visual)
-                    (list evil-collection-magit-state))
-                ;; Failed - that file wasn't loaded I guess?
-                ;; Use a default.
-                (void-variable
-                 (input//kl:debug "+spydez/init.el:magit"
-                     nil ;; No tags?
-                   "`void-variable' signal caught when trying to create magit keybinds. %S"
-                   signal-raised)
+    (let ((states
+           (input//kl:states->keyword
+            ;; When does evil-collection overwrite all the magit keys?
+            ;;   - Does it overwrite them? Or does Doom do it differently somewhere else?
+            (condition-case-unless-debug signal-raised
+                ;; Get list of states from 'evil-collection'?
+                (if evil-collection-magit-use-y-for-yank
+                    (list evil-collection-magit-state 'visual)
+                  (list evil-collection-magit-state))
+              ;; Failed - that file wasn't loaded I guess?
+              ;; Use a default.
+              (void-variable
+               (int<keyboard>:debug "+spydez/init.el:magit"
+                                    nil ;; No tags?
+                                    "`void-variable' signal caught when trying to create magit keybinds. %S"
+                                    signal-raised)
 
-                 ;; No `evil-collection-magit-use-y-for-yank' Fallback:
-                 ;;   - Looks like the default for `evil-collection-magit-state' is `normal'.
-                 '(normal))))))
+               ;; No `evil-collection-magit-use-y-for-yank' Fallback:
+               ;;   - Looks like the default for `evil-collection-magit-state' is `normal'.
+               '(normal))))))
 
-        ;;------------------------------
-        ;; Magit: Unbind Keys
-        ;;------------------------------
-        ;; (keyboard:layout:bind :spydez :evil
-        (test<keyboard>:layout:bind :pp-sexpr ; :eval
-                                    :spydez :evil
-          ;; Keybinds for the `:spydez' layout: a big list of inputs to
-          ;; `input:keyboard/layout:map!'.
-          ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
-          `(:after magit
+      ;;------------------------------
+      ;; Magit: Unbind Keys
+      ;;------------------------------
+      ;; (keyboard:layout:bind :spydez :evil
+      (test<keyboard>:layout:bind :pp-sexpr ; :eval
+          :spydez :evil
+        ;; Keybinds for the `:spydez' layout: a big list of inputs to
+        ;; `input:keyboard/layout:map!'.
+        ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
+        `(:after magit
 
-            ;; ╔════════════════════════════════════════════════════════════════╗
-            ;; ║ Keymap: magit-mode-map                                         ║
-            ;; ╚════════════════════════════════════════════════════════════════╝
-            (:map magit-mode-map
+          ;; ╔════════════════════════════════════════════════════════════════╗
+          ;; ║ Keymap: magit-mode-map                                         ║
+          ;; ╚════════════════════════════════════════════════════════════════╝
+          (:map magit-mode-map
 
-             ;; ┌────────────────────────────────┐
-             ;; │ Keys                           │
-             ;; └────────────────────────────────┘
+           ;; ┌────────────────────────────────┐
+           ;; │ Keys                           │
+           ;; └────────────────────────────────┘
 
-             ;; Because only y can be for yank.
-             ;; ...unless you have a different keyboard layout and are remapping literally everything.
-             (:when evil-collection-magit-use-y-for-yank
-                    ,states "y" :layout:common:undefined))
+           ;; Because only y can be for yank.
+           ;; ...unless you have a different keyboard layout and are remapping literally everything.
+           (:when evil-collection-magit-use-y-for-yank
+            ,states "y" :layout:common:undefined))
 
-            ;; ╔═══════════════════════╗
-            ;; ╠═ END: magit-mode-map ═╣
-            ;; ╚═══════════════════════╝
-
-
-            ;; ;; ╔════════════════════════════════════════════════════════════════╗
-            ;; ;; ║ Keymap: magit-popup-mode-map                                   ║
-            ;; ;; ╚════════════════════════════════════════════════════════════════╝
-            ;; (:map magit-popup-mode-map
-            ;;
-            ;;  ;; ┌────────────────────────────────┐
-            ;;  ;; │ Magit Misc. Commands           │
-            ;;  ;; └────────────────────────────────┘
-            ;;  (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
-            ;;   ;; No change from 'evil-collection'.
-            ;;   ;; :e "<ecape>" :layout:common:undefined
-            ;;   ))
-            ;;
-            ;; ;; ╔═════════════════════════════╗
-            ;; ;; ╠═ END: magit-popup-mode-map ═╣
-            ;; ;; ╚═════════════════════════════╝
-            ))
+          ;; ╔═══════════════════════╗
+          ;; ╠═ END: magit-mode-map ═╣
+          ;; ╚═══════════════════════╝
 
 
-        ;;------------------------------
-        ;; Magit: Bind Keys
-        ;;------------------------------
-        ;; (keyboard:layout:bind :spydez :evil
-        (test<keyboard>:layout:bind :pp-sexpr ; :eval
-                                    :spydez :evil
-          ;; Keybinds for the `:spydez' layout: a big list of inputs to
-          ;; `input:keyboard/layout:map!'.
-          ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
-          `(:after magit
-
-                ;; ╔════════════════════════════════════════════════════════════════╗
-                ;; ║ Keymap: magit-mode-map                                         ║
-                ;; ╚════════════════════════════════════════════════════════════════╝
-                (:map magit-mode-map
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Magit Misc. Commands           │
-                      ;; └────────────────────────────────┘
-                      (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
-                            ,states (:derive :layout:evil:line-next) #'magit-section-forward-sibling
-                            ,states (:derive :layout:evil:line-prev) #'magit-section-backward-sibling
-                            ;; No change from 'evil-collection'.
-                            ;; ,states "r"                               #'magit-refresh
-                            ;; ,states "R"                               #'magit-refresh-all
-                            ;; ,states "g"                               :layout:evil:goto-line-first
-                            )
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Movement                       │
-                      ;; └────────────────────────────────┘
-                      ;; By line:
-                      ,states (:derive :layout:evil:line-next) :layout:evil:line-next
-                      ,states (:derive :layout:evil:line-prev) :layout:evil:line-prev
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "G"                               :layout:evil:goto-line
-
-                      ;; By number of lines:
-                      ,states (:derive :layout:evil:scroll-up)   :layout:evil:scroll-up
-                      ,states (:derive :layout:evil:scroll-down) :layout:evil:scroll-down
-
-                      ;; By sections:
-                      ,states (:derive :layout:evil:scroll-page-up)   #'magit-section-forward
-                      ,states (:derive :layout:evil:scroll-page-down) #'magit-section-backward
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "["                                 #'magit-section-forward-sibling
-                      ;; ,states "]"                                 #'magit-section-backward-sibling
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Actions                        │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "x"                                        #'magit-delete-thing
-                      ;; ,states (:derive 'shift #'magit-delete-thing)     #'magit-file-untrack
-                      ;; ,states "-"                                        #'magit-revert-no-commit
-                      ;; TODO: make `(:derive 'shift ...)' work for non-alpha characters.
-                      ;; ,states (:derive 'shift #'magit-revert-no-commit) #'magit-revert
-                      ;; ,states "p"                                        #'magit-push
-                      ;; ,states "o"                                        #'magit-reset-quickly
-                      ;; ,states (:derive 'shift #'magit-reset-quickly)    #'magit-reset
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Git                            │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "|" #'magit-git-command
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Sub-Repositories               │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "'"                                #'magit-submodule
-                      ;; ,states (:derive 'shift #'magit-submodule) #'magit-subtree
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Diff                           │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "=" #'magit-diff-less-context
-
-                      ;; TODO: Does their bug apply to ':input/keyboard'?
-                      ;; https://github.com/emacs-evil/evil-collection/issues/406
-                      ;; Use kbd here for S-SPC and S-DEL so evil-collection-define-key can
-                      ;; parse definition correctly.
-                      ;;
-                      ;; No change from 'evil-collection'.
-                      ;; ,states (kbd "S-SPC") #'magit-diff-show-or-scroll-up
-                      ;; ,states (kbd "S-DEL") #'magit-diff-show-or-scroll-down
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Magit                          │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "q" #'magit-mode-bury-buffer
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Magit Forge                    │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states "@" #'forge-dispatch
-
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Evil                           │
-                      ;; └────────────────────────────────┘
-                      ;; No change from 'evil-collection'.
-                      ;; ,states ":" :layout:evil:evil-command
+          ;; ;; ╔════════════════════════════════════════════════════════════════╗
+          ;; ;; ║ Keymap: magit-popup-mode-map                                   ║
+          ;; ;; ╚════════════════════════════════════════════════════════════════╝
+          ;; (:map magit-popup-mode-map
+          ;;
+          ;;  ;; ┌────────────────────────────────┐
+          ;;  ;; │ Magit Misc. Commands           │
+          ;;  ;; └────────────────────────────────┘
+          ;;  (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
+          ;;   ;; No change from 'evil-collection'.
+          ;;   ;; :e "<ecape>" :layout:common:undefined
+          ;;   ))
+          ;;
+          ;; ;; ╔═════════════════════════════╗
+          ;; ;; ╠═ END: magit-popup-mode-map ═╣
+          ;; ;; ╚═════════════════════════════╝
+          ))
 
 
-                      ;; TODO: `evil-toggle-key' not defined?
-                      ;; :n evil-toggle-key #'evil-emacs-state
-                      ;; TODO: Escape is cancel. Why would 'evil-collection' make it a different keybind? Can you even do that?
-                      ;; :n "<escape>" #'magit-mode-bury-buffer
+      ;;------------------------------
+      ;; Magit: Bind Keys
+      ;;------------------------------
+      ;; (keyboard:layout:bind :spydez :evil
+      (test<keyboard>:layout:bind :pp-sexpr ; :eval
+          :spydez :evil
+        ;; Keybinds for the `:spydez' layout: a big list of inputs to
+        ;; `input:keyboard/layout:map!'.
+        ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
+        `(:after magit
 
-                      ;; TODO: `evil-search-module' not defined?
-                      ;; TODO: No ':if' in `map!'. Would have to implement or use both `:when' and `:unless'.
-                      ;; (:when (eq evil-search-module 'evil-search)
-                      ;;       ,states "/" #'evil-ex-search-forward
-                      ;;       ,states "n" #'evil-ex-search-next
-                      ;;       ,states (:derive 'shift #'evil-ex-search-next) #'evil-ex-search-previous)
-                      ;; (:unless (eq evil-search-module 'evil-search)
-                      ;;   ,states "/" #'evil-search-forward
-                      ;;   ,states "n" #'evil-search-next
-                      ;;   ,states (:derive #'evil-ex-search-next) #'evil-search-previous)
+          ;; ╔════════════════════════════════════════════════════════════════╗
+          ;; ║ Keymap: magit-mode-map                                         ║
+          ;; ╚════════════════════════════════════════════════════════════════╝
+          (:map magit-mode-map
 
-                      ;; TODO: Don't have these vars, so I can't really check for these things.
-                      ;;   - What does Doom do?
-                      ;; (:when evil-collection-magit-want-horizontal-movement
-                      ;;       ,states "H"   #'magit-dispatch
-                      ;;       ,states "L"   #'magit-log
-                      ;;       ,states "C-l" #'magit-log-refresh
-                      ;;       ,states "h"   #'evil-backward-char
-                      ;;       ,states "l"   #'evil-forward-char)
+           ;; ┌────────────────────────────────┐
+           ;; │ Magit Misc. Commands           │
+           ;; └────────────────────────────────┘
+           (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
+            ,states (:derive :layout:evil:line-next) #'magit-section-forward-sibling
+            ,states (:derive :layout:evil:line-prev) #'magit-section-backward-sibling
+            ;; No change from 'evil-collection'.
+            ;; ,states "r"                               #'magit-refresh
+            ;; ,states "R"                               #'magit-refresh-all
+            ;; ,states "g"                               :layout:evil:goto-line-first
+            )
 
-                      ;; TODO: Ignore this var?
-                      ;; (:when evil-want-C-u-scroll
-                      ;;   ,states "C-u" evil-scroll-up))
+           ;; ┌────────────────────────────────┐
+           ;; │ Movement                       │
+           ;; └────────────────────────────────┘
+           ;; By line:
+           ,states (:derive :layout:evil:line-next) :layout:evil:line-next
+           ,states (:derive :layout:evil:line-prev) :layout:evil:line-prev
+           ;; No change from 'evil-collection'.
+           ;; ,states "G"                               :layout:evil:goto-line
 
-                      ;; TODO: Var isn't defined.
-                      ;; TODO: No ':if' in `map!'. Would have to implement or use both `:when' and `:unless'.
-                      ;; (:when evil-collection-magit-use-y-for-yank
-                      ;;       ,states "v"    #'evil-visual-line
-                      ;;       ,states "V"    #'evil-visual-line
-                      ;;       ,states "\C-w"  #'evil-window-map
-                      ;;       ;; TODO: "y" prefix
-                      ;;       ;; ,states "y"
-                      ;;       ;; ,states "yy"   #'evil-collection-magit-yank-whole-line
-                      ;;       ;; ,states "yr"   #'magit-show-refs
-                      ;;       ;; ,states "ys"   #'magit-copy-section-value
-                      ;;       ;; ,states "yb"   #'magit-copy-buffer-revision
-                      ;;       ;; :v     "y"    #'magit-copy-section-value
-                      ;;       )
-                      ;; (:unless evil-collection-magit-use-y-for-yank
-                      ;;       ,states magit-mode-map "v" #'set-mark-command
-                      ;;       ;; TODO: Why both "v" and "V"?
-                      ;;       ,states magit-mode-map (:derive 'shift #'set-mark-command) #'set-mark-command
-                      ;;       ;; TODO: Escape is cancel. Why would 'evil-collection' make it a different keybind? Can you even do that?
-                      ;;       ,states magit-mode-map "<escape>" #'evil-collection-magit-maybe-deactivate-mark)
+           ;; By number of lines:
+           ,states (:derive :layout:evil:scroll-up)   :layout:evil:scroll-up
+           ,states (:derive :layout:evil:scroll-down) :layout:evil:scroll-down
 
-                      ;; (when evil-collection-magit-use-z-for-folds
-                      ;;   ;; TODO: "z" prefix
-                      ;;   ;; ,states "z1" #'magit-section-show-level-1-all
-                      ;;   ;; ,states "z2" #'magit-section-show-level-2-all
-                      ;;   ;; ,states "z3" #'magit-section-show-level-3-all
-                      ;;   ;; ,states "z4" #'magit-section-show-level-4-all
-                      ;;   ;; ,states "za" #'magit-section-toggle
-                      ;;   ;; ,states "zc" #'magit-section-hide
-                      ;;   ;; ,states "zC" #'magit-section-hide-children
-                      ;;   ;; ,states "zo" #'magit-section-show
-                      ;;   ;; ,states "zO" #'magit-section-show-children
-                      ;;   ;; ,states "zr" #'magit-section-show-level-4-all
-                      )
+           ;; By sections:
+           ,states (:derive :layout:evil:scroll-page-up)   #'magit-section-forward
+           ,states (:derive :layout:evil:scroll-page-down) #'magit-section-backward
+           ;; No change from 'evil-collection'.
+           ;; ,states "["                                 #'magit-section-forward-sibling
+           ;; ,states "]"                                 #'magit-section-backward-sibling
 
-                ;; ╔═══════════════════════╗
-                ;; ╠═ END: magit-mode-map ═╣
-                ;; ╚═══════════════════════╝
+           ;; ┌────────────────────────────────┐
+           ;; │ Actions                        │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "x"                                        #'magit-delete-thing
+           ;; ,states (:derive 'shift #'magit-delete-thing)     #'magit-file-untrack
+           ;; ,states "-"                                        #'magit-revert-no-commit
+           ;; TODO: make `(:derive 'shift ...)' work for non-alpha characters.
+           ;; ,states (:derive 'shift #'magit-revert-no-commit) #'magit-revert
+           ;; ,states "p"                                        #'magit-push
+           ;; ,states "o"                                        #'magit-reset-quickly
+           ;; ,states (:derive 'shift #'magit-reset-quickly)    #'magit-reset
 
+           ;; ┌────────────────────────────────┐
+           ;; │ Git                            │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "|" #'magit-git-command
 
-                ;; ╔════════════════════════════════════════════════════════════════╗
-                ;; ║ Keymap: magit-log-mode-map                                     ║
-                ;; ╚════════════════════════════════════════════════════════════════╝
-                (:map magit-log-mode-map
+           ;; ┌────────────────────────────────┐
+           ;; │ Sub-Repositories               │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "'"                                #'magit-submodule
+           ;; ,states (:derive 'shift #'magit-submodule) #'magit-subtree
 
-                      ;; ┌────────────────────────────────┐
-                      ;; │ Commits                        │
-                      ;; └────────────────────────────────┘
-                      ;; These are to fix the priority of the log mode map and the magit mode map.
-                      ;; FIXME: Conflict between this and revert. Revert seems more important here.
-                      ;; (,states magit-log-mode-map "-" magit-log-half-commit-limit    "-")
-                      ;;
-                      ;; No change from 'evil-collection'.
-                      ,states "=" #'magit-log-toggle-commit-limit
-                      )
+           ;; ┌────────────────────────────────┐
+           ;; │ Diff                           │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "=" #'magit-diff-less-context
 
-                ;; ╔═══════════════════════════╗
-                ;; ╠═ END: magit-log-mode-map ═╣
-                ;; ╚═══════════════════════════╝
+           ;; TODO: Does their bug apply to ':input/keyboard'?
+           ;; https://github.com/emacs-evil/evil-collection/issues/406
+           ;; Use kbd here for S-SPC and S-DEL so evil-collection-define-key can
+           ;; parse definition correctly.
+           ;;
+           ;; No change from 'evil-collection'.
+           ;; ,states (kbd "S-SPC") #'magit-diff-show-or-scroll-up
+           ;; ,states (kbd "S-DEL") #'magit-diff-show-or-scroll-down
 
+           ;; ┌────────────────────────────────┐
+           ;; │ Magit                          │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "q" #'magit-mode-bury-buffer
 
-                ;; ;; ╔════════════════════════════════════════════════════════════════╗
-                ;; ;; ║ Keymap: magit-status-mode-map                                  ║
-                ;; ;; ╚════════════════════════════════════════════════════════════════╝
-                ;; (:map magit-status-mode-map
-                ;;
-                ;;       ;; ┌────────────────────────────────┐
-                ;;       ;; │ Magit Misc. Commands           │
-                ;;       ;; └────────────────────────────────┘
-                ;;       (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
-                ;;             ;; No change from 'evil-collection'.
-                ;;             ,states "z"  #'magit-jump-to-stashes
-                ;;             ,states "t"  #'magit-jump-to-tracked
-                ;;             ,states "n"  #'magit-jump-to-untracked
-                ;;             ,states "u"  #'magit-jump-to-unstaged
-                ;;             ,states "s"  #'magit-jump-to-staged
-                ;;             ,states "fu" #'magit-jump-to-unpulled-from-upstream
-                ;;             ,states "fp" #'magit-jump-to-unpulled-from-pushremote
-                ;;             ,states "pu" #'magit-jump-to-unpushed-to-upstream
-                ;;             ,states "pp" #'magit-jump-to-unpushed-to-pushremote
-                ;;             ,states "h"  #'magit-section-up
-                ;;             )
-                ;;       )
-                ;;
-                ;; ;; ╔══════════════════════════════╗
-                ;; ;; ╠═ END: magit-status-mode-map ═╣
-                ;; ;; ╚══════════════════════════════╝
+           ;; ┌────────────────────────────────┐
+           ;; │ Magit Forge                    │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states "@" #'forge-dispatch
+
+           ;; ┌────────────────────────────────┐
+           ;; │ Evil                           │
+           ;; └────────────────────────────────┘
+           ;; No change from 'evil-collection'.
+           ;; ,states ":" :layout:evil:evil-command
 
 
-                ;; ;; ╔══════════════════════════════════════════════════════════════╗
-                ;; ;; ║ Keymap: magit-diff-mode-map                                  ║
-                ;; ;; ╚══════════════════════════════════════════════════════════════╝
-                ;; (:map magit-diff-mode-map
-                ;;
-                ;;       ;; ┌────────────────────────────────┐
-                ;;       ;; │ Magit Misc. Commands           │
-                ;;       ;; └────────────────────────────────┘
-                ;;       (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
-                ;;             ;; No change from 'evil-collection'.
-                ;;             :v "y"  #'magit-copy-section-value
-                ;;             )
-                ;;       )
-                ;;
-                ;; ;; ╔════════════════════════════╗
-                ;; ;; ╠═ END: magit-diff-mode-map ═╣
-                ;; ;; ╚════════════════════════════╝
+           ;; TODO: `evil-toggle-key' not defined?
+           ;; :n evil-toggle-key #'evil-emacs-state
+           ;; TODO: Escape is cancel. Why would 'evil-collection' make it a different keybind? Can you even do that?
+           ;; :n "<escape>" #'magit-mode-bury-buffer
 
-                ;; <<done>>
-                )
+           ;; TODO: `evil-search-module' not defined?
+           ;; TODO: No ':if' in `map!'. Would have to implement or use both `:when' and `:unless'.
+           ;; (:when (eq evil-search-module 'evil-search)
+           ;;       ,states "/" #'evil-ex-search-forward
+           ;;       ,states "n" #'evil-ex-search-next
+           ;;       ,states (:derive 'shift #'evil-ex-search-next) #'evil-ex-search-previous)
+           ;; (:unless (eq evil-search-module 'evil-search)
+           ;;   ,states "/" #'evil-search-forward
+           ;;   ,states "n" #'evil-search-next
+           ;;   ,states (:derive #'evil-ex-search-next) #'evil-search-previous)
+
+           ;; TODO: Don't have these vars, so I can't really check for these things.
+           ;;   - What does Doom do?
+           ;; (:when evil-collection-magit-want-horizontal-movement
+           ;;       ,states "H"   #'magit-dispatch
+           ;;       ,states "L"   #'magit-log
+           ;;       ,states "C-l" #'magit-log-refresh
+           ;;       ,states "h"   #'evil-backward-char
+           ;;       ,states "l"   #'evil-forward-char)
+
+           ;; TODO: Ignore this var?
+           ;; (:when evil-want-C-u-scroll
+           ;;   ,states "C-u" evil-scroll-up))
+
+           ;; TODO: Var isn't defined.
+           ;; TODO: No ':if' in `map!'. Would have to implement or use both `:when' and `:unless'.
+           ;; (:when evil-collection-magit-use-y-for-yank
+           ;;       ,states "v"    #'evil-visual-line
+           ;;       ,states "V"    #'evil-visual-line
+           ;;       ,states "\C-w"  #'evil-window-map
+           ;;       ;; TODO: "y" prefix
+           ;;       ;; ,states "y"
+           ;;       ;; ,states "yy"   #'evil-collection-magit-yank-whole-line
+           ;;       ;; ,states "yr"   #'magit-show-refs
+           ;;       ;; ,states "ys"   #'magit-copy-section-value
+           ;;       ;; ,states "yb"   #'magit-copy-buffer-revision
+           ;;       ;; :v     "y"    #'magit-copy-section-value
+           ;;       )
+           ;; (:unless evil-collection-magit-use-y-for-yank
+           ;;       ,states magit-mode-map "v" #'set-mark-command
+           ;;       ;; TODO: Why both "v" and "V"?
+           ;;       ,states magit-mode-map (:derive 'shift #'set-mark-command) #'set-mark-command
+           ;;       ;; TODO: Escape is cancel. Why would 'evil-collection' make it a different keybind? Can you even do that?
+           ;;       ,states magit-mode-map "<escape>" #'evil-collection-magit-maybe-deactivate-mark)
+
+           ;; (when evil-collection-magit-use-z-for-folds
+           ;;   ;; TODO: "z" prefix
+           ;;   ;; ,states "z1" #'magit-section-show-level-1-all
+           ;;   ;; ,states "z2" #'magit-section-show-level-2-all
+           ;;   ;; ,states "z3" #'magit-section-show-level-3-all
+           ;;   ;; ,states "z4" #'magit-section-show-level-4-all
+           ;;   ;; ,states "za" #'magit-section-toggle
+           ;;   ;; ,states "zc" #'magit-section-hide
+           ;;   ;; ,states "zC" #'magit-section-hide-children
+           ;;   ;; ,states "zo" #'magit-section-show
+           ;;   ;; ,states "zO" #'magit-section-show-children
+           ;;   ;; ,states "zr" #'magit-section-show-level-4-all
+           )
+
+          ;; ╔═══════════════════════╗
+          ;; ╠═ END: magit-mode-map ═╣
+          ;; ╚═══════════════════════╝
+
+
+          ;; ╔════════════════════════════════════════════════════════════════╗
+          ;; ║ Keymap: magit-log-mode-map                                     ║
+          ;; ╚════════════════════════════════════════════════════════════════╝
+          (:map magit-log-mode-map
+
+           ;; ┌────────────────────────────────┐
+           ;; │ Commits                        │
+           ;; └────────────────────────────────┘
+           ;; These are to fix the priority of the log mode map and the magit mode map.
+           ;; FIXME: Conflict between this and revert. Revert seems more important here.
+           ;; (,states magit-log-mode-map "-" magit-log-half-commit-limit    "-")
+           ;;
+           ;; No change from 'evil-collection'.
+           ,states "=" #'magit-log-toggle-commit-limit
+           )
+
           ;; ╔═══════════════════════════╗
           ;; ╠═ END: magit-log-mode-map ═╣
           ;; ╚═══════════════════════════╝
 
-          ) ;; /`test<keyboard>:layout:bind', or possibly `keyboard:layout:bind'
-        ;; <EVAL-THIS kbd="C-x C-e">
-        ) ;; /set `states' from `evil-collection'.
-      ;; </EVAL-THIS>
+
+          ;; ;; ╔════════════════════════════════════════════════════════════════╗
+          ;; ;; ║ Keymap: magit-status-mode-map                                  ║
+          ;; ;; ╚════════════════════════════════════════════════════════════════╝
+          ;; (:map magit-status-mode-map
+          ;;
+          ;;       ;; ┌────────────────────────────────┐
+          ;;       ;; │ Magit Misc. Commands           │
+          ;;       ;; └────────────────────────────────┘
+          ;;       (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
+          ;;             ;; No change from 'evil-collection'.
+          ;;             ,states "z"  #'magit-jump-to-stashes
+          ;;             ,states "t"  #'magit-jump-to-tracked
+          ;;             ,states "n"  #'magit-jump-to-untracked
+          ;;             ,states "u"  #'magit-jump-to-unstaged
+          ;;             ,states "s"  #'magit-jump-to-staged
+          ;;             ,states "fu" #'magit-jump-to-unpulled-from-upstream
+          ;;             ,states "fp" #'magit-jump-to-unpulled-from-pushremote
+          ;;             ,states "pu" #'magit-jump-to-unpushed-to-upstream
+          ;;             ,states "pp" #'magit-jump-to-unpushed-to-pushremote
+          ;;             ,states "h"  #'magit-section-up
+          ;;             )
+          ;;       )
+          ;;
+          ;; ;; ╔══════════════════════════════╗
+          ;; ;; ╠═ END: magit-status-mode-map ═╣
+          ;; ;; ╚══════════════════════════════╝
+
+
+          ;; ;; ╔══════════════════════════════════════════════════════════════╗
+          ;; ;; ║ Keymap: magit-diff-mode-map                                  ║
+          ;; ;; ╚══════════════════════════════════════════════════════════════╝
+          ;; (:map magit-diff-mode-map
+          ;;
+          ;;       ;; ┌────────────────────────────────┐
+          ;;       ;; │ Magit Misc. Commands           │
+          ;;       ;; └────────────────────────────────┘
+          ;;       (:prefix ("g" . "Magit...")  ;; Prefix for a bunch of Magit commands.
+          ;;             ;; No change from 'evil-collection'.
+          ;;             :v "y"  #'magit-copy-section-value
+          ;;             )
+          ;;       )
+          ;;
+          ;; ;; ╔════════════════════════════╗
+          ;; ;; ╠═ END: magit-diff-mode-map ═╣
+          ;; ;; ╚════════════════════════════╝
+
+          ;; <<done>>
+          )
+        ;; ╔═══════════════════════════╗
+        ;; ╠═ END: magit-log-mode-map ═╣
+        ;; ╚═══════════════════════════╝
+
+        ) ;; /`test<keyboard>:layout:bind', or possibly `keyboard:layout:bind'
+      ;; <EVAL-THIS kbd="C-x C-e">
+      ) ;; /set `states' from `evil-collection'.
+    ;; </EVAL-THIS>
     ) ;; /`after!' evil-collection and magit
   ) ;; /when nil
 

@@ -122,7 +122,7 @@ value as tests' debugging toggle."
 
 
 ;;------------------------------------------------------------------------------
-;; Test Helpers
+;; Test Helpers: Output
 ;;------------------------------------------------------------------------------
 
 (defun test<keyboard>:redirect/output:error (msg &rest args)
@@ -264,6 +264,32 @@ SHOULD-BE can be:
 
 
 ;;------------------------------------------------------------------------------
+;; Test Helpers: Debug
+;;------------------------------------------------------------------------------
+
+;;---
+;; NOTE: Do NOT change/reset debug toggle or tags!
+;;   - Want debugging to persist across tests, if we are in fact debugging them.
+;; The 'test/debug.el' test suite will have its own set-up/tear-down functions for testing them
+;;---
+
+(defun test<keyboard>:debug:setup ()
+  "Placeholder for reminder not to mess with debugging."
+  ;; Do not touch:
+  ;;   - `int<keyboard>:debugging'
+  ;;   - `int<keyboard>:debug:tags'
+  )
+
+
+(defun test<keyboard>:debug:teardown ()
+  "Placeholder for reminder not to mess with debugging."
+  ;; Do not touch:
+  ;;   - `int<keyboard>:debugging'
+  ;;   - `int<keyboard>:debug:tags'
+  )
+
+
+;;------------------------------------------------------------------------------
 ;; Test Fixture (Set-Up / Tear-Down) Functions
 ;;------------------------------------------------------------------------------
 
@@ -301,6 +327,7 @@ FUNC/TEARDOWN will run as first step in tear-down."
 FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
   (test<keyboard>:setup/vars)
   (test<keyboard>:redirect/output:setup)
+  (test<keyboard>:debug:setup)
 
   (test<keyboard>:setup/suite func/setup func/teardown)
 
@@ -334,6 +361,7 @@ usage isn't affected."
         (funcall test<keyboard>:suite:func/teardown name)))
 
   ;; Generally in reverse order from set-up.
+  (test<keyboard>:debug:teardown)
   (test<keyboard>:redirect/output:teardown)
   (test<keyboard>:teardown/vars))
 

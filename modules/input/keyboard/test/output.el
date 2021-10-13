@@ -2,7 +2,7 @@
 ;;; input/keyboard/test/test.el
 
 ;;------------------------------------------------------------------------------
-;; Test Keyboard Layouts
+;; Test Output Helpers
 ;;------------------------------------------------------------------------------
 
 ;;---
@@ -39,7 +39,7 @@
   "Test that our output redirection for testing works."
 
   (test<keyboard>:fixture
-      ;; Test name, teardown func.
+      ;; Test name, setup & teardown func.
       "test<keyboard/output>::output-redirection"
       nil
       nil

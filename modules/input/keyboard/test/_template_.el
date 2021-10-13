@@ -108,7 +108,7 @@ usage isn't affected."
 
   (test<keyboard>:fixture
       ;;===
-      ;; Test name, teardown func.
+      ;; Test name, setup & teardown func.
       ;;===
       "test<keyboard/error>::simple/stupid"
       nil
@@ -138,7 +138,7 @@ usage isn't affected."
 
   (test<keyboard>:fixture
       ;;===
-      ;; Test name, teardown func.
+      ;; Test name, setup & teardown func.
       ;;===
       "test<keyboard/error>::int<keyboard>:func:name/here"
       nil

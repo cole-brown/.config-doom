@@ -49,11 +49,11 @@
                        (:warn  . "Warn Output")
                        (:debug . "DEBUG OUTPUT"))))
       (dolist (data test-data)
-        (int<keyboard>:output test-name
-                              (car data)
+        (int<keyboard>:output (car data)
+                              test-name
                               (cdr data))
-        (test<keyboard>:assert:output test-name
-                                      (car data)
+        (test<keyboard>:assert:output (car data)
+                                      test-name
                                       (list (cdr data)))))))
 
 
@@ -88,7 +88,7 @@
     (let ((value '(bad . value)))
       (should (string= (format "%S" value)
                        (int<keyboard>:output:normalize/key value)))
-      (test<keyboard>:assert:output test-name :warn 1))))
+      (test<keyboard>:assert:output :warn test-name 1))))
 
 
 ;;------------------------------
@@ -189,10 +189,10 @@
       (should (int<keyboard>:output/message :error msg.error nil))
 
       ;; Error should have its message.
-      (test<keyboard>:assert:output test-name :error msg.error)
+      (test<keyboard>:assert:output :error test-name msg.error)
       ;; Warn and debug should have nothing so far.
-      (test<keyboard>:assert:output test-name :warn  nil)
-      (test<keyboard>:assert:output test-name :debug nil)
+      (test<keyboard>:assert:output :warn  test-name nil)
+      (test<keyboard>:assert:output :debug test-name nil)
 
       ;;------------------------------
       ;; Test Warning
@@ -200,10 +200,10 @@
       (should (int<keyboard>:output/message :warn msg.warn nil))
 
       ;; Error & Warn should have their messages now.
-      (test<keyboard>:assert:output test-name :error msg.error)
+      (test<keyboard>:assert:output :error test-name msg.error)
       ;; Debug should still have nothing.
-      (test<keyboard>:assert:output test-name :warn  msg.warn)
-      (test<keyboard>:assert:output test-name :debug nil)
+      (test<keyboard>:assert:output :warn  test-name msg.warn)
+      (test<keyboard>:assert:output :debug test-name nil)
 
       ;;------------------------------
       ;; Test Debug
@@ -211,9 +211,9 @@
       (should (int<keyboard>:output/message :debug msg.debug nil))
 
       ;; All three should have their messages.
-      (test<keyboard>:assert:output test-name :error msg.error)
-      (test<keyboard>:assert:output test-name :warn  msg.warn)
-      (test<keyboard>:assert:output test-name :debug msg.debug))))
+      (test<keyboard>:assert:output :error test-name msg.error)
+      (test<keyboard>:assert:output :warn  test-name msg.warn)
+      (test<keyboard>:assert:output :debug test-name msg.debug))))
 
 
 ;;------------------------------
@@ -235,7 +235,7 @@
     (let* ((fmt.args '("Hello, " "%S.")) ;; Some args for creating a formatting string.
            (expected.substrs (list "Hello, %S." ;; Expected formatting string still w/ '%S'.
                                    test-name))  ;; Expected caller name string.
-           (formatted (apply #'int<keyboard>:output:format test-name :error fmt.args)))
+           (formatted (apply #'int<keyboard>:output:format :error test-name fmt.args)))
       ;; Should have got back some sort of string.
       (should formatted)
       (should (stringp formatted))
@@ -247,8 +247,8 @@
     ;;------------------------------
     ;; Test different prefixes.
     ;;------------------------------
-    (should-not (string= (int<keyboard>:output:format test-name :error "Hello, %s.")
-                         (int<keyboard>:output:format test-name :debug "Hello, %s.")))))
+    (should-not (string= (int<keyboard>:output:format :error test-name "Hello, %s.")
+                         (int<keyboard>:output:format :debug test-name "Hello, %s.")))))
 
 
 ;;------------------------------
@@ -268,13 +268,13 @@
     ;;------------------------------
     ;; Test Error Level
     ;;------------------------------
-    (int<keyboard>:output test-name
-                          :error
+    (int<keyboard>:output :error
+                          test-name
                           '("Hello " "%s... there is a minor case of severe erroring.")
                           "there")
 
-    (test<keyboard>:assert:output test-name
-                                  :error
+    (test<keyboard>:assert:output :error
+                                  test-name
                                   ;; Expect one error message with:
                                   ;;   - test-name
                                   ;;   - formatted output message
@@ -283,14 +283,14 @@
     ;;------------------------------
     ;; Test Warn Level
     ;;------------------------------
-    (int<keyboard>:output test-name
-                          :warn
+    (int<keyboard>:output :warn
+                          test-name
                           "Hello %s; %s."
                           "there"
                           "this is your final warning")
 
-    (test<keyboard>:assert:output test-name
-                                  :warn
+    (test<keyboard>:assert:output :warn
+                                  test-name
                                   ;; Expect one warn message with:
                                   ;;   - test-name
                                   ;;   - formatted output message
@@ -299,13 +299,13 @@
     ;;------------------------------
     ;; Test Debug Level
     ;;------------------------------
-    (int<keyboard>:output test-name
-                          :debug
+    (int<keyboard>:output :debug
+                          test-name
                           "I'm afraid I'm infested with bugs, %s..."
                           "Dave")
 
-    (test<keyboard>:assert:output test-name
-                                  :debug
+    (test<keyboard>:assert:output :debug
+                                  test-name
                                   ;; Expect one debug message with:
                                   ;;   - test-name
                                   ;;   - formatted output message

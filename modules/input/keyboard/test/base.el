@@ -169,7 +169,7 @@ Will also allow the normal output if `test<keyboard>:debugging'."
   (int<keyboard>:output:vars/reset))
 
 
-(defun test<keyboard>:assert:output (caller level should-be)
+(defun test<keyboard>:assert:output (level caller should-be)
   "Assert that LEVEL outputs were/were not issued during the test.
 
 LEVEL should be one of: (:error :warn :debug)
@@ -260,7 +260,7 @@ SHOULD-BE can be:
      ;;---
      (t
       (error "test<keyboard>:assert:output: Unknown SHOULD-BE: %S" should-be)))))
-;; (test<keyboard>:assert:output "test" :warn nil)
+;; (test<keyboard>:assert:output :warn "test" nil)
 
 
 ;;------------------------------------------------------------------------------

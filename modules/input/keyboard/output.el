@@ -174,7 +174,7 @@ ARGS based on current verbosity for the level."
 ;; Output API - Errors, Warnings, etc
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:output:format (caller level &rest message-format)
+(defun int<keyboard>:output:format (level caller &rest message-format)
   "Combines CALLER and error MESSAGE-FORMAT into one string for sending to
 `error' with MESSAGE-FORMAT's args.
 
@@ -197,7 +197,7 @@ etc.
 (defalias 'int<keyboard>:error/format 'int<keyboard>:output:format)
 
 
-(defun int<keyboard>:output (caller level formatting &rest args)
+(defun int<keyboard>:output (level caller formatting &rest args)
   "Format to standard ':keyboard' message output with CALLER info, then output
 the message with FORMATTING and ARGS to the correct place according to LEVEL's
 current verbosity (e.g. #'error for `:error' verbosity normally).
@@ -234,12 +234,12 @@ signaled."
      ;;---
      ((listp formatting)
       (int<keyboard>:output/message level
-                                    (apply #'int<keyboard>:output:format caller level formatting)
+                                    (apply #'int<keyboard>:output:format level caller formatting)
                                     args))
 
      ((stringp formatting)
       (int<keyboard>:output/message level
-                                    (int<keyboard>:output:format caller formatting)
+                                    (int<keyboard>:output:format level caller formatting)
                                     args))
 
      ;;---
@@ -250,6 +250,7 @@ signaled."
       (int<keyboard>:output/message
        :error
        (int<keyboard>:output:format
+        level
         caller
         (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
                 formatting args)))))))

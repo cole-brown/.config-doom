@@ -178,9 +178,19 @@ ARGS based on current verbosity for the level."
   "Combines CALLER and error MESSAGE-FORMAT into one string for sending to
 `error' with MESSAGE-FORMAT's args.
 
-NOTE: Is just for the error /message/. Args should be passed to `error', `warn',
-etc.
-  (error (int<keyboard>:error/format
+NOTE: Is just for the formatting /message/. Args should be passed to `error', `warn',
+etc. Or, best: use `int<keyboard>:output'.
+
+Proper use:
+  (int<keyboard>:output :error
+                        \"int<keyboard>:example-function\"
+                        '(\"Imagine this '%s' is a long \"
+                          \"error string: %S %d\")
+                        some-string something some-integer)
+    -> \"[ERROR] ':input/keyboard/layout': int<keyboard>:example-function: <...>\"
+
+Alternative/direct use:
+  (error (int<keyboard>:output:format
           \"int<keyboard>:example-function\"
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
@@ -193,10 +203,6 @@ etc.
          message-format))
 
 
-;; TODO: Rework all the calls to use new  `int<keyboard>:output' instead.
-(defalias 'int<keyboard>:error/format 'int<keyboard>:output:format)
-
-
 (defun int<keyboard>:output (level caller formatting &rest args)
   "Format to standard ':keyboard' message output with CALLER info, then output
 the message with FORMATTING and ARGS to the correct place according to LEVEL's
@@ -204,7 +210,7 @@ current verbosity (e.g. #'error for `:error' verbosity normally).
 
 For valid LEVELs, see `int<keyboard>:output:verbose' keywords.
 
-Uses FORMATTING string/list-of-strings with `int<keyboard>:error/format' to create
+Uses FORMATTING string/list-of-strings with `int<keyboard>:output:format' to create
 the message format, then applies that format plus any ARGS to the `error'
 signaled."
   ;; Try to be real forgiving about what params are since we're erroring...

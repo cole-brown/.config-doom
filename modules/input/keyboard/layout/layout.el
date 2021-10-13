@@ -149,34 +149,34 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;; Error check vars.
       ;;------------------------------
       (cond ((not (keywordp keyword))
-             (error (int<keyboard>:error:format
-                     "input:keyboard/layout:define/keywords"
-                     "Expected a keyword, got: %S")
-                    keyword))
+             (int<keyboard>:output :error
+                                   '("input:keyboard/layout:define/keywords"
+                                     "Expected a keyword, got: %S")
+                                   keyword))
             ((not (input//kl:layout:valid/keyword? type keyword))
-             (error (int<keyboard>:error:format
-                     "input:keyboard/layout:define/keywords"
-                     "Expected a valid keyboard layout keyword for '%S', got: %S")
-                    type
-                    keyword))
+             (int<keyboard>:output :error
+                                   '("input:keyboard/layout:define/keywords"
+                                     "Expected a valid keyboard layout keyword for '%S', got: %S")
+                                   type
+                                   keyword))
 
             ((not (symbolp func))
-             (error (int<keyboard>:error:format
-                     "input:keyboard/layout:define/keywords"
-                     "Expected a symbol, got: %S")
-                    func))
+             (int<keyboard>:output :error
+                                   '("input:keyboard/layout:define/keywords"
+                                     "Expected a symbol, got: %S")
+                                   func))
             ((not (input//kl:layout:valid/function? func))
-             (error (int<keyboard>:error:format
-                     "input:keyboard/layout:define/keywords"
-                     "Expected a valid keyboard layout function, got: %S")
-                    func))
+             (int<keyboard>:output :error
+                                   '("input:keyboard/layout:define/keywords"
+                                     "Expected a valid keyboard layout function, got: %S")
+                                   func))
 
             ((not (input//kl:layout:valid/type? type))
-             (error (int<keyboard>:error:format
-                     "input:keyboard/layout:define/keywords"
-                     "Type '%S' is not a valid type. "
-                     "Must be one of: %S")
-                    type int<keyboard>:layout:types))
+             (int<keyboard>:output :error
+                                   '("input:keyboard/layout:define/keywords"
+                                     "Type '%S' is not a valid type. "
+                                     "Must be one of: %S")
+                                   type int<keyboard>:layout:types))
 
             (t
              nil))
@@ -224,10 +224,10 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 
      ;; Is a keyword; didn't find it. Error.
      ((keywordp keyword-or-func)
-      (error (int<keyboard>:error:format
-              "input//kl:layout:normalize->func"
-              "No known keyword for %S.")
-             keyword-or-func))
+      (int<keyboard>:output :error
+                            '("input//kl:layout:normalize->func"
+                              "No known keyword for %S.")
+                            keyword-or-func))
 
      ;; Assume it was a function already, not a keyword, and return it as-is.
      (t
@@ -245,10 +245,10 @@ REST: Repeating list of: '(keyword function keyword function ...)"
           ((symbolp symbol/in)
            (intern (concat ":" (symbol-name symbol/in))))
           (t
-           (error (int<keyboard>:error:format
-                   "input//kl:layout:normalize->modifier"
-                   "Unknown input type: %S. Not a keyword or symbol.")
-                  symbol)))))
+           (int<keyboard>:output :error
+                                 '("input//kl:layout:normalize->modifier"
+                                   "Unknown input type: %S. Not a keyword or symbol.")
+                                 symbol)))))
 ;; (input//kl:layout:normalize->modifier ':control)
 ;; (input//kl:layout:normalize->modifier 'control)
 ;; (input//kl:layout:normalize->modifier (quote (quote control)))
@@ -575,13 +575,12 @@ Returns keybind string or nil."
                   ;; Don't know - ignore? error?
                   (t
                    ;; Error for now - want to know about un-encountered types.
-                   (error
-                    (int<keyboard>:error:format
-                     "input//kl:layout:derive/search/in-progress"
-                     "Don't know how to process this keybind setting "
-                     "in order to search it for '%s': %S")
-                    func
-                    binding)
+                   (int<keyboard>:output :error
+                                         '("input//kl:layout:derive/search/in-progress"
+                                           "Don't know how to process this keybind setting "
+                                           "in order to search it for '%s': %S")
+                                         func
+                                         binding)
                    nil))))))
 
     ;; Done searching - return whatever we did (or didn't) find.
@@ -669,7 +668,7 @@ Returns keybind string or nil."
                     "input//kl:layout:derive/search/existing"
                     debug/tags
                   "    %S -> %S"
-                  (input//kl:debug:normalize/key bound-key) func)
+                  (int<keyboard>:output:normalize/key bound-key) func)
 
                 ;; Update `search/bindings' for next loop.
                 (setq search/bindings (cdr search/bindings))
@@ -793,11 +792,11 @@ Examples:
                  debug/tags
                "derive found nothing - error: %S"
                arg)
-             (error
-              (int<keyboard>:error:format "input//kl:layout:derive"
-                                          "Don't know how to process '%S' (type: %S) for deriving keybind. derivation: %S")
-              arg (type-of arg)
-              args))))
+             (int<keyboard>:output :error"input//kl:layout:derive"
+                                   "Don't know how to process '%S' (type: %S) for deriving keybind. derivation: %S"
+                                   arg
+                                   (type-of arg)
+                                   args))))
 
     (input//kl:debug
         "input//kl:layout:derive"
@@ -818,13 +817,12 @@ Examples:
                ;; Maybe they want "MTT"?
                (not (eq modifiers '(shift))))
       ;; Error until a good solution is figured out.
-      (error
-       (int<keyboard>:error:format
-        "input//kl:layout:derive"
-        (concat "Don't have a good solution for deriving from multi-key sequences... "
-                "modifiers: %S, original keybind: %S"))
-       modifiers
-       keys))
+      (int<keyboard>:output :error
+                            "input//kl:layout:derive"
+                            '("Don't have a good solution for deriving from multi-key sequences... "
+                              "modifiers: %S, original keybind: %S"))
+                            modifiers
+                            keys))
 
     ;; Join together the modifiers and keys to create the derived keybind.
     (let (mod/string
@@ -855,26 +853,26 @@ Examples:
               ((eq mod/symbol :alt)
                (setq mod/string (concat mod/string "A-")))
               (t
-               (error
-                (int<keyboard>:error:format "input//kl:layout:derive"
-                                            "Don't know how to process modifier '%s' for deriving keybind: %S")
-                mod/symbol
-                args))))
+               (int<keyboard>:output :error
+                                     "input//kl:layout:derive"
+                                     "Don't know how to process modifier '%s' for deriving keybind: %S"
+                                     mod/symbol
+                                     args))))
 
       ;; Check our `keys'? Zero is bad; more than one might be weird...
       (cond ((= (length keys) 0)
-             (error
-              (int<keyboard>:error:format "input//kl:layout:derive"
-                                          "No keybind found for: %S")
-              args))
+             (int<keyboard>:output :error
+                                   "input//kl:layout:derive"
+                                   "No keybind found for: %S"
+                                   args))
 
             ((> (length keys) 1)
-             (error
-              (int<keyboard>:error:format "input//kl:layout:derive"
-                                          "Not currently sure what to do with more than one keybind string. "
-                                          "Found: %S, Args: %S")
-              keys
-              args))
+             (int<keyboard>:output :error
+                                   "input//kl:layout:derive"
+                                   '("Not currently sure what to do with more than one keybind string. "
+                                     "Found: %S, Args: %S")
+                                   keys
+                                   args))
 
             ;; Only one result in keys. Create and return resultant derived keybind string.
             (t
@@ -974,13 +972,13 @@ CASE should be:
   ;; Validate KEYS.
   (dolist (each keys)
     (unless (stringp each)
-      (error
-       (int<keyboard>:error:format "input//kl:layout:derive/normalize-key"
-                                   "KEYS must contain all strings - found '%S' "
-                                   "(type '%S') in it: %S")
-       each
-       (type-of each)
-       keys)))
+      (int<keyboard>:output :error
+                            "input//kl:layout:derive/normalize-key"
+                            '("KEYS must contain all strings - found '%S' "
+                              "(type '%S') in it: %S")
+                            each
+                            (type-of each)
+                            keys)))
 
   ;; Normalize KEYS list to a string. Expecting it to be backwards from
   ;; `push'ing elements on.
@@ -1016,11 +1014,11 @@ CASE should be:
 
           ;; Invalid: CASE is wrong.
           (t
-           (error
-            (int<keyboard>:error:format "input//kl:layout:derive/normalize-key"
-                                        "Unknown CASE input: %s. Valid inputs are: %S")
-            case
-            '(nil :lower :upper))))))
+           (int<keyboard>:output :error
+                                 "input//kl:layout:derive/normalize-key"
+                                 "Unknown CASE input: %s. Valid inputs are: %S"
+                                 case
+                                 '(nil :lower :upper))))))
 ;; (input//kl:layout:derive/normalize-keys '("LLO" "he") nil)
 ;; (input//kl:layout:derive/normalize-keys '("LLO" "he") :lower)
 ;; (input//kl:layout:derive/normalize-keys '("LLO" "he") :upper)
@@ -1078,10 +1076,10 @@ Used for side-effects; just returns non-nil (`t')."
             debug/tags
           "Um... Unknown keybind keyword: %s -> %s"
           keyword-or-func func)
-        (error
-         (int<keyboard>:error:format "input//kl:layout:map-bind"
-                                     "Unknown keybind keyword: %s -> %s")
-         keyword-or-func func))
+        (int<keyboard>:output :error
+                              "input//kl:layout:map-bind"
+                              "Unknown keybind keyword: %s -> %s"
+                              keyword-or-func func))
       (input//kl:debug
           "input//kl:layout:map-bind"
           debug/tags

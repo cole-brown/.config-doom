@@ -108,12 +108,13 @@ The extension '.el' is used to check for file existance."
     ;; If not, switch back to this:
     ;; (if (input//kl:file/exists? (concat path ".el"))
     ;;     (load! path)
-    ;;   (warn (int<keyboard>:error:format "input:keyboard/layout:load-file"
-    ;;                                     "Could not find "
-    ;;                                     "'%s' file for '%s'. path: %s")
-    ;;         load-name
-    ;;         flag
-    ;;         (concat path ".el")))
+    ;;   (int<keyboard>:output :warn
+    ;;                         "input:keyboard/layout:load-file"
+    ;;                         '("Could not find "
+    ;;                          "'%s' file for '%s'. path: %s")
+    ;;                         load-name
+    ;;                         flag
+    ;;                         (concat path ".el")))
     ))
 ;; (input:keyboard/layout:load-file :spydez "config")
 

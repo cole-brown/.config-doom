@@ -98,12 +98,13 @@ If NO-ERROR is non-nil, will return nil instead of signaling an error."
                  ;; Invalid transition - error or return nil.
                  (if no-error
                      nil
-                   (error (int<keyboard>:error:format "input//kl:layout:registering/set-if-valid?"
-                                                      "current registration state cannot transition from `%S' to `%S' state. "
-                                                      "Must be one of: %S")
-                          registration/current
-                          to
-                          valid/froms))
+                   (int<keyboard>:output :error
+                                         "input//kl:layout:registering/set-if-valid?"
+                                         '("current registration state cannot transition from `%S' to `%S' state. "
+                                           "Must be one of: %S")
+                                         registration/current
+                                         to
+                                         valid/froms))
                ;; Valid. Check if we want to also set it, return non-nil.
                (unless no-set
                  (int<keyboard>:registrar:set registrar :state to)
@@ -161,16 +162,18 @@ TYPE should be one of:
 If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
 earlier."
   (when (not (input//kl:valid/layout? layout))
-    (error (int<keyboard>:error:format "input:keyboard/layout:set"
-                                       "`layout' must be a keyword. "
-                                       "Got: %S")
-           layout))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:set"
+                          '("`layout' must be a keyword. "
+                            "Got: %S")
+                          layout))
 
   (when (not (input//kl:layout:valid/type? type))
-    (error (int<keyboard>:error:format "input:keyboard/layout:set"
-                                       "Type '%S' is not a valid type. "
-                                       "Must be one of: %S")
-           type int<keyboard>:layout:types))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:set"
+                          '("Type '%S' is not a valid type. "
+                            "Must be one of: %S")
+                          type int<keyboard>:layout:types))
 
   ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
   ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
@@ -220,16 +223,18 @@ earlier.
 
 Unbindings are applied before bindings."
   (when (not (input//kl:valid/layout? layout))
-    (error (int<keyboard>:error:format "input:keyboard/layout:unbind"
-                                       "`layout' must be a keyword. "
-                                       "Got: %S")
-           layout))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:unbind"
+                          '("`layout' must be a keyword. "
+                            "Got: %S")
+                          layout))
 
   (when (not (input//kl:layout:valid/type? type))
-    (error (int<keyboard>:error:format "input:keyboard/layout:unbind"
-                                       "Type '%S' is not a valid type. "
-                                       "Must be one of: %S")
-           type int<keyboard>:layout:types))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:unbind"
+                          '("Type '%S' is not a valid type. "
+                            "Must be one of: %S")
+                          type int<keyboard>:layout:types))
 
   ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
   ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
@@ -287,10 +292,11 @@ LAYOUT should be a valid keyboard layout keyword."
   ;; Also verify the `layout'.
   ;;---
   (unless (input//kl:valid/layout? layout :active)
-    (error (int<keyboard>:error:format "input:keyboard/layout:set"
-                                       "`layout' must be a keyword. "
-                                       "Got: %S")
-           layout))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:set"
+                          '("`layout' must be a keyword. "
+                            "Got: %S")
+                          layout))
 
   ;; This will error out for us.
   (input//kl:layout:registering/set-if-valid? registrar :config)
@@ -340,42 +346,47 @@ TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 REGISTERING should be a registering state (see `int<keyboard>:layout:registering/states')."
   (cond ((not (int<keyboard>:registration:valid/action? bind/unbind))
          ;; Should have already signaled an error if invalid, but to be extra cautious:
-         (error (int<keyboard>:error:format caller
-                                            "Invalid bind/unbind keyword `%S'.")
-                bind/unbind))
+         (int<keyboard>:output :error
+                               caller
+                               '("Invalid bind/unbind keyword `%S'.")
+                               bind/unbind))
 
         ((not (input//kl:layout:registering/set-if-valid? registrar registering 'no-set))
          ;; set-if-valid? will signal error, so no need to do it again.
-         (error (int<keyboard>:error:format caller
-                                            "Cannot transition registering state %S -> %S.")
-                (int<keyboard>:registrar:get registrar :state)
-                registering))
+         (int<keyboard>:output :error
+                               caller
+                               '("Cannot transition registering state %S -> %S.")
+                               (int<keyboard>:registrar:get registrar :state)
+                               registering))
 
         ((null input//kl:layout/active)
-         (error (int<keyboard>:error:format caller
-                                            "No active layout set; cannot configure keyboard layout! "
-                                            "desired: '%S', "
-                                            "active:  '%S'")
-                input//kl:layout/desired
-                input//kl:layout/active))
+         (int<keyboard>:output :error
+                               caller
+                               '("No active layout set; cannot configure keyboard layout! "
+                                 "desired: '%S', "
+                                 "active:  '%S'")
+                               input//kl:layout/desired
+                               input//kl:layout/active))
 
         ;; If we're binding, we need keys to bind.
         ;;   - If we're unbinding, though, we are ok with not having anything to unbind.
         ((and (memq canon:bind/unbind '(:bind :full))
               (null (int<keyboard>:registrar:get registrar :keybinds)))
-         (error (int<keyboard>:error:format caller
-                                            "Active layout has not set its keybinds; "
-                                            "cannot configure keyboard layout! "
-                                            "Expected %S to have called `input:keyboard/layout:set'."
-                                            "Keybinds are: %S")
-                input//kl:layout/active
-                (int<keyboard>:registrar:get registrar :keybinds)))
+         (int<keyboard>:output :error
+                               caller
+                               '("Active layout has not set its keybinds; "
+                                 "cannot configure keyboard layout! "
+                                 "Expected %S to have called `input:keyboard/layout:set'."
+                                 "Keybinds are: %S")
+                               input//kl:layout/active
+                               (int<keyboard>:registrar:get registrar :keybinds)))
 
         ((not (input//kl:layout:valid/type? type))
-         (error (int<keyboard>:error:format caller
-                                            "Type '%S' is not a valid type. "
-                                            "Must be one of: %S")
-                type int<keyboard>:layout:types))
+         (int<keyboard>:output :error
+                               caller
+                               '("Type '%S' is not a valid type. "
+                                 "Must be one of: %S")
+                               type int<keyboard>:layout:types))
 
         (t
          ;; No errors - return something non-nil.
@@ -407,8 +418,9 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
 
       ;; Did we succeed? How do we deal with `return-value'?
       (cond ((not return-value)
-             (error (int<keyboard>:error:format func.name
-                                                "Failed to activate unbindings.")))
+             (int<keyboard>:output :error
+                                   func.name
+                                   '("Failed to activate unbindings.")))
             ((not no-eval)
              ;; Don't need to save these. Clear out for binding.
              (setq return-value nil)))
@@ -478,9 +490,10 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         return-value)
     ;; We just apply the BINDINGS; what does `:full' mean in that context?
     (unless (memq bind/unbind valids:bind/unbind)
-      (error (int<keyboard>:error:format func
-                                         "`bind/unbind' must be one of: %S")
-             valids:bind/unbind))
+      (int<keyboard>:output :error
+                            func
+                            '("`bind/unbind' must be one of: %S")
+                            valids:bind/unbind))
 
     (if-let ((valid (input//kl:activate/validate "input//kl:activate/type"
                                                  registrar bind/unbind type :active))
@@ -493,10 +506,10 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                               ((eq bind/unbind :unbind)
                                (int<keyboard>:registrar:get registrar :unbinds))
                               (t
-                               (error (int<keyboard>:error:format
-                                       func
-                                       "`bind/unbind' must be one of: %S")
-                                      '(:bind :unbind)))))))
+                               (int<keyboard>:output :error
+                                                     func
+                                                     "`bind/unbind' must be one of: %S"
+                                                     '(:bind :unbind)))))))
 
         ;;------------------------------
         ;; Valid and have keybinds:
@@ -542,11 +555,12 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         type (not (null valid)) keybinds)
       ;; NOTE: Currently not an error as common/emacs may not have any keybinds.
       ;; Should probably return to being an error in the future?
-      ;; (error (int<keyboard>:error:format "input//kl:activate/type"
-      ;;                                 "Cannot activate keybinds.\n"
-      ;;                                 "  valid? %S\n"
-      ;;                                 "  keybinds: %S")
-      ;;        valid keybinds)
+      ;; (int<keyboard>:output :error
+      ;;                       "input//kl:activate/type"
+      ;;                       '("Cannot activate keybinds.\n"
+      ;;                         "  valid? %S\n"
+      ;;                         "  keybinds: %S")
+      ;;                       valid keybinds)
 
       ;; Return nil for invalid case.
       (setq return-value nil))
@@ -712,12 +726,12 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                         ((memq eval/sexpr '(:sexpr :pp-sexpr))
                          t)
                         (t
-                         (error (int<keyboard>:error:format
-                                 func.name
-                                 "`eval/sexpr' must be one of: %S; "
-                                 "got: %S")
-                                '(:eval :sexpr)
-                                eval/sexpr)))))
+                         (int<keyboard>:output :error
+                                               func.name
+                                               '("`eval/sexpr' must be one of: %S; "
+                                                 "got: %S")
+                                               '(:eval :sexpr)
+                                               eval/sexpr)))))
 
     (input//kl:debug func.name
         '(:registering)
@@ -821,12 +835,12 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                         ((memq eval/sexpr '(:sexpr :pp-sexpr))
                          t)
                         (t
-                         (error (int<keyboard>:error:format
-                                 func.name
-                                 "`eval/sexpr' must be one of: %S; "
-                                 "got: %S")
-                                '(:eval :sexpr)
-                                eval/sexpr)))))
+                         (int<keyboard>:output :error
+                                               func.name
+                                               '("`eval/sexpr' must be one of: %S; "
+                                                 "got: %S")
+                                               '(:eval :sexpr)
+                                               eval/sexpr)))))
 
     (input//kl:debug func.name
         '(:registering)

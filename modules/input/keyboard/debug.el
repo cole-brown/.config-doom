@@ -2,12 +2,10 @@
 
 ;;; Commentary:
 
-;; Simple debugging functionality for layout.
+;; "Simple" debugging functionality for layout.
+;;
+;; ...it was simple enough at one point. Probably before all the tagging stuff.
 
-
-;; TODO:
-;; TODO: Rework to use new output stuff!
-;; TODO:
 
 ;;------------------------------------------------------------------------------
 ;; Notes
@@ -269,10 +267,3 @@ ARGS should be the `message' arguments."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-
-
-;; TODO: replace
-;; (message
-;; with
-;; (int<keyboard>:debug "input//kl:layout:TODO-FUNC"
-;;                      '(TODO-TAGS)

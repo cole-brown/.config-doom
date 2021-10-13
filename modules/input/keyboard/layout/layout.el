@@ -612,9 +612,7 @@ Returns keybind string or nil."
 ;;                       ("t"
 ;;                        (list :def #'evil-next-line :which-key "hello"))
 ;;                       ("c" #'evil-previous-line)))))
-;;   (message "\nevil-next-line:")
 ;;   (input//kl:layout:derive/search/in-progress '(motion) #'evil-next-line batch-forms)
-;;   (message "\nevil-previous-line:")
 ;;   (input//kl:layout:derive/search/in-progress '(motion) #'evil-previous-line batch-forms))
 
 

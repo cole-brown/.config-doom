@@ -107,10 +107,7 @@ If NO-ERROR is non-nil, will return nil instead of signaling an error."
                                          valid/froms))
                ;; Valid. Check if we want to also set it, return non-nil.
                (unless no-set
-                 (int<keyboard>:registrar:set registrar :state to)
-                 (message "Set state to %S? %S"
-                          to
-                          (int<keyboard>:registrar:get registrar :state)))
+                 (int<keyboard>:registrar:set registrar :state to))
                t))))))
 ;; (int<keyboard>:registrar:set :debug :state nil)
 ;; (int<keyboard>:registrar:get :debug :state)
@@ -590,6 +587,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         (registering (input//kl:normalize->keyword registering)))
     (int<keyboard>:registrar:set registrar :state registering)
     (message "Set registering to: %S (was %S)" registering prev)))
+
 
 (defun keyboard:layout:apply (layout)
   "Initialize, configure, and apply the LAYOUT.

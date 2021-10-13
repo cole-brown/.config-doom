@@ -188,26 +188,44 @@ to toggle.")
 ;; Debugging Functions
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:debug:tagged? (tags)
-  "Returns non-nil if one of the keywords in TAGS list is an active debugging tag."
-  ;; If there are no `int<keyboard>:debug:tags', then it is automatically a yes.
-  (cond ((not int<keyboard>:debug:tags)
-         t)
-
-        ;; Should no `tags' also be automatic yes?
-        ((not tags)
-         t)
-
-        ;; The intersection of the sets `tags' and `int<keyboard>:debug:tags' will be
-        ;; non-nil if any TAGS are active.
-        (t
-         (seq-intersection tags int<keyboard>:debug:tags))))
-
-
 (defun int<keyboard>:debugging? (tags)
-  "Returns non-nil if `int<keyboard>:debugging' is active and tags match enabled tags."
-  (and int<keyboard>:debugging
-       (int<keyboard>:debug:tagged? tags)))
+  "Returns non-nil if debugging for the list of TAGS.
+
+Never debugging when `int<keyboard>:debugging' is nil.
+
+Debugging when `int<keyboard>:debugging' is non-nil and one of these is true:
+  - `int<keyboard>:debug/tags' is nil
+    + No specific debugging tags desired == all tags active.
+  - `int<keyboard>:debug/tags' is non-nil AND matches one or more of the tags
+     in TAGS.
+    + Looking for a specific tag and found it.
+  - one of the keywords in TAGS list is an active debugging tag."
+  (cond
+   ;;------------------------------
+   ;; [ERROR] Forgot to tag your debugging call!
+   ;;------------------------------
+   ((not tags)
+    (error "debug message has not been tagged!"))
+
+   ;;------------------------------
+   ;; Not Debugging -> Never.
+   ;;------------------------------
+   ;; Debugging disabled is always a "no".
+   ((not int<keyboard>:debugging)
+    nil)
+
+   ;;------------------------------
+   ;; Debugging -> Check Tags
+   ;;------------------------------
+
+   ;; If there are no `int<keyboard>:debug:tags', then it is automatically a yes.
+   ((not int<keyboard>:debug:tags)
+    t)
+
+   ;; The intersection of the sets `tags' and `int<keyboard>:debug:tags' will be
+   ;; non-nil if any TAGS are active.
+   (t
+    (seq-intersection tags int<keyboard>:debug:tags))))
 
 
 (defmacro int<keyboard>:debug (caller tags msg &rest args)
@@ -227,7 +245,7 @@ ARGS should be the `message' arguments."
 
   `(when (int<keyboard>:debugging? ,tags)
      ;; (ignore caller msg args)))
-     ,(int<keyboard>:output :debug caller msg args)))
+     (int<keyboard>:output :debug ,caller ,msg ,@args)))
 ;; Make sure it only evals args when debugging:
 ;; (int<keyboard>:debug "test-func" nil (message "test"))
 ;; (int<keyboard>:debug "test-func" '(:derive) (message "test"))
@@ -256,12 +274,14 @@ ARGS should be the `message' arguments."
   (declare (indent 3))
   `(if ,message?
        ;; Always message (at debug level) - regardless of debugging toggle/flags.
-       ,(int<keyboard>:output :debug caller msg args)
+       (int<keyboard>:output :debug ,caller ,msg ,@args)
      ;; Only message (at debug level) if passed checks.
      (when (and int<keyboard>:debugging
                 (int<keyboard>:debug:tagged? ,tags))
-       ,(int<keyboard>:output :debug caller msg args))))
+       (int<keyboard>:output :debug ,caller ,msg ,@args))))
 ;; (int<keyboard>:debug/message? "test-func" '(:jeff) nil (message "test"))
+;; (int<keyboard>:debug/message? "test-func" '(:jeff) :always-message (message "test"))
+
 
 
 ;;------------------------------------------------------------------------------

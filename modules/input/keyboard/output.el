@@ -215,51 +215,54 @@ the message format, then applies that format plus any ARGS to the `error'
 signaled."
   ;; Try to be real forgiving about what params are since we're erroring...
   ;; ...but also try to let them know they did something wrong so it can be fixed.
-  (let* ((valid/caller (stringp caller))
-         (valid/formatting (or (stringp formatting) (listp formatting)))
-         (caller (if valid/caller
-                     caller
-                   (format "%s" caller))))
 
-    ;; First, a warning about any invalid inputs?
-    (when (not valid/caller)
-      (int<keyboard>:output/message
-       :warn
-       "int<keyboard>:output: invalid CALLER parameter! Should be a string, got: '%s'"
-       caller))
-    (when (not valid/formatting)
-      (int<keyboard>:output/message
-       :warn
-       "int<keyboard>:output: invalid FORMATTING parameter! Should be a list or a string, got: '%s'"
-       formatting))
+  ;;------------------------------
+  ;; Validate Inputs
+  ;;------------------------------
+  (unless (stringp caller)
+    (int<keyboard>:output/message
+     :warn
+     "int<keyboard>:output: invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
+     (list (type-of caller)
+           caller
+           (stringp caller))))
+  (unless (or (stringp formatting) (listp formatting))
+    (int<keyboard>:output/message
+     :warn
+     "int<keyboard>:output: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
+     (list (type-of formatting)
+           formatting
+           (or (stringp formatting) (listp formatting)))))
 
-    ;; Now raise the error signal.
-    (cond
-     ;;---
-     ;; Valid formatting.
-     ;;---
-     ((listp formatting)
-      (int<keyboard>:output/message level
-                                    (apply #'int<keyboard>:output:format level caller formatting)
-                                    args))
+  ;;------------------------------
+  ;; Output a Message
+  ;;------------------------------
+  (cond
+   ;;---
+   ;; Valid formatting.
+   ;;---
+   ((listp formatting)
+    (int<keyboard>:output/message level
+                                  (apply #'int<keyboard>:output:format level caller formatting)
+                                  args))
 
-     ((stringp formatting)
-      (int<keyboard>:output/message level
-                                    (int<keyboard>:output:format level caller formatting)
-                                    args))
+   ((stringp formatting)
+    (int<keyboard>:output/message level
+                                  (int<keyboard>:output:format level caller formatting)
+                                  args))
 
-     ;;---
-     ;; Invalid formatting.
-     ;;---
-     ;; Do your best to get something.
-     (t
-      (int<keyboard>:output/message
-       :error
-       (int<keyboard>:output:format
-        level
-        caller
-        (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
-                formatting args)))))))
+   ;;---
+   ;; Invalid formatting.
+   ;;---
+   ;; Do your best to get something.
+   (t
+    (int<keyboard>:output/message
+     :error
+     (int<keyboard>:output:format
+      level
+      caller
+      (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
+              formatting args))))))
 
 
 ;;------------------------------------------------------------------------------

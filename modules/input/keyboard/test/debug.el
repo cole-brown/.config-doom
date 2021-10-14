@@ -184,17 +184,17 @@ after a test.")
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; int<keyboard>:debug:tagged?
+;; int<keyboard>:debugging?
 ;;------------------------------
 
 (ert-deftest test<keyboard/debug>::int<keyboard>:debugging? ()
-  "Test that `int<keyboard>:debug:tagged?' returns the correct answer."
+  "Test that `int<keyboard>:debugging?' returns the correct answer."
 
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/debug>::int<keyboard>:debug:tagged?"
+      "test<keyboard/debug>::int<keyboard>:debugging?"
       #'test<keyboard/debug>:setup
       #'test<keyboard/debug>:teardown
 
@@ -252,4 +252,123 @@ after a test.")
         (should-not (int<keyboard>:debugging? debug:tags/using))))))
 
 
-;; TODO: more tests!
+;;------------------------------
+;; int<keyboard>:debug
+;;------------------------------
+
+(ert-deftest test<keyboard/debug>::int<keyboard>:debug ()
+  "Test that `int<keyboard>:debug' functions correctly w/ debug toggle & tags."
+
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/debug>::int<keyboard>:debug"
+      #'test<keyboard/debug>:setup
+      #'test<keyboard/debug>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let* ((debug:tags/using '(:should-trigger-debug-message))
+           (debug:tags/not-using '(:NO-DEBUG-MESSAGE))
+           (debug:tags/assert (lambda (should-be-debugging?)
+                                ;; May or may not be expecting the 'using' tag.
+                                (if should-be-debugging?
+                                    (should (int<keyboard>:debugging? debug:tags/using))
+                                  (should-not (int<keyboard>:debugging? debug:tags/using)))
+                                ;; Never expect the 'not-using' tag.
+                                (should-not (int<keyboard>:debugging? debug:tags/not-using))))
+           (debug:messages nil)
+           (debug:call/number 0)
+           (debug:call/number:message nil)
+           (debug:call/number:fmt (lambda (expected?)
+                                    (let ((msg (format "#%02d: Hello there."
+                                                  debug:call/number)))
+                                      (setq debug:call/number:message msg)
+                                      (when expected?
+                                        (push (list msg) debug:messages))))))
+
+      ;;------------------------------
+      ;; Not debugging - no output.
+      ;;------------------------------
+      (should-not int<keyboard>:debugging)
+      (should-not int<keyboard>:debug:tags)
+      (should-not test<keyboard/debug>:called?)
+      (test<keyboard>:assert:output :debug test-name nil)
+      (funcall debug:tags/assert nil)
+
+      ;; We should not get any output right now as we're not debugging.
+      (funcall debug:call/number:fmt nil)
+      (int<keyboard>:debug test-name
+          debug:tags/using
+        debug:call/number:message)
+      (setq debug:call/number (1+ debug:call/number))
+
+      (should-not debug:messages)
+      (test<keyboard>:assert:output :debug test-name debug:messages)
+
+      ;; We should always get an error when calling without any tags.
+      (funcall debug:call/number:fmt nil)
+      (should-error
+       (int<keyboard>:debug test-name
+           nil
+         debug:call/number:message))
+      (setq debug:call/number (1+ debug:call/number))
+
+      (should-not debug:messages)
+      (test<keyboard>:assert:output :debug test-name debug:messages)
+
+      ;;------------------------------
+      ;; Debugging - depends on tags.
+      ;;------------------------------
+
+      ;; Enable debugging without filtering tags.
+      (setq int<keyboard>:debug:tags nil
+            int<keyboard>:debugging  t)
+      (should int<keyboard>:debugging)
+      (should-not int<keyboard>:debug:tags)
+      (test<keyboard>:assert:output :debug test-name nil)
+      ;; Can't check this yet - no tags filter so everything is a 'yes'.
+      ;; (funcall debug:tags/assert nil)
+
+      ;; No tag filter set so should always log the debug message.
+      (funcall debug:call/number:fmt :expected)
+      (int<keyboard>:debug test-name
+           debug:tags/using
+        debug:call/number:message)
+      (setq debug:call/number (1+ debug:call/number))
+      (should debug:messages)
+      (should (listp debug:messages))
+      (should (= 1 (length debug:messages)))
+      (test<keyboard>:assert:output :debug test-name debug:messages)
+
+      ;; Add a filter and now it depends on input tags.
+      (setq int<keyboard>:debug:tags debug:tags/using)
+      (should int<keyboard>:debugging)
+      (should (equal int<keyboard>:debug:tags debug:tags/using))
+      (funcall debug:tags/assert :debugging-enabled)
+
+      ;; Use a debug tag not in our filter - no debug message.
+      (funcall debug:call/number:fmt nil)
+      (int<keyboard>:debug test-name
+          debug:tags/not-using
+        debug:call/number:message)
+      (setq debug:call/number (1+ debug:call/number))
+      ;; Same as before - no additional message output.
+      (should debug:messages)
+      (should (listp debug:messages))
+      (should (= 1 (length debug:messages)))
+      (test<keyboard>:assert:output :debug test-name debug:messages)
+
+      ;; Use our input tag - no debug message.
+      (funcall debug:call/number:fmt :expected)
+      (int<keyboard>:debug test-name
+           debug:tags/using
+        debug:call/number:message)
+      (setq debug:call/number (1+ debug:call/number))
+      ;; Same as before - no additional message output.
+      (should debug:messages)
+      (should (listp debug:messages))
+      (should (= 2 (length debug:messages)))
+      (test<keyboard>:assert:output :debug test-name debug:messages))))

@@ -194,9 +194,9 @@ to toggle.")
 Never debugging when `int<keyboard>:debugging' is nil.
 
 Debugging when `int<keyboard>:debugging' is non-nil and one of these is true:
-  - `int<keyboard>:debug/tags' is nil
+  - `int<keyboard>:debug:tags' is nil
     + No specific debugging tags desired == all tags active.
-  - `int<keyboard>:debug/tags' is non-nil AND matches one or more of the tags
+  - `int<keyboard>:debug:tags' is non-nil AND matches one or more of the tags
      in TAGS.
     + Looking for a specific tag and found it.
   - one of the keywords in TAGS list is an active debugging tag."
@@ -272,16 +272,25 @@ MSG should be the `message' formatting string.
 
 ARGS should be the `message' arguments."
   (declare (indent 3))
-  `(if ,message?
-       ;; Always message (at debug level) - regardless of debugging toggle/flags.
-       (int<keyboard>:output :debug ,caller ,msg ,@args)
-     ;; Only message (at debug level) if passed checks.
-     (when (and int<keyboard>:debugging
-                (int<keyboard>:debug:tagged? ,tags))
-       (int<keyboard>:output :debug ,caller ,msg ,@args))))
+  ;; Check with `int<keyboard>:debugging?' first so that missing debug tags always error.
+  `(cond
+    ;; Only message (at debug level) if passed checks.
+    ((int<keyboard>:debugging? ,tags)
+     (int<keyboard>:output :debug ,caller ,msg ,@args))
+
+    ;; Always message (at debug level) - regardless of debugging toggle/flags.
+    (,message?
+     (int<keyboard>:output :debug ,caller ,msg ,@args))
+
+    ;; Not debugging and not allowing message through otherwise.
+    (t
+     nil)))
+;; int<keyboard>:debugging
+;; int<keyboard>:debug:tags
+;; (setq int<keyboard>:debugging nil int<keyboard>:debug:tags nil)
+;; (int<keyboard>:debugging? '(:jeff))
 ;; (int<keyboard>:debug/message? "test-func" '(:jeff) nil (message "test"))
 ;; (int<keyboard>:debug/message? "test-func" '(:jeff) :always-message (message "test"))
-
 
 
 ;;------------------------------------------------------------------------------

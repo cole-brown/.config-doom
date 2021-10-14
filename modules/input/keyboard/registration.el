@@ -595,7 +595,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
 Overrides any current active layout with the new LAYOUT."
   ;; Could do a completing read or something with the valid layout dirs as the choices.
   (interactive (list (completing-read "Load Layout: "
-                                      (input:keyboard/layout:list-layouts)
+                                      (keyboard:load:layouts/list)
                                       nil
                                       t
                                       (when input//kl:layout/active
@@ -646,7 +646,7 @@ Overrides any current active layout with the new LAYOUT."
                     layout/keyword)))
 
     ;; Load active.
-    (input:keyboard/layout:find-and-load-active "init") ;; This will set active.
+    (keyboard:load:active "init") ;; This will set active.
 
     ;; Verify it was set before config/finalization.
     (if (not (eq input//kl:layout/active layout/keyword))
@@ -662,7 +662,7 @@ Overrides any current active layout with the new LAYOUT."
 
       ;; Config and finalize the new layout.
       (message "Configuring & binding %S..." input//kl:layout/active)
-      (input:keyboard/layout:find-and-load-active "config")
+      (keyboard:load:active "config")
       (input:keyboard/layout:finalize)
       (message "Loaded layout %S." input//kl:layout/active))))
 ;; (keyboard:layout:clear)

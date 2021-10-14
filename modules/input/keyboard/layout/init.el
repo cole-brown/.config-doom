@@ -39,7 +39,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Find our active keyboard layout and load its init if it has one.
-(input:keyboard/layout:find-and-load-active "init")
+(keyboard:load:active "init")
 
 
 ;;------------------------------------------------------------------------------

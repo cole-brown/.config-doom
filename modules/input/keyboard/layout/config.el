@@ -14,7 +14,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Find our active keyboard layout and load its config if it has one.
-(input:keyboard/layout:find-and-load-active "config")
+(keyboard:load:active "config")
 
 
 ;;------------------------------------------------------------------------------

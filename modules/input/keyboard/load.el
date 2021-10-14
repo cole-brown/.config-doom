@@ -33,7 +33,8 @@ needed.
 NEXT and PARENT are expected to be strings.
 "
   (if (null parent)
-      next
+      ;; Normalize backslashes to forward slashes, if present.
+      (directory-file-name next)
     (concat (file-name-as-directory parent) next)))
 
 

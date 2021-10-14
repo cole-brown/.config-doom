@@ -142,12 +142,16 @@ after a test.")
         "#01: Hello there!"
         (test<keyboard/debug>:call))
       (should (= called?/expected
-               test<keyboard/debug>:called?))
+                 test<keyboard/debug>:called?))
 
       ;;---
-      ;; Turn on our tags - not it should /not/ be evaluted as the `:testing' tag isn't in the list.
+      ;; Turn on our tags - it should /not/ be evaluted as the `:testing' tag isn't in the list.
       ;;---
-      (setq int<keyboard>:debug/tags debug:tags/checking)
+      (setq int<keyboard>:debug:tags debug:tags/checking
+            int<keyboard>:debugging t)
+      (should-not (seq-intersection debug:tags/using int<keyboard>:debug:tags))
+      (should-not (int<keyboard>:debugging? debug:tags/using))
+
       ;; Should not be called, so same expected as before.
       ;; (setq called?/expected 1)
       (int<keyboard>:debug test-name
@@ -155,16 +159,24 @@ after a test.")
         "#02: Hello there!"
         (test<keyboard/debug>:call))
       (should (= called?/expected
-               test<keyboard/debug>:called?))
-
-      ;; TODO: Get current test working!
+                 test<keyboard/debug>:called?))
 
       ;;---
       ;; Add `:testing' tag to list and it should be called again.
       ;;---
+      (setq int<keyboard>:debug:tags (seq-concatenate 'list debug:tags/checking debug:tags/using)
+            int<keyboard>:debugging t)
+      (should (seq-intersection debug:tags/using int<keyboard>:debug:tags))
+      (should (int<keyboard>:debugging? debug:tags/using))
 
-      ;; TODO: finish this!
-      )))
+      ;; Should be called, so expected+1.
+      (setq called?/expected (1+ called?/expected))
+      (int<keyboard>:debug test-name
+          debug:tags/using
+        "#03: Hello there!"
+        (test<keyboard/debug>:call))
+      (should (= called?/expected
+                 test<keyboard/debug>:called?)))))
 
 
 ;;------------------------------------------------------------------------------
@@ -230,7 +242,14 @@ after a test.")
 
       (should (int<keyboard>:debugging? debug:tags/using))
       (should-not (int<keyboard>:debugging? '(:unused :another-one)))
-      (should-error (int<keyboard>:debugging? nil)))))
+      (should-error (int<keyboard>:debugging? nil))
+
+      ;; Use /all/ the common tags, then check for something that is not in the common tags list.
+      (let ((debug:tags/using '(:testing)))
+        (setq int<keyboard>:debug:tags int<keyboard>:debug:tags/common
+              int<keyboard>:debugging  t)
+        (should-not (seq-intersection debug:tags/using int<keyboard>:debug:tags))
+        (should-not (int<keyboard>:debugging? debug:tags/using))))))
 
 
 ;; TODO: more tests!

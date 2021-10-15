@@ -172,3 +172,41 @@ Returns the path to the dir/file."
            (path/dne (int<keyboard>:path:join path/exists ".does-not-exist")))
       (should (int<keyboard>:path:file/exists? path/exists))
       (should-not (int<keyboard>:path:file/exists? path/dne)))))
+
+
+;;------------------------------------------------------------------------------
+;; Tests: 'load' Functions
+;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; int<keyboard>:load:layout?
+;;------------------------------
+
+(ert-deftest test<keyboard/load>::int<keyboard>:load:layout? ()
+  "Test that `int<keyboard>:load:layout?' behaves appropriately."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/load>::int<keyboard>:load:layout?"
+      #'test<keyboard/load>:setup
+      #'test<keyboard/load>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    ;; Lexically bind input//kl:layout/desired for these tests.
+    (let* ((layout/test/keyword          :testing)
+           (layout/test/needs-normalized "+testing")
+           (layout/not/keyword           :not-testing)
+           (layout/not/needs-normalized  "+not-testing")
+           (input//kl:layout/desired     layout/test/keyword))
+      (should input//kl:layout/desired)
+      (should (eq layout/test/keyword input//kl:layout/desired))
+
+      (should-not (int<keyboard>:load:layout? layout/not/keyword))
+      (should-not (int<keyboard>:load:layout? layout/not/needs-normalized))
+
+      (should (int<keyboard>:load:layout? layout/test/keyword))
+      (should (int<keyboard>:load:layout? layout/test/needs-normalized)))))

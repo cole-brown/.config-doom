@@ -50,16 +50,16 @@ If relative, will append `int<keyboard>:path:dir/root'."
 ;; (int<keyboard>:path:join "c:/" "foo" "bar")
 
 
-;;------------------------------------------------------------------------------
-;; Basic Load Functions
-;;------------------------------------------------------------------------------
-
 (defun int<keyboard>:path:file/exists? (&rest path)
   "Returns non-nil if PATH exists.
 If relative, `int<keyboard>:path:dir/root' will be used as the path's root."
   (file-exists-p (apply #'int<keyboard>:path:join path)))
 ;; (int<keyboard>:path:file/exists? "layout/+spydez/init.el")
 
+
+;;------------------------------------------------------------------------------
+;; Basic Load Functions
+;;------------------------------------------------------------------------------
 
 (defun int<keyboard>:load:layout? (layout)
   "Returns non-nil if loading (or developing/debugging) for the LAYOUT.

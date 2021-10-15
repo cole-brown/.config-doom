@@ -131,15 +131,12 @@ ARGS based on current verbosity for the level."
       ;;---
       ;; Debugging
       ;;---
-      ;; Use the specified function.
-      ((pred functionp)
-       (apply verbosity msg args))
-
       ;; Use several specified function.
       ((and (pred listp)
-            (pred (lambda (verbosity) (seq-reduce (lambda (element)
+            (pred (lambda (verbosity) (seq-reduce (lambda (reduction element)
                                                     "Allow either functions to call or `t' for 'call the default thing too'."
-                                                    (or (functionp element) (eq element t)))
+                                                    (and reduction
+                                                         (or (functionp element) (eq element t))))
                                                   verbosity
                                                   #'identity))))
        (dolist (func verbosity)
@@ -148,6 +145,10 @@ ARGS based on current verbosity for the level."
              (apply func/default msg args)
            ;; Call the specified function.
            (apply func msg args))))
+
+      ;; Use the specified function.
+      ((pred functionp)
+       (apply verbosity msg args))
 
       ;;------------------------------
       ;; Errors/Invalids

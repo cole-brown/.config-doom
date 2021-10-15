@@ -76,47 +76,109 @@ E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 ;; (int<keyboard>:load:layout? :qwerty)
 
 
-(defun int<keyboard>:load:file (layout load-name &optional directory)
+(defun int<keyboard>:load:file (layout load-name &optional root error?)
   "Load LOAD-NAME file if its LAYOUT directory and LOAD-NAME file exists on the
 filesystem.
 
-DIRECTORY, if nil, will be FLAG minus its '+' prefix (e.g. `+dvorak' is
-'dvorak/' directory).
-  - The keyboard layout's keyword is also accepted (e.g. `:dvorak').
+LOAD-NAME should be the filename (without extension) to be loaded.
 
-LOAD-NAME should be filename (without extension) to be passed to `load!' as:
-(concat (file-name-as-directory \"layout\")
-        (file-name-as-directory DIRECTORY)
-        LOAD-NAME)
+ROOT, if nil, will be LAYOUT's directory under `int<keyboard>:path:dir/root'
+child directory 'layout'.
+ROOT, if non-nil, must be absolute.
 
-The extension '.el' is used to check for file existance."
-  ;; Allow keyword or flag.
-  (let* ((directory (or directory
-                        (input//kl:normalize->string layout)))
-         (path (int<keyboard>:path:join "layout"
-                               (concat
-                                ;; Add the required '+'.
-                                int<keyboard>:path:dir/layout/prefix
-                                ;; Should end up the same.
-                                ;; Does in current cases, anyawys. [2021-06-05]
-                                (or directory
-                                    (input//kl:normalize->string layout)))
-                               load-name)))
+The extension '.el' is used to check for file existance.
+
+ERROR?, if non-nil, will signal an error if the file does not exist.
+  - If nil, a debug message will (try to) be output instead."
+  (let ((func.name "int<keyboard>:load:file")
+        (debug.tags '(:load))
+        path)
+    (int<keyboard>:debug
+        func.name
+        debug.tags
+      '("args:\n"
+        "  layout:    %S\n"
+        "  load-name: %S\n"
+        "  root:      %S")
+      layout load-name root)
+
+    ;;------------------------------
+    ;; Error checking and path set-up part 1 - the root part.
+    ;;------------------------------
+    (cond ((and root
+                (not (file-name-absolute-p root)))
+           (int<keyboard>:output :error
+                                 func.name
+                                 "ROOT, if provided, must be absolute! Got: %S"
+                                 root))
+
+          ;; Absolute ROOT - ok as-is.
+          (root
+           nil)
+
+          ;; Not provided - set the root.
+          (t
+           (setq root int<keyboard>:path:dir/root)
+           (int<keyboard>:debug
+               func.name
+               debug.tags
+             '("No ROOT provided; using `int<keyboard>:path:dir/root'."
+               "  root: %S")
+             int<keyboard>:path:dir/root)))
+
+    ;;------------------------------
+    ;; PATH setup part 2 - the relative part.
+    ;;------------------------------
+    (setq path (int<keyboard>:path:join path
+                                        ;; All are layouts in this sub-dir.
+                                        "layout"
+                                        ;; Add the required '+'.
+                                        (concat
+                                         int<keyboard>:path:dir/layout/prefix
+                                         (input//kl:normalize->string layout))
+                                        ;; And the filename.
+                                        load-name))
+    (int<keyboard>:debug
+        func.name
+        debug.tags
+      '("Created PATH from:\n"
+        "  root: %S\n"
+        "  children:\n"
+        "    - %S\n"
+        "    - %S\n"
+        "  file: %S\n"
+        "<-path: %S")
+      int<keyboard>:path:dir/root
+      "layout"
+      (concat
+       int<keyboard>:path:dir/layout/prefix
+       (input//kl:normalize->string layout))
+      load-name
+      path)
+
     ;; Is it ok for some files to not exist, maybe?
     ;; Perhaps a layout has an init.el but not a config.el right now?..
-    (when (int<keyboard>:path:file/exists? (concat path ".el"))
-      (load! path))
-    ;; If not, switch back to this:
-    ;; (if (int<keyboard>:path:file/exists? (concat path ".el"))
-    ;;     (load! path)
-    ;;   (int<keyboard>:output :warn
-    ;;                         "int<keyboard>:load:file"
-    ;;                         '("Could not find "
-    ;;                          "'%s' file for '%s'. path: %s")
-    ;;                         load-name
-    ;;                         flag
-    ;;                         (concat path ".el")))
-    ))
+    (if (int<keyboard>:path:file/exists? (concat path ".el"))
+        (progn
+          (int<keyboard>:debug
+              func.name
+              debug.tags
+            "Path exists; loading...")
+          (load path))
+
+      ;; If it's not ok to not exist, switch this to always output `:error' or `:warn'.
+      (if error?
+          (int<keyboard>:output :error
+                                func.name
+                                '("Path does not exist!\n"
+                                  "  path: %S")
+                                path)
+        (int<keyboard>:debug
+            func.name
+            debug.tags
+          '("Path does not exist!\n"
+            "  path: %S")
+          path)))))
 ;; (int<keyboard>:load:file :spydez "config")
 
 

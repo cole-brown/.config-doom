@@ -115,9 +115,10 @@ value as tests' debugging toggle."
 
 (defun test<keyboard>:debug (test-name msg &rest args)
   "debug message"
-  (message "[TEST<KEYBOARD>]::%s: %s"
-           test-name
-           (apply #'format msg args)))
+  (when test<keyboard>:debugging
+    (message "[TEST<KEYBOARD>]::%s: %s"
+             test-name
+             (apply #'format msg args))))
 ;; (test<keyboard>:debug "test?" "hello %s" "there")
 
 

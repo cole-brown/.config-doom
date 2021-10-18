@@ -115,11 +115,15 @@ value as tests' debugging toggle."
 
 (defun test<keyboard>:debug (test-name msg &rest args)
   "debug message"
+  (declare (indent 1))
   (when test<keyboard>:debugging
     (message "[TEST<KEYBOARD>]::%s: %s"
              test-name
-             (apply #'format msg args))))
+             (if (listp msg)
+                 (apply #'format (apply #'concat msg) args)
+               (apply #'format msg args)))))
 ;; (test<keyboard>:debug "test?" "hello %s" "there")
+;; (test<keyboard>:debug "test?" '("hello " "%s") "there")
 
 
 ;;------------------------------------------------------------------------------
@@ -387,5 +391,26 @@ NAME."
            (test<keyboard>:setup test-name ,func/setup ,func/teardown)
 
            ,@body)
+
        ;; Always run tear-down.
        (test<keyboard>:teardown test-name))))
+
+
+(defmacro test<keyboard>:with:file-buffer (path kill? delete? &rest body)
+  "Create/open file PATH and run BODY with PATH's buffer as the current buffer.
+
+When BODY is done, deal with the buffer/file according to KILL? and DELETE?.
+  - If KILL? is non-nil, close the buffer.
+  - If DELETE? is non-nil, delete the file."
+  (declare (indent 3))
+  `(let ((test<dlv>:with:file-buffer/path ,path)
+         test<dlv>:with:file-buffer/buffer)
+     (unwind-protect
+         (progn
+           (setq test<dlv>:with:file-buffer/buffer (find-file-noselect ,path))
+           (with-current-buffer test<dlv>:with:file-buffer/buffer
+             ,@body))
+       (when ,kill?
+         (kill-buffer test<dlv>:with:file-buffer/buffer))
+       (when ,delete?
+         (delete-file test<dlv>:with:file-buffer/path)))))

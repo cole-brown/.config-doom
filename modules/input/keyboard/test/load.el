@@ -22,6 +22,10 @@
 ;; Test Helpers: Loading
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Debugging
+;;------------------------------
+
 (defvar test<keyboard/load>:debug:files nil
   "If true, will not delete files during tear-down.")
 
@@ -39,8 +43,17 @@ value as tests' debugging toggle."
 
 
 (defvar test<keyboard/load>:with:temps nil
-  "Temp dirs & files to delete during tear-down.")
+  "Temp dirs & files to delete during tear-down.
 
+Alist of: (path . (:action-0 :action-1))
+Actions should be:
+  - :path/delete
+  - :buffer/close")
+
+
+;;------------------------------
+;; Temp Paths, Files, Dirs
+;;------------------------------
 
 (defun test<keyboard/load>:random:string (length)
   "Create a random alphanumerics string of length LENGTH.
@@ -72,8 +85,9 @@ If PARENT is non-nil, creates the temp file/dir in the PARENT directory.
 Returns the path to the dir/file."
   ;; Create the temp file/dir.
   (let ((path/temp (make-temp-file name-prefix directory?)))
-    ;; Save so we can delete during tear-down.
-    (push path/temp test<keyboard/load>:with:temps)
+    ;; Save path and actions to take during tear-down.
+    (push (cons path/temp (list :path/delete :buffer/close))
+          test<keyboard/load>:with:temps)
     path/temp))
 ;; (make-temp-file "foo")
 ;;   -> Windows 10:
@@ -91,15 +105,96 @@ Will create a directory if DIRECTORY? is non-nil. Else creates a file.
 Creates a file/dir named NAME.
 
 Returns the path to the dir/file."
-  (let ((path (int<keyboard>:path:join parent name)))
+  (let ((path/temp (int<keyboard>:path:join parent name)))
     ;; Create the temp file/dir.
     (if directory?
-        (make-directory path)
-      (make-empty-file path))
+        (make-directory path/temp)
+      (make-empty-file path/temp)) ;; Doesn't open a buffer.
+
+    ;; Save path and actions to take during tear-down.
+    ;;   - Making in a temp dir so no need to delete each file/folder.
+    ;;     Temp dir will be deleted recursively.
+    (push (cons path/temp (list :buffer/close))
+          test<keyboard/load>:with:temps)
+
 
     ;; Return the full path.
-    path))
+    path/temp))
 
+
+;;------------------------------
+;; Symbols
+;;------------------------------
+
+(defun test<keyboard/load>:symbol/delete (test-name symbol/name)
+  "Delete the SYMBOL/NAME string's symbol if exists.
+
+TEST-NAME should be the test's name.
+
+Unbinds and uninterns the symbol."
+  (let ((symbol/symbol (intern-soft symbol/name))
+        (symbol/DNE "<Does-Not-Exist>")
+        symbol/value)
+    (if (null symbol/symbol)
+        ;; Symbol doesn't exist - nothing to do.
+        (test<keyboard>:debug
+            test-name
+          '("\n"
+            "  [NO-OP ]: symbol (exists? %S): %S -> value: %S")
+          (not (null symbol/symbol))
+          symbol/name
+          symbol/DNE)
+
+      ;; Symbol exists - need to delete it.
+      (unwind-protect
+          (condition-case err
+              ;; Try to get symbol's value.
+              (setq symbol/value (symbol-value symbol/symbol))
+            ;; Handle expected error.
+            (void-variable nil))
+        ;; Debug either way.
+        (test<keyboard>:debug
+            test-name
+          '("\n"
+            "  [BEFORE]: symbol (exists? %S): %S -> value: %S")
+          (not (null symbol/symbol))
+          symbol/symbol
+          (if symbol/value
+              symbol/value
+            symbol/DNE)))
+
+      ;; Delete symbol's value and delete symbol from symbol table.
+      (makunbound symbol/symbol)
+      (unintern symbol/symbol)
+
+      (setq symbol/symbol (intern-soft symbol/name))
+      (unwind-protect
+          (condition-case err
+              ;; Try to get symbol's value.
+              (setq symbol/value (symbol-value symbol/symbol))
+            ;; Handle expected error.
+            (void-variable nil))
+        ;; Debug anyways.
+        (test<keyboard>:debug
+            test-name
+          '("\n"
+            "  [AFTER ]: symbol (exists? %S): %S -> value: %S")
+          (not (null symbol/symbol))
+          symbol/symbol
+          (if symbol/symbol
+              symbol/value
+            symbol/DNE))))))
+;; (let* ((layout/test/needs-normalized "+testing")
+;;        (symbol/prefix     "test<keyboard/load>::int<keyboard>:load:file::")
+;;        (symbol/test/name  (concat symbol/prefix layout/test/needs-normalized))
+;;        (symbol/test/symbol (intern-soft symbol/test/name))
+;;        (test-name "testing?"))
+;;   (test<keyboard/load>:symbol/delete test-name symbol/test/name))
+
+
+;;------------------------------
+;; Set-Up / Tear-Down
+;;------------------------------
 
 (defun test<keyboard/load>:setup (_)
   "Set-up for 'load.el' tests."
@@ -109,23 +204,34 @@ Returns the path to the dir/file."
 
 (defun test<keyboard/load>:teardown (test-name)
   "Tear-down for 'load.el' tests."
-  (if (not test<keyboard/load>:debug:files)
-      ;; Not debugging - clean up our temp files.
-      (while test<keyboard/load>:with:temps
-        (let ((path (pop test<keyboard/load>:with:temps)))
-          (unwind-protect
-              (cond ((file-directory-p path)
-                     (delete-directory path t))
-                    ((file-exists-p path)
-                     (delete-file path))
-                    (t
-                     ;; Path does not exist?
-                     (warn "test<keyboard/load>:teardown: Path does not exist; cannot delete: %s"
-                           path))))))
+  ;; Clean up our temp files/folders.
+  (while test<keyboard/load>:with:temps
+    (let* ((path-and-actions (pop test<keyboard/load>:with:temps))
+           (path (car path-and-actions))
+           (actions (cdr path-and-actions)))
+      ;; Do each action on the temp path.
+      (dolist (action actions)
+        (cond ((eq :path/delete action)
+               (if (not test<keyboard/load>:debug:files)
+                   ;; Not Debugging - delete temp file/folder.
+                   (unwind-protect
+                       (cond ((file-directory-p path)
+                              (delete-directory path t))
+                             ((file-exists-p path)
+                              (delete-file path))
+                             (t
+                              ;; Path does not exist?
+                              (warn "test<keyboard/load>:teardown: Path does not exist; cannot delete: %s"
+                                    path))))
 
-    ;; Debugging - don't delete files; inform about them instead.
-    (test<keyboard>:debug test-name "Skipping file/folder deletion!")
-    (test<keyboard>:debug test-name "Temp paths: %S" test<keyboard/load>:with:temps)))
+                 ;; Debugging - don't delete files; inform about them instead.
+                 (test<keyboard>:debug test-name "Skipping file/folder deletion!")
+                 (test<keyboard>:debug test-name "Temp paths: %S" test<keyboard/load>:with:temps)))
+
+              ((eq :buffer/close action)
+               ;; Close temp file/folder's buffer (if open).
+               (when-let ((buffer (get-file-buffer path)))
+                 (kill-buffer buffer))))))))
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗
@@ -287,14 +393,11 @@ Returns the path to the dir/file."
          (layout/not/keyword           :not-testing)
          (layout/not/needs-normalized  "+not-testing")
          ;; Some symbol names to check after loading.
-         (symbol/prefix     "test<keyboard/load>::int<keyboard>:load:file::")
-         (symbol/test/name  (make-symbol (concat symbol/prefix layout/test/needs-normalized)))
-         (symbol/not/name   (make-symbol (concat symbol/prefix layout/not/needs-normalized)))
-         (symbol/test/value 42)
-         (symbol/not/value  1337))
-
-    (should-not (boundp symbol/test/name))
-    (should-not (boundp symbol/not/name))
+         (symbol/prefix        "test<keyboard/load>::int<keyboard>:load:file::")
+         (symbol/test/name     (concat symbol/prefix layout/test/needs-normalized))
+         (symbol/not/name      (concat symbol/prefix layout/not/needs-normalized))
+         (symbol/test/expected 42)
+         (symbol/not/expected  1337))
 
     (test<keyboard>:fixture
         ;;===
@@ -305,13 +408,62 @@ Returns the path to the dir/file."
         ;; Test-specific teardown - make sure the symbols we check don't stick around.
         (lambda (test-name)
           "Tear-down for `test<keyboard/load>::int<keyboard>:load:file'."
-          (makunbound symbol/test/name)
-          (makunbound symbol/not/name)
-          (test<keyboard/load>:teardown test-name))
+          (let ((symbol/test/symbol (intern-soft symbol/test/name))
+                (symbol/not/symbol (intern-soft symbol/not/name))
+                symbol/value)
+            (test<keyboard>:debug
+                test-name
+              '("\n"
+                "Teardown: [BEFORE]:\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S")
+              symbol/test/name
+              (intern-soft symbol/test/name)
+              symbol/not/name
+              (intern-soft symbol/not/name))
+
+            ;; Unbind if they are bound.
+            (test<keyboard/load>:symbol/delete test-name symbol/test/name)
+            (test<keyboard/load>:symbol/delete test-name symbol/not/name)
+
+            (test<keyboard>:debug
+                test-name
+              '("\n"
+                "Teardown: [AFTER]:\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S")
+              symbol/test/name
+              (intern-soft symbol/test/name)
+              symbol/not/name
+              (intern-soft symbol/not/name))
+
+            ;; And do normal keyboard/load teardown too.
+            (test<keyboard/load>:teardown test-name)))
+
+      ;; Debug log symbol names & existances before test starts.
+      (test<keyboard>:debug
+          test-name
+        '("Testing Symbols:\n"
+          "  - testing:   %s\n"
+          "    + exists?: %S\n"
+          "  - not:       %s\n"
+          "    + exists?: %S")
+        symbol/test/name
+        (not (null (intern-soft symbol/test/name)))
+        symbol/not/name
+        (not (null (intern-soft symbol/not/name))))
 
       ;;===
       ;; Run the test.
       ;;===
+
+      ;; Sanity check!
+      (should-not (intern-soft symbol/test/name))
+      (should-not (intern-soft symbol/not/name))
 
       ;; Lexically bind to the desired `:testing' layout.
       (let* ((input//kl:layout/desired     layout/test/keyword)
@@ -353,20 +505,42 @@ Returns the path to the dir/file."
         (setq attributes (file-attributes path/file/not))
         (should (= 0 (file-attribute-size attributes)))
 
+        (test<keyboard>:debug
+            test-name
+          '("Paths exist:\n"
+            "  - path/dir/root:    %S %s\n"
+            "  - path/dir/layouts: %S %s\n"
+            "  - path/dir/test:    %S %s\n"
+            "  - path/file/test:   %S %s\n"
+            "  - path/dir/not:     %S %s\n"
+            "  - path/file/not:    %S %s")
+          (int<keyboard>:path:file/exists? path/dir/root) path/dir/root
+          (int<keyboard>:path:file/exists? path/dir/layouts) path/dir/layouts
+          (int<keyboard>:path:file/exists? path/dir/test) path/dir/test
+          (int<keyboard>:path:file/exists? path/file/test) path/file/test
+          (int<keyboard>:path:file/exists? path/dir/not) path/dir/not
+          (int<keyboard>:path:file/exists? path/file/not) path/file/not)
+
         ;;------------------------------
         ;; Write some lisp to our files.
         ;;------------------------------
         ;; We need to prove one was loaded but not the other,
         ;; so create different symbols for each that will get loaded when this is done.
-        (with-current-buffer (find-file-noselect path/file/test)
-          (insert "(setq " (symbol-name symbol/test/name) " " (number-to-string symbol/test/value) ")")
+        (test<keyboard>:with:file-buffer
+            path/file/test
+            :buffer/kill
+            nil ;; Don't delete file yet.
+          (insert "(setq " symbol/test/name " " (number-to-string symbol/test/expected) ")")
           (save-buffer))
-        (with-current-buffer (find-file-noselect path/file/not)
-          (insert "(setq " (symbol-name symbol/not/name) " " (number-to-string symbol/not/value) ")")
+        (test<keyboard>:with:file-buffer
+            path/file/not
+            :buffer/kill
+            nil ;; Don't delete file yet.
+          (insert "(setq " symbol/not/name " " (number-to-string symbol/not/expected) ")")
           (save-buffer))
 
-        (should-not (boundp symbol/test/name))
-        (should-not (boundp symbol/not/name))
+        (should-not (intern-soft symbol/test/name))
+        (should-not (intern-soft symbol/not/name))
 
         ;;------------------------------
         ;; Files exist and are no longer empty?
@@ -379,22 +553,46 @@ Returns the path to the dir/file."
         (setq attributes (file-attributes path/file/not))
         (should (> (file-attribute-size attributes) 0))
 
-        (should-not (boundp symbol/test/name))
-        (should-not (boundp symbol/not/name))
+        (should-not (intern-soft symbol/test/name))
+        (should-not (intern-soft symbol/not/name))
 
         ;;------------------------------
         ;; Load one of the files.
         ;;------------------------------
+        (test<keyboard>:debug
+            test-name
+          '("Paths exist:\n"
+            "  - path/dir/root:    %S %s\n"
+            "  - path/dir/layouts: %S %s\n"
+            "  - path/dir/test:    %S %s\n"
+            "  - path/file/test:   %S %s\n"
+            "  - path/dir/not:     %S %s\n"
+            "  - path/file/not:    %S %s")
+          (int<keyboard>:path:file/exists? path/dir/root) path/dir/root
+          (int<keyboard>:path:file/exists? path/dir/layouts) path/dir/layouts
+          (int<keyboard>:path:file/exists? path/dir/test) path/dir/test
+          (int<keyboard>:path:file/exists? path/file/test) path/file/test
+          (int<keyboard>:path:file/exists? path/dir/not) path/dir/not
+          (int<keyboard>:path:file/exists? path/file/not) path/file/not)
 
-        ;; TODO: Trying to join some `nil' args together...
-        (int<keyboard>:load:file layout/test/needs-normalized
-                                 file/load
-                                 path/dir/root
-                                 :error)
+        ;; Load should return something truthy.
+        (should (int<keyboard>:load:file layout/test/needs-normalized
+                                         (file-name-sans-extension file/load)
+                                         path/dir/root
+                                         :error))
 
         (test<keyboard>:assert:output :error test-name 0)
 
-        (should (boundp symbol/test/name))
-        (should (numberp symbol/test/name))
-        (should (= (symbol-value symbol/test/name) symbol/test/value))
-        (should-not (boundp symbol/not/name))))))
+        ;; Should now have the symbol & value from the file we loaded.
+        (setq symbol/test/symbol (intern-soft symbol/test/name))
+        (should symbol/test/symbol)
+
+        (setq symbol/value (symbol-value symbol/test/symbol))
+        (should (numberp symbol/value))
+        (should (= symbol/value symbol/test/expected))
+
+        ;; Still should /not/ have the symbol & value from the file we did /not/ load.
+        (should-not (intern-soft symbol/not/name))))))
+
+
+;; TODO: finish testing load funcs

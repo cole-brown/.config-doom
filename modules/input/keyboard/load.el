@@ -230,29 +230,62 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 ;; Load Active Layout Functions
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:load:active? (layout load-name &optional directory)
+(defun int<keyboard>:load:active? (layout load-name &optional root error?)
   "Load LAYOUT if it is the desired layout according to `int<keyboard>:load:layout?'
 and if its LOAD-NAME file exists on the filesystem.
   - And only if `input//kl:testing:disable-start-up-init' is nil.
-
-DIRECTORY, if nil, will be FLAG minus its default prefix (e.g. `+layout/dvorak'
-is 'dvorak/' directory).
-  - The keyboard layout's keyword is also accepted (e.g. `:dvorak').
 
 LOAD-NAME should be filename (without extension) to be passed to `load!' as:
 (concat (file-name-as-directory \"layout\")
         (file-name-as-directory DIRECTORY)
         LOAD-NAME)
 
-The extension '.el' is used to check for file existance."
-  (when (and
-         ;; If we're loading during start-up /and/ have start-up-init disabled:
-         ;; Do not load.
-         (not (and (input//kl:loading?)
-                   input//kl:testing:disable-start-up-init))
-         ;; Only load for desired layout.
-         (int<keyboard>:load:layout? layout))
-    (int<keyboard>:load:file layout load-name directory)))
+ROOT, if nil, will be LAYOUT's directory under `int<keyboard>:path:dir/root'
+child directory 'layout'.
+ROOT, if non-nil, must be absolute.
+
+The extension '.el' is used to check for file existance.
+
+ERROR?, if non-nil, will signal an error if the file does not exist.
+  - If nil, a debug message will (try to) be output instead."
+  (int<keyboard>:debug
+      "int<keyboard>:load:active?"
+      '(:load)
+    '("Inputs:\n"
+      "  - layout:    %S\n"
+      "  - load-name: %S\n"
+      "  - root:      %S\n"
+      "  - error?:    %S")
+    layout load-name root error?)
+
+  ;; Only allow load if we have start-up-init enabled /and/ we're loading during start-up.
+  (let* ((allow-load? (and (input//kl:loading?)
+                           (not input//kl:testing:disable-start-up-init))))
+    (int<keyboard>:debug
+        "int<keyboard>:load:active?"
+        '(:load)
+      '("Load checks:\n"
+        "     loading?        %S\n"
+        "  && allow-init?     %S\n"
+        "  == allow load?:    %S\n"
+        "  && `load:layout?': %S\n"
+        "  == load file? ---> %S")
+      ;; Loading Allowed?
+      (input//kl:loading?)
+      (not input//kl:testing:disable-start-up-init)
+      allow-load?
+      ;; Layout?
+      (int<keyboard>:load:layout? layout)
+      ;; All together!
+      (and allow-load?
+           (int<keyboard>:load:layout? layout)))
+
+    ;; Is loading allowed and...
+    (when (and allow-load?
+               ;; ...is this layout the desired one to load?
+               (int<keyboard>:load:layout? layout))
+      ;; Yes and yes - load it.
+      (int<keyboard>:load:file layout load-name root error?))))
 ;; (int<keyboard>:load:active? :spydez "init")
 ;; (int<keyboard>:load:active? :spydez "config")
 

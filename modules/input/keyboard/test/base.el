@@ -40,9 +40,17 @@ debugging messages.")
   "Tear-down function to run for the current testing suite.")
 
 
+(defvar test<keyboard>:should:marker/counter 0
+  "Counter for `test<keyboard>:should:marker'.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Test Debugging
 ;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; Standard Output (*Messages*, *Warning*, error signals...)
+;;------------------------------
 
 (defvar test<keyboard>:debugging nil
   "Debug toggle specifically for test debugging.
@@ -126,7 +134,69 @@ value as tests' debugging toggle."
 ;; (test<keyboard>:debug "test?" '("hello " "%s") "there")
 
 
-;;------------------------------------------------------------------------------
+;;;------------------------------
+;; ERT List of Should Forms
+;;------------------------------
+
+(defun test<keyboard>:should:marker (test-name &rest args)
+  "Put a `should' in the test which will evaluate to some searchable output for
+marking where in a test you are.
+
+Search for \"[MARK-\[0-9\]+]:\"."
+  ;;---
+  ;; Big noticeable banner.
+  ;;---
+  (let ((fmt/str (concat "\n"
+                         "╔═════════════════════════════════════╗\n"
+                         "╠══╣            MARK-%02d            ╠══╣\n"
+                         "╚═╤═══════════════════════════════════╝\n"))
+        formatted)
+
+    ;;---
+    ;; Test's name and the `args' to print.
+    ;;---
+    (if (null args)
+        ;; No extra stuff in `fmt/str` when no ARGS.
+        (setq fmt/str (concat "  └──┤ " test-name "\n"))
+
+      ;; `test-name' and the args.
+      (setq fmt/str (concat fmt/str
+                            "  │\n"
+                            "  ├──┤ " test-name "\n"
+                            "  │\n"
+                            "  └────┤ "
+                            ;; String formatting if just a str, else "whatever" formatting.
+                            (cond ((and (= 1 (length args))
+                                        (stringp (nth 0 args)))
+                                   "%s")
+                                  (t
+                                   "%S"))
+                            "\n")))
+
+    ;;---
+    ;; Output
+    ;;---
+
+    ;; Eval string first so it's cleaner in the list of asserts.
+    (setq formatted (apply #'format fmt/str
+                           test<keyboard>:should:marker/counter
+                           args))
+
+    ;; Increment counter for next time.
+    (setq test<keyboard>:should:marker/counter
+          (1+ test<keyboard>:should:marker/counter))
+
+    ;; Debug the string so we can align *Messages* output with list of asserts.
+    (test<keyboard>:debug
+        ;; Don't put test name in here; it's in `formatted'.
+        test-name
+      formatted)
+
+    ;; Assert the string so it ends up in the list of asserts.
+    (should formatted)))
+
+
+;------------------------------------------------------------------------------
 ;; Test Helpers: Output
 ;;------------------------------------------------------------------------------
 
@@ -203,7 +273,8 @@ SHOULD-BE can be:
                              (should outputs)
                              (should (listp outputs)))))
     ;; See what level is when debugging.
-    (should (format "test<keyboard>:assert:output: level: %S, should-be: %S" level should-be))
+    (test<keyboard>:should:marker caller
+                                  (format "level: %S, should-be: %S" level should-be))
 
     (cond
      ;;---
@@ -278,20 +349,32 @@ SHOULD-BE can be:
 ;; The 'test/debug.el' test suite will have its own set-up/tear-down functions for testing them
 ;;---
 
-(defun test<keyboard>:debug:setup ()
+(defun test<keyboard>:debug:setup (test-name)
   "Placeholder for reminder not to mess with debugging."
   ;; Do not touch:
   ;;   - `int<keyboard>:debugging'
   ;;   - `int<keyboard>:debug:tags'
-  )
+  (test<keyboard>:debug "" ;; Don't put test name in here; use it below.
+    '("\n"
+      "╔═════════════════════════════════════╗\n"
+      "╠══╣             SET-UP            ╠══╣\n"
+      "╚═╤═══════════════════════════════════╝\n"
+      "  └──┤ %s")
+    test-name))
 
 
-(defun test<keyboard>:debug:teardown ()
+(defun test<keyboard>:debug:teardown (test-name)
   "Placeholder for reminder not to mess with debugging."
   ;; Do not touch:
   ;;   - `int<keyboard>:debugging'
   ;;   - `int<keyboard>:debug:tags'
-  )
+  (test<keyboard>:debug "" ;; Don't put test name in here; use it below.
+    '("\n"
+      "╔═════════════════════════════════════╗\n"
+      "╠══╣           TEAR-DOWN           ╠══╣\n"
+      "╚═╤═══════════════════════════════════╝\n"
+      "  └──┤ %s")
+    test-name))
 
 
 ;;------------------------------------------------------------------------------
@@ -323,16 +406,19 @@ FUNC/TEARDOWN will run as first step in tear-down."
   ;; Reset these at start of test so they can be manually inspected after a test is run.
   (setq test<keyboard>:output:error nil)
   (setq test<keyboard>:output:warn  nil)
-  (setq test<keyboard>:output:debug nil))
+  (setq test<keyboard>:output:debug nil)
+  (setq test<keyboard>:should:marker/counter 0))
 
 
 (defun test<keyboard>:setup (name func/setup func/teardown)
   "Run setup for test named NAME.
 
 FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
+  ;; Always before anything so the debug message shows start of set-up.
+  (test<keyboard>:debug:setup name)
+
   (test<keyboard>:setup/vars)
   (test<keyboard>:redirect/output:setup)
-  (test<keyboard>:debug:setup)
 
   (test<keyboard>:setup/suite func/setup func/teardown)
 
@@ -360,13 +446,15 @@ usage isn't affected."
 
 (defun test<keyboard>:teardown (name)
   "Run teardown for tests."
-  ;; Always first:
+  ;; Always before anything so the debug message shows start of tear-down.
+  (test<keyboard>:debug:teardown name)
+
+  ;; Always first in actual tear-down:
   (when test<keyboard>:suite:func/teardown
     (unwind-protect
         (funcall test<keyboard>:suite:func/teardown name)))
 
   ;; Generally in reverse order from set-up.
-  (test<keyboard>:debug:teardown)
   (test<keyboard>:redirect/output:teardown)
   (test<keyboard>:teardown/vars))
 

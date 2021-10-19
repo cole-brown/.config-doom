@@ -18,6 +18,11 @@
   "Absolute path to `:input/keyboard' root directory.")
 
 
+(defconst int<keyboard>:path:dir/layouts "layout"
+  "Relative path from `int<keyboard>:path:dir/root' to the directory with all
+the layout directories.")
+
+
 (defconst int<keyboard>:path:dir/layout/prefix "+"
   "Layout dirs must start with a '+'.")
 
@@ -32,19 +37,24 @@ needed.
 
 NEXT and PARENT are expected to be strings.
 "
-  (if (null parent)
-      ;; Normalize backslashes to forward slashes, if present.
-      (directory-file-name next)
-    (concat (file-name-as-directory parent) next)))
+  (cond ((and (null parent)
+              (null next))
+         nil)
+        ((null parent)
+         ;; Normalize backslashes to forward slashes, if present.
+         (directory-file-name next))
+        (t
+         (concat (file-name-as-directory parent) next))))
 
 
 (defun int<keyboard>:path:join (&rest paths)
   "Joins together all strings in PATHS.
-If relative, will append `int<keyboard>:path:dir/root'."
+If relative, will prepend `int<keyboard>:path:dir/root'."
   (let ((path (seq-reduce #'int<keyboard>:path:append paths nil)))
     (if (file-name-absolute-p path)
         path
       (int<keyboard>:path:append int<keyboard>:path:dir/root path))))
+;; (int<keyboard>:path:join nil "bar")
 ;; (int<keyboard>:path:join "foo" "bar")
 ;; (int<keyboard>:path:join "layout" "+spydez" "init.el")
 ;; (int<keyboard>:path:join "c:/" "foo" "bar")
@@ -176,14 +186,14 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
         "    - %S\n"
         "  file: %S")
       root
-      "layout"
+      int<keyboard>:path:dir/layouts
       (concat
        int<keyboard>:path:dir/layout/prefix
        (input//kl:normalize->string layout))
       load-name)
     (setq path.load (int<keyboard>:path:join root
                                              ;; All are layouts in this sub-dir.
-                                             "layout"
+                                             int<keyboard>:path:dir/layouts
                                              ;; Add the required '+'.
                                              (concat
                                               int<keyboard>:path:dir/layout/prefix
@@ -290,24 +300,34 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 ;; (int<keyboard>:load:active? :spydez "config")
 
 
-(defun keyboard:load:active (file)
+(defun keyboard:load:active (file &optional root error?)
   "Find/load active layout's FILE.
 
-Search relative to directory the caller is in. For each directory
-found, load file name FILE /only if/ it is the directory name matches the active
-layout.
+FILE should /not/ have its extension so that the '.elc' can be used if it exists.
 
-FILE should /not/ have its extension so that the .elc can be used if it exists."
+ROOT, if nil, will be LAYOUT's directory under `int<keyboard>:path:dir/root'
+child directory 'layout'.
+ROOT, if non-nil, must be absolute.
+
+Search relative to ROOT's `int<keyboard>:path:dir/layouts' directory. For each
+directory found, load file name FILE /only if/ the directory name matches
+the active layout.
+
+ERROR?, if non-nil, will signal an error if the file does not exist.
+  - If nil, a debug message will (try to) be output instead."
   ;; Find all files/dirs in the layout directory that match the layout folder regex.
   ;; Get their attributes too so we can filter down to just directories.
-  (let* ((directory-path (int<keyboard>:path:join "layout"))
+  (let* ((directory-path (int<keyboard>:path:join root int<keyboard>:path:dir/layouts))
          ;; Layout dirs must have '+' in front of them and must be our direct children.
          (files-and-attrs (directory-files-and-attributes directory-path
                                                           nil
-                                                          (rx string-start
-                                                              "+"
-                                                              (one-or-more print)
-                                                              string-end))))
+                                                          (rx-to-string `(sequence
+                                                                          string-start
+                                                                          ,int<keyboard>:path:dir/layout/prefix
+                                                                          (one-or-more print)
+                                                                          string-end)
+                                                                        :no-group)))
+         loaded-something)
     ;; Iterate through what was found and figure out if its a directory.
     (dolist (file-and-attr files-and-attrs)
       (let ((name (car file-and-attr))
@@ -317,7 +337,11 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
         (when dir?
           ;; Our keyboard layout directories are named such that they can be
           ;; passed into `int<keyboard>:load:active?'.
-          (int<keyboard>:load:active? name file))))))
+          (setq loaded-something (or (int<keyboard>:load:active? name file root error?)
+                                     loaded-something)))))
+
+    ;; Return something that indicates if anything was loaded.
+    loaded-something))
 ;; (keyboard:load:active "config")
 ;; (keyboard:load:active "config")
 
@@ -326,12 +350,12 @@ FILE should /not/ have its extension so that the .elc can be used if it exists."
 ;; The End.
 ;;------------------------------------------------------------------------------
 
-(defun keyboard:load:layouts/list ()
+(defun keyboard:load:layouts/list (&optional root)
   "Get a list of all layout directories as layout keywords.
 
 E.g. if 'input/keyboard/layout/' dir has subdirs '+foo', '+bar', and 'baz':
   -> '(:foo :bar)"
-  (let* ((directory-path (int<keyboard>:path:join "layout"))
+  (let* ((directory-path (int<keyboard>:path:join root int<keyboard>:path:dir/layouts))
          ;; Layout dirs must have '+' in front of them and must be our direct children.
          (files-and-attrs (directory-files-and-attributes directory-path
                                                           nil

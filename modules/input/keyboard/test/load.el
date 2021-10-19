@@ -865,3 +865,287 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
           (setq symbol/value (symbol-value symbol/test/symbol))
           (should (numberp symbol/value))
           (should (= symbol/value symbol/test/expected))))))
+
+
+;;------------------------------
+;; keyboard:load:active
+;;------------------------------
+
+(ert-deftest test<keyboard/load>::keyboard:load:active ()
+  "Test that `keyboard:load:active' finds and loads the file for the correct (active/desired) layout."
+  (let* ((name                 "test<keyboard/load>::keyboard:load:active")
+         (name/dir             "test-load-active-api")
+         (symbol/prefix        (concat name "::"))
+         (symbol/test/name     (concat symbol/prefix "+testing"))
+         (symbol/not/name      (concat symbol/prefix "+not-testing"))
+         (symbol/test/expected 42)
+         (symbol/not/expected  1337)
+         (test/loading?-yes (lambda ()
+                              "Mock loading for testing."
+                              (test<keyboard>:debug name "Mock `input//kl:loading?' == !!!YES!!!")
+                              t))
+         (input//kl:testing:disable-start-up-init t))
+    (cl-letf (((symbol-function 'input//kl:loading?) test/loading?-yes))
+
+      ;; Create two "layouts" for testing that one loads and not the other.
+      ;; Lexically bind `input//kl:layout/desired' to one of those layouts.
+      (test<keyboard/load>:fixture:layouts
+          ;;===
+          ;; Test names.
+          ;;===
+          name     ;; `test/name'
+          name/dir ;; `test/dir' - for a directory name
+
+          ;;===
+          ;; Set-up & tear-down funcs.
+          ;;===
+          ;; Test-specific set-up - make sure the symbols we check are not around yet.
+          (lambda (test/name)
+            "Set-up for `test<keyboard/load>::int<keyboard>:load:file'."
+            (test<keyboard/load>:setup test/name)
+            (should-not (intern-soft symbol/test/name))
+            (should-not (intern-soft symbol/not/name)))
+
+          ;; Test-specific tear-down - make sure the symbols we check don't stick around.
+          (lambda (test/name)
+            "Tear-down for `test<keyboard/load>::int<keyboard>:load:file'."
+            (let ((symbol/test/symbol (intern-soft symbol/test/name))
+                  (symbol/not/symbol  (intern-soft symbol/not/name))
+                  symbol/value)
+              (test<keyboard>:debug
+                  test/name
+                '("\n"
+                  "Teardown: [BEFORE]:\n"
+                  "  - unbinding: %s\n"
+                  "    + exists?: %S\n"
+                  "  - unbinding: %s\n"
+                  "    + exists?: %S")
+                symbol/test/name
+                (intern-soft symbol/test/name)
+                symbol/not/name
+                (intern-soft symbol/not/name))
+
+              ;; Unbind if they are bound.
+              (test<keyboard/load>:symbol/delete test/name symbol/test/name)
+              (test<keyboard/load>:symbol/delete test/name symbol/not/name)
+
+              (test<keyboard>:debug
+                  test/name
+                '("\n"
+                  "Teardown: [AFTER]:\n"
+                  "  - unbinding: %s\n"
+                  "    + exists?: %S\n"
+                  "  - unbinding: %s\n"
+                  "    + exists?: %S")
+                symbol/test/name
+                (intern-soft symbol/test/name)
+                symbol/not/name
+                (intern-soft symbol/not/name))
+
+              ;; And do normal keyboard/load teardown too.
+              (test<keyboard/load>:teardown test/name)))
+
+          ;;===
+          ;; Layouts' "init.el" file contents.
+          ;;===
+          "init.el"
+          (concat "(setq " symbol/test/name " " (number-to-string symbol/test/expected) ")")
+          (concat "(setq " symbol/not/name  " " (number-to-string symbol/not/expected)  ")")
+
+        ;;===
+        ;; Run the test.
+        ;;===
+
+        ;;------------------------------
+        ;; Sanity check!
+        ;;------------------------------
+        (test<keyboard>:should:marker test/name "Sanity.")
+        (should-not (intern-soft symbol/test/name))
+        (should-not (intern-soft symbol/not/name))
+
+        ;;------------------------------
+        ;; Load the active layout's file.
+        ;;------------------------------
+        (test<keyboard>:debug
+            test/name
+          '("Paths exist:\n"
+            "  - path/dir/root:    %S %s\n"
+            "  - path/dir/layouts: %S %s\n"
+            "  - path/dir/test:    %S %s\n"
+            "  - path/file/test:   %S %s\n"
+            "  - path/dir/not:     %S %s\n"
+            "  - path/file/not:    %S %s")
+          (int<keyboard>:path:file/exists? path/dir/root)    path/dir/root
+          (int<keyboard>:path:file/exists? path/dir/layouts) path/dir/layouts
+          (int<keyboard>:path:file/exists? path/dir/test)    path/dir/test
+          (int<keyboard>:path:file/exists? path/file/test)   path/file/test
+          (int<keyboard>:path:file/exists? path/dir/not)     path/dir/not
+          (int<keyboard>:path:file/exists? path/file/not)    path/file/not)
+
+        ;;------------------------------
+        ;; Disable start-up init and then try to load during "start-up".
+        ;;------------------------------
+        (let ((input//kl:testing:disable-start-up-init t))
+          (test<keyboard>:should:marker test/name "NOT LOADING!")
+
+          ;;---
+          ;; Try to load for the layout.
+          ;;---
+          ;; Should fail because not-loading.
+          (test<keyboard>:should:marker test/name "Not loading the layout...")
+          (should-not (keyboard:load:active (file-name-sans-extension file/load)
+                                            path/dir/root
+                                            :error))
+
+          ;; Should not have errored trying loading file.
+          (test<keyboard>:assert:output :error test/name 0)
+
+          (should-not (intern-soft symbol/not/name))
+          (should-not (intern-soft symbol/test/name)))
+
+        ;;------------------------------
+        ;; Enable start-up init and try loading again.
+        ;;------------------------------
+
+        (let ((input//kl:testing:disable-start-up-init nil))
+          (test<keyboard>:should:marker test/name "LOADING!")
+
+          ;;---
+          ;; Try to load for the layout.
+          ;;---
+          ;; Should _succeed_ because we are loading now.
+          (should (keyboard:load:active (file-name-sans-extension file/load)
+                                        path/dir/root
+                                        :error))
+
+          ;; Should not have errored trying loading file.
+          (test<keyboard>:assert:output :error test/name 0)
+
+          (should-not (intern-soft symbol/not/name))
+
+          ;; Now we should finally have our expected file loaded.
+          ;; Should now have the symbol & value from the file we loaded.
+          (setq symbol/test/symbol (intern-soft symbol/test/name))
+          (should symbol/test/symbol)
+
+          (setq symbol/value (symbol-value symbol/test/symbol))
+          (should (numberp symbol/value))
+          (should (= symbol/value symbol/test/expected)))))))
+
+
+;;------------------------------
+;; keyboard:load:layouts/list
+;;------------------------------
+
+(ert-deftest test<keyboard/load>::keyboard:load:layouts/list ()
+  "Test that `keyboard:load:layouts/list' finds and loads the file for the correct (active/desired) layout."
+  (let* ((name                 "test<keyboard/load>::keyboard:load:layouts/list")
+         (name/dir             "test-load-active-api")
+         (symbol/prefix        (concat name "::"))
+         (symbol/test/name     (concat symbol/prefix "+testing"))
+         (symbol/not/name      (concat symbol/prefix "+not-testing"))
+         (symbol/test/expected 42)
+         (symbol/not/expected  1337))
+
+    ;; Create two "layouts" for testing that one loads and not the other.
+    ;; Lexically bind `input//kl:layout/desired' to one of those layouts.
+    (test<keyboard/load>:fixture:layouts
+        ;;===
+        ;; Test names.
+        ;;===
+        name     ;; `test/name'
+        name/dir ;; `test/dir' - for a directory name
+
+        ;;===
+        ;; Set-up & tear-down funcs.
+        ;;===
+        ;; Test-specific set-up - make sure the symbols we check are not around yet.
+        (lambda (test/name)
+          "Set-up for `test<keyboard/load>::int<keyboard>:load:file'."
+          (test<keyboard/load>:setup test/name)
+          (should-not (intern-soft symbol/test/name))
+          (should-not (intern-soft symbol/not/name)))
+
+        ;; Test-specific tear-down - make sure the symbols we check don't stick around.
+        (lambda (test/name)
+          "Tear-down for `test<keyboard/load>::int<keyboard>:load:file'."
+          (let ((symbol/test/symbol (intern-soft symbol/test/name))
+                (symbol/not/symbol  (intern-soft symbol/not/name))
+                symbol/value)
+            (test<keyboard>:debug
+                test/name
+              '("\n"
+                "Teardown: [BEFORE]:\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S")
+              symbol/test/name
+              (intern-soft symbol/test/name)
+              symbol/not/name
+              (intern-soft symbol/not/name))
+
+            ;; Unbind if they are bound.
+            (test<keyboard/load>:symbol/delete test/name symbol/test/name)
+            (test<keyboard/load>:symbol/delete test/name symbol/not/name)
+
+            (test<keyboard>:debug
+                test/name
+              '("\n"
+                "Teardown: [AFTER]:\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S\n"
+                "  - unbinding: %s\n"
+                "    + exists?: %S")
+              symbol/test/name
+              (intern-soft symbol/test/name)
+              symbol/not/name
+              (intern-soft symbol/not/name))
+
+            ;; And do normal keyboard/load teardown too.
+            (test<keyboard/load>:teardown test/name)))
+
+        ;;===
+        ;; Layouts' "init.el" file contents.
+        ;;===
+        "init.el"
+        (concat "(setq " symbol/test/name " " (number-to-string symbol/test/expected) ")")
+        (concat "(setq " symbol/not/name  " " (number-to-string symbol/not/expected)  ")")
+
+      ;;===
+      ;; Run the test.
+      ;;===
+
+      ;;------------------------------
+      ;; Sanity check!
+      ;;------------------------------
+      (test<keyboard>:should:marker test/name "Sanity.")
+      (should-not (intern-soft symbol/test/name))
+      (should-not (intern-soft symbol/not/name))
+
+      (test<keyboard>:debug
+          test/name
+        '("Paths exist:\n"
+          "  - path/dir/root:    %S %s\n"
+          "  - path/dir/layouts: %S %s\n"
+          "  - path/dir/test:    %S %s\n"
+          "  - path/file/test:   %S %s\n"
+          "  - path/dir/not:     %S %s\n"
+          "  - path/file/not:    %S %s")
+        (int<keyboard>:path:file/exists? path/dir/root)    path/dir/root
+        (int<keyboard>:path:file/exists? path/dir/layouts) path/dir/layouts
+        (int<keyboard>:path:file/exists? path/dir/test)    path/dir/test
+        (int<keyboard>:path:file/exists? path/file/test)   path/file/test
+        (int<keyboard>:path:file/exists? path/dir/not)     path/dir/not
+        (int<keyboard>:path:file/exists? path/file/not)    path/file/not)
+
+      ;;------------------------------
+      ;; Get the list of layouts.
+      ;;------------------------------
+      (let ((layouts (keyboard:load:layouts/list path/dir/root)))
+        (should layouts)
+        (should (listp layouts))
+        (should (seq-every-p #'keywordp layouts))
+        (should (= 2 (length layouts)))
+        (should (memq layout/test/keyword layouts))
+        (should (memq layout/not/keyword  layouts))))))

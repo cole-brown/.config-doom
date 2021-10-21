@@ -29,19 +29,6 @@
 ;; Test Helpers: Alist
 ;;------------------------------------------------------------------------------
 
-;;------------------------------
-;; Set-Up / Tear-Down
-;;------------------------------
-
-(defun test<keyboard/alist>:setup (test-name)
-  "Set-up for 'alist.el' tests."
-  )
-
-
-(defun test<keyboard/alist>:teardown (test-name)
-  "Tear-down for 'alist.el' tests."
-  )
-
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗
 ;; ╟─────────────────────────────┤ ERT TESTS ├─────────────────────────────────╢
@@ -65,8 +52,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<keyboard/alist>::int<keyboard>:alist:get/value"
-      #'test<keyboard/alist>:setup
-      #'test<keyboard/alist>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -145,8 +132,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<keyboard/alist>::int<keyboard>:alist:get/pair"
-      #'test<keyboard/alist>:setup
-      #'test<keyboard/alist>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -250,6 +237,101 @@
         (should (eq value/get:key expected:key))
         (should (integerp value/get:value))
         (should (= value/get:value expected:value))))))
+
+
+;;------------------------------
+;; int<keyboard>:alist:update
+;;------------------------------
+
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update ()
+  "Test that `int<keyboard>:alist:update' will add/overwrite values in the alist correctly.
+Also that `set-existing?' will cause the macro to update the alist symbol with the new alist."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:alist:update"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let* ((alist/cons (list (cons :key-0 :value-0/initial)
+                             (cons :key-1 :value-1/initial)
+                             (cons :key-2 :value-2/initial)))
+           (alist/list (list (list :key-0 :value-0/initial)
+                             (list :key-1 :value-1/initial)
+                             (list :key-2 :value-2/initial)))
+           alist/updated
+           value/get)
+
+      ;;------------------------------
+      ;; Add new key/values.
+      ;;------------------------------
+      (should-not (int<keyboard>:alist:get/value :key-3 alist/cons))
+      (should-not (int<keyboard>:alist:get/value :key-3 alist/list))
+
+      (test<keyboard>:should:marker test-name "cons: New Key/Value")
+      (setq alist/updated (int<keyboard>:alist:update :key-3 :value-3/new alist/cons))
+      (should alist/updated)
+      ;; Our return value should be our alist.
+      (should (eq alist/updated alist/cons))
+      (setq value/get (int<keyboard>:alist:get/value :key-3 alist/cons))
+      (should value/get)
+      (should (keywordp value/get))
+      (should (eq value/get :value-3/new))
+
+      (test<keyboard>:should:marker test-name "list: New Key/Value")
+      ;; Add the new value as a list, since it's the `alist/list'.
+      (setq alist/updated (int<keyboard>:alist:update :key-3 '(:value-3/new) alist/list))
+      (should alist/updated)
+      ;; Our return value should be our alist.
+      (should (eq alist/updated alist/list))
+      (setq value/get (int<keyboard>:alist:get/value :key-3 alist/list))
+      (should value/get)
+      (should (listp value/get))
+      (should (= 1 (length value/get)))
+      (setq value/get (nth 0 value/get))
+      (should (keywordp value/get))
+      (should (eq value/get :value-3/new))
+
+      ;;------------------------------
+      ;; Update existing key's value.
+      ;;------------------------------
+      (let ((value/cons (int<keyboard>:alist:get/value :key-0 alist/cons))
+            (value/list (int<keyboard>:alist:get/value :key-0 alist/list)))
+        (should value/cons)
+        (should value/list)
+        (should (eq value/cons :value-0/initial))
+        (should (equal value/list '(:value-0/initial)))
+
+        (test<keyboard>:should:marker test-name "cons: Update Existing Key/Value")
+        (setq alist/updated (int<keyboard>:alist:update :key-0 :value-0/updated alist/cons))
+        (should alist/updated)
+        ;; Our return value should be our alist.
+        (should (eq alist/updated alist/cons))
+        (setq value/get (int<keyboard>:alist:get/value :key-0 alist/cons))
+        (should value/get)
+        (should (keywordp value/get))
+        (should (eq value/get :value-0/updated))
+
+        (test<keyboard>:should:marker test-name "list: Update Existing Key/Value")
+        ;; Add the new value as a list, since it's the `alist/list'.
+        (setq alist/updated (int<keyboard>:alist:update :key-0 '(:value-0/updated) alist/list))
+        (should alist/updated)
+        ;; Our return value should be our alist.
+        (should (eq alist/updated alist/list))
+        (setq value/get (int<keyboard>:alist:get/value :key-0 alist/list))
+        (should value/get)
+        (should (listp value/get))
+        (should (= 1 (length value/get)))
+        (setq value/get (nth 0 value/get))
+        (should (keywordp value/get))
+        (should (eq value/get :value-0/updated)))))
+
+
+
 
 
 ;;------------------------------------------------------------------------------

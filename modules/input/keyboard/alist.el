@@ -28,7 +28,7 @@
   (assoc key alist))
 
 
-(defmacro int<keyboard>:alist:update (key value alist &optional set-existing?)
+(defmacro int<keyboard>:alist:update (key value alist)
   "Set/overwrite an entry in the alist.
 
 If VALUE is nil, it will be set as KEY's value. Use
@@ -52,12 +52,12 @@ Returns ALIST."
                                  "Use `int<keyboard>:alist/string:update' for string keys.")
                 ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
-       (when ,set-existing?
-         (setq ,alist ,mmm:alist))
+       ;; `setf' creates a new alist sometimes
+       (setq ,alist ,mmm:alist)
        ,mmm:alist)))
 
 
-(defmacro int<keyboard>:alist:update/quoted (key value alist &optional set-existing?)
+(defmacro int<keyboard>:alist:update/quoted (key value alist)
   "Set/overwrite an entry in the alist without evaluating VALUE.
 
 If VALUE is nil, it will be set as KEY's value. Use
@@ -83,8 +83,8 @@ Returns ALIST."
                                  "Use `int<keyboard>:alist/string:update' for string keys.")
                                ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) value)
-       (when ,set-existing?
-         (setq ,alist ,mmm:alist))
+       ;; `setf' creates a new alist sometimes.
+       (setq ,alist ,mmm:alist)
        ,mmm:alist)))
 
 

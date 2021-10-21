@@ -184,8 +184,7 @@ earlier."
   ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
   (int<keyboard>:alist:update type
                               keybind-map
-                              (int<keyboard>:registrar:symbol registrar :keybinds)
-                              :set-existing))
+                              (int<keyboard>:registrar:symbol registrar :keybinds)))
 
 
 (defun keyboard:layout:bind (layout type keybind-map)
@@ -242,7 +241,7 @@ Unbindings are applied before bindings."
 
   ;; Ok - errors checked; set it.
   (setq input//kl:layout/active layout)
-  (int<keyboard>:alist:update type unbind-map input//kl:layout:unbinds :set-existing))
+  (int<keyboard>:alist:update type unbind-map input//kl:layout:unbinds))
 
 
 (defun keyboard:layout:unbind (layout type unbind-map)

@@ -198,8 +198,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                                value)))
       (int<keyboard>:alist:update/quoted keyword
                                          value ;; Save the quoted value, not `func'.
-                                         input//kl:definitions:keywords
-                                         :set-existing))))
+                                         input//kl:definitions:keywords))))
 ;; input//kl:definitions:keywords
 ;; (setq input//kl:definitions:keywords nil)
 ;; (input:keyboard/layout:define/keywords :evil "docstring here" :layout:test-keyword #'ignore)

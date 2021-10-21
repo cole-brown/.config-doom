@@ -18,21 +18,21 @@
 ;; A-list functions that are sane.
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:alist/get (key alist)
+(defun int<keyboard>:alist:get/value (key alist)
   "Get cdr of KEY's entry in ALIST."
   (alist-get key alist))
 
 
-(defun input//kl:alist/entry (key alist)
+(defun int<keyboard>:alist:get/pair (key alist)
   "Get full assoc/entry of KEY in ALIST."
   (assoc key alist))
 
 
-(defmacro input//kl:alist/update (key value alist &optional set-alist)
+(defmacro int<keyboard>:alist:update (key value alist &optional set-existing?)
   "Set/overwrite an entry in the alist.
 
 If VALUE is nil, it will be set as KEY's value. Use
-`input//kl:alist/delete' if you want to remove it.
+`int<keyboard>:alist:delete' if you want to remove it.
 
 Returns ALIST."
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
@@ -47,21 +47,21 @@ Returns ALIST."
        ;;---
        (when (stringp ,mmm:key)
          (int<keyboard>:output :error
-                               "input//kl:alist/update"
+                               "int<keyboard>:alist:update"
                                '("String key '%s' won't work... "
-                                 "Use `input//kl:alist/string/update' for string keys.")
+                                 "Use `int<keyboard>:alist/string:update' for string keys.")
                 ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
-       (when ,set-alist
+       (when ,set-existing?
          (setq ,alist ,mmm:alist))
        ,mmm:alist)))
 
 
-(defmacro input//kl:alist/update-quoted (key value alist &optional set-alist)
+(defmacro int<keyboard>:alist:update/quoted (key value alist &optional set-existing?)
   "Set/overwrite an entry in the alist without evaluating VALUE.
 
 If VALUE is nil, it will be set as KEY's value. Use
-`input//kl:alist/delete' if you want to remove it.
+`int<keyboard>:alist:delete' if you want to remove it.
 
 Returns ALIST."
   ;; (declare (indent defun))
@@ -78,17 +78,18 @@ Returns ALIST."
        ;;---
        (when (stringp ,mmm:key)
          (int<keyboard>:output :error
-                               "input//kl:alist/update"
+                               "int<keyboard>:alist:update"
                                '("String key '%s' won't work... "
-                                 "Use `input//kl:alist/string/update' for string keys.")
+                                 "Use `int<keyboard>:alist/string:update' for string keys.")
                                ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) value)
-       (when ,set-alist
+       (when ,set-existing?
          (setq ,alist ,mmm:alist))
        ,mmm:alist)))
 
 
-(defmacro input//kl:alist/delete (key alist &optional set-alist)
+;; Currently unused.
+(defmacro int<keyboard>:alist:delete (key alist &optional set-existing?)
   "Removes KEY from ALIST.
 
 Returns ALIST."
@@ -106,140 +107,142 @@ Returns ALIST."
        ;;---
        (when (stringp ,mmm:key)
          (int<keyboard>:output :error
-                               "input//kl:alist/update"
+                               "int<keyboard>:alist:update"
                                '("String key '%s' won't work... "
-                                 "Use `input//kl:alist/string/update' "
+                                 "Use `int<keyboard>:alist/string:update' "
                                  "for string keys.")
                                ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
-       (when ,set-alist
+       (when ,set-existing?
          (setq ,alist ,mmm:alist))
        ,mmm:alist)))
 ;; (let ((alist '((foo . bar))))
-;;   (input//kl:alist/delete "foo" alist)
+;;   (int<keyboard>:alist:delete "foo" alist)
 ;;   alist)
 
 
 ;;------------------------------------------------------------------------------
 ;; String Alists
 ;;------------------------------------------------------------------------------
+;; Currently all unused and untested.
+;;------------------------------
 
-(defun input//kl:alist/string/get (key alist &optional default)
-  "Get cdr of KEY's entry in ALIST.
-
-If KEY is not in the alist, nil or DEFAULT will be returned."
-  (when (not (stringp key))
-    (int<keyboard>:output :error
-                          "input//kl:alist/string/get"
-                          '("Only string keys allowed. "
-                            "Use `input//kl:alist/get' for non-string keys.")))
-  (alist-get key alist default nil #'string=))
-
-
-(defun input//kl:alist/string/entry (key alist)
-  "Get full assoc/entry of KEY in ALIST."
-  (when (not (stringp key))
-    (int<keyboard>:output :error
-                          "input//kl:alist/string/get"
-                          '("Only string keys allowed. "
-                            "Use `input//kl:alist/get' for non-string keys.")))
-  (assoc key alist #'string=))
-
-
-(defmacro input//kl:alist/string/update (key value alist &optional set-alist)
-  "Set/overwrite an entry in the alist.
-
-If VALUE is nil, it will be set as KEY's value. Use `input//kl:alist/string/delete' if
-you want to remove it.
-
-Returns ALIST."
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:string"))
-        (mmm:key   (make-symbol "alist:string/key")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (not (stringp ,mmm:key))
-         (int<keyboard>:output :error
-                               "input//kl:alist/string/update"
-                               '("Only string keys allowed. "
-                                 "Use `input//kl:alist/update' for non-string key %S.")
-                               ,mmm:key))
-
-       (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) ,value)
-       (when ,set-alist
-         (setq ,alist ,mmm:alist))
-       ,mmm:alist)))
-;; (let ((alist '(("foo" . bar))))
-;;   (input//kl:alist/string/update "foo" 'baz alist))
-
-
-(defmacro input//kl:alist/string/update-quoted (key value alist &optional set-alist)
-  "Set/overwrite an entry in the alist without evaluating VALUE.
-
-If VALUE is nil, it will be set as KEY's value. Use `input//kl:alist/string/delete' if
-you want to remove it.
-
-Returns ALIST."
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:string"))
-        (mmm:key   (make-symbol "alist:string/key")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (not (stringp ,mmm:key))
-         (int<keyboard>:output :error
-                               "input//kl:alist/string/update"
-                               '("Only string keys allowed. "
-                                 "Use `input//kl:alist/update' for non-string key %S.")
-                               ,mmm:key))
-
-       (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) value)
-       (when ,set-alist
-         (setq ,alist ,mmm:alist))
-       ,mmm:alist)))
-;; (let ((alist '(("foo" . bar))))
-;;   (input//kl:alist/string/update "foo" 'baz alist))
-
-
-(defmacro input//kl:alist/string/delete (key alist &optional set-alist)
-  "Removes KEY from ALIST.
-
-Returns ALIST."
-  ;; (declare (indent defun))
-
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:string"))
-        (mmm:key   (make-symbol "alist:string/key")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (not (stringp ,mmm:key))
-         (int<keyboard>:output :error
-                               "input//kl:alist/string/update"
-                               '("Only string keys allowed. "
-                                 "Use `input//kl:alist/update' for non-string key %S.")
-                               ,mmm:key))
-
-       (setf (alist-get ,mmm:key ,mmm:alist nil 'remove #'string=) nil)
-       (when ,set-alist
-         (setq ,alist ,mmm:alist))
-       ,mmm:alist)))
-;; (let ((alist '(("foo" . bar))))
-;;   (input//kl:alist/string/delete "foo" alist)
-;;   alist)
+;; (defun int<keyboard>:alist/string:get/value (key alist &optional default)
+;; "Get cdr of KEY's entry in ALIST.
+;;
+;; If KEY is not in the alist, nil or DEFAULT will be returned."
+;; (when (not (stringp key))
+;; (int<keyboard>:output :error
+;;                         "int<keyboard>:alist/string:get/value"
+;;                         '("Only string keys allowed. "
+;;                         "Use `int<keyboard>:alist:get/value' for non-string keys.")))
+;; (alist-get key alist default nil #'string=))
+;;
+;;
+;; (defun int<keyboard>:alist/string:get/pair (key alist)
+;; "Get full assoc/entry of KEY in ALIST."
+;; (when (not (stringp key))
+;; (int<keyboard>:output :error
+;;                         "int<keyboard>:alist/string:get/pair"
+;;                         '("Only string keys allowed. "
+;;                         "Use `int<keyboard>:alist:get/pair' for non-string keys.")))
+;; (assoc key alist #'string=))
+;;
+;;
+;; (defmacro int<keyboard>:alist/string:update (key value alist &optional set-existing?)
+;; "Set/overwrite an entry in the alist.
+;;
+;; If VALUE is nil, it will be set as KEY's value. Use `int<keyboard>:alist/string:delete' if
+;; you want to remove it.
+;;
+;; Returns ALIST."
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
+;; (let ((mmm:alist (make-symbol "alist:string"))
+;;         (mmm:key   (make-symbol "alist/string:key")))
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+;; ;; Eval inputs once.
+;; `(let ((,mmm:alist ,alist)
+;;         (,mmm:key ,key))
+;; ;;---
+;; ;; Error Checking
+;; ;;---
+;; (when (not (stringp ,mmm:key))
+;;         (int<keyboard>:output :error
+;;                         "int<keyboard>:alist/string:update"
+;;                         '("Only string keys allowed. "
+;;                                 "Use `int<keyboard>:alist:update' for non-string key %S.")
+;;                         ,mmm:key))
+;;
+;; (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) ,value)
+;; (when ,set-existing?
+;;         (setq ,alist ,mmm:alist))
+;; ,mmm:alist)))
+;; ;; (let ((alist '(("foo" . bar))))
+;; ;;   (int<keyboard>:alist/string:update "foo" 'baz alist))
+;;
+;;
+;; (defmacro int<keyboard>:alist/string:update/quoted (key value alist &optional set-existing?)
+;; "Set/overwrite an entry in the alist without evaluating VALUE.
+;;
+;; If VALUE is nil, it will be set as KEY's value. Use `int<keyboard>:alist/string:delete' if
+;; you want to remove it.
+;;
+;; Returns ALIST."
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
+;; (let ((mmm:alist (make-symbol "alist:string"))
+;;         (mmm:key   (make-symbol "alist/string:key")))
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+;; ;; Eval inputs once.
+;; `(let ((,mmm:alist ,alist)
+;;         (,mmm:key ,key))
+;; ;;---
+;; ;; Error Checking
+;; ;;---
+;; (when (not (stringp ,mmm:key))
+;;         (int<keyboard>:output :error
+;;                         "int<keyboard>:alist/string:update"
+;;                         '("Only string keys allowed. "
+;;                                 "Use `int<keyboard>:alist:update' for non-string key %S.")
+;;                         ,mmm:key))
+;;
+;; (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) value)
+;; (when ,set-existing?
+;;         (setq ,alist ,mmm:alist))
+;; ,mmm:alist)))
+;; ;; (let ((alist '(("foo" . bar))))
+;; ;;   (int<keyboard>:alist/string:update "foo" 'baz alist))
+;;
+;;
+;; (defmacro int<keyboard>:alist/string:delete (key alist &optional set-existing?)
+;; "Removes KEY from ALIST.
+;;
+;; Returns ALIST."
+;; ;; (declare (indent defun))
+;;
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
+;; (let ((mmm:alist (make-symbol "alist:string"))
+;;         (mmm:key   (make-symbol "alist/string:key")))
+;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
+;; ;; Eval inputs once.
+;; `(let ((,mmm:alist ,alist)
+;;         (,mmm:key ,key))
+;; ;;---
+;; ;; Error Checking
+;; ;;---
+;; (when (not (stringp ,mmm:key))
+;;         (int<keyboard>:output :error
+;;                         "int<keyboard>:alist/string:update"
+;;                         '("Only string keys allowed. "
+;;                                 "Use `int<keyboard>:alist:update' for non-string key %S.")
+;;                         ,mmm:key))
+;;
+;; (setf (alist-get ,mmm:key ,mmm:alist nil 'remove #'string=) nil)
+;; (when ,set-existing?
+;;         (setq ,alist ,mmm:alist))
+;; ,mmm:alist)))
+;; ;; (let ((alist '(("foo" . bar))))
+;; ;;   (int<keyboard>:alist/string:delete "foo" alist)
+;; ;;   alist)
 
 
 ;;------------------------------------------------------------------------------

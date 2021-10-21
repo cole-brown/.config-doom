@@ -184,7 +184,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;;------------------------------
       ;; Add this keyword entry to alist.
       ;;------------------------------
-      ;; Use `input//kl:alist/update' so we overwrite a pre-existing.
+      ;; Use `int<keyboard>:alist:update' so we overwrite a pre-existing.
       (when int<keyboard>:debugging
         (let* ((kw-str (format "%S" keyword))
                (pad-str (int<keyboard>:debug:fill (- 45    ; Enlarge as needed.
@@ -196,10 +196,10 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                                kw-str
                                pad-str
                                value)))
-      (input//kl:alist/update-quoted keyword
-                                     value ;; Save the quoted value, not `func'.
-                                     input//kl:definitions:keywords
-                                     t))))
+      (int<keyboard>:alist:update/quoted keyword
+                                         value ;; Save the quoted value, not `func'.
+                                         input//kl:definitions:keywords
+                                         :set-existing))))
 ;; input//kl:definitions:keywords
 ;; (setq input//kl:definitions:keywords nil)
 ;; (input:keyboard/layout:define/keywords :evil "docstring here" :layout:test-keyword #'ignore)
@@ -214,8 +214,8 @@ REST: Repeating list of: '(keyword function keyword function ...)"
   "Normalizes a KEYWORD-OR-FUNC to a function."
   ;; "Function" can be nil for unbinding something, so get the entry to check
   ;; for its existance instead.
-  (let ((key->func (input//kl:alist/entry keyword-or-func
-                                          input//kl:definitions:keywords)))
+  (let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
+                                                 input//kl:definitions:keywords)))
     (cond
      ;; Did the keyword exist?
      (key->func

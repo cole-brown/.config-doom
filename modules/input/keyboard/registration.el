@@ -37,7 +37,7 @@ Returns nil if not valid."
   "Returns non-nil if TYPE is a valid type.
 
 See `int<keyboard>:layout:types for the alist of valid types."
-  (input//kl:alist/entry type int<keyboard>:layout:types))
+  (int<keyboard>:alist:get/pair type int<keyboard>:layout:types))
 ;; (input//kl:layout:valid/type? :emacs)
 
 
@@ -182,10 +182,10 @@ earlier."
   ;; Ok - errors checked; set it.
   (setq input//kl:layout/active layout)
   ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
-  (input//kl:alist/update type
-                          keybind-map
-                          (int<keyboard>:registrar:symbol registrar :keybinds)
-                          t))
+  (int<keyboard>:alist:update type
+                              keybind-map
+                              (int<keyboard>:registrar:symbol registrar :keybinds)
+                              :set-existing))
 
 
 (defun keyboard:layout:bind (layout type keybind-map)
@@ -242,7 +242,7 @@ Unbindings are applied before bindings."
 
   ;; Ok - errors checked; set it.
   (setq input//kl:layout/active layout)
-  (input//kl:alist/update type unbind-map input//kl:layout:unbinds t))
+  (int<keyboard>:alist:update type unbind-map input//kl:layout:unbinds :set-existing))
 
 
 (defun keyboard:layout:unbind (layout type unbind-map)
@@ -496,7 +496,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                                                  registrar bind/unbind type :active))
              ;; Could be this keybind has nothing for type, and that's fine...
              ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
-             (keybinds (input//kl:alist/get
+             (keybinds (int<keyboard>:alist:get/value
                         type
                         (cond ((eq bind/unbind :bind)
                                (int<keyboard>:registrar:get registrar :keybinds))

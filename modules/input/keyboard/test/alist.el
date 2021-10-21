@@ -244,8 +244,7 @@
 ;;------------------------------
 
 (ert-deftest test<keyboard/alist>::int<keyboard>:alist:update ()
-  "Test that `int<keyboard>:alist:update' will add/overwrite values in the alist correctly.
-Also that `set-existing?' will cause the macro to update the alist symbol with the new alist."
+  "Test that `int<keyboard>:alist:update' will add/overwrite values in the alist correctly."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
@@ -328,10 +327,50 @@ Also that `set-existing?' will cause the macro to update the alist symbol with t
         (should (= 1 (length value/get)))
         (setq value/get (nth 0 value/get))
         (should (keywordp value/get))
-        (should (eq value/get :value-0/updated)))))
+        (should (eq value/get :value-0/updated))))))
 
 
+;;------------------------------
+;; int<keyboard>:alist:delete
+;;------------------------------
 
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:delete ()
+  "Test that `int<keyboard>:alist:delete' will delete keys from the alist correctly."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:alist:delete"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let* ((alist/cons (list (cons :key-0 :value-0)
+                             (cons :key-1 :value-1)
+                             (cons :key-2 :value-2)))
+           (alist/list (list (list :key-0 :value-0)
+                             (list :key-1 :value-1)
+                             (list :key-2 :value-2)))
+           alist/deleted)
+
+      ;;------------------------------
+      ;; Delete keys from the alists.
+      ;;------------------------------
+      (test<keyboard>:should:marker test-name "cons: `:key-0'")
+      (setq alist/deleted (int<keyboard>:alist:delete :key-0 alist/cons))
+      (should alist/deleted)
+      ;; Our return value should be our alist.
+      (should (eq alist/deleted alist/cons))
+      (should-not (int<keyboard>:alist:get/value :key-0 alist/cons))
+
+      (test<keyboard>:should:marker test-name "list: `:key-0'")
+      (setq alist/deleted (int<keyboard>:alist:delete :key-0 alist/list))
+      (should alist/deleted)
+      ;; Our return value should be our alist.
+      (should (eq alist/deleted alist/list))
+      (should-not (int<keyboard>:alist:get/value :key-0 alist/list)))))
 
 
 ;;------------------------------------------------------------------------------

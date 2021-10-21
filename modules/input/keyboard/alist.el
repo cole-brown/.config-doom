@@ -35,11 +35,12 @@ If VALUE is nil, it will be set as KEY's value. Use
 `int<keyboard>:alist:delete' if you want to remove it.
 
 Returns ALIST."
+  ;; Use our own uninterned symbols that won't interfere.
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
   (let ((mmm:alist (make-symbol "alist:general"))
         (mmm:key   (make-symbol "alist:general/key")))
+    ;; Only eval inputs once.
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
     `(let ((,mmm:alist ,alist)
            (,mmm:key ,key))
        ;;---
@@ -57,39 +58,8 @@ Returns ALIST."
        ,mmm:alist)))
 
 
-(defmacro int<keyboard>:alist:update/quoted (key value alist)
-  "Set/overwrite an entry in the alist without evaluating VALUE.
-
-If VALUE is nil, it will be set as KEY's value. Use
-`int<keyboard>:alist:delete' if you want to remove it.
-
-Returns ALIST."
-  ;; (declare (indent defun))
-
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:general"))
-        (mmm:key   (make-symbol "alist:general/key")))
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (stringp ,mmm:key)
-         (int<keyboard>:output :error
-                               "int<keyboard>:alist:update"
-                               '("String key '%s' won't work... "
-                                 "Use `int<keyboard>:alist/string:update' for string keys.")
-                               ,mmm:key))
-       (setf (alist-get ,mmm:key ,mmm:alist) value)
-       ;; `setf' creates a new alist sometimes.
-       (setq ,alist ,mmm:alist)
-       ,mmm:alist)))
-
-
 ;; Currently unused.
-(defmacro int<keyboard>:alist:delete (key alist &optional set-existing?)
+(defmacro int<keyboard>:alist:delete (key alist)
   "Removes KEY from ALIST.
 
 Returns ALIST."
@@ -113,8 +83,8 @@ Returns ALIST."
                                  "for string keys.")
                                ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
-       (when ,set-existing?
-         (setq ,alist ,mmm:alist))
+       ;; `setf' creates a new alist sometimes.
+       (setq ,alist ,mmm:alist)
        ,mmm:alist)))
 ;; (let ((alist '((foo . bar))))
 ;;   (int<keyboard>:alist:delete "foo" alist)
@@ -174,38 +144,6 @@ Returns ALIST."
 ;;                         ,mmm:key))
 ;;
 ;; (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) ,value)
-;; (when ,set-existing?
-;;         (setq ,alist ,mmm:alist))
-;; ,mmm:alist)))
-;; ;; (let ((alist '(("foo" . bar))))
-;; ;;   (int<keyboard>:alist/string:update "foo" 'baz alist))
-;;
-;;
-;; (defmacro int<keyboard>:alist/string:update/quoted (key value alist &optional set-existing?)
-;; "Set/overwrite an entry in the alist without evaluating VALUE.
-;;
-;; If VALUE is nil, it will be set as KEY's value. Use `int<keyboard>:alist/string:delete' if
-;; you want to remove it.
-;;
-;; Returns ALIST."
-;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-;; (let ((mmm:alist (make-symbol "alist:string"))
-;;         (mmm:key   (make-symbol "alist/string:key")))
-;; ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-;; ;; Eval inputs once.
-;; `(let ((,mmm:alist ,alist)
-;;         (,mmm:key ,key))
-;; ;;---
-;; ;; Error Checking
-;; ;;---
-;; (when (not (stringp ,mmm:key))
-;;         (int<keyboard>:output :error
-;;                         "int<keyboard>:alist/string:update"
-;;                         '("Only string keys allowed. "
-;;                                 "Use `int<keyboard>:alist:update' for non-string key %S.")
-;;                         ,mmm:key))
-;;
-;; (setf (alist-get ,mmm:key ,mmm:alist nil nil #'string=) value)
 ;; (when ,set-existing?
 ;;         (setq ,alist ,mmm:alist))
 ;; ,mmm:alist)))

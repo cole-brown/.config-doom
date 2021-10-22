@@ -15,8 +15,7 @@
 ;;---
 ;; Keyboard Files:
 ;;---
-(load! "../output.el")
-(load! "../debug.el")
+(load! "../vars.el")
 (load! "../load.el")
 
 

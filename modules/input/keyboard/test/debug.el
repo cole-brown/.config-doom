@@ -13,8 +13,7 @@
 ;;---
 ;; Keyboard Files:
 ;;---
-(load! "../output.el")
-(load! "../debug.el")
+;; 'test/base.el' already loads '../output.el' and '../debug.el'.
 
 
 ;;------------------------------------------------------------------------------

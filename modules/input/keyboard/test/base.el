@@ -5,8 +5,9 @@
 ;; Base Functionality for Testing
 ;;------------------------------------------------------------------------------
 
-;; Get all the keyboard files we want to test.
-(load "../init.el")
+;; Get all the keyboard files we know all tests want.
+(load! "../output.el")
+(load! "../debug.el")
 
 
 ;;------------------------------------------------------------------------------

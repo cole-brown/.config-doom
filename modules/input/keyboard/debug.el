@@ -127,7 +127,7 @@ to toggle.")
                                       nil
                                       'confirm)))
   ;; Convert to keyword.
-  (let ((keyword (input//kl:normalize->keyword tag)))
+  (let ((keyword (int<keyboard>:normalize->keyword tag)))
     ;; Toggle in/out of the active tags.
     (if (memq keyword int<keyboard>:debug:tags)
         (prog1

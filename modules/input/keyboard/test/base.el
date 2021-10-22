@@ -6,6 +6,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Get all the keyboard files we know all tests want.
+(load! "../utils.el")
 (load! "../output.el")
 (load! "../debug.el")
 
@@ -22,6 +23,7 @@
   "A list of `:warn' output messages if we are stealing `:warn' verbosity.")
 ;; test<keyboard>:output:warn
 ;; (length test<keyboard>:output:warn)
+
 
 (defvar test<keyboard>:output:debug nil
   "A list of `:debug' output messages if we are stealing `:debug' verbosity.

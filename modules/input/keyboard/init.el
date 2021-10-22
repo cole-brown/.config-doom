@@ -32,6 +32,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; NOTE: Order could matter - take care if modifying.
+(load! "utils")
 (load! "output")
 (load! "debug")
 (load! "vars")
@@ -39,64 +40,6 @@
 (load! "alist")
 (load! "registrars")
 (load! "registration")
-
-
-;;------------------------------------------------------------------------------
-;; Module Helpers
-;;------------------------------------------------------------------------------
-
-(defun input//kl:normalize->string (input)
-  "Normalize INPUT to a layout string.
-
-If INPUT is:
-  - String:  Remove \"+layout/\" prefix,
-             (then remove \":\" prefix if exists), and return.
-  - Keyword: Get symbol name, remove \":\" prefix, and return.
-  - Symbol:  Get symbol name, remove \"+layout/\" prefix,
-             (then remove \":\" prefix if exists), and return.
-E.g.
-  1) \"dvorak\" -> \"dvorak\"
-  2) `:dvorak' -> \"dvorak\"
-  3) `+layout/dvorak' -> \"dvorak\""
-  ;; Remove keyword's leading ":"?
-  (string-remove-prefix
-   ":"
-   ;; Remove the rest of module flag's leading "+layout/"?
-   (string-remove-prefix
-    "layout/"
-    ;; Remove leading "+" from layout dir name or module flag.
-    (string-remove-prefix
-     "+"
-     (if (stringp input)
-         input
-       (symbol-name input))))))
-;; (input//kl:normalize->string '+layout/spydez)
-;; (input//kl:normalize->string :spydez)
-;; (input//kl:normalize->string "spydez")
-;; (input//kl:normalize->string "+spydez")
-
-
-(defun input//kl:normalize->keyword (input)
-  "Convert INPUT to a keyboard layout keyword.
-
-If INPUT is:
-  - Keyword: It is returned as is.
-  - nil:     nil will be returned (allows for default args).
-
-Otherwise INPUT is normalized to a string and then converted to a keyword.
-
-E.g. `+layout/dvorak' -> `:dvorak'."
-  (cond ((null input)
-         nil)
-        ((keywordp input)
-         input)
-        (t
-         (intern (concat ":"
-                         (input//kl:normalize->string input))))))
-;; (input//kl:normalize->keyword '+layout/spydez)
-;; (input//kl:normalize->keyword :spydez)
-;; (input//kl:normalize->keyword "spydez")
-;; (input//kl:normalize->keyword nil)
 
 
 ;;------------------------------------------------------------------------------
@@ -122,7 +65,7 @@ E.g. `+layout/dvorak' -> `:dvorak'."
                           ;; Save first/only as desired layout.
                           (when (null int<keyboard>:layout:desired)
                             (setq int<keyboard>:layout:desired
-                                  (input//kl:normalize->keyword flag))
+                                  (int<keyboard>:normalize->keyword flag))
                             ;; Count for a warning (if not suppressed).
                             (setq layouts (1+ layouts))))))
                    ;; Warn only if we didn't see the suppression.

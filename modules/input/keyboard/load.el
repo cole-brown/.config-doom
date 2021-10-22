@@ -97,14 +97,14 @@ If relative, `int<keyboard>:path:dir/root' will be used as the path's root."
 (defun int<keyboard>:load:layout? (layout)
   "Returns non-nil if loading (or developing/debugging) for the LAYOUT.
 
-LAYOUT can be the flag symbol or keyword (see `input//kl:normalize->keyword').
+LAYOUT can be the flag symbol or keyword (see `int<keyboard>:normalize->keyword').
 
 E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 `:dvorak', and nil for others."
   (and int<keyboard>:layout:desired
        layout
        (eq int<keyboard>:layout:desired
-           (input//kl:normalize->keyword layout))))
+           (int<keyboard>:normalize->keyword layout))))
 ;; (int<keyboard>:load:layout? :spydez)
 ;; (int<keyboard>:load:layout? :qwerty)
 
@@ -212,7 +212,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
       int<keyboard>:path:dir/layouts
       (concat
        int<keyboard>:path:dir/layout/prefix
-       (input//kl:normalize->string layout))
+       (int<keyboard>:normalize->string layout))
       load-name)
     (setq path.load (int<keyboard>:path:join root
                                              ;; All are layouts in this sub-dir.
@@ -220,7 +220,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
                                              ;; Add the required '+'.
                                              (concat
                                               int<keyboard>:path:dir/layout/prefix
-                                              (input//kl:normalize->string layout))
+                                              (int<keyboard>:normalize->string layout))
                                              ;; And the filename.
                                              load-name)
           path.file (concat path.load ".el"))
@@ -396,7 +396,7 @@ E.g. if 'input/keyboard/layout/' dir has subdirs '+foo', '+bar', and 'baz':
         ;; non-directories like so.
         (when dir?
           ;; Convert to a layout keyword and add to the list.
-          (push (input//kl:normalize->keyword name) layouts))))))
+          (push (int<keyboard>:normalize->keyword name) layouts))))))
 
 
 ;;------------------------------------------------------------------------------

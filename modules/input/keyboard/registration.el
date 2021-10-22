@@ -583,7 +583,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                                       t
                                       ":init")))
   (let ((prev (int<keyboard>:registrar:get registrar :state))
-        (registering (input//kl:normalize->keyword registering)))
+        (registering (int<keyboard>:normalize->keyword registering)))
     (int<keyboard>:registrar:set registrar :state registering)
     (message "Set registering to: %S (was %S)" registering prev)))
 
@@ -611,7 +611,7 @@ Overrides any current active layout with the new LAYOUT."
                registering/prev (int<keyboard>:registrar:get registrar :state))))
 
   ;; Check/report about desired.
-  (let ((layout/keyword (input//kl:normalize->keyword layout)))
+  (let ((layout/keyword (int<keyboard>:normalize->keyword layout)))
     ;; Updated desired first.
     (cond ((null int<keyboard>:layout:desired)
            ;; Undefined

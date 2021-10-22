@@ -34,7 +34,7 @@ Types are:
 ;; TESTING
 ;;------------------------------
 
-(defvar input//kl:testing:disable-start-up-init nil
+(defvar int<keyboard>:testing:disable-start-up-init nil
   "If non-nil, does not run anything during startup.
 Just loads files to get all functions and such defined.")
 
@@ -43,7 +43,7 @@ Just loads files to get all functions and such defined.")
 ;; Layout: Desired/Active
 ;;------------------------------
 
-(defvar input//kl:layout/desired nil
+(defvar int<keyboard>:layout:desired nil
   "Cached :input/keyboard flag (converted to layout keyword) for desired
 keyboard layout.
 
@@ -55,10 +55,34 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
   - Both are set during 'init' file phase.")
 
 
-(defvar input//kl:layout/active nil
+(defvar int<keyboard>:layout:active nil
   "Cached keyword for the active/desired keyboard layout.
 
 'active' vs 'desired':
   - Desired is set from Doom module flags and comes from user.
   - Active is set in `input:keyboard/layout:set' when called by desired layout
   - Both are set during 'init' file phase.")
+
+
+(defun int<keyboard>:layout:valid? (layout &optional compare-active)
+  "Returns non-nil if LAYOUT is valid.
+
+LAYOUT must fulfill these criteria:
+  - Must be a keyword.
+  - If `int<keyboard>:layout:desired' is set, LAYOUT must be `eq' to it (else we
+    assume LAYOUT will become the desired layout).
+  - If COMPARE-ACTIVE is non-nil, LAYOUT must be `eq' to
+   `int<keyboard>:layout:active'."
+  (and (keywordp layout)
+       ;; Equal to desired?
+       (or (not int<keyboard>:layout:desired)
+           (eq layout int<keyboard>:layout:desired))
+       ;; Equal to active?
+       (or (null compare-active)
+           (eq layout int<keyboard>:layout:active))))
+
+
+;;------------------------------------------------------------------------------
+;; The End
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'registration)

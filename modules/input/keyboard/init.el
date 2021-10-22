@@ -45,24 +45,6 @@
 ;; Module Helpers
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:valid/layout? (layout &optional compare-active)
-  "Returns non-nil if LAYOUT is valid.
-
-LAYOUT must fulfill these criteria:
-  - Must be a keyword.
-  - If `input//kl:layout/desired' is set, LAYOUT must be `eq' to it (else we
-    assume LAYOUT will become the desired layout).
-  - If COMPARE-ACTIVE is non-nil, LAYOUT must be `eq' to
-   `input//kl:layout/active'."
-  (and (keywordp layout)
-       ;; Equal to desired?
-       (or (not input//kl:layout/desired)
-           (eq layout input//kl:layout/desired))
-       ;; Equal to active?
-       (or (null compare-active)
-           (eq layout input//kl:layout/active))))
-
-
 (defun input//kl:normalize->string (input)
   "Normalize INPUT to a layout string.
 
@@ -122,10 +104,10 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; Error Checking & Setting of `input//kl:layout/desired'
+;; Error Checking & Setting of `int<keyboard>:layout:desired'
 ;;------------------------------
 
-(unless input//kl:testing:disable-start-up-init
+(unless int<keyboard>:testing:disable-start-up-init
   ;; Should not have more than one keyboard layout, but only check when loading.
   (if (int<keyboard>:load:loading?)
       ;; We are loading, so check our module flags.
@@ -138,8 +120,8 @@ E.g. `+layout/dvorak' -> `:dvorak'."
                           (setq suppress-warning t))
                         (when (string-prefix-p "+layout/" (symbol-name flag))
                           ;; Save first/only as desired layout.
-                          (when (null input//kl:layout/desired)
-                            (setq input//kl:layout/desired
+                          (when (null int<keyboard>:layout:desired)
+                            (setq int<keyboard>:layout:desired
                                   (input//kl:normalize->keyword flag))
                             ;; Count for a warning (if not suppressed).
                             (setq layouts (1+ layouts))))))
@@ -153,7 +135,7 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 
     ;; Else we're not running during init... probably evaluating this buffer
     ;; directly for dev/testing. Set desired to a testing default.
-    (setq input//kl:layout/desired :spydez)))
+    (setq int<keyboard>:layout:desired :spydez)))
 
 
 ;;------------------------------------------------------------------------------

@@ -247,7 +247,7 @@ Unbinds and uninterns the symbol."
   - `:testing'     / \"+testing\"
   - `:not-testing' / \"+not-testing\"
 
-Lexically binds `input//kl:layout/desired' to the `:testing' layout for the duration of the BODY.
+Lexically binds `int<keyboard>:layout:desired' to the `:testing' layout for the duration of the BODY.
 
 TEST-NAME/TEST should be test function's name (e.g. `test<keyboard/load>::int<keyboard>:load:file').
 TEST-NAME/DIRECTORY should be a valid dir name (e.g. `test-load-file').
@@ -280,7 +280,7 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
           (layout/not/keyword           :not-testing)
           (layout/not/needs-normalized  "+not-testing")
           ;; Lexically bind desired for the duration of the test.
-          (input//kl:layout/desired     layout/test/keyword)
+          (int<keyboard>:layout:desired     layout/test/keyword)
           ;; Make a root and a 'layout' folder with two "layouts".
           (path/dir/root    (test<keyboard/load>:path:make-temp    :dir
                                                                    test/dir))
@@ -521,14 +521,14 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
     ;; Run the test.
     ;;===
 
-    ;; Lexically bind input//kl:layout/desired for these tests.
+    ;; Lexically bind int<keyboard>:layout:desired for these tests.
     (let* ((layout/test/keyword          :testing)
            (layout/test/needs-normalized "+testing")
            (layout/not/keyword           :not-testing)
            (layout/not/needs-normalized  "+not-testing")
-           (input//kl:layout/desired     layout/test/keyword))
-      (should input//kl:layout/desired)
-      (should (eq layout/test/keyword input//kl:layout/desired))
+           (int<keyboard>:layout:desired     layout/test/keyword))
+      (should int<keyboard>:layout:desired)
+      (should (eq layout/test/keyword int<keyboard>:layout:desired))
 
       (should-not (int<keyboard>:load:layout? layout/not/keyword))
       (should-not (int<keyboard>:load:layout? layout/not/needs-normalized))
@@ -688,7 +688,7 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
                               nil)))
 
       ;; Create two "layouts" for testing that one loads and not the other.
-      ;; Lexically bind `input//kl:layout/desired' to one of those layouts.
+      ;; Lexically bind `int<keyboard>:layout:desired' to one of those layouts.
       (test<keyboard/load>:fixture:layouts
           ;;===
           ;; Test names.
@@ -885,11 +885,11 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
                               "Mock loading for testing."
                               (test<keyboard>:debug name "Mock `int<keyboard>:load:loading?' == !!!YES!!!")
                               t))
-         (input//kl:testing:disable-start-up-init t))
+         (int<keyboard>:testing:disable-start-up-init t))
     (cl-letf (((symbol-function 'int<keyboard>:load:loading?) test/loading?-yes))
 
       ;; Create two "layouts" for testing that one loads and not the other.
-      ;; Lexically bind `input//kl:layout/desired' to one of those layouts.
+      ;; Lexically bind `int<keyboard>:layout:desired' to one of those layouts.
       (test<keyboard/load>:fixture:layouts
           ;;===
           ;; Test names.
@@ -986,7 +986,7 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
         ;;------------------------------
         ;; Disable start-up init and then try to load during "start-up".
         ;;------------------------------
-        (let ((input//kl:testing:disable-start-up-init t))
+        (let ((int<keyboard>:testing:disable-start-up-init t))
           (test<keyboard>:should:marker test/name "NOT LOADING!")
 
           ;;---
@@ -1008,7 +1008,7 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
         ;; Enable start-up init and try loading again.
         ;;------------------------------
 
-        (let ((input//kl:testing:disable-start-up-init nil))
+        (let ((int<keyboard>:testing:disable-start-up-init nil))
           (test<keyboard>:should:marker test/name "LOADING!")
 
           ;;---
@@ -1049,7 +1049,7 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
          (symbol/not/expected  1337))
 
     ;; Create two "layouts" for testing that one loads and not the other.
-    ;; Lexically bind `input//kl:layout/desired' to one of those layouts.
+    ;; Lexically bind `int<keyboard>:layout:desired' to one of those layouts.
     (test<keyboard/load>:fixture:layouts
         ;;===
         ;; Test names.

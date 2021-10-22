@@ -101,9 +101,9 @@ LAYOUT can be the flag symbol or keyword (see `input//kl:normalize->keyword').
 
 E.g. if `:dvorak' is our desired layout, this returns non-nil for LAYOUT
 `:dvorak', and nil for others."
-  (and input//kl:layout/desired
+  (and int<keyboard>:layout:desired
        layout
-       (eq input//kl:layout/desired
+       (eq int<keyboard>:layout:desired
            (input//kl:normalize->keyword layout))))
 ;; (int<keyboard>:load:layout? :spydez)
 ;; (int<keyboard>:load:layout? :qwerty)
@@ -266,7 +266,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 (defun int<keyboard>:load:active? (layout load-name &optional root error?)
   "Load LAYOUT if it is the desired layout according to `int<keyboard>:load:layout?'
 and if its LOAD-NAME file exists on the filesystem.
-  - And only if `input//kl:testing:disable-start-up-init' is nil.
+  - And only if `int<keyboard>:testing:disable-start-up-init' is nil.
 
 LOAD-NAME should be filename (without extension) to be passed to `load!' as:
 (concat (file-name-as-directory \"layout\")
@@ -293,7 +293,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 
   ;; Only allow load if we have start-up-init enabled /and/ we're loading during start-up.
   (let* ((allow-load? (and (int<keyboard>:load:loading?)
-                           (not input//kl:testing:disable-start-up-init))))
+                           (not int<keyboard>:testing:disable-start-up-init))))
     (int<keyboard>:debug
         "int<keyboard>:load:active?"
         '(:load)
@@ -305,7 +305,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
         "  == load file? ---> %S")
       ;; Loading Allowed?
       (int<keyboard>:load:loading?)
-      (not input//kl:testing:disable-start-up-init)
+      (not int<keyboard>:testing:disable-start-up-init)
       allow-load?
       ;; Layout?
       (int<keyboard>:load:layout? layout)

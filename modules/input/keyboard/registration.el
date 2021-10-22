@@ -158,7 +158,7 @@ TYPE should be one of:
 
 If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
 earlier."
-  (when (not (input//kl:valid/layout? layout))
+  (when (not (int<keyboard>:layout:valid? layout))
     (int<keyboard>:output :error
                           "input:keyboard/layout:set"
                           '("`layout' must be a keyword. "
@@ -180,7 +180,7 @@ earlier."
     (input//kl:layout:registering/set-if-valid? registrar :init))
 
   ;; Ok - errors checked; set it.
-  (setq input//kl:layout/active layout)
+  (setq int<keyboard>:layout:active layout)
   ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
   (int<keyboard>:alist:update type
                               keybind-map
@@ -218,7 +218,7 @@ If called twice with the same TYPE, the later UNBIND-MAP will overwrite the
 earlier.
 
 Unbindings are applied before bindings."
-  (when (not (input//kl:valid/layout? layout))
+  (when (not (int<keyboard>:layout:valid? layout))
     (int<keyboard>:output :error
                           "input:keyboard/layout:unbind"
                           '("`layout' must be a keyword. "
@@ -240,7 +240,7 @@ Unbindings are applied before bindings."
     (input//kl:layout:registering/set-if-valid? registrar :init))
 
   ;; Ok - errors checked; set it.
-  (setq input//kl:layout/active layout)
+  (setq int<keyboard>:layout:active layout)
   (int<keyboard>:alist:update type unbind-map input//kl:layout:unbinds))
 
 
@@ -287,7 +287,7 @@ LAYOUT should be a valid keyboard layout keyword."
   ;;---
   ;; Also verify the `layout'.
   ;;---
-  (unless (input//kl:valid/layout? layout :active)
+  (unless (int<keyboard>:layout:valid? layout :active)
     (int<keyboard>:output :error
                           "input:keyboard/layout:set"
                           '("`layout' must be a keyword. "
@@ -355,14 +355,14 @@ REGISTERING should be a registering state (see `int<keyboard>:layout:registering
                                (int<keyboard>:registrar:get registrar :state)
                                registering))
 
-        ((null input//kl:layout/active)
+        ((null int<keyboard>:layout:active)
          (int<keyboard>:output :error
                                caller
                                '("No active layout set; cannot configure keyboard layout! "
                                  "desired: '%S', "
                                  "active:  '%S'")
-                               input//kl:layout/desired
-                               input//kl:layout/active))
+                               int<keyboard>:layout:desired
+                               int<keyboard>:layout:active))
 
         ;; If we're binding, we need keys to bind.
         ;;   - If we're unbinding, though, we are ok with not having anything to unbind.
@@ -374,7 +374,7 @@ REGISTERING should be a registering state (see `int<keyboard>:layout:registering
                                  "cannot configure keyboard layout! "
                                  "Expected %S to have called `input:keyboard/layout:set'."
                                  "Keybinds are: %S")
-                               input//kl:layout/active
+                               int<keyboard>:layout:active
                                (int<keyboard>:registrar:get registrar :keybinds)))
 
         ((not (input//kl:layout:valid/type? type))
@@ -597,8 +597,8 @@ Overrides any current active layout with the new LAYOUT."
                                       (keyboard:load:layouts/list)
                                       nil
                                       t
-                                      (when input//kl:layout/active
-                                        (symbol-name input//kl:layout/active)))))
+                                      (when int<keyboard>:layout:active
+                                        (symbol-name int<keyboard>:layout:active)))))
 
   ;; Change to our special `:apply' registering state so `:init' state will happen.
 
@@ -613,42 +613,42 @@ Overrides any current active layout with the new LAYOUT."
   ;; Check/report about desired.
   (let ((layout/keyword (input//kl:normalize->keyword layout)))
     ;; Updated desired first.
-    (cond ((null input//kl:layout/desired)
+    (cond ((null int<keyboard>:layout:desired)
            ;; Undefined
            (message "Setting desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
+                    int<keyboard>:layout:desired
                     layout/keyword))
 
-          ((not (eq input//kl:layout/desired layout/keyword))
+          ((not (eq int<keyboard>:layout:desired layout/keyword))
            (message "Changing desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
+                    int<keyboard>:layout:desired
                     layout/keyword))
 
           (t
            (message "Reapplying desired keyboard layout: %S -> %S"
-                    input//kl:layout/desired
+                    int<keyboard>:layout:desired
                     layout/keyword)))
-    (setq input//kl:layout/desired layout/keyword)
+    (setq int<keyboard>:layout:desired layout/keyword)
 
     ;; Check/report about active.
-    (cond ((null input//kl:layout/active)
+    (cond ((null int<keyboard>:layout:active)
            (message "Setting active keyboard layout: %S -> %S"
-                    input//kl:layout/active
+                    int<keyboard>:layout:active
                     layout/keyword))
-          ((not (eq input//kl:layout/active layout/keyword))
+          ((not (eq int<keyboard>:layout:active layout/keyword))
            (message "Changing active keyboard layout: %S -> %S"
-                    input//kl:layout/active
+                    int<keyboard>:layout:active
                     layout/keyword))
           (t
            (message "Reapplying active keyboard layout: %S -> %S"
-                    input//kl:layout/active
+                    int<keyboard>:layout:active
                     layout/keyword)))
 
     ;; Load active.
     (keyboard:load:active "init") ;; This will set active.
 
     ;; Verify it was set before config/finalization.
-    (if (not (eq input//kl:layout/active layout/keyword))
+    (if (not (eq int<keyboard>:layout:active layout/keyword))
         ;; Fail message.
         (message (concat
                   "Initializing layout did not set it to the active layout?!\n"
@@ -656,14 +656,14 @@ Overrides any current active layout with the new LAYOUT."
                   "  Desired: %S\n"
                   "  Active:  %S")
                  layout/keyword
-                 input//kl:layout/desired
-                 input//kl:layout/active)
+                 int<keyboard>:layout:desired
+                 int<keyboard>:layout:active)
 
       ;; Config and finalize the new layout.
-      (message "Configuring & binding %S..." input//kl:layout/active)
+      (message "Configuring & binding %S..." int<keyboard>:layout:active)
       (keyboard:load:active "config")
       (input:keyboard/layout:finalize)
-      (message "Loaded layout %S." input//kl:layout/active))))
+      (message "Loaded layout %S." int<keyboard>:layout:active))))
 ;; (keyboard:layout:clear)
 
 

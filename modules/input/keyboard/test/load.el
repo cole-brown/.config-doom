@@ -680,11 +680,11 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
          (symbol/not/expected  1337)
          (test/loading?-yes (lambda ()
                               "Mock loading for testing."
-                              (test<keyboard>:debug name "Mock `input//kl:loading?' == !!!YES!!!")
+                              (test<keyboard>:debug name "Mock `int<keyboard>:load:loading?' == !!!YES!!!")
                               t))
          (test/loading?-no (lambda ()
                               "Mock loading/not-loading for testing."
-                              (test<keyboard>:debug name "Mock `input//kl:loading?' == no")
+                              (test<keyboard>:debug name "Mock `int<keyboard>:load:loading?' == no")
                               nil)))
 
       ;; Create two "layouts" for testing that one loads and not the other.
@@ -785,9 +785,9 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
         ;;------------------------------
         ;; Disable start-up init and then try to load during "start-up".
         ;;------------------------------
-        (cl-letf (((symbol-function 'input//kl:loading?) test/loading?-no))
+        (cl-letf (((symbol-function 'int<keyboard>:load:loading?) test/loading?-no))
           (test<keyboard>:should:marker test/name "NOT LOADING!")
-          (should-not (input//kl:loading?))
+          (should-not (int<keyboard>:load:loading?))
 
           ;;---
           ;; Try to load for the not-desired layout.
@@ -825,9 +825,9 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
         ;; Enable start-up init and try loading again.
         ;;------------------------------
 
-        (cl-letf (((symbol-function 'input//kl:loading?) test/loading?-yes))
+        (cl-letf (((symbol-function 'int<keyboard>:load:loading?) test/loading?-yes))
           (test<keyboard>:should:marker test/name "LOADING!")
-          (should (input//kl:loading?))
+          (should (int<keyboard>:load:loading?))
 
           ;;---
           ;; Try to load for the not-desired layout.
@@ -883,10 +883,10 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
          (symbol/not/expected  1337)
          (test/loading?-yes (lambda ()
                               "Mock loading for testing."
-                              (test<keyboard>:debug name "Mock `input//kl:loading?' == !!!YES!!!")
+                              (test<keyboard>:debug name "Mock `int<keyboard>:load:loading?' == !!!YES!!!")
                               t))
          (input//kl:testing:disable-start-up-init t))
-    (cl-letf (((symbol-function 'input//kl:loading?) test/loading?-yes))
+    (cl-letf (((symbol-function 'int<keyboard>:load:loading?) test/loading?-yes))
 
       ;; Create two "layouts" for testing that one loads and not the other.
       ;; Lexically bind `input//kl:layout/desired' to one of those layouts.

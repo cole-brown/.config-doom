@@ -28,6 +28,29 @@ the layout directories.")
 
 
 ;;------------------------------------------------------------------------------
+;; Debugging Helper
+;;------------------------------------------------------------------------------
+
+(defun int<keyboard>:load:loading? ()
+  "Use this to hide code you only want to run during Doom/Emacs start-up or to
+do some debugging vs actual stuff.
+
+For best, most consistent results: do not use this at all.
+
+Returns non-nil if `doom-init-p' is nil."
+  ;; This var is set to `t' after Doom has been initialized.
+  ;; ...it's already set by the time this runs.
+  ;;(not doom-init-p)
+
+  ;; Maybe this one is more accurate.
+  ;; Nope. This gives us 'not loading' when this file is loaded...
+  ;; (not doom-init-modules-p)
+
+  ;; I give up? If `load-file-name' is set, some file is being loaded right now.
+  load-file-name)
+
+
+;;------------------------------------------------------------------------------
 ;; Path Functions
 ;;------------------------------------------------------------------------------
 
@@ -269,7 +292,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
     layout load-name root error?)
 
   ;; Only allow load if we have start-up-init enabled /and/ we're loading during start-up.
-  (let* ((allow-load? (and (input//kl:loading?)
+  (let* ((allow-load? (and (int<keyboard>:load:loading?)
                            (not input//kl:testing:disable-start-up-init))))
     (int<keyboard>:debug
         "int<keyboard>:load:active?"
@@ -281,7 +304,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
         "  && `load:layout?': %S\n"
         "  == load file? ---> %S")
       ;; Loading Allowed?
-      (input//kl:loading?)
+      (int<keyboard>:load:loading?)
       (not input//kl:testing:disable-start-up-init)
       allow-load?
       ;; Layout?

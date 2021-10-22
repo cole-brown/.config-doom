@@ -42,29 +42,6 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Debugging/Testing Helper
-;;------------------------------------------------------------------------------
-
-(defun input//kl:loading? ()
-  "Use this to hide code you only want to run during Doom/Emacs start-up or to
-do some debugging vs actual stuff.
-
-For best, most consistent results: do not use this at all.
-
-Returns non-nil if `doom-init-p' is nil."
-  ;; This var is set to `t' after Doom has been initialized.
-  ;; ...it's already set by the time this runs.
-  ;;(not doom-init-p)
-
-  ;; Maybe this one is more accurate.
-  ;; Nope. This gives us 'not loading' when this file is loaded...
-  ;; (not doom-init-modules-p)
-
-  ;; I give up? If `load-file-name' is set, some file is being loaded right now.
-  load-file-name)
-
-
-;;------------------------------------------------------------------------------
 ;; Module Helpers
 ;;------------------------------------------------------------------------------
 
@@ -150,7 +127,7 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 
 (unless input//kl:testing:disable-start-up-init
   ;; Should not have more than one keyboard layout, but only check when loading.
-  (if (input//kl:loading?)
+  (if (int<keyboard>:load:loading?)
       ;; We are loading, so check our module flags.
       (let ((flags (doom-module-get :input 'keyboard :flags))
             (layouts 0)

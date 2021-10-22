@@ -254,11 +254,11 @@ TEST-NAME/TEST should be test function's name (e.g. `test<keyboard/load>::int<ke
 TEST-NAME/DIRECTORY should be a valid dir name (e.g. `test-load-file').
 
 FUNC/SETUP should be one of:
-  - #'test<keyboard/load>:setup
-  - A test-specific set-up function that also calls `test<keyboard/load>:setup'.
+  - nil (for default `test<keyboard/load>:setup')
+  - A test-specific set-up function (that does _not_ call `test<keyboard/load>:setup').
 FUNC/TEARDOWN should be one of:
-  - #'test<keyboard/load>:teardown
-  - A test-specific tear-down function that also calls `test<keyboard/load>:teardown'.
+  - nil (for default `test<keyboard/load>:teardown')
+  - A test-specific tear-down function (that does _not_ call `test<keyboard/load>:teardown').
 
 LAYOUT/FILE/NAME should be a filename string ending in \".el\" - like \"init.el\".
 
@@ -303,14 +303,16 @@ Created \"layouts\" will have the contents of these strings in their LAYOUT/FILE
           attributes)
 
      ;; Make sure our inputs are valid.
-     (should (stringp   test/name))
-     (should (stringp   test/dir))
-     (should (functionp test<keyboard/load>:fl:func/setup))
-     (should (functionp test<keyboard/load>:fl:func/teardown))
-     (should (stringp   test<keyboard/load>:fl:layout/file/testing))
-     (should (stringp   test<keyboard/load>:fl:layout/file/not-testing))
-     (should (stringp   file/load))
-     (should (string=  (file-name-extension file/load) "el"))
+     (should (stringp test/name))
+     (should (stringp test/dir))
+     (should (or (null      test<keyboard/load>:fl:func/setup)
+                 (functionp test<keyboard/load>:fl:func/setup)))
+     (should (or (null      test<keyboard/load>:fl:func/teardown)
+                 (functionp test<keyboard/load>:fl:func/teardown)))
+     (should (stringp test<keyboard/load>:fl:layout/file/testing))
+     (should (stringp test<keyboard/load>:fl:layout/file/not-testing))
+     (should (stringp file/load))
+     (should (string= (file-name-extension file/load) "el"))
 
      (test<keyboard>:fixture
          ;;===

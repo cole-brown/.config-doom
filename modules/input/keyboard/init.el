@@ -32,6 +32,23 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; Layout Types
+;;------------------------------
+
+(defconst int<keyboard>:layout:types '((:common . "common")
+                                       (:emacs  . "emacs")
+                                       (:evil   . "evil"))
+  "Allowed types for a few function args, alist keys.
+
+Types are:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.")
+;; int<keyboard>:layout:types
+;; (makunbound 'int<keyboard>:layout:types)
+
+
+;;------------------------------
 ;; TESTING
 ;;------------------------------
 

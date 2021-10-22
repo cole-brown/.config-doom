@@ -4,8 +4,8 @@
 ;; Registrars for Keybinds
 ;;------------------------------------------------------------------------------
 ;; Currently 2 registrars:
-;;   1. active (default)
-;;   2. debug  (temp/debugging)
+;;   1. actual (default)
+;;   2. debug  (temporary/testing/debugging)
 ;;------------------------------
 
 ;;------------------------------------------------------------------------------
@@ -16,20 +16,6 @@
 ;; General Consts/Vars
 ;;------------------------------
 
-;; TODO: Move elsewhere.
-(defconst int<keyboard>:layout:types '((:common . "common")
-                                       (:emacs  . "emacs")
-                                       (:evil   . "evil"))
-  "Allowed types for a few function args, alist keys.
-
-Types are:
-  :common - Any keybinds that exist in both evil-mode and standard Emacs.
-  :emacs  - Any Emacs-only keybinds (non-evil-mode).
-  :evil   - Any Evil-only keybinds.")
-;; int<keyboard>:layout:types
-;; (makunbound 'int<keyboard>:layout:types)
-
-
 ;; TODO: Are these in correct order?
 ;; TODO: Should we have a :finished state? Is one of these already a finished state?
 (defconst int<keyboard>:layout:registering/states
@@ -39,7 +25,7 @@ Types are:
     :active
     :inactive
     :apply)
-  "All valid values for `(input//kl:registrar:get registrar :state)'.")
+  "All valid values for `(int<keyboard>:registrar:get registrar :state)'.")
 
 
 (defconst int<keyboard>:registration:valid
@@ -54,16 +40,16 @@ Types are:
         ;; Valid to enter from (almost) any state:
         ;;---
         (cons :apply  int<keyboard>:layout:registering/states))
-  "Alist of all valid values for moving `(input//kl:registrar:get registrar :state)'
+  "Alist of all valid values for moving `(int<keyboard>:registrar:get registrar :state)'
 to a certain state.")
 
 
 ;;------------------------------------------------------------------------------
-;; Active/Default: Permanent Registrar
+;; Actual/Default: Permanent Registrar
 ;;------------------------------------------------------------------------------
 
-(defvar int<keyboard>:registrar<active>:keybinds nil
-  "The keybinds for the active layout.
+(defvar int<keyboard>:registrar<actual>:keybinds nil
+  "The keybinds for the actual/active layout.
 
 Saved in `input:keyboard/layout:set' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
@@ -75,11 +61,11 @@ This is an alist with 3 expected entries:
 
 Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
-;; (pp-macroexpand-expression int<keyboard>:registrar<active>:keybinds)
+;; (pp-macroexpand-expression int<keyboard>:registrar<actual>:keybinds)
 
 
-(defvar int<keyboard>:registrar<active>:unbinds nil
-  "The unbindings for the active layout.
+(defvar int<keyboard>:registrar<actual>:unbinds nil
+  "The unbindings for the actual/active layout.
 
 Saved in `input:keyboard/layout:set' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
@@ -93,7 +79,7 @@ Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
 
 
-(defvar int<keyboard>:registrar<active>:registering nil
+(defvar int<keyboard>:registrar<actual>:state nil
   "The state of registration/initialization.
 
 Valid States (see `int<keyboard>:layout:registering/states'
@@ -111,7 +97,7 @@ and `int<keyboard>:registration:valid'):
 ;;------------------------------------------------------------------------------
 
 (defvar int<keyboard>:registrar<debug>:keybinds nil
-  "The keybinds for the active layout.
+  "The keybinds for the debug layout.
 
 Saved in `input:keyboard/layout:set' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
@@ -123,11 +109,11 @@ This is an alist with 3 expected entries:
 
 Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
-;; (pp-macroexpand-expression input//kl:layout/temp:keybinds)
+;; (pp-macroexpand-expression int<keyboard>:layout/temp:keybinds)
 
 
 (defvar int<keyboard>:registrar<debug>:unbinds nil
-  "The unbindings for the active layout.
+  "The unbindings for the debug layout.
 
 Saved in `input:keyboard/layout:set' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
@@ -141,7 +127,7 @@ Each alist key's value should be a list of args for
 `input:keyboard/layout:map!'.")
 
 
-(defvar int<keyboard>:registrar<debug>:registering nil
+(defvar int<keyboard>:registrar<debug>:state nil
   "The state of registration/initialization.
 
 Valid States (see `int<keyboard>:layout:registering/states'
@@ -158,21 +144,21 @@ and `int<keyboard>:registration:valid'):
 ;; Registrars
 ;;------------------------------------------------------------------------------
 
-(defconst input//kl:registrars
-  '((:actual . ((:keybinds . int<keyboard>:registrar<active>:keybinds)
-                (:unbinds  . int<keyboard>:registrar<active>:unbinds)
-                (:state    . int<keyboard>:registrar<active>:registering)))
+(defconst int<keyboard>:registrars
+  '((:actual . ((:keybinds . int<keyboard>:registrar<actual>:keybinds)
+                (:unbinds  . int<keyboard>:registrar<actual>:unbinds)
+                (:state    . int<keyboard>:registrar<actual>:state)))
 
     (:debug . ((:keybinds . int<keyboard>:registrar<debug>:keybinds)
                (:unbinds  . int<keyboard>:registrar<debug>:unbinds)
-               (:state    . int<keyboard>:registrar<debug>:registering))))
+               (:state    . int<keyboard>:registrar<debug>:state))))
   "Alist of Registrar Type -> Var Keyword -> Actual Var.")
-;; (alist-get :state (alist-get :actual input//kl:registrars))
+;; (alist-get :state (alist-get :actual int<keyboard>:registrars))
 
 
 (defun int<keyboard>:registrar:valid? (registrar-keyword)
   "Returns t if REGISTRAR-KEYWORD is valid. Else signals error."
-  (if (alist-get registrar input//kl:registrars)
+  (if (alist-get registrar-keyword int<keyboard>:registrars)
       registrar-keyword
 
     ;; Invalid registrar symbol!
@@ -184,7 +170,7 @@ and `int<keyboard>:registration:valid'):
                           (mapcar (lambda (registrar-assoc)
                                     "Get registrar keywords for error message."
                                     (car registrar-assoc))
-                                  input//kl:registrars)
+                                  int<keyboard>:registrars)
                           registrar)))
 
 
@@ -198,9 +184,9 @@ and `int<keyboard>:registration:valid'):
   "Get a registrar variable's symbol based on REGISTRAR type and
 variable identifier KEYWORD.
 
-REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
+REGISTRAR should be a valid keyword from `int<keyboard>:registrar/types'."
   ;; Get registrar's alist of stuff; error if invalid REGISTRAR.
-  (if-let ((registrar.vars (alist-get registrar input//kl:registrars)))
+  (if-let ((registrar.vars (alist-get registrar int<keyboard>:registrars)))
       ;; Return the var or signal error if we didn't find anything.
       (if-let ((symbol (alist-get keyword registrar.vars)))
           ;; Return the symbol itself.
@@ -227,7 +213,7 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
                           (mapcar (lambda (registrar-assoc)
                                     "Get registrar keywords for error message."
                                     (car registrar-assoc))
-                                  input//kl:registrars)
+                                  int<keyboard>:registrars)
                           registrar)))
 
 
@@ -235,7 +221,7 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
   "Get a registrar variable's value based on REGISTRAR type and
 variable identifier KEYWORD.
 
-REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
+REGISTRAR should be a valid keyword from `int<keyboard>:registrar/types'."
   ;; Get the symbol and then return its value.
   ;; `int<keyboard>:registrar:symbol' will error on anything invalid.
   (symbol-value (int<keyboard>:registrar:symbol registrar keyword)))
@@ -248,11 +234,11 @@ REGISTRAR should be a valid keyword from `input//kl:registrar/types'."
   "Set a registrar variable's value to VALUE based on REGISTRAR type and
 variable identifier KEYWORD.
 
-REGISTRAR should be a valid keyword from `input//kl:registrar/types'.
+REGISTRAR should be a valid keyword from `int<keyboard>:registrar/types'.
 
 NOTE: Does not validate/error check VALUE."
   ;; Get registrar's alist of stuff; error if invalid REGISTRAR.
-  (if-let ((registrar.vars (alist-get registrar input//kl:registrars)))
+  (if-let ((registrar.vars (alist-get registrar int<keyboard>:registrars)))
       ;; Return the var or signal error if we didn't find anything.
       (if-let ((symbol (alist-get keyword registrar.vars)))
           ;; Set the symbol to the new value.
@@ -279,7 +265,7 @@ NOTE: Does not validate/error check VALUE."
                           (mapcar (lambda (registrar-assoc)
                                     "Get registrar keywords for error message."
                                     (car registrar-assoc))
-                                  input//kl:registrars)
+                                  int<keyboard>:registrars)
                           registrar)))
 ;; (int<keyboard>:registrar:set :debug :state :foo)
 

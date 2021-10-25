@@ -46,6 +46,9 @@ debugging messages.")
 (defvar test<keyboard>:should:marker/counter 0
   "Counter for `test<keyboard>:should:marker'.")
 
+(defvar test<keyboard>:signal-error nil
+  "Set to `t' before set-up to let `:error' level output messages to still signal errors.")
+
 
 ;;------------------------------------------------------------------------------
 ;; Test Debugging
@@ -238,7 +241,8 @@ into `test<keyboard>:output:debug' list instead."
   "Steals all calls to `int<keyboard>:output' and puts them into `test<keyboard>:output:...' lists instead.
 
 Will also allow the normal output if `test<keyboard>:debugging'."
-  (setq int<keyboard>:output:verbose (alist-get test<keyboard>:debugging
+  (setq int<keyboard>:output:verbose (alist-get (or test<keyboard>:debugging
+                                                    test<keyboard>:signal-error)
                                                 test<keyboard>:redirect/output:verbose)))
 
 
@@ -438,6 +442,9 @@ FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
 (defun test<keyboard>:teardown/vars ()
   "Clear out/clean up vars used during testing so next test or normal Emacs
 usage isn't affected."
+
+  ;; Reset our flag for whether to allow error signals or not.
+  (setq test<keyboard>:signal-error nil)
 
   ;;------------------------------
   ;; `test<keyboard>:output:...'

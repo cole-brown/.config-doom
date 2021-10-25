@@ -65,3 +65,9 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;; (int<keyboard>:normalize->keyword :spydez)
 ;; (int<keyboard>:normalize->keyword "spydez")
 ;; (int<keyboard>:normalize->keyword nil)
+
+
+;;------------------------------------------------------------------------------
+;; The End
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'utils)

@@ -8,6 +8,8 @@
 ;;             Not everyone uses Qwerty - there are dozens of us!             ;;
 ;;                                 ──────────                                 ;;
 
+(imp:require :input 'keyboard 'alist)
+
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
@@ -28,6 +30,20 @@ Types are:
   :evil   - Any Evil-only keybinds.")
 ;; int<keyboard>:layout:types
 ;; (makunbound 'int<keyboard>:layout:types)
+
+(defun int<keyboard>:layout:type/valid? (type)
+  "Returns non-nil if TYPE is a valid type.
+
+See `int<keyboard>:layout:types for the alist of valid types."
+  (int<keyboard>:alist:get/pair type int<keyboard>:layout:types))
+;; (int<keyboard>:layout:type/valid? :emacs)
+
+
+(defun int<keyboard>:layout:type->string (type)
+  "Returns the string for TYPE keyword."
+  ;; We have `int<keyboard>:layout:valid/type?' returning the alist entry.
+  (cdr (int<keyboard>:layout:type/valid? type)))
+;; (int<keyboard>:layout:type->string :emacs)
 
 
 ;;------------------------------
@@ -64,25 +80,25 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
   - Both are set during 'init' file phase.")
 
 
-(defun int<keyboard>:layout:valid? (layout &optional compare-active)
+(defun int<keyboard>:layout:valid? (layout &optional compare-active?)
   "Returns non-nil if LAYOUT is valid.
 
 LAYOUT must fulfill these criteria:
   - Must be a keyword.
   - If `int<keyboard>:layout:desired' is set, LAYOUT must be `eq' to it (else we
     assume LAYOUT will become the desired layout).
-  - If COMPARE-ACTIVE is non-nil, LAYOUT must be `eq' to
+  - If COMPARE-ACTIVE? is non-nil, LAYOUT must be `eq' to
    `int<keyboard>:layout:active'."
   (and (keywordp layout)
        ;; Equal to desired?
        (or (not int<keyboard>:layout:desired)
            (eq layout int<keyboard>:layout:desired))
        ;; Equal to active?
-       (or (null compare-active)
+       (or (null compare-active?)
            (eq layout int<keyboard>:layout:active))))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'registration)
+(imp:provide :input 'keyboard 'vars)

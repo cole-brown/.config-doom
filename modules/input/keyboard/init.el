@@ -35,9 +35,9 @@
 (load! "utils")
 (load! "output")
 (load! "debug")
+(load! "alist")
 (load! "vars")
 (load! "load")
-(load! "alist")
 (load! "registrars")
 (load! "registration")
 

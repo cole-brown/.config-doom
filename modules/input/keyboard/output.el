@@ -263,7 +263,11 @@ signaled."
       level
       caller
       (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
-              formatting args))))))
+              formatting args)))
+
+    ;; Don't return `int<keyboard>:output/message' output.
+    ;; Unit tests will disable error signaling sometimes so it's best if this returns nil.
+    nil)))
 
 
 ;;------------------------------------------------------------------------------

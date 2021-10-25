@@ -1,4 +1,4 @@
-;;; input/keyboard/register.el -*- lexical-binding: t; -*-
+;;; input/keyboard/registration.el -*- lexical-binding: t; -*-
 
 
 ;;                                 ──────────                                 ;;
@@ -11,113 +11,12 @@
 
 
 (imp:require :input 'keyboard 'registrars)
-
-
-;;------------------------------------------------------------------------------
-;; Functions: Bind / Unbind
-;;------------------------------------------------------------------------------
-
-(defun int<keyboard>:registration:valid/action? (keyword)
-  "Valid actions are `:bind', `:unbind', and `:full'.
-
-Returns nil if not valid."
-  (memq keyword '(:bind :unbind :full)))
-;; (int<keyboard>:registration:valid/action? :bind)
-;; (int<keyboard>:registration:valid/action? :set)
-;; (int<keyboard>:registration:valid/action? :jeff)
-;; (int<keyboard>:registration:valid/action? :full)
+(imp:require :input 'keyboard 'vars)
 
 
 ;;------------------------------------------------------------------------------
 ;; Functions: Type Validity, etc.
 ;;------------------------------------------------------------------------------
-
-;; TODO: move to registrar?
-(defun input//kl:layout:valid/type? (type)
-  "Returns non-nil if TYPE is a valid type.
-
-See `int<keyboard>:layout:types for the alist of valid types."
-  (int<keyboard>:alist:get/pair type int<keyboard>:layout:types))
-;; (input//kl:layout:valid/type? :emacs)
-
-
-;; TODO: move to registrar?
-(defun input//kl:layout:type->string (type)
-  "Returns the string for TYPE keyword."
-  ;; We have `input//kl:layout:valid/type?' returning the alist entry.
-  (cdr (input//kl:layout:valid/type? type)))
-;; (input//kl:layout:type->string :emacs)
-
-
-;; TODO: move to registrar?
-(defun input//kl:layout:registering/get-valids (desired)
-  "Get the list of valid values current registration state can be for
-entering DESIRED state."
-  (alist-get desired int<keyboard>:registration:valid))
-
-
-(defun input//kl:layout:registering/set-if-valid? (registrar to &optional no-set no-error)
-  "Returns non-nil if transition of current registration state to new TO
-state is valid.
-
-If NO-SET is non-nil, skips setting current registration state.
-
-If NO-ERROR is non-nil, will return nil instead of signaling an error."
-  (let ((registration/current (int<keyboard>:registrar:get registrar :state)))
-    ;; Check for errors.
-    (cond ((not (memq registration/current
-                      int<keyboard>:layout:registering/states))
-           (int<keyboard>:debug
-            "input//kl:layout:registering/set-if-valid?"
-            '(:registering)
-            "From (%S) is not a valid state: %S"
-            registration/current
-            int<keyboard>:layout:registering/states)
-           nil)
-
-          ((not (memq to int<keyboard>:layout:registering/states))
-           (int<keyboard>:debug
-            "input//kl:layout:registering/set-if-valid?"
-            '(:registering)
-            "To (%S) is not a valid state: %S"
-            to
-            int<keyboard>:layout:registering/states)
-           nil)
-
-          ;;------------------------------
-          ;; Valid Cases:
-          ;;------------------------------
-          ;; Set to itself: ok.
-          ((eq to registration/current)
-           t)
-
-          ;; Check for valid transition, set if found (and not `no-set').
-          (t
-           (let ((valid/froms (input//kl:layout:registering/get-valids to)))
-             (if (not (memq registration/current valid/froms))
-                 ;; Invalid transition - error or return nil.
-                 (if no-error
-                     nil
-                   (int<keyboard>:output :error
-                                         "input//kl:layout:registering/set-if-valid?"
-                                         '("current registration state cannot transition from `%S' to `%S' state. "
-                                           "Must be one of: %S")
-                                         registration/current
-                                         to
-                                         valid/froms))
-               ;; Valid. Check if we want to also set it, return non-nil.
-               (unless no-set
-                 (int<keyboard>:registrar:set registrar :state to))
-               t))))))
-;; (int<keyboard>:registrar:set :debug :state nil)
-;; (int<keyboard>:registrar:get :debug :state)
-;; (input//kl:layout:registering/set-if-valid? :debug :inactive t)
-;; (int<keyboard>:registrar:get :debug :state)
-;; (input//kl:layout:registering/set-if-valid? :debug :inactive)
-;; (int<keyboard>:registrar:get :debug :state)
-;; (input//kl:layout:registering/set-if-valid? :debug :active)
-;; (input//kl:layout:registering/set-if-valid? :debug :active nil t)
-
 
 (defun input//kl:states->keyword (states)
   "Convert a list of evil STATES symbols into a keyword for `map!'.
@@ -165,7 +64,7 @@ earlier."
                             "Got: %S")
                           layout))
 
-  (when (not (input//kl:layout:valid/type? type))
+  (when (not (int<keyboard>:layout:type/valid? type))
     (int<keyboard>:output :error
                           "input:keyboard/layout:set"
                           '("Type '%S' is not a valid type. "
@@ -177,7 +76,7 @@ earlier."
   ;; TODO: move finalized states to a var.
   (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
     ;; This will error out for us.
-    (input//kl:layout:registering/set-if-valid? registrar :init))
+    (int<keyboard>:registration:state/transition:set registrar :init))
 
   ;; Ok - errors checked; set it.
   (setq int<keyboard>:layout:active layout)
@@ -225,7 +124,7 @@ Unbindings are applied before bindings."
                             "Got: %S")
                           layout))
 
-  (when (not (input//kl:layout:valid/type? type))
+  (when (not (int<keyboard>:layout:type/valid? type))
     (int<keyboard>:output :error
                           "input:keyboard/layout:unbind"
                           '("Type '%S' is not a valid type. "
@@ -237,7 +136,7 @@ Unbindings are applied before bindings."
   ;; TODO: move finalized states to a var.
   (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
     ;; This will error out for us.
-    (input//kl:layout:registering/set-if-valid? registrar :init))
+    (int<keyboard>:registration:state/transition:set registrar :init))
 
   ;; Ok - errors checked; set it.
   (setq int<keyboard>:layout:active layout)
@@ -295,7 +194,7 @@ LAYOUT should be a valid keyboard layout keyword."
                           layout))
 
   ;; This will error out for us.
-  (input//kl:layout:registering/set-if-valid? registrar :config)
+  (int<keyboard>:registration:state/transition:set registrar :config)
 
   ;;------------------------------
   ;; Configuration
@@ -339,7 +238,7 @@ BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
 TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 
-REGISTERING should be a registering state (see `int<keyboard>:layout:registering/states')."
+REGISTERING should be a registering state (see `int<keyboard>:registration:states')."
   (cond ((not (int<keyboard>:registration:valid/action? bind/unbind))
          ;; Should have already signaled an error if invalid, but to be extra cautious:
          (int<keyboard>:output :error
@@ -347,7 +246,7 @@ REGISTERING should be a registering state (see `int<keyboard>:layout:registering
                                '("Invalid bind/unbind keyword `%S'.")
                                bind/unbind))
 
-        ((not (input//kl:layout:registering/set-if-valid? registrar registering 'no-set))
+        ((not (int<keyboard>:registration:state/transition:valid? registrar registering))
          ;; set-if-valid? will signal error, so no need to do it again.
          (int<keyboard>:output :error
                                caller
@@ -377,7 +276,7 @@ REGISTERING should be a registering state (see `int<keyboard>:layout:registering
                                int<keyboard>:layout:active
                                (int<keyboard>:registrar:get registrar :keybinds)))
 
-        ((not (input//kl:layout:valid/type? type))
+        ((not (int<keyboard>:layout:type/valid? type))
          (int<keyboard>:output :error
                                caller
                                '("Type '%S' is not a valid type. "
@@ -443,10 +342,10 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
       ;; If we have a non-nil return we're `:active'.
       ;;
       ;; This will error out if invalid transition.
-      (input//kl:layout:registering/set-if-valid? registrar
-                                                  (if return-value
-                                                      :active
-                                                    :inactive)))
+      (int<keyboard>:registration:state/transition:set registrar
+                                                       (if return-value
+                                                           :active
+                                                         :inactive)))
 
     ;;------------------------------
     ;; Done.
@@ -454,16 +353,16 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     ;; Small thing: if only unbinding, and we got here, and we have a nil
     ;; return-value and nil NO-EVAL... it's ok; that's valid. Change to t.
     (int<keyboard>:debug
-     func.name
-     debug/tags
-     "Returning for `no-eval'=%S: return-value? %S, no-eval? %S, unbind? %S -> sexprs? %S"
-     no-eval
-     return-value
-     no-eval
-     bind/unbind
-     (and (not return-value)
-          (null no-eval)
-          (eq bind/unbind :unbind)))
+        func.name
+        debug/tags
+      "Returning for `no-eval'=%S: return-value? %S, no-eval? %S, unbind? %S -> sexprs? %S"
+      no-eval
+      return-value
+      no-eval
+      bind/unbind
+      (and (not return-value)
+           (null no-eval)
+           (eq bind/unbind :unbind)))
     (if (and (not return-value)
              (null no-eval)
              (eq bind/unbind :unbind))
@@ -518,21 +417,21 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                           ;; Not applying the keybinds - returning the sexprs instead.
                           (progn
                             (int<keyboard>:debug
-                             "input//kl:activate/type"
-                             debug/tags
-                             "no-eval input for map-process: %S" keybinds)
+                                "input//kl:activate/type"
+                                debug/tags
+                              "no-eval input for map-process: %S" keybinds)
                             (int<keyboard>:debug
-                             "input//kl:activate/type"
-                             debug/tags
-                             "no-eval: %S"
-                             (input//kl:layout:map-process keybinds))
+                                "input//kl:activate/type"
+                                debug/tags
+                              "no-eval: %S"
+                              (input//kl:layout:map-process keybinds))
                             (setq return-value (input//kl:layout:map-process keybinds)))
                         ;; We are applying the keybinds.
                         (int<keyboard>:debug
-                         "input//kl:activate/type"
-                         debug/tags
-                         "eval: %S"
-                         (input//kl:layout:map-process keybinds))
+                            "input//kl:activate/type"
+                            debug/tags
+                          "eval: %S"
+                          (input//kl:layout:map-process keybinds))
                         (eval
                          ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
                          ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
@@ -543,12 +442,12 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;; Invalid or didn't find keybinds...
       ;;------------------------------
       (int<keyboard>:debug
-       "input//kl:activate/type"
-       debug/tags
-       (concat "Cannot activate keybinds for %S.\n"
-               "  valid?    %S\n"
-               "  keybinds: %S")
-       type (not (null valid)) keybinds)
+          "input//kl:activate/type"
+          debug/tags
+        (concat "Cannot activate keybinds for %S.\n"
+                "  valid?    %S\n"
+                "  keybinds: %S")
+        type (not (null valid)) keybinds)
       ;; NOTE: Currently not an error as common/emacs may not have any keybinds.
       ;; Should probably return to being an error in the future?
       ;; (int<keyboard>:output :error
@@ -562,348 +461,13 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       (setq return-value nil))
 
     (int<keyboard>:debug
-     "input//kl:activate/type"
-     debug/tags
-     "Returning for `no-eval': %S" no-eval)
+        "input//kl:activate/type"
+        debug/tags
+      "Returning for `no-eval': %S" no-eval)
     ;; Return t/nil normally, or the map-process output if `no-eval'.
     (if no-eval
         return-value
       (not (null return-value)))))
-
-
-;;------------------------------------------------------------------------------
-;; Testing
-;;------------------------------------------------------------------------------
-
-(defun test<keyboard>:layout:set-registering (registering)
-  "Allows forcing current registration state to a REGISTERING state."
-  (interactive (list (completing-read "Registering State: "
-                                      int<keyboard>:layout:registering/states
-                                      nil
-                                      t
-                                      ":init")))
-  (let ((prev (int<keyboard>:registrar:get registrar :state))
-        (registering (int<keyboard>:normalize->keyword registering)))
-    (int<keyboard>:registrar:set registrar :state registering)
-    (message "Set registering to: %S (was %S)" registering prev)))
-
-
-(defun keyboard:layout:apply (layout)
-  "Initialize, configure, and apply the LAYOUT.
-
-Overrides any current active layout with the new LAYOUT."
-  ;; Could do a completing read or something with the valid layout dirs as the choices.
-  (interactive (list (completing-read "Load Layout: "
-                                      (keyboard:load:layouts/list)
-                                      nil
-                                      t
-                                      (when int<keyboard>:layout:active
-                                        (symbol-name int<keyboard>:layout:active)))))
-
-  ;; Change to our special `:apply' registering state so `:init' state will happen.
-
-  (let ((registrar :actual)
-        (registering/prev (int<keyboard>:registrar:get registrar :state)))
-    (if (input//kl:layout:registering/set-if-valid? registrar :apply)
-        (message "Reset layout registration state: %S -> %S"
-                 registering/prev (int<keyboard>:registrar:get registrar :state))
-      (message "Failed resetting registration state?! Shouldn't happen... state: %S -> %S"
-               registering/prev (int<keyboard>:registrar:get registrar :state))))
-
-  ;; Check/report about desired.
-  (let ((layout/keyword (int<keyboard>:normalize->keyword layout)))
-    ;; Updated desired first.
-    (cond ((null int<keyboard>:layout:desired)
-           ;; Undefined
-           (message "Setting desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword))
-
-          ((not (eq int<keyboard>:layout:desired layout/keyword))
-           (message "Changing desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword))
-
-          (t
-           (message "Reapplying desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword)))
-    (setq int<keyboard>:layout:desired layout/keyword)
-
-    ;; Check/report about active.
-    (cond ((null int<keyboard>:layout:active)
-           (message "Setting active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword))
-          ((not (eq int<keyboard>:layout:active layout/keyword))
-           (message "Changing active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword))
-          (t
-           (message "Reapplying active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword)))
-
-    ;; Load active.
-    (keyboard:load:active "init") ;; This will set active.
-
-    ;; Verify it was set before config/finalization.
-    (if (not (eq int<keyboard>:layout:active layout/keyword))
-        ;; Fail message.
-        (message (concat
-                  "Initializing layout did not set it to the active layout?!\n"
-                  "  Input:   %S\n"
-                  "  Desired: %S\n"
-                  "  Active:  %S")
-                 layout/keyword
-                 int<keyboard>:layout:desired
-                 int<keyboard>:layout:active)
-
-      ;; Config and finalize the new layout.
-      (message "Configuring & binding %S..." int<keyboard>:layout:active)
-      (keyboard:load:active "config")
-      (input:keyboard/layout:finalize)
-      (message "Loaded layout %S." int<keyboard>:layout:active))))
-;; (keyboard:layout:clear)
-
-
-(defun keyboard:layout:clear ()
-  "Clear the saved keybinds and unbinds.
-
-Sets to nil:
-  - `(int<keyboard>:registrar:get registrar :keybinds)'
-  - `(int<keyboard>:registrar:get registrar :unbinds)'.
-
-For e.g. resetting after a bad testing command. You will have to
-add back in all keybinds you want."
-  (interactive)
-  ;; Reset all registrars or just one given registrar?
-  ;;  - Both if no input, one if input?
-  ;; Let's just go with reset all of them for now.
-  (dolist (registrar (mapcar (lambda (registrar-assoc)
-                               "Get registrar keywords."
-                               (car registrar-assoc))
-                             input//kl:registrars))
-    (int<keyboard>:registrar:set registrar :unbinds nil)
-    (int<keyboard>:registrar:set registrar :keybinds nil)))
-
-
-(defun test<keyboard>:layout:bind (eval/sexpr layout type keybind-map)
-  "Allows changing an `input:keyboard/layout:set' to
-`test<keyboard>:layout:bind', running, and testing its keybinds.
-
-EVAL/RETURN should be:
-  - For evaluating/applying layout: `:eval'
-  - For getting layout sexprs returned: `:sexpr'
-  - For getting layout sexprs pretty-printed: `:sexpr-pp'
-
-LAYOUT should be a keyboard layout keyword.
-
-TYPE should be one of the keywords from `int<keyboard>:layout:types'.
-
-KEYBIND-MAP should be a list of input to `input:keyboard/layout:map!'.
-
-Does not run unless current registration state is `:active'.
-  - That is: does not run temp blocks during Emacs/Doom start-up.
-
-Calls:
-  - `input:keyboard/layout:unbind'
-  - `input:keyboard/layout:set'
-  - `keyboard:layout:config'
-  - `int<keyboard>:layout:activate'
-
-For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
-  (declare (indent 3))
-
-  (let* ((func.name "test<keyboard>:layout:bind")
-         (registrar :temp) ;; Do all this work in the temp registrar.
-         (registration/current (int<keyboard>:registrar:get registrar :state))
-         (no-eval (cond ((eq eval/sexpr :eval)
-                         nil)
-                        ((memq eval/sexpr '(:sexpr :pp-sexpr))
-                         t)
-                        (t
-                         (int<keyboard>:output :error
-                                               func.name
-                                               '("`eval/sexpr' must be one of: %S; "
-                                                 "got: %S")
-                                               '(:eval :sexpr)
-                                               eval/sexpr)))))
-
-    (int<keyboard>:debug func.name
-                         '(:registering)
-                         "map: %S" keybind-map)
-    (int<keyboard>:debug func.name
-                         '(:registering)
-                         "registering: %S, valids: %S, valid? %S"
-                         registration/current
-                         registration/valids
-                         (memq registration/current registration/valids))
-
-    (if (not (memq registration/current
-                   registration/valids))
-        ;; [FAIL]: Current registration state doesn't allowed running the temp block.
-        (progn
-          (int<keyboard>:debug func.name
-                               '(:registering)
-                               (concat "Skipping this as not in a valid state for it:\n"
-                                       "registering: %S\n"
-                                       "valids:      %S\n"
-                                       "valid?       %S")
-                               registration/current
-                               registration/valids
-                               (memq registration/current registration/valids))
-
-          ;; Explain why we're doing nothing.
-          (int<keyboard>:debug/message?
-           (format "%s(%S %S ...)" func.name layout type)
-           '(:register)
-           ;; Message if not in some set-up state, else debug.
-           (not (memq registration/current '(nil :init :config)))
-           (concat "not run due to current registration state %S. "
-                   "Set to one of these (can do via "
-                   "`test<keyboard>:layout:set-registering') to run: %S")
-           registration/current
-           registration/valids))
-
-      ;; [ OK ]: Run the temp block.
-      (prog1
-          (int<keyboard>:debug func.name
-                               '(:registering)
-                               (concat "EXECUTING 'temp binds' BLOCK!!!\n"
-                                       "registering: %S\n"
-                                       "valids:      %S\n"
-                                       "valid?       %S")
-                               registration/current
-                               registration/valids
-                               (memq registration/current registration/valids))
-
-        (let (return-value)
-          ;; Apply the keybinds.
-          (keyboard:layout:bind layout type keybind-map)
-
-          ;;---
-          ;; Since we're testing this block, always continue on to config & activation.
-          ;;---
-
-          ;; Config the keybinds.
-          (keyboard:layout:config bind/unbind layout)
-
-          ;; Activate the keybinds.
-          (setq return-value
-                (int<keyboard>:layout:activate registrar bind/unbind (list type) no-eval))
-          (when (eq eval/sexpr :pp-sexpr)
-            (pp-macroexpand-expression return-value))
-          return-value)))))
-
-
-(defun test<keyboard>:layout:unbind (eval/sexpr layout type keybind-map)
-  "Allows changing an `input:keyboard/layout:set' to
-`test<keyboard>:layout:bind', running, and testing its keybinds.
-
-EVAL/RETURN should be:
-  - For evaluating/applying layout: `:eval'
-  - For getting layout sexprs returned: `:sexpr'
-  - For getting layout sexprs pretty-printed: `:sexpr-pp'
-
-LAYOUT should be a keyboard layout keyword.
-
-TYPE should be one of the keywords from `int<keyboard>:layout:types'.
-
-KEYBIND-MAP should be a list of input to `input:keyboard/layout:map!'.
-
-Does not run unless current registration state is `:active'.
-  - That is: does not run temp blocks during Emacs/Doom start-up.
-
-Calls:
-  - `input:keyboard/layout:unbind'
-  - `input:keyboard/layout:set'
-  - `keyboard:layout:config'
-  - `int<keyboard>:layout:activate'
-
-For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
-  (declare (indent 3))
-
-  (let* ((func.name "test<keyboard>:layout:unbind")
-         (registrar :temp) ;; Do all this work in the temp registrar.
-         (registration/current (int<keyboard>:registrar:get registrar :state))
-         (no-eval (cond ((eq eval/sexpr :eval)
-                         nil)
-                        ((memq eval/sexpr '(:sexpr :pp-sexpr))
-                         t)
-                        (t
-                         (int<keyboard>:output :error
-                                               func.name
-                                               '("`eval/sexpr' must be one of: %S; "
-                                                 "got: %S")
-                                               '(:eval :sexpr)
-                                               eval/sexpr)))))
-
-    (int<keyboard>:debug func.name
-                         '(:registering)
-                         "map: %S" keybind-map)
-    (int<keyboard>:debug func.name
-                         '(:registering)
-                         "registering: %S, valids: %S, valid? %S"
-                         registration/current
-                         registration/valids
-                         (memq registration/current registration/valids))
-
-    (if (not (memq registration/current
-                   registration/valids))
-        ;; [FAIL]: Current registration state doesn't allowed running the temp block.
-        (progn
-          (int<keyboard>:debug func.name
-                               '(:registering)
-                               (concat "Skipping this as not in a valid state for it:\n"
-                                       "registering: %S\n"
-                                       "valids:      %S\n"
-                                       "valid?       %S")
-                               registration/current
-                               registration/valids
-                               (memq registration/current registration/valids))
-
-          ;; Explain why we're doing nothing.
-          (int<keyboard>:debug/message?
-           (format "%s(%S %S ...)" func.name layout type)
-           '(:register)
-           ;; Message if not in some set-up state, else debug.
-           (not (memq registration/current '(nil :init :config)))
-           (concat "not run due to current registration state %S. "
-                   "Set to one of these (can do via "
-                   "`test<keyboard>:layout:set-registering') to run: %S")
-           registration/current
-           registration/valids))
-
-      ;; [ OK ]: Run the temp block.
-      (prog1
-          (int<keyboard>:debug func.name
-                               '(:registering)
-                               (concat "EXECUTING 'temp binds' BLOCK!!!\n"
-                                       "registering: %S\n"
-                                       "valids:      %S\n"
-                                       "valid?       %S")
-                               registration/current
-                               registration/valids
-                               (memq registration/current registration/valids))
-
-        (let (return-value)
-          ;; Apply the unbinds.
-          (keyboard:layout:unbind layout type keybind-map)
-
-          ;;---
-          ;; Since we're testing this block, always continue on to config & activation.
-          ;;---
-
-          ;; Config the keybinds.
-          (keyboard:layout:config bind/unbind layout)
-
-          ;; Activate the keybinds.
-          (setq return-value
-                (int<keyboard>:layout:activate registrar bind/unbind (list type) no-eval))
-          (when (eq eval/sexpr :pp-sexpr)
-            (pp-macroexpand-expression return-value))
-          return-value)))))
 
 
 ;;------------------------------------------------------------------------------

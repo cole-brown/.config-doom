@@ -10,6 +10,9 @@
 ;;                                 ──────────                                 ;;
 
 
+(imp:require :input 'keyboard 'vars)
+
+
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
@@ -68,9 +71,9 @@ Format:
   "Returns a layout keyword validation regex for the TYPE keyword
 (:common, :emacs, :evil).
 
-If type is invalid or has no string from `input//kl:layout:type->string',
+If type is invalid or has no string from `int<keyboard>:layout:type->string',
 returns nil."
-  (when-let ((type/string (input//kl:layout:type->string type)))
+  (when-let ((type/string (int<keyboard>:layout:type->string type)))
     (rx-to-string
      `(sequence
        ;;---
@@ -171,7 +174,7 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                                      "Expected a valid keyboard layout function, got: %S")
                                    func))
 
-            ((not (input//kl:layout:valid/type? type))
+            ((not (int<keyboard>:layout:type/valid? type))
              (int<keyboard>:output :error
                                    '("input:keyboard/layout:define/keywords"
                                      "Type '%S' is not a valid type. "

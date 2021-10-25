@@ -31,6 +31,225 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; int<keyboard>:registration:state:valid?
+;;------------------------------
+
+(ert-deftest test<keyboard/registrars>::int<keyboard>:registration:state:valid? ()
+  "Test that `int<keyboard>:registration:state:valid?' behaves."
+
+  (test<keyboard>:fixture
+      ;; Test name, setup func, teardown func.
+      "test<keyboard/registrars>::int<keyboard>:registration:state:valid?"
+      nil
+      nil
+
+    ;;---
+    ;; Good values:
+    ;;---
+    (should (equal '(nil)
+                   (int<keyboard>:registration:state:valid? nil)))
+    (should (equal '(nil :apply)
+                   (int<keyboard>:registration:state:valid? :init)))
+    (should (equal '(:init)
+                   (int<keyboard>:registration:state:valid? :config)))
+    (should (equal '(:config)
+                   (int<keyboard>:registration:state:valid? :active)))
+    (should (equal '(nil :init :config)
+                   (int<keyboard>:registration:state:valid? :inactive)))
+    (should (equal int<keyboard>:registration:states
+                   (int<keyboard>:registration:state:valid? :apply)))
+
+    ;;---
+    ;; Bad values:
+    ;;---
+    (should-not (int<keyboard>:registration:state:valid? :invalid))
+    (should-not (int<keyboard>:registration:state:valid? 42))
+    (should-not (int<keyboard>:registration:state:valid? 'invalid))))
+
+
+;;------------------------------
+;; int<keyboard>:registration:valid/action?
+;;------------------------------
+
+(ert-deftest test<keyboard/registrars>::int<keyboard>:registration:valid/action? ()
+  "Test that `int<keyboard>:registration:valid/action?' behaves."
+
+  (test<keyboard>:fixture
+      ;; Test name, setup func, teardown func.
+      "test<keyboard/registrars>::int<keyboard>:registration:valid/action?"
+      nil
+      nil
+
+    ;;---
+    ;; Good values:
+    ;;---
+    (should (int<keyboard>:registration:valid/action? :bind))
+    (should (int<keyboard>:registration:valid/action? :unbind))
+    (should (int<keyboard>:registration:valid/action? :full))
+
+    ;;---
+    ;; Bad values:
+    ;;---
+    (should-not (int<keyboard>:registration:valid/action? :invalid))
+    (should-not (int<keyboard>:registration:valid/action? 42))
+    (should-not (int<keyboard>:registration:valid/action? 'invalid))))
+
+
+;;------------------------------
+;; int<keyboard>:registration:state/transition:valid?
+;;------------------------------
+
+(ert-deftest test<keyboard/registrars>::int<keyboard>:registration:state/transition:valid? ()
+  "Test that `int<keyboard>:registration:state/transition:valid?' behaves."
+
+  (let* ((error-count 0)
+         (error:get-and-incr (lambda ()
+                                "Increment expected error count and return it."
+                                (setq error-count (1+ error-count)))))
+
+    (test<keyboard>:fixture
+        ;; Test name, setup func, teardown func.
+        "test<keyboard/registrars>::int<keyboard>:registration:state/transition:valid?"
+        nil
+        nil
+
+      ;;------------------------------
+      ;; Lexically binding doesn't work since registrars use `symbol-value'.
+      ;;------------------------------
+      (let ((int<keyboard>:registrar<actual>:state nil)
+            (int<keyboard>:registrar<debug>:state  :init))
+
+        ;;------------------------------
+        ;; Good transitions:
+        ;;------------------------------
+        (should (eq nil (int<keyboard>:registrar:get :actual :state)))
+        (should (int<keyboard>:registration:state/transition:valid? :actual :init))
+
+        (should (eq :init (int<keyboard>:registrar:get :debug :state)))
+        (should (int<keyboard>:registration:state/transition:valid? :debug :config))
+
+        ;;------------------------------
+        ;; Bad transitions: error or nil, depending.
+        ;;------------------------------
+
+        ;;---
+        ;; Invalid `state/to'.
+        ;;---
+        ;; Default behavior is to raise an error signal, which we are intercepting because testing...
+        (test<keyboard>:assert:output :error test-name error-count)
+        (int<keyboard>:registration:state/transition:valid? :actual :invalid)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (int<keyboard>:registration:state/transition:valid? :debug 42)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (int<keyboard>:registration:state/transition:valid? :debug 'invalid)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+
+        ;; Can change to just "return nil".
+        (should-not (int<keyboard>:registration:state/transition:valid? :actual :invalid :no-error))
+        ;; Did not add to the number of errors.
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug 42 :no-error))
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug 'invalid :no-error))
+        (test<keyboard>:assert:output :error test-name error-count))
+
+      ;;---
+      ;; Invalid `state/current'.
+      ;;---
+      ;; `:apply' state is best for this since it can be transitioned to from the most states.
+      (let ((state/to :apply)
+            (int<keyboard>:registrar<actual>:state :invalid)
+            (int<keyboard>:registrar<debug>:state  42))
+        ;; Default behavior is to raise an error signal, which we are intercepting because testing...
+        (test<keyboard>:assert:output :error test-name error-count)
+        (int<keyboard>:registration:state/transition:valid? :actual state/to)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (int<keyboard>:registration:state/transition:valid? :debug state/to)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (int<keyboard>:registration:state/transition:valid? :debug state/to)
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+
+        ;; Can change to just "return nil".
+        (should-not (int<keyboard>:registration:state/transition:valid? :actual state/to :no-error))
+        ;; Did not add to the number of errors.
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug state/to :no-error))
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug state/to :no-error))
+        (test<keyboard>:assert:output :error test-name error-count))
+
+      ;;---
+      ;; Invalid state transition.
+      ;;---
+      (let ((int<keyboard>:registrar<actual>:state nil)
+            (int<keyboard>:registrar<debug>:state  :init))
+        ;; Default behavior is to raise an error signal, which we are intercepting because testing...
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :actual :config))
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug nil))
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug :active))
+        (test<keyboard>:assert:output :error test-name (funcall error:get-and-incr))
+
+        ;; Can change to just "return nil".
+        (should-not (int<keyboard>:registration:state/transition:valid? :actual :config :no-error))
+        ;; Did not add to the number of errors.
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug nil :no-error))
+        (test<keyboard>:assert:output :error test-name error-count)
+        (should-not (int<keyboard>:registration:state/transition:valid? :debug :active :no-error))
+        (test<keyboard>:assert:output :error test-name error-count)))))
+
+
+;;------------------------------
+;; int<keyboard>:registration:state/transition:set
+;;------------------------------
+
+(ert-deftest test<keyboard/registrars>::int<keyboard>:registration:state/transition:set ()
+  "Test that `int<keyboard>:registration:state/transition:set' behaves."
+
+  (setq test<keyboard>:signal-error t)
+
+  (test<keyboard>:fixture
+      ;; Test name, setup func, teardown func.
+      "test<keyboard/registrars>::int<keyboard>:registration:state/transition:set"
+      nil
+      nil
+
+    ;;------------------------------
+    ;; Lexically bind the state symbols to some initial values.
+    ;;------------------------------
+    (let ((int<keyboard>:registrar<actual>:state nil)
+          (int<keyboard>:registrar<debug>:state  :init))
+
+      ;;---
+      ;; Good Transitions:
+      ;;---
+      (test<keyboard>:should:marker test-name "Good Transitions")
+
+      (should (eq nil (int<keyboard>:registrar:get :actual :state)))
+      (should (int<keyboard>:registration:state/transition:set :actual :init))
+      (should (eq :init (int<keyboard>:registrar:get :actual :state)))
+
+      (should (eq :init (int<keyboard>:registrar:get :debug :state)))
+      (should (int<keyboard>:registration:state/transition:set :debug :config))
+      (should (eq :config (int<keyboard>:registrar:get :debug :state)))
+
+      ;;---
+      ;; Bad Transitions: error or nil, depending.
+      ;;---
+      (test<keyboard>:should:marker test-name "Bad Transitions")
+      (should-error (int<keyboard>:registration:state/transition:set :actual :invalid))
+      (should (eq :init (int<keyboard>:registrar:get :actual :state)))
+
+      (should-error (int<keyboard>:registration:state/transition:set :debug 42))
+      (should (eq :config (int<keyboard>:registrar:get :debug :state)))
+      (should-error (int<keyboard>:registration:state/transition:set :debug 'invalid))
+      (should (eq :config (int<keyboard>:registrar:get :debug :state))))))
+
+
+;;------------------------------
 ;; int<keyboard>:registrar:valid?
 ;;------------------------------
 

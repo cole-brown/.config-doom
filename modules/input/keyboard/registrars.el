@@ -18,7 +18,7 @@
 
 ;; TODO: Are these in correct order?
 ;; TODO: Should we have a :finished state? Is one of these already a finished state?
-(defconst int<keyboard>:layout:registering/states
+(defconst int<keyboard>:registration:states
   '(nil
     :init
     :config
@@ -28,7 +28,7 @@
   "All valid values for `(int<keyboard>:registrar:get registrar :state)'.")
 
 
-(defconst int<keyboard>:registration:valid
+(defconst int<keyboard>:registration:state/transitions
   ;;    '(state     . (list of valid states to transition from))
   (list '(nil       . (nil))
         '(:init     . (nil :apply))
@@ -39,9 +39,127 @@
         ;;---
         ;; Valid to enter from (almost) any state:
         ;;---
-        (cons :apply  int<keyboard>:layout:registering/states))
+        (cons :apply  int<keyboard>:registration:states))
   "Alist of all valid values for moving `(int<keyboard>:registrar:get registrar :state)'
 to a certain state.")
+
+
+(defun int<keyboard>:registration:state:valid? (desired)
+  "Get the list of valid values current registration state can be for
+entering DESIRED state."
+  (alist-get desired int<keyboard>:registration:state/transitions))
+
+
+(defun int<keyboard>:registration:valid/action? (keyword)
+  "Valid actions are `:bind', `:unbind', and `:full'.
+
+Returns nil if not valid."
+  (memq keyword '(:bind :unbind :full)))
+;; (int<keyboard>:registration:valid/action? :bind)
+;; (int<keyboard>:registration:valid/action? :set)
+;; (int<keyboard>:registration:valid/action? :jeff)
+;; (int<keyboard>:registration:valid/action? :full)
+
+
+(defun int<keyboard>:registration:state/transition:valid? (registrar state/to &optional no-error)
+  "Returns non-nil if transition of current registration state to new STATE/TO
+state is valid/allowed."
+  (let ((func.name "int<keyboard>:registration:state/transition:valid?")
+        (debug.tags '(:registering))
+        (state/current (int<keyboard>:registrar:get registrar :state)))
+
+    ;;------------------------------
+    ;; Invalid Cases:
+    ;;------------------------------
+    (cond ((not (memq state/current
+                      int<keyboard>:registration:states))
+           (int<keyboard>:debug
+               func.name
+               debug.tags
+             "Current state %S for registrar %S is not a valid state: %S"
+             state/current
+             registrar
+             int<keyboard>:registration:states)
+           ;; Error or nil.
+           (if no-error
+               nil
+             (int<keyboard>:output
+              :error
+              func.name
+              "Current state %S for registrar %S is not a valid state: %S"
+              state/current
+              registrar
+              int<keyboard>:registration:states)))
+
+          ((not (memq state/to int<keyboard>:registration:states))
+           (int<keyboard>:debug
+               func.name
+               debug.tags
+             "Desired state %S for registrar %S is not a valid state: %S"
+             state/to
+             registrar
+             int<keyboard>:registration:states)
+           ;; Error or nil.
+           (if no-error
+               nil
+             (int<keyboard>:output
+              :error
+              func.name
+              "Desired state %S for registrar %S is not a valid state: %S"
+              state/to
+              registrar
+              int<keyboard>:registration:states)))
+
+          ;;------------------------------
+          ;; Valid Cases:
+          ;;------------------------------
+          ;; `state/to' _is_ `state/current'?... ok, fine.
+          ((eq state/to state/current)
+           t)
+
+          ;; Valid transition?
+          (t
+           (let ((valid/froms (int<keyboard>:registration:state:valid? state/to)))
+             (if (not (memq state/current valid/froms))
+                 ;; Invalid transition - error or return nil.
+                 (if no-error
+                     nil
+                   (int<keyboard>:output :error
+                                         func.name
+                                         '("Registrar %S at current registration state %S cannot transition to %S state. "
+                                           "Must be one of: %S")
+                                         registrar
+                                         state/current
+                                         state/to
+                                         valid/froms))
+               ;; Valid. Return non-nil.
+               t))))))
+
+
+(defun int<keyboard>:registration:state/transition:set (registrar state/to &optional no-error)
+  "Returns non-nil if transition of current registration state to new STATE/TO
+state is valid.
+
+If NO-SET is non-nil, skips setting current registration state.
+
+If NO-ERROR is non-nil, will return nil instead of signaling an error."
+  ;; Check for errors.
+  (message "int<keyboard>:registration:state/transition:set: valid? %S"
+           (int<keyboard>:registration:state/transition:valid? registrar state/to no-error))
+  (if (not (int<keyboard>:registration:state/transition:valid? registrar state/to no-error))
+      ;; Invalid transition - that raised an error signal if `no-error' is /not/ set,
+      ;; so the only other thing to do is return nil if `no-error' is set.
+      nil
+
+    ;; Valid transition - apply/set it.
+    (int<keyboard>:registrar:set registrar :state state/to)))
+;; (int<keyboard>:registrar:set :debug :state nil)
+;; (int<keyboard>:registrar:get :debug :state)
+;; (int<keyboard>:registration:state/transition:set :debug :inactive)
+;; (int<keyboard>:registrar:get :debug :state)
+;; (int<keyboard>:registration:state/transition:set :debug :active)
+;; (int<keyboard>:registration:state/transition:set :debug :active t)
+;; (int<keyboard>:registrar:get :debug :state)
 
 
 ;;------------------------------------------------------------------------------
@@ -82,7 +200,7 @@ Each alist key's value should be a list of args for
 (defvar int<keyboard>:registrar<actual>:state nil
   "The state of registration/initialization.
 
-Valid States (see `int<keyboard>:layout:registering/states'
+Valid States (see `int<keyboard>:registration:states'
 and `int<keyboard>:registration:valid'):
   nil - Nothing has happened yet.
   :init - Initialization happened.
@@ -130,7 +248,7 @@ Each alist key's value should be a list of args for
 (defvar int<keyboard>:registrar<debug>:state nil
   "The state of registration/initialization.
 
-Valid States (see `int<keyboard>:layout:registering/states'
+Valid States (see `int<keyboard>:registration:states'
 and `int<keyboard>:registration:valid'):
   nil - Nothing has happened yet.
   :init - Initialization happened.
@@ -215,6 +333,8 @@ REGISTRAR should be a valid keyword from `int<keyboard>:registrar/types'."
                                     (car registrar-assoc))
                                   int<keyboard>:registrars)
                           registrar)))
+(let ((int<keyboard>:registrar<debug>:state "testing?"))
+  (eval (int<keyboard>:registrar:symbol :debug :state)))
 
 
 (defun int<keyboard>:registrar:get (registrar keyword)
@@ -224,7 +344,10 @@ variable identifier KEYWORD.
 REGISTRAR should be a valid keyword from `int<keyboard>:registrar/types'."
   ;; Get the symbol and then return its value.
   ;; `int<keyboard>:registrar:symbol' will error on anything invalid.
-  (symbol-value (int<keyboard>:registrar:symbol registrar keyword)))
+  ;;
+  ;; NOTE: Using `eval' instead of `symbol-value' so tests can lexically bind variables
+  ;; and not mess with the real values.
+  (eval (int<keyboard>:registrar:symbol registrar keyword)))
 ;; (int<keyboard>:registrar:get :actual :state)
 ;; (int<keyboard>:registrar:get :debug :state)
 ;; (int<keyboard>:registrar:get :actual :keybinds)

@@ -32,14 +32,13 @@
 ;;------------------------------------------------------------------------------
 
 ;; NOTE: Order could matter - take care if modifying.
-(load! "utils")
 (load! "output")
 (load! "debug")
+(load! "utils")
 (load! "alist")
 (load! "vars")
 (load! "load")
 (load! "registrars")
-(load! "registration")
 
 
 ;;------------------------------------------------------------------------------

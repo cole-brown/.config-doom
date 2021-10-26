@@ -10,6 +10,7 @@
 ;;             Non-standard Evil Layout: Cuz I'm weird that way.              ;;
 ;;                                 ──────────                                 ;;
 
+(imp:require :input)
 
 ;;------------------------------------------------------------------------------
 ;; Common
@@ -267,7 +268,7 @@
   (after! '(evil-collection magit)
     ;; Try to set states via `evil-collection' vars, fallback to a default.
     (let ((states
-           (input//kl:states->keyword
+           (int<keyboard>:states->keyword
             ;; When does evil-collection overwrite all the magit keys?
             ;;   - Does it overwrite them? Or does Doom do it differently somewhere else?
             (condition-case-unless-debug signal-raised

@@ -15,40 +15,14 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Type Validity, etc.
-;;------------------------------------------------------------------------------
-
-(defun input//kl:states->keyword (states)
-  "Convert a list of evil STATES symbols into a keyword for `map!'.
-
-The inverse of `doom--map-keyword-to-states'.
-
-For example, (list 'normal 'visual 'insert) will map to `:nvi'. See
-`doom-evil-state-alist' to customize this."
-  (let (keyword/char-list)
-    ;; Convert to list of chararcters...
-    (dolist (state states)
-      (if-let ((state/char (nth 0 (rassoc (doom-unquote state) doom-evil-state-alist))))
-          (push state/char keyword/char-list)
-        (error "input//kl:states->keyword: Invalid state: %S" state)))
-    ;; And now convert our list of chars into a keyword.
-    (if keyword/char-list
-        (intern (apply #'string ?: (nreverse keyword/char-list)))
-      (error (concat "input//kl:states->keyword: No result from states? "
-                     "states: %S -> keyword characters: %S")
-             states keyword/char-list))))
-;; (input//kl:states->keyword '(normal visual))
-
-
-;;------------------------------------------------------------------------------
-;; Functions: Initialization
+;; Functions: Binding
 ;;------------------------------------------------------------------------------
 
 (defun int<keyboard>:layout:bind (registrar layout type keybind-map)
   "Saves TYPE's KEYBIND-MAP for final configuration in
 `int<keyboard>:layout:activate'.
 
-REGISTRAR should be a keyword from `input//kl:registrars'.
+REGISTRAR should be a keyword from `int<keyboard>:registrars'.
 
 TYPE should be one of:
   :common - Any keybinds that exist in both evil-mode and standard Emacs.
@@ -86,6 +60,10 @@ earlier."
                               (int<keyboard>:registrar:symbol registrar :keybinds)))
 
 
+;;------------------------------
+;; API
+;;------------------------------
+
 (defun keyboard:layout:bind (layout type keybind-map)
   "Saves TYPE's KEYBIND-MAP for final configuration in
 `int<keyboard>:layout:activate'.
@@ -102,11 +80,15 @@ earlier."
 ;; (pp-macroexpand-expression (int<keyboard>:registrar:get registrar :keybinds))
 
 
+;;------------------------------------------------------------------------------
+;; Unbinding
+;;------------------------------------------------------------------------------
+
 (defun int<keyboard>:layout:unbind (registrar layout type unbind-map)
   "Saves TYPE's UNBIND-MAP for final configuration in
 `int<keyboard>:layout:activate'.
 
-REGISTRAR should be a keyword from `input//kl:registrars'.
+REGISTRAR should be a keyword from `int<keyboard>:registrars'.
 
 TYPE should be one of:
   :common - Any keybinds that exist in both evil-mode and standard Emacs.
@@ -140,8 +122,14 @@ Unbindings are applied before bindings."
 
   ;; Ok - errors checked; set it.
   (setq int<keyboard>:layout:active layout)
-  (int<keyboard>:alist:update type unbind-map input//kl:layout:unbinds))
+  (int<keyboard>:alist:update type
+                              unbind-map
+                              (int<keyboard>:registrar:symbol registrar :unbinds)))
 
+
+;;------------------------------
+;; API
+;;------------------------------
 
 (defun keyboard:layout:unbind (layout type unbind-map)
   "Saves TYPE's UNBIND-MAP for final configuration in
@@ -163,13 +151,13 @@ Unbindings are applied before bindings."
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Configuration
+;; Configuration
 ;;------------------------------------------------------------------------------
 
 (defun int<keyboard>:layout:config (registrar bind/unbind layout)
   "Verifies that LAYOUT is still valid and is ready for finalization.
 
-REGISTRAR should be a keyword from `input//kl:registrars'.
+REGISTRAR should be a keyword from `int<keyboard>:registrars'.
 
 BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
@@ -177,7 +165,7 @@ LAYOUT should be a valid keyboard layout keyword."
   ;;---
   ;; Can use finalization's check here w/ known-good type.
   ;;---
-  (input//kl:activate/validate "keyboard:layout:config"
+  (int<keyboard>:activate/validate "keyboard:layout:config"
                                registrar
                                bind/unbind
                                :common
@@ -208,6 +196,10 @@ LAYOUT should be a valid keyboard layout keyword."
   )
 
 
+;;------------------------------
+;; API
+;;------------------------------
+
 (defun keyboard:layout:config (bind/unbind layout)
   "Verifies that LAYOUT is still valid and is ready for finalization.
 
@@ -218,12 +210,12 @@ LAYOUT should be a valid keyboard layout keyword."
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Finalization
+;; Activation
 ;;------------------------------------------------------------------------------
 
 ;; Also used in config step, currently, but could make that have its own checks
 ;; if this needs to change to be specific to finalization.
-(defun input//kl:activate/validate (caller registrar bind/unbind type registering)
+(defun int<keyboard>:activate/validate (caller registrar bind/unbind type registering)
   "Checks that things are valid for `int<keyboard>:layout:activate'.
 
 1. There must be an active layout.
@@ -309,7 +301,7 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     ;;------------------------------
     (when (memq bind/unbind '(:unbind :full))
       (dolist (type types)
-        (push (input//kl:activate/type :unbind type no-eval debug/tags) return-value))
+        (push (int<keyboard>:activate/type :unbind type no-eval debug/tags) return-value))
 
       ;; Did we succeed? How do we deal with `return-value'?
       (cond ((not return-value)
@@ -329,7 +321,7 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     (when (memq bind/unbind '(:bind :full))
       ;; Activate each type.
       (dolist (type types)
-        (push (input//kl:activate/type :bind type no-eval debug/tags) return-value))
+        (push (int<keyboard>:activate/type :bind type no-eval debug/tags) return-value))
 
       ;; Prep return value?
       (unless no-eval
@@ -370,7 +362,7 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
       return-value)))
 
 
-(defun input//kl:activate/type (bind/unbind type &optional no-eval debug/tags)
+(defun int<keyboard>:activate/type (bind/unbind type &optional no-eval debug/tags)
   "Map the BINDINGS for TYPE.
 
 BIND/UNBIND should be either `:bind' or `:unbind'. It will be used to determine
@@ -390,7 +382,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                             '("`bind/unbind' must be one of: %S")
                             valids:bind/unbind))
 
-    (if-let ((valid (input//kl:activate/validate "input//kl:activate/type"
+    (if-let ((valid (int<keyboard>:activate/validate "int<keyboard>:activate/type"
                                                  registrar bind/unbind type :active))
              ;; Could be this keybind has nothing for type, and that's fine...
              ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
@@ -417,18 +409,18 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                           ;; Not applying the keybinds - returning the sexprs instead.
                           (progn
                             (int<keyboard>:debug
-                                "input//kl:activate/type"
+                                "int<keyboard>:activate/type"
                                 debug/tags
                               "no-eval input for map-process: %S" keybinds)
                             (int<keyboard>:debug
-                                "input//kl:activate/type"
+                                "int<keyboard>:activate/type"
                                 debug/tags
                               "no-eval: %S"
                               (input//kl:layout:map-process keybinds))
                             (setq return-value (input//kl:layout:map-process keybinds)))
                         ;; We are applying the keybinds.
                         (int<keyboard>:debug
-                            "input//kl:activate/type"
+                            "int<keyboard>:activate/type"
                             debug/tags
                           "eval: %S"
                           (input//kl:layout:map-process keybinds))
@@ -442,7 +434,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;; Invalid or didn't find keybinds...
       ;;------------------------------
       (int<keyboard>:debug
-          "input//kl:activate/type"
+          "int<keyboard>:activate/type"
           debug/tags
         (concat "Cannot activate keybinds for %S.\n"
                 "  valid?    %S\n"
@@ -451,7 +443,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;; NOTE: Currently not an error as common/emacs may not have any keybinds.
       ;; Should probably return to being an error in the future?
       ;; (int<keyboard>:output :error
-      ;;                       "input//kl:activate/type"
+      ;;                       "int<keyboard>:activate/type"
       ;;                       '("Cannot activate keybinds.\n"
       ;;                         "  valid? %S\n"
       ;;                         "  keybinds: %S")
@@ -461,7 +453,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       (setq return-value nil))
 
     (int<keyboard>:debug
-        "input//kl:activate/type"
+        "int<keyboard>:activate/type"
         debug/tags
       "Returning for `no-eval': %S" no-eval)
     ;; Return t/nil normally, or the map-process output if `no-eval'.
@@ -473,4 +465,4 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'registration)
+(imp:provide :input 'keyboard 'layout 'bind)

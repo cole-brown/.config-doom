@@ -13,6 +13,11 @@
 ;; Utility Functions & Such That Don't Really Fit Elsewhere
 ;;------------------------------------------------------------------------------
 
+
+;;------------------------------------------------------------------------------
+;; Normalization
+;;------------------------------------------------------------------------------
+
 (defun int<keyboard>:normalize->string (input)
   "Normalize INPUT to a layout string.
 
@@ -65,6 +70,32 @@ E.g. `+layout/dvorak' -> `:dvorak'."
 ;; (int<keyboard>:normalize->keyword :spydez)
 ;; (int<keyboard>:normalize->keyword "spydez")
 ;; (int<keyboard>:normalize->keyword nil)
+
+
+;;------------------------------------------------------------------------------
+;; States
+;;------------------------------------------------------------------------------
+
+(defun int<keyboard>:states->keyword (states)
+  "Convert a list of evil STATES symbols into a keyword for `map!'.
+
+The inverse of `doom--map-keyword-to-states'.
+
+For example, (list 'normal 'visual 'insert) will map to `:nvi'. See
+`doom-evil-state-alist' to customize this."
+  (let (keyword/char-list)
+    ;; Convert to list of chararcters...
+    (dolist (state states)
+      (if-let ((state/char (nth 0 (rassoc (doom-unquote state) doom-evil-state-alist))))
+          (push state/char keyword/char-list)
+        (error "int<keyboard>:states->keyword: Invalid state: %S" state)))
+    ;; And now convert our list of chars into a keyword.
+    (if keyword/char-list
+        (intern (apply #'string ?: (nreverse keyword/char-list)))
+      (error (concat "int<keyboard>:states->keyword: No result from states? "
+                     "states: %S -> keyword characters: %S")
+             states keyword/char-list))))
+;; (int<keyboard>:states->keyword '(normal visual))
 
 
 ;;------------------------------------------------------------------------------

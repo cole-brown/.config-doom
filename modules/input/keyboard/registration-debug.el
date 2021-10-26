@@ -11,9 +11,10 @@
 ;;                                 ──────────                                 ;;
 
 
+(imp:require :input 'keyboard 'utils)
 (imp:require :input 'keyboard 'vars)
 (imp:require :input 'keyboard 'registrars)
-(imp:require :input 'keyboard 'registration)
+(imp:require :input 'keyboard 'layout 'bind)
 
 
 ;;------------------------------------------------------------------------------

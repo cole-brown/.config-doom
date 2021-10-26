@@ -7,6 +7,9 @@
 ;; ...it was simple enough at one point. Probably before all the tagging stuff.
 
 
+(imp:require :input 'keyboard 'utils)
+
+
 ;;------------------------------------------------------------------------------
 ;; Notes
 ;;------------------------------------------------------------------------------

@@ -34,106 +34,6 @@
     (message "Set registering to: %S (was %S)" registering prev)))
 
 
-(defun keyboard:layout:apply (layout)
-  "Initialize, configure, and apply the LAYOUT.
-
-Overrides any current active layout with the new LAYOUT."
-  ;; Could do a completing read or something with the valid layout dirs as the choices.
-  (interactive (list (completing-read "Load Layout: "
-                                      (keyboard:load:layouts/list)
-                                      nil
-                                      t
-                                      (when int<keyboard>:layout:active
-                                        (symbol-name int<keyboard>:layout:active)))))
-
-  ;; Change to our special `:apply' registering state so `:init' state will happen.
-
-  (let ((registrar :actual)
-        (registering/prev (int<keyboard>:registrar:get registrar :state)))
-    (if (int<keyboard>:registration:state/transition:set registrar :apply)
-        (message "Reset layout registration state: %S -> %S"
-                 registering/prev (int<keyboard>:registrar:get registrar :state))
-      (message "Failed resetting registration state?! Shouldn't happen... state: %S -> %S"
-               registering/prev (int<keyboard>:registrar:get registrar :state))))
-
-  ;; Check/report about desired.
-  (let ((layout/keyword (int<keyboard>:normalize->keyword layout)))
-    ;; Updated desired first.
-    (cond ((null int<keyboard>:layout:desired)
-           ;; Undefined
-           (message "Setting desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword))
-
-          ((not (eq int<keyboard>:layout:desired layout/keyword))
-           (message "Changing desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword))
-
-          (t
-           (message "Reapplying desired keyboard layout: %S -> %S"
-                    int<keyboard>:layout:desired
-                    layout/keyword)))
-    (setq int<keyboard>:layout:desired layout/keyword)
-
-    ;; Check/report about active.
-    (cond ((null int<keyboard>:layout:active)
-           (message "Setting active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword))
-          ((not (eq int<keyboard>:layout:active layout/keyword))
-           (message "Changing active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword))
-          (t
-           (message "Reapplying active keyboard layout: %S -> %S"
-                    int<keyboard>:layout:active
-                    layout/keyword)))
-
-    ;; Load active.
-    (keyboard:load:active "init") ;; This will set active.
-
-    ;; Verify it was set before config/finalization.
-    (if (not (eq int<keyboard>:layout:active layout/keyword))
-        ;; Fail message.
-        (message (concat
-                  "Initializing layout did not set it to the active layout?!\n"
-                  "  Input:   %S\n"
-                  "  Desired: %S\n"
-                  "  Active:  %S")
-                 layout/keyword
-                 int<keyboard>:layout:desired
-                 int<keyboard>:layout:active)
-
-      ;; Config and finalize the new layout.
-      (message "Configuring & binding %S..." int<keyboard>:layout:active)
-      (keyboard:load:active "config")
-      (input:keyboard/layout:finalize)
-      (message "Loaded layout %S." int<keyboard>:layout:active))))
-;; (keyboard:layout:clear)
-
-
-(defun keyboard:layout:clear ()
-  "Clear the saved keybinds and unbinds.
-
-Sets to nil:
-  - `(int<keyboard>:registrar:get registrar :keybinds)'
-  - `(int<keyboard>:registrar:get registrar :unbinds)'.
-
-For e.g. resetting after a bad testing command. You will have to
-add back in all keybinds you want."
-  (interactive)
-  ;; Reset all registrars or just one given registrar?
-  ;;  - Both if no input, one if input?
-  ;; Let's just go with reset all of them for now.
-  (dolist (registrar (mapcar (lambda (registrar-assoc)
-                               "Get registrar keywords."
-                               (car registrar-assoc))
-                             input//kl:registrars))
-    (int<keyboard>:registrar:set registrar :unbinds nil)
-    (int<keyboard>:registrar:set registrar :keybinds nil)))
-
-
 (defun debug<keyboard>:layout:bind (eval/sexpr layout type keybind-map)
   "Allows changing an `input:keyboard/layout:set' to
 `debug<keyboard>:layout:bind', running, and testing its keybinds.
@@ -350,6 +250,110 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
           (when (eq eval/sexpr :pp-sexpr)
             (pp-macroexpand-expression return-value))
           return-value)))))
+
+
+;;------------------------------------------------------------------------------
+;; API / Interactive Commands
+;;------------------------------------------------------------------------------
+
+(defun keyboard:layout:apply (layout)
+  "Initialize, configure, and apply the LAYOUT.
+
+Overrides any current active layout with the new LAYOUT."
+  ;; Could do a completing read or something with the valid layout dirs as the choices.
+  (interactive (list (completing-read "Load Layout: "
+                                      (keyboard:load:layouts/list)
+                                      nil
+                                      t
+                                      (when int<keyboard>:layout:active
+                                        (symbol-name int<keyboard>:layout:active)))))
+
+  ;; Change to our special `:apply' registering state so `:init' state will happen.
+
+  (let ((registrar :actual)
+        (registering/prev (int<keyboard>:registrar:get registrar :state)))
+    (if (int<keyboard>:registration:state/transition:set registrar :apply)
+        (message "Reset layout registration state: %S -> %S"
+                 registering/prev (int<keyboard>:registrar:get registrar :state))
+      (message "Failed resetting registration state?! Shouldn't happen... state: %S -> %S"
+               registering/prev (int<keyboard>:registrar:get registrar :state))))
+
+  ;; Check/report about desired.
+  (let ((layout/keyword (int<keyboard>:normalize->keyword layout)))
+    ;; Updated desired first.
+    (cond ((null int<keyboard>:layout:desired)
+           ;; Undefined
+           (message "Setting desired keyboard layout: %S -> %S"
+                    int<keyboard>:layout:desired
+                    layout/keyword))
+
+          ((not (eq int<keyboard>:layout:desired layout/keyword))
+           (message "Changing desired keyboard layout: %S -> %S"
+                    int<keyboard>:layout:desired
+                    layout/keyword))
+
+          (t
+           (message "Reapplying desired keyboard layout: %S -> %S"
+                    int<keyboard>:layout:desired
+                    layout/keyword)))
+    (setq int<keyboard>:layout:desired layout/keyword)
+
+    ;; Check/report about active.
+    (cond ((null int<keyboard>:layout:active)
+           (message "Setting active keyboard layout: %S -> %S"
+                    int<keyboard>:layout:active
+                    layout/keyword))
+          ((not (eq int<keyboard>:layout:active layout/keyword))
+           (message "Changing active keyboard layout: %S -> %S"
+                    int<keyboard>:layout:active
+                    layout/keyword))
+          (t
+           (message "Reapplying active keyboard layout: %S -> %S"
+                    int<keyboard>:layout:active
+                    layout/keyword)))
+
+    ;; Load active.
+    (keyboard:load:active "init") ;; This will set active.
+
+    ;; Verify it was set before config/finalization.
+    (if (not (eq int<keyboard>:layout:active layout/keyword))
+        ;; Fail message.
+        (message (concat
+                  "Initializing layout did not set it to the active layout?!\n"
+                  "  Input:   %S\n"
+                  "  Desired: %S\n"
+                  "  Active:  %S")
+                 layout/keyword
+                 int<keyboard>:layout:desired
+                 int<keyboard>:layout:active)
+
+      ;; Config and finalize the new layout.
+      (message "Configuring & binding %S..." int<keyboard>:layout:active)
+      (keyboard:load:active "config")
+      (input:keyboard/layout:finalize)
+      (message "Loaded layout %S." int<keyboard>:layout:active))))
+;; (keyboard:layout:clear)
+
+
+(defun keyboard:layout:clear ()
+  "Clear the saved keybinds and unbinds.
+
+Sets to nil:
+  - `(int<keyboard>:registrar:get registrar :keybinds)'
+  - `(int<keyboard>:registrar:get registrar :unbinds)'.
+
+For e.g. resetting after a bad testing command. You will have to
+add back in all keybinds you want."
+  (interactive)
+  ;; Reset all registrars or just one given registrar?
+  ;;  - Both if no input, one if input?
+  ;; Let's just go with reset all of them for now.
+  (dolist (registrar (mapcar (lambda (registrar-assoc)
+                               "Get registrar keywords."
+                               (car registrar-assoc))
+                             input//kl:registrars))
+    (int<keyboard>:registrar:set registrar :unbinds nil)
+    (int<keyboard>:registrar:set registrar :keybinds nil)))
 
 
 ;;------------------------------------------------------------------------------

@@ -28,8 +28,48 @@
   (assoc key alist))
 
 
+(defun int<keyboard>:alist:get/alist (arg)
+  "Takes ARG and figures out where its alist is, returns the alist.
+
+ARG can be:
+  - an alist/nil
+  - a symbol name
+  - a function call that returns:
+    - an alist/nil
+    - a symbol name
+
+Returns a list or nil, or signals an error if it cannot find an alist."
+  ;; The easy case first:
+  (cond ((listp arg)
+         arg)
+
+        ;; It's a symbol, check out its value.
+        ;; Don't use `symbol-value' since it doesn't understand lexical symbols.
+        ((symbolp arg)
+         (int<keyboard>:alist:get/alist (eval arg)))
+
+        ;; It's a function, check out its return value.
+        ((functionp arg)
+         (int<keyboard>:alist:get/alist (funcall arg)))
+
+        ;; ??? -> error
+        (t
+         (int<keyboard>:output :error
+                               "int<keyboard>:alist:get/alist"
+                               '("Cannot figure out what ARG is or where its alist is."
+                                 "ARG: (type: %S) %S")
+                               (type-of arg)
+                               arg))))
+
+
 (defmacro int<keyboard>:alist:update (key value alist)
-  "Set/overwrite an entry in the alist.
+  "Set/overwrite an entry in the ALIST.
+
+ALIST can be:
+  - A list/nil.
+  - A symbol name.
+  - A function call that returns one of the above.
+See: `int<keyboard>:alist:get/alist'
 
 If VALUE is nil, it will be set as KEY's value. Use
 `int<keyboard>:alist:delete' if you want to remove it.
@@ -41,7 +81,7 @@ Returns ALIST."
         (mmm:key   (make-symbol "alist:general/key")))
     ;; Only eval inputs once.
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    `(let ((,mmm:alist ,alist)
+    `(let ((,mmm:alist (int<keyboard>:alist:get/alist ,alist))
            (,mmm:key ,key))
        ;;---
        ;; Error Checking

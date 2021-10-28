@@ -25,40 +25,43 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Tests: Bind Functions
+;; Tests: Unbind Functions
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; int<keyboard>:layout:bind
+;; int<keyboard>:layout:unbind
 ;;------------------------------
 
-;; TODO:
-;; TODO: Start writing this test!
-;; TODO:
-(ert-deftest test<keyboard/alist>::int<keyboard>:layout:bind ()
-  "Test that `int<keyboard>:layout:bind' behaves appropriately."
+(ert-deftest test<keyboard>::int<keyboard>:layout:unbind ()
+  "Test that `int<keyboard>:layout:unbind' behaves appropriately."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/alist>::int<keyboard>:layout:bind"
-      nil
-      nil
+      "test<keyboard/alist>::int<keyboard>:layout:unbind"
+      #'test<keyboard/layout>:setup
+      #'test<keyboard/layout>:teardown
+
 
     ;;===
     ;; Run the test.
     ;;===
+    (test<keyboard/layout>:assert:registrar-vars nil nil nil)
 
     ;;------------------------------
-    ;; Valid Inputs
+    ;; Valid Unbinds
     ;;------------------------------
-    (should (int<keyboard>:layout:bind :bind))
-    (should (int<keyboard>:layout:bind :unbind))
-    (should (int<keyboard>:layout:bind :full))
+    (let ((state :init)
+          (unbinds '(:n "s" :layout:common:undefined)))
 
-    ;;------------------------------
-    ;; Invalid Inputs
-    ;;------------------------------
-    (should-not (int<keyboard>:layout:bind :invalid))
-    (should-not (int<keyboard>:layout:bind 'invalid))
-    (should-not (int<keyboard>:layout:bind 42))))
+      (should (int<keyboard>:layout:unbind :debug   ;; registrar type (:debug, :actual)
+                                           :testing ;; layout type
+                                           :common  ;; keybind type (:emacs, :evil, :common)
+                                           unbinds))
+
+      ;; TODO: Fix `int<keyboard>:alist:update' bug first, then get back on this!
+
+      ;; 1) Should have transitioned to init state.
+      ;; 2) <no keybinds>
+      ;; 3) Should now have the unbindings supplied above.
+      (test<keyboard/layout>:assert:registrar-vars state nil unbinds))))

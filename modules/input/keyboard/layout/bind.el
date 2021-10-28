@@ -15,72 +15,6 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Functions: Binding
-;;------------------------------------------------------------------------------
-
-(defun int<keyboard>:layout:bind (registrar layout type keybind-map)
-  "Saves TYPE's KEYBIND-MAP for final configuration in
-`int<keyboard>:layout:activate'.
-
-REGISTRAR should be a keyword from `int<keyboard>:registrars'.
-
-TYPE should be one of:
-  :common - Any keybinds that exist in both evil-mode and standard Emacs.
-  :emacs  - Any Emacs-only keybinds (non-evil-mode).
-  :evil   - Any Evil-only keybinds.
-
-If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
-earlier."
-  (when (not (int<keyboard>:layout:valid? layout))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:set"
-                          '("`layout' must be a keyword. "
-                            "Got: %S")
-                          layout))
-
-  (when (not (int<keyboard>:layout:type/valid? type))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:set"
-                          '("Type '%S' is not a valid type. "
-                            "Must be one of: %S")
-                          type int<keyboard>:layout:types))
-
-  ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
-  ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
-  ;; TODO: move finalized states to a var.
-  (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
-    ;; This will error out for us.
-    (int<keyboard>:registration:state/transition:set registrar :init))
-
-  ;; Ok - errors checked; set it.
-  (setq int<keyboard>:layout:active layout)
-  ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
-  (int<keyboard>:alist:update type
-                              keybind-map
-                              (int<keyboard>:registrar:symbol registrar :keybinds)))
-
-
-;;------------------------------
-;; API
-;;------------------------------
-
-(defun keyboard:layout:bind (layout type keybind-map)
-  "Saves TYPE's KEYBIND-MAP for final configuration in
-`int<keyboard>:layout:activate'.
-
-TYPE should be one of:
-  :common - Any keybinds that exist in both evil-mode and standard Emacs.
-  :emacs  - Any Emacs-only keybinds (non-evil-mode).
-  :evil   - Any Evil-only keybinds.
-
-If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
-earlier."
-  (declare (indent 2))
-  (int<keyboard>:layout:bind :actual layout type keybind-map))
-;; (pp-macroexpand-expression (int<keyboard>:registrar:get registrar :keybinds))
-
-
-;;------------------------------------------------------------------------------
 ;; Unbinding
 ;;------------------------------------------------------------------------------
 
@@ -147,6 +81,72 @@ Unbindings are applied before bindings."
   (declare (indent 2))
   (int<keyboard>:layout:unbind :actual layout type unbind-map))
 ;; (pp-macroexpand-expression (int<keyboard>:registrar:get registrar :unbinds))
+;; (pp-macroexpand-expression (int<keyboard>:registrar:get registrar :keybinds))
+
+
+;;------------------------------------------------------------------------------
+;; Functions: Binding
+;;------------------------------------------------------------------------------
+
+(defun int<keyboard>:layout:bind (registrar layout type keybind-map)
+  "Saves TYPE's KEYBIND-MAP for final configuration in
+`int<keyboard>:layout:activate'.
+
+REGISTRAR should be a keyword from `int<keyboard>:registrars'.
+
+TYPE should be one of:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.
+
+If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
+earlier."
+  (when (not (int<keyboard>:layout:valid? layout))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:set"
+                          '("`layout' must be a keyword. "
+                            "Got: %S")
+                          layout))
+
+  (when (not (int<keyboard>:layout:type/valid? type))
+    (int<keyboard>:output :error
+                          "input:keyboard/layout:set"
+                          '("Type '%S' is not a valid type. "
+                            "Must be one of: %S")
+                          type int<keyboard>:layout:types))
+
+  ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
+  ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
+  ;; TODO: move finalized states to a var.
+  (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
+    ;; This will error out for us.
+    (int<keyboard>:registration:state/transition:set registrar :init))
+
+  ;; Ok - errors checked; set it.
+  (setq int<keyboard>:layout:active layout)
+  ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
+  (int<keyboard>:alist:update type
+                              keybind-map
+                              (int<keyboard>:registrar:symbol registrar :keybinds)))
+
+
+;;------------------------------
+;; API
+;;------------------------------
+
+(defun keyboard:layout:bind (layout type keybind-map)
+  "Saves TYPE's KEYBIND-MAP for final configuration in
+`int<keyboard>:layout:activate'.
+
+TYPE should be one of:
+  :common - Any keybinds that exist in both evil-mode and standard Emacs.
+  :emacs  - Any Emacs-only keybinds (non-evil-mode).
+  :evil   - Any Evil-only keybinds.
+
+If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
+earlier."
+  (declare (indent 2))
+  (int<keyboard>:layout:bind :actual layout type keybind-map))
 ;; (pp-macroexpand-expression (int<keyboard>:registrar:get registrar :keybinds))
 
 

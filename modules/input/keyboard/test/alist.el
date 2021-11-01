@@ -28,8 +28,14 @@
 
 (setq test<keyboard/alist>:alist nil)
 
-(defun test<keyboard/alist>:alist:get (arg &optional local-symbol-name)
-  "Function call that will return `test<keyboard/alist>:alist' symbol-name.
+(defun test<keyboard/alist>:alist:get (type &optional local-symbol-name)
+  "Function call that will return something based on TYPE.
+
+TYPE:
+  - :invalid/local
+    + Returns LOCAL-SYMBOL-NAME.
+  - :valid/global
+    + Returns quoted `test<keyboard/alist>:alist'.
 
 Usage:
   (test<keyboard/alist>:alist:get :valid/global)
@@ -56,16 +62,16 @@ Usage:
                                          (cons :key-3 :value-3/initial)
                                          (cons :key-4 :value-4/initial)
                                          (cons :key-5 :value-5/initial)))
-  (message "setup: %S" test<keyboard/alist>:alist)
+  ;; (message "setup: %S" test<keyboard/alist>:alist)
   )
 
 (defun test<keyboard/alist>:teardown (test-name)
   "Delete the global-scoped alist."
   (makunbound 'test<keyboard/alist>:alist)
   ;; (unintern 'test<keyboard/alist>:alist)
-  (message "teardown: %S" (condition-case _
-                              test<keyboard/alist>:alist
-                            (void-variable "<void>")))
+  ;; (message "teardown: %S" (condition-case _
+  ;;                             test<keyboard/alist>:alist
+  ;;                           (void-variable "<void>")))
   )
 
 
@@ -523,7 +529,7 @@ Becomes:
            (alist/nil nil)
            (alist-fn/get-symbol-name (lambda (type)
                                        (cond ((eq type :invalid/local)
-                                              'alist/cons)
+                                              'alist/values)
                                              ((eq type :valid/global)
                                               'test<keyboard/alist>:alist)
                                              (t
@@ -552,9 +558,12 @@ Becomes:
       ;; This should be effectively the same as passing in the funcall, so it should be allowed.
       (let ((alist/symbol/invalid (funcall alist-fn/get-symbol-name :invalid/local))
             (alist/symbol/valid (funcall alist-fn/get-symbol-name :valid/global)))
+        (should (eq alist/symbol/invalid 'alist/values))
+        (should (eq alist/symbol/valid 'test<keyboard/alist>:alist))
+
         (should-error (int<keyboard>:alist:update :key-3
                                                   :value-3/03
-                                                  ;; Passes in symbol-name: `alist/cons'.
+                                                  ;; Passes in symbol-name: `alist/values'.
                                                   alist/symbol/invalid))
         (should (int<keyboard>:alist:update :key-3
                                             :value-3/04
@@ -562,15 +571,23 @@ Becomes:
                                             alist/symbol/valid)))
 
       ;;------------------------------
+      ;; Update should succeed with a super simple lambda.
+      ;;------------------------------
+      (should (int<keyboard>:alist:update :key-3
+                                          :value-3/05
+                                          (funcall (lambda ()
+                                                     "Create and return an alist."
+                                                     (list (cons :key-0 :value-0/initial-by-lambda))))))
+
+      ;;------------------------------
       ;; Update should error w/ function call to local lambda.
       ;;   - Macro has no access to the local lambda?
       ;;------------------------------
-      ;; Should error on not having access to the actual lambda.
       (should-error (int<keyboard>:alist:update :key-3
-                                                  :value-3/05
-                                                  ;; Passes in function that will return symbol-name `alist/cons'.
-                                                  (funcall #'alist-fn/get-symbol-name :invalid/local)))
-      ;; Should error on not having access to the actual lambda.
+                                                :value-3/05
+                                                ;; Passes in function that will return symbol-name `alist/cons'.
+                                                (funcall #'alist-fn/get-symbol-name :invalid/local)))
+
       (should-error (int<keyboard>:alist:update :key-3
                                                 :value-3/06
                                                 ;; Passes in function that will return symbol-name `test<keyboard/alist>:alist'.
@@ -579,13 +596,20 @@ Becomes:
       ;;------------------------------
       ;; Update should work w/ function calls, with symbols as return values, with lists as values.
       ;;------------------------------
-      )))
-;; (defun test<keyboard/alist>:alist:get (arg &optional local-symbol-name)
-;; ;; This is how the bug was found... and it should now work.
-;;       (should (int<keyboard>:alist:update :key-3
-;;                                           :value-3/06
-;;                                           ;; Passes in function that will return symbol-name `test<keyboard/alist>:alist'.
-;;                                           (funcall #'alist-fn/get-symbol-name :invalid/local)))
+      (should-error (int<keyboard>:alist:update :key-3
+                                                :value-3/07
+                                                (test<keyboard/alist>:alist:get :invalid/local 'alist/values)))
+
+      ;; `nil' isn't actually an invalid local - it's a list, and we'll update it with the new key/value.
+      (should (int<keyboard>:alist:update :key-3
+                                          :value-3/07
+                                          (test<keyboard/alist>:alist:get :invalid/local)))
+
+      (should (int<keyboard>:alist:update :key-3
+                                          :value-3/08
+                                          (test<keyboard/alist>:alist:get :valid/global)))
+      (should (eq :value-3/08
+                  (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist))))))
 
 
 ;;------------------------------------------------------------------------------

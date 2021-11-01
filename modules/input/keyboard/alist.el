@@ -39,27 +39,33 @@ ARG can be:
     - a symbol name
 
 Returns a list or nil, or signals an error if it cannot find an alist."
-  ;; The easy case first:
-  (cond ((listp arg)
-         arg)
+  (cond
+   ;; Special case: nil is just nil. Don't go down an infinite rabbit hole of nil symbols/lists.
+   ((null arg)
+    nil)
 
-        ;; It's a symbol, check out its value.
-        ;; Don't use `symbol-value' since it doesn't understand lexical symbols.
-        ((symbolp arg)
-         (int<keyboard>:alist:get/alist (eval arg)))
+   ;; It's a symbol, check out its value.
+   ;; Don't use `symbol-value' since it doesn't understand lexical symbols.
+   ((symbolp arg)
+    (int<keyboard>:alist:get/alist (eval arg)))
 
-        ;; It's a function, check out its return value.
-        ((functionp arg)
-         (int<keyboard>:alist:get/alist (funcall arg)))
+   ;; It's a function, check out its return value.
+   ;; NOTE: Put before `listp' as funcs can be lists.
+   ((functionp arg)
+    (int<keyboard>:alist:get/alist (funcall arg)))
 
-        ;; ??? -> error
-        (t
-         (int<keyboard>:output :error
-                               "int<keyboard>:alist:get/alist"
-                               '("Cannot figure out what ARG is or where its alist is."
-                                 "ARG: (type: %S) %S")
-                               (type-of arg)
-                               arg))))
+   ;; List? Return as-is.
+   ((listp arg)
+    arg)
+
+   ;; ??? -> error
+   (t
+    (int<keyboard>:output :error
+                          "int<keyboard>:alist:get/alist"
+                          '("Cannot figure out what ARG is or where its alist is."
+                            "ARG: (type: %S) %S")
+                          (type-of arg)
+                          arg))))
 
 
 (defmacro int<keyboard>:alist:update (key value alist)
@@ -77,12 +83,14 @@ If VALUE is nil, it will be set as KEY's value. Use
 Returns ALIST."
   ;; Use our own uninterned symbols that won't interfere.
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:general"))
-        (mmm:key   (make-symbol "alist:general/key")))
+  (let ((mmm:alist/in (make-symbol "alist:general/alist-in"))
+        (mmm:alist    (make-symbol "alist:general/alist-update"))
+        (mmm:key      (make-symbol "alist:general/key")))
     ;; Only eval inputs once.
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    `(let ((,mmm:alist (int<keyboard>:alist:get/alist ,alist))
-           (,mmm:key ,key))
+    `(let* ((,mmm:alist/in (int<keyboard>:alist:get/alist ,alist))
+            (,mmm:alist    ,mmm:alist/in)
+            (,mmm:key      ,key))
        ;;---
        ;; Error Checking
        ;;---
@@ -91,10 +99,11 @@ Returns ALIST."
                                "int<keyboard>:alist:update"
                                '("String key '%s' won't work... "
                                  "Use `int<keyboard>:alist/string:update' for string keys.")
-                ,mmm:key))
+                               ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
-       ;; `setf' creates a new alist sometimes
-       (setq ,alist ,mmm:alist)
+       ;; `setf' creates a new alist sometimes, so set the results unless we can't given the input type.
+       (if (symbolp ,mmm:alist/in)
+           (setq ,mmm:alist/in ,mmm:alist))
        ,mmm:alist)))
 
 

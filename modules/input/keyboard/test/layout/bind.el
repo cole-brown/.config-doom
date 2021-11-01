@@ -46,22 +46,35 @@
     ;;===
     ;; Run the test.
     ;;===
-    (test<keyboard/layout>:assert:registrar-vars nil nil nil)
+    ;; They should all be nil right now.
+    (test<keyboard/layout>:assert:registrar-vars test-name)
 
     ;;------------------------------
     ;; Valid Unbinds
     ;;------------------------------
-    (let ((state :init)
-          (unbinds '(:n "s" :layout:common:undefined)))
+    (let ((registrar :debug)
+          (layout    :testing)
+          (type      :common)
+          (state     :init)
+          (unbinds   '(:n "s" :layout:common:undefined)))
 
-      (should (int<keyboard>:layout:unbind :debug   ;; registrar type (:debug, :actual)
-                                           :testing ;; layout type
-                                           :common  ;; keybind type (:emacs, :evil, :common)
+      (should (int<keyboard>:layout:unbind registrar
+                                           layout
+                                           type
                                            unbinds))
 
-      ;; TODO: Fix `int<keyboard>:alist:update' bug first, then get back on this!
+
+
+      ;; TODO: Fix `int<keyboard>:alist:update' bug first, then get back on this
+      (message "unbinds: %S: %S"
+               (int<keyboard>:registrar:symbol registrar :unbinds)
+               (int<keyboard>:registrar:get registrar :unbinds))
 
       ;; 1) Should have transitioned to init state.
       ;; 2) <no keybinds>
       ;; 3) Should now have the unbindings supplied above.
-      (test<keyboard/layout>:assert:registrar-vars state nil unbinds))))
+      (test<keyboard/layout>:assert:registrar-vars
+       test-name
+       state
+       nil
+       (test<keyboard/layout>:bind:vars-to-binds unbinds)))))

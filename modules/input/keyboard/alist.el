@@ -28,7 +28,7 @@
   (assoc key alist))
 
 
-(defun int<keyboard>:alist:get/alist (arg)
+(defun int<keyboard>:alist:get/alist (arg &optional symbol)
   "Takes ARG and figures out where its alist is, returns the alist.
 
 ARG can be:
@@ -37,6 +37,8 @@ ARG can be:
   - a function call that returns:
     - an alist/nil
     - a symbol name
+
+SYMBOL, if non-nil, will return the symbol instead of the value.
 
 Returns a list or nil, or signals an error if it cannot find an alist."
   (cond
@@ -66,6 +68,51 @@ Returns a list or nil, or signals an error if it cannot find an alist."
                             "ARG: (type: %S) %S")
                           (type-of arg)
                           arg))))
+
+;; (defun int<keyboard>:alist:get/alist-2 (arg)
+;;   ""
+;;   (cond ((null arg)
+;;          arg)
+;;         ((symbolp arg)
+;;          arg)
+;;         ((functionp arg)
+;;          (int<keyboard>:alist:get/alist-2 (funcall arg)))
+;;         (t
+;;          (int<keyboard>:output :error
+;;                                "int<keyboard>:alist:get/alist-2"
+;;                                '("Cannot figure out what ARG is or where its alist is."
+;;                                  "ARG: (type: %S) %S")
+;;                                (type-of arg)
+;;                                arg))))
+
+;; (defun int<keyboard>:alist:get/alist-2-value (arg)
+;;   ""
+;;   (eval (int<keyboard>:alist:get/alist-2 arg)))
+
+;; (defun int<keyboard>:alist:update-2 (key value alist)
+;;   ""
+;;   (message (concat "  key:   %S\n"
+;;                    "  value: %S\n"
+;;                    "  alist: %S")
+;;            key value alist)
+;;   (let ((alist/set (int<keyboard>:alist:get/alist-2 alist)))
+;;     (message "  set:   %S" alist/set)
+;;     (message "alist/value: %S" (int<keyboard>:alist:get/alist-2-value alist/set))
+;;     (message "`alist-get': %S" (alist-get key (int<keyboard>:alist:get/alist-2-value alist/set)))
+
+;;     ;; SO... setf needs a non-nil variable to work?
+;;     (let ((alist '((:kk . :vv))))
+;;       (setf (alist-get :key-0 alist) :value-0)
+;;       alist)
+;;     ))
+;;     (setf (alist-get key (int<keyboard>:alist:get/alist-2-value alist/set)) value)))
+;;     (message (concat "  key:   %S\n"
+;;                      "  value: %S\n"
+;;                      "  alist: %S\n"
+;;                      "  set:   %S")
+;;              key value alist alist/set)))
+;; (int<keyboard>:alist:update-2 :key-0 :value-0
+;;                                (test<keyboard/alist>:alist:get :valid/global/nil))
 
 
 (defmacro int<keyboard>:alist:update (key value alist)
@@ -100,10 +147,20 @@ Returns ALIST."
                                '("String key '%s' won't work... "
                                  "Use `int<keyboard>:alist/string:update' for string keys.")
                                ,mmm:key))
+
+       ;; TODO: take care of null alist case!
+       ;;   - Do an "if (null alist) -> (setq alist (list (cons key value))); else -> current functionality"
+
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
        ;; `setf' creates a new alist sometimes, so set the results unless we can't given the input type.
-       (if (symbolp ,mmm:alist/in)
-           (setq ,mmm:alist/in ,mmm:alist))
+       (if (or (symbolp ,mmm:alist/in)
+               (null ,mmm:alist/in))
+           (progn
+             (message "Setting %S to: %S"
+                      ,mmm:alist/in ,mmm:alist)
+             (setq ,mmm:alist/in ,mmm:alist))
+         (message "NOT setting %S - not a symbol."
+                  ,mmm:alist/in))
        ,mmm:alist)))
 
 

@@ -59,8 +59,17 @@
 ;; Test Helpers
 ;;------------------------------------------------------------------------------
 
-(defun test<keyboard/layout>:assert:registrar-vars (state keybinds unbinds)
+(defun test<keyboard/layout>:bind:vars-to-binds (&rest binds)
+  "Turns bind vars you supply to e.g. `int<keyboard>:layout:bind' into an alist
+you can use in `test<keyboard/layout>:assert:registrar-vars'."
+  ;; Just the '&rest' has done all our work and turned them into an alist.
+  binds)
+
+
+(defun test<keyboard/layout>:assert:registrar-vars (test-name &optional state keybinds unbinds)
   "Assert all the registrar variables are `equal' to the parameters."
+
+  (test<keyboard>:should:marker test-name "Assert registar variables.")
 
   (should (equal state
                  (int<keyboard>:registrar:get test<keyboard/layout>:registrar

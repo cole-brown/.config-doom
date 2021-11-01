@@ -114,13 +114,16 @@ Returns ALIST."
 Returns ALIST."
   ;;(declare (indent defun))
 
+ ;; Use our own uninterned symbols that won't interfere.
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist:general"))
-        (mmm:key   (make-symbol "alist:general/key")))
+  (let ((mmm:alist/in (make-symbol "alist:general/alist-in"))
+        (mmm:alist    (make-symbol "alist:general/alist-update"))
+        (mmm:key      (make-symbol "alist:general/key")))
+    ;; Only eval inputs once.
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
+    `(let* ((,mmm:alist/in (int<keyboard>:alist:get/alist ,alist))
+            (,mmm:alist    ,mmm:alist/in)
+            (,mmm:key      ,key))
        ;;---
        ;; Error Checking
        ;;---
@@ -132,8 +135,9 @@ Returns ALIST."
                                  "for string keys.")
                                ,mmm:key))
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
-       ;; `setf' creates a new alist sometimes.
-       (setq ,alist ,mmm:alist)
+       ;; `setf' creates a new alist sometimes, so set the results unless we can't given the input type.
+       (if (symbolp ,mmm:alist/in)
+           (setq ,mmm:alist/in ,mmm:alist))
        ,mmm:alist)))
 ;; (let ((alist '((foo . bar))))
 ;;   (int<keyboard>:alist:delete "foo" alist)

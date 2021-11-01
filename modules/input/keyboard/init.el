@@ -35,7 +35,7 @@
 ;; TESTING
 ;;------------------------------
 
-(defvar input//kl:testing:disable-start-up-init nil
+(defvar input//kl:testing:disable-start-up-init t ;; nil
   "If non-nil, does not run anything during startup.
 Just loads files to get all functions and such defined.")
 

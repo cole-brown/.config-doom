@@ -28,177 +28,131 @@
   (assoc key alist))
 
 
-(defun int<keyboard>:alist:get/alist (arg &optional symbol)
-  "Takes ARG and figures out where its alist is, returns the alist.
+(defun int<keyboard>:alist:update/helper (key value alist)
+  "Set/overwrite an entry in the ALIST. Return the new alist.
 
-ARG can be:
-  - an alist/nil
-  - a symbol name
-  - a function call that returns:
-    - an alist/nil
-    - a symbol name
+If VALUE is nil, it will be set as KEY's value. Use
+`int<keyboard>:alist:delete' if you want to remove it.
 
-SYMBOL, if non-nil, will return the symbol instead of the value.
-
-Returns a list or nil, or signals an error if it cannot find an alist."
-  (cond
-   ;; Special case: nil is just nil. Don't go down an infinite rabbit hole of nil symbols/lists.
-   ((null arg)
-    nil)
-
-   ;; It's a symbol, check out its value.
-   ;; Don't use `symbol-value' since it doesn't understand lexical symbols.
-   ((symbolp arg)
-    (int<keyboard>:alist:get/alist (eval arg)))
-
-   ;; It's a function, check out its return value.
-   ;; NOTE: Put before `listp' as funcs can be lists.
-   ((functionp arg)
-    (int<keyboard>:alist:get/alist (funcall arg)))
-
-   ;; List? Return as-is.
-   ((listp arg)
-    arg)
-
-   ;; ??? -> error
-   (t
+Returns a new alist, which isn't ALIST."
+  ;;---
+  ;; Error Checking
+  ;;---
+  (when (stringp key)
     (int<keyboard>:output :error
-                          "int<keyboard>:alist:get/alist"
-                          '("Cannot figure out what ARG is or where its alist is."
-                            "ARG: (type: %S) %S")
-                          (type-of arg)
-                          arg))))
+                          "int<keyboard>:alist:update"
+                          '("String key '%s' won't work... "
+                            "Use `int<keyboard>:alist/string:update' for string keys.")
+                          key))
 
-;; (defun int<keyboard>:alist:get/alist-2 (arg)
-;;   ""
-;;   (cond ((null arg)
-;;          arg)
-;;         ((symbolp arg)
-;;          arg)
-;;         ((functionp arg)
-;;          (int<keyboard>:alist:get/alist-2 (funcall arg)))
-;;         (t
-;;          (int<keyboard>:output :error
-;;                                "int<keyboard>:alist:get/alist-2"
-;;                                '("Cannot figure out what ARG is or where its alist is."
-;;                                  "ARG: (type: %S) %S")
-;;                                (type-of arg)
-;;                                arg))))
+  (if (null alist)
+      ;; Create a new alist and return it.
+      (list (cons key value))
 
-;; (defun int<keyboard>:alist:get/alist-2-value (arg)
-;;   ""
-;;   (eval (int<keyboard>:alist:get/alist-2 arg)))
-
-;; (defun int<keyboard>:alist:update-2 (key value alist)
-;;   ""
-;;   (message (concat "  key:   %S\n"
-;;                    "  value: %S\n"
-;;                    "  alist: %S")
-;;            key value alist)
-;;   (let ((alist/set (int<keyboard>:alist:get/alist-2 alist)))
-;;     (message "  set:   %S" alist/set)
-;;     (message "alist/value: %S" (int<keyboard>:alist:get/alist-2-value alist/set))
-;;     (message "`alist-get': %S" (alist-get key (int<keyboard>:alist:get/alist-2-value alist/set)))
-
-;;     ;; SO... setf needs a non-nil variable to work?
-;;     (let ((alist '((:kk . :vv))))
-;;       (setf (alist-get :key-0 alist) :value-0)
-;;       alist)
-;;     ))
-;;     (setf (alist-get key (int<keyboard>:alist:get/alist-2-value alist/set)) value)))
-;;     (message (concat "  key:   %S\n"
-;;                      "  value: %S\n"
-;;                      "  alist: %S\n"
-;;                      "  set:   %S")
-;;              key value alist alist/set)))
-;; (int<keyboard>:alist:update-2 :key-0 :value-0
-;;                                (test<keyboard/alist>:alist:get :valid/global/nil))
+    ;; `setf' creates a new alist sometimes, so buyer beware!
+    (setf (alist-get key alist) value)
+    alist))
+;; (setq test-alist nil)
+;; (setq test-alist (int<keyboard>:alist:update/helper :k :v test-alist))
+;; (int<keyboard>:alist:update/helper :k2 :v2 test-alist)
+;; (int<keyboard>:alist:update/helper :k2 :v2.0 test-alist)
+;; test-alist
 
 
 (defmacro int<keyboard>:alist:update (key value alist)
   "Set/overwrite an entry in the ALIST.
 
-ALIST can be:
-  - A list/nil.
-  - A symbol name.
-  - A function call that returns one of the above.
-See: `int<keyboard>:alist:get/alist'
+SYMBOL/ALIST should be a (quoted) symbol so that this can update it directly.
 
 If VALUE is nil, it will be set as KEY's value. Use
 `int<keyboard>:alist:delete' if you want to remove it.
 
 Returns ALIST."
-  ;; Use our own uninterned symbols that won't interfere.
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist/in (make-symbol "alist:general/alist-in"))
-        (mmm:alist    (make-symbol "alist:general/alist-update"))
-        (mmm:key      (make-symbol "alist:general/key")))
-    ;; Only eval inputs once.
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    `(let* ((,mmm:alist/in (int<keyboard>:alist:get/alist ,alist))
-            (,mmm:alist    ,mmm:alist/in)
-            (,mmm:key      ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (stringp ,mmm:key)
-         (int<keyboard>:output :error
-                               "int<keyboard>:alist:update"
-                               '("String key '%s' won't work... "
-                                 "Use `int<keyboard>:alist/string:update' for string keys.")
-                               ,mmm:key))
+  `(let ((mmm:alist ,alist))
+     (cond
+      ((listp mmm:alist)
+       (setq ,alist
+             (int<keyboard>:alist:update/helper ,key ,value ,alist)))
+      ((symbolp mmm:alist)
+       (set mmm:alist
+            (int<keyboard>:alist:update/helper ,key ,value (eval mmm:alist))))
 
-       ;; TODO: take care of null alist case!
-       ;;   - Do an "if (null alist) -> (setq alist (list (cons key value))); else -> current functionality"
+      (t
+       (int<keyboard>:output :error
+                             "int<keyboard>:alist:update"
+                             "Unable to update alist with type %S: %S"
+                             (typeof mmm:alist) mmm:alist)))))
+;; A global variable:
+;;   (setq test-alist nil)
+;;   (int<keyboard>:alist:update :k :v test-alist)
+;;   (int<keyboard>:alist:update :k :v test-alist)
+;;   (int<keyboard>:alist:update :k2 :v2 test-alist)
+;;   (int<keyboard>:alist:update :k2 :v2.0 test-alist)
+;;   test-alist
+;;
+;; A scoped variable:
+;;   (let (test-alist/let)
+;;     (int<keyboard>:alist:update :k :v test-alist/let)
+;;     (int<keyboard>:alist:update :k2 :v2 test-alist/let)
+;;     (int<keyboard>:alist:update :k2 :v2.0 test-alist/let)
+;;     test-alist/let)
+;;
+;; A +function+ macro call in the macro call:
+;;   - Needs `test<keyboard/alist>:alist:get' and `test<keyboard/alist>:alist/nil' from 'test/alist.el'.
+;; (setq test<keyboard/alist>:alist/nil nil)
+;; test<keyboard/alist>:alist/nil
+;; (int<keyboard>:alist:update :k :v
+;;                             (test<keyboard/alist>:alist:get :global/nil))
+;;  test<keyboard/alist>:alist/nil
 
-       (setf (alist-get ,mmm:key ,mmm:alist) ,value)
-       ;; `setf' creates a new alist sometimes, so set the results unless we can't given the input type.
-       (if (or (symbolp ,mmm:alist/in)
-               (null ,mmm:alist/in))
-           (progn
-             (message "Setting %S to: %S"
-                      ,mmm:alist/in ,mmm:alist)
-             (setq ,mmm:alist/in ,mmm:alist))
-         (message "NOT setting %S - not a symbol."
-                  ,mmm:alist/in))
-       ,mmm:alist)))
 
 
-;; Currently unused.
+(defun int<keyboard>:alist:delete/helper (key alist)
+  "Removes KEY from ALIST.
+
+Returns alist without the key."
+  ;;---
+  ;; Error Checking
+  ;;---
+  (when (stringp key)
+    (int<keyboard>:output :error
+                          "int<keyboard>:alist:delete"
+                          '("String key '%s' won't work... "
+                            "Use `int<keyboard>:alist/string:delete' "
+                            "for string keys.")
+                          key))
+  ;; If it's null, no need to do anything.
+  (unless (null alist)
+    (setf (alist-get key alist nil 'remove) nil))
+
+  ;; Return the alist.
+  alist)
+
+
 (defmacro int<keyboard>:alist:delete (key alist)
   "Removes KEY from ALIST.
 
 Returns ALIST."
-  ;;(declare (indent defun))
+  `(let ((mmm:alist ,alist))
+     (cond
+      ((listp mmm:alist)
+       (setq ,alist
+             (int<keyboard>:alist:delete/helper ,key ,alist)))
+      ((symbolp mmm:alist)
+       (set mmm:alist
+            (int<keyboard>:alist:delete/helper ,key (eval mmm:alist))))
 
- ;; Use our own uninterned symbols that won't interfere.
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist/in (make-symbol "alist:general/alist-in"))
-        (mmm:alist    (make-symbol "alist:general/alist-update"))
-        (mmm:key      (make-symbol "alist:general/key")))
-    ;; Only eval inputs once.
-    ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
-    `(let* ((,mmm:alist/in (int<keyboard>:alist:get/alist ,alist))
-            (,mmm:alist    ,mmm:alist/in)
-            (,mmm:key      ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (when (stringp ,mmm:key)
-         (int<keyboard>:output :error
-                               "int<keyboard>:alist:update"
-                               '("String key '%s' won't work... "
-                                 "Use `int<keyboard>:alist/string:update' "
-                                 "for string keys.")
-                               ,mmm:key))
-       (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
-       ;; `setf' creates a new alist sometimes, so set the results unless we can't given the input type.
-       (if (symbolp ,mmm:alist/in)
-           (setq ,mmm:alist/in ,mmm:alist))
-       ,mmm:alist)))
-;; (let ((alist '((foo . bar))))
-;;   (int<keyboard>:alist:delete "foo" alist)
-;;   alist)
+      (t
+       (int<keyboard>:output :error
+                             "int<keyboard>:alist:delete"
+                             "Unable to delete key from alist with type %S: %S"
+                             (typeof mmm:alist) mmm:alist)))))
+;; (setq test-alist nil)
+;; (int<keyboard>:alist:delete :k test-alist)
+;; (int<keyboard>:alist:update :k :v test-alist)
+;; (int<keyboard>:alist:delete :k2 test-alist)
+;; (int<keyboard>:alist:delete :k test-alist)
+;; test-alist
 
 
 ;;------------------------------------------------------------------------------
@@ -229,6 +183,7 @@ Returns ALIST."
 ;; (assoc key alist #'string=))
 ;;
 ;;
+;; TODO: redo as defun like `int<keyboard>:alist:update'.
 ;; (defmacro int<keyboard>:alist/string:update (key value alist &optional set-existing?)
 ;; "Set/overwrite an entry in the alist.
 ;;
@@ -261,6 +216,7 @@ Returns ALIST."
 ;; ;;   (int<keyboard>:alist/string:update "foo" 'baz alist))
 ;;
 ;;
+;; TODO: redo as defun like `int<keyboard>:alist:delete'.
 ;; (defmacro int<keyboard>:alist/string:delete (key alist &optional set-existing?)
 ;; "Removes KEY from ALIST.
 ;;

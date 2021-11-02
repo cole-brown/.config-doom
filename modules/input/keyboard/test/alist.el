@@ -33,24 +33,29 @@
   "Function call that will return something based on TYPE.
 
 TYPE:
-  - :invalid/local
+  - :local
     + Returns LOCAL-SYMBOL-NAME.
-  - :valid/global
-    + Returns quoted `test<keyboard/alist>:alist'.
+  - :global/nil
+    + Returns `test<keyboard/alist>:alist/nil'.
+  - :global/values
+    + Returns `test<keyboard/alist>:alist/values'.
+
 
 Usage:
-  (test<keyboard/alist>:alist:get :valid/global)
+  (test<keyboard/alist>:alist:get :global)
     -> `test<keyboard/alist>:alist'
-  (test<keyboard/alist>:alist:get :invalid/local 'some-local-symbol-name)
+  (test<keyboard/alist>:alist:get :local 'some-local-symbol-name)
     -> `some-local-symbol-name'"
-  (cond ((eq type :invalid/local)
+  (cond ((eq type :local)
          local-symbol-name)
-        ((eq type :valid/global/nil)
+        ((eq type :global/nil)
          'test<keyboard/alist>:alist/nil)
-        ((eq type :valid/global/values)
+        ((eq type :global/values)
          'test<keyboard/alist>:alist/values)
         (t
          (should-not "wrong input, idiot."))))
+;; (test<keyboard/alist>:alist:get :global/values)
+;; (let ((alist/local '((:k . :v)))) (test<keyboard/alist>:alist:get :local 'alist/local))
 
 
 ;;------------------------------
@@ -289,90 +294,30 @@ Usage:
 
 
 ;;------------------------------
-;; int<keyboard>:alist:get/alist
+;; int<keyboard>:alist:update - local alist (defined in a `let')
 ;;------------------------------
 
-(ert-deftest test<keyboard/alist>::int<keyboard>:alist:get/alist ()
-  "Test that `int<keyboard>:alist:get/alist' will find the alist correctly."
-
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update::local ()
+  "Test that `int<keyboard>:alist:update' will add/overwrite values in a local alist correctly."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/alist>::int<keyboard>:alist:update"
-      #'test<keyboard/alist>:setup
-      #'test<keyboard/alist>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-    ;; Should have our non-lexical variable.
-    (should test<keyboard/alist>:alist)
-
-    ;; Should have some lexical variables as well.
-    (let* ((alist/nil nil)
-           (alist/cons (list (cons :key-0 :value-0/initial)
-                             (cons :key-1 :value-1/initial)
-                             (cons :key-2 :value-2/initial)))
-           (symbol/alist 'test<keyboard/alist>:alist)
-           (alist-fn/get-symbol-name (lambda (type)
-                                       (cond ((eq type :invalid/lexical)
-                                              'alist/cons)
-                                             ((eq type :valid/dynamic)
-                                              'test<keyboard/alist>:alist)
-                                             (t
-                                              (error "wrong input, idiot."))))))
-      ;;------------------------------
-      ;; Alist-by-Value
-      ;;------------------------------
-      (should (eq nil
-                  (int<keyboard>:alist:get/alist alist/nil)))
-      (should (eq alist/cons
-                  (int<keyboard>:alist:get/alist alist/cons)))
-
-      ;;------------------------------
-      ;; Alist-by-Symbol
-      ;;------------------------------
-      (should (eq test<keyboard/alist>:alist
-                  (int<keyboard>:alist:get/alist symbol/alist)))
-
-      ;;------------------------------
-      ;; Alist-by-Function
-      ;;------------------------------
-      ;; Funcall returns a lexical variable, which shouldn't be in the scope of `int<keyboard>:alist:get/alist', so it should error.
-      (should-error (int<keyboard>:alist:get/alist (funcall alist-fn/get-symbol-name :invalid/lexical)))
-
-      ;; Funcall returns a dynamic variable, which should be visible to `int<keyboard>:alist:get/alist', so it should _not_ error.
-      ;; Should return the correct list of values for us to compare.
-      (should (eq test<keyboard/alist>:alist
-                  (int<keyboard>:alist:get/alist (funcall alist-fn/get-symbol-name :valid/dynamic)))))))
-
-
-;;------------------------------
-;; int<keyboard>:alist:update
-;;------------------------------
-
-(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update ()
-  "Test that `int<keyboard>:alist:update' will add/overwrite values in the alist correctly."
-  (test<keyboard>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<keyboard/alist>::int<keyboard>:alist:update"
+      "test<keyboard/alist>::int<keyboard>:alist:update::local"
       nil
       nil
 
     ;;===
     ;; Run the test.
     ;;===
-    (let* ((alist/cons (list (cons :key-0 :value-0/initial)
-                             (cons :key-1 :value-1/initial)
-                             (cons :key-2 :value-2/initial)))
-           (alist/list (list (list :key-0 :value-0/initial)
-                             (list :key-1 :value-1/initial)
-                             (list :key-2 :value-2/initial)))
-           alist/updated
-           value/get)
+    (let ((alist/cons (list (cons :key-0 :value-0/initial)
+                            (cons :key-1 :value-1/initial)
+                            (cons :key-2 :value-2/initial)))
+          (alist/list (list (list :key-0 :value-0/initial)
+                            (list :key-1 :value-1/initial)
+                            (list :key-2 :value-2/initial)))
+          alist/updated
+          value/get)
 
       ;;------------------------------
       ;; Add new key/values.
@@ -383,6 +328,7 @@ Usage:
       (test<keyboard>:should:marker test-name "cons: New Key/Value")
       (setq alist/updated (int<keyboard>:alist:update :key-3 :value-3/new alist/cons))
       (should alist/updated)
+
       ;; Our return value should be our alist.
       (should (eq alist/updated alist/cons))
       (setq value/get (int<keyboard>:alist:get/value :key-3 alist/cons))
@@ -440,16 +386,114 @@ Usage:
 
 
 ;;------------------------------
-;; int<keyboard>:alist:delete
+;; int<keyboard>:alist:update - non-local alist
 ;;------------------------------
 
-(ert-deftest test<keyboard/alist>::int<keyboard>:alist:delete ()
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update::global ()
+  "Test that `int<keyboard>:alist:update' will add/overwrite values in a global alist correctly."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:alist:update::global"
+      (lambda (_)
+        "Set up globals for this test."
+             (setq test<keyboard/alist>:alist/cons (list (cons :key-0 :value-0/initial)
+                                                         (cons :key-1 :value-1/initial)
+                                                         (cons :key-2 :value-2/initial)))
+             (setq test<keyboard/alist>:alist/list (list (list :key-0 :value-0/initial)
+                                                         (list :key-1 :value-1/initial)
+                                                         (list :key-2 :value-2/initial)))
+             )
+      (lambda (_)
+        "Clean up the alist of lists."
+        ;; (unintern test<keyboard/alist>:alist/cons)
+        ;; (unintern test<keyboard/alist>:alist/list)
+        )
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let* (alist/updated
+           value/get)
+
+      ;;------------------------------
+      ;; Add new key/values.
+      ;;------------------------------
+      (should-not (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/cons))
+      (should-not (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/list))
+
+      (test<keyboard>:should:marker test-name "cons: New Key/Value")
+      (setq alist/updated (int<keyboard>:alist:update :key-3 :value-3/new test<keyboard/alist>:alist/cons))
+      (should alist/updated)
+
+      ;; Our return value should be our alist.
+      (should (eq alist/updated test<keyboard/alist>:alist/cons))
+      (setq value/get (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/cons))
+      (should value/get)
+      (should (keywordp value/get))
+      (should (eq value/get :value-3/new))
+
+      (test<keyboard>:should:marker test-name "list: New Key/Value")
+      ;; Add the new value as a list, since it's the `test<keyboard/alist>:alist/list'.
+      (setq alist/updated (int<keyboard>:alist:update :key-3 '(:value-3/new) test<keyboard/alist>:alist/list))
+      (should alist/updated)
+      ;; Our return value should be our alist.
+      (should (eq alist/updated test<keyboard/alist>:alist/list))
+      (setq value/get (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/list))
+      (should value/get)
+      (should (listp value/get))
+      (should (= 1 (length value/get)))
+      (setq value/get (nth 0 value/get))
+      (should (keywordp value/get))
+      (should (eq value/get :value-3/new))
+
+      ;;------------------------------
+      ;; Update existing key's value.
+      ;;------------------------------
+      (let ((value/cons (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/cons))
+            (value/list (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/list)))
+        (should value/cons)
+        (should value/list)
+        (should (eq value/cons :value-0/initial))
+        (should (equal value/list '(:value-0/initial)))
+
+        (test<keyboard>:should:marker test-name "cons: Update Existing Key/Value")
+        (setq alist/updated (int<keyboard>:alist:update :key-0 :value-0/updated test<keyboard/alist>:alist/cons))
+        (should alist/updated)
+        ;; Our return value should be our alist.
+        (should (eq alist/updated test<keyboard/alist>:alist/cons))
+        (setq value/get (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/cons))
+        (should value/get)
+        (should (keywordp value/get))
+        (should (eq value/get :value-0/updated))
+
+        (test<keyboard>:should:marker test-name "list: Update Existing Key/Value")
+        ;; Add the new value as a list, since it's the `test<keyboard/alist>:alist/list'.
+        (setq alist/updated (int<keyboard>:alist:update :key-0 '(:value-0/updated) test<keyboard/alist>:alist/list))
+        (should alist/updated)
+        ;; Our return value should be our alist.
+        (should (eq alist/updated test<keyboard/alist>:alist/list))
+        (setq value/get (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/list))
+        (should value/get)
+        (should (listp value/get))
+        (should (= 1 (length value/get)))
+        (setq value/get (nth 0 value/get))
+        (should (keywordp value/get))
+        (should (eq value/get :value-0/updated))))))
+
+
+;;------------------------------
+;; int<keyboard>:alist:delete - local alist (defined in a `let')
+;;------------------------------
+
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:delete::local ()
   "Test that `int<keyboard>:alist:delete' will delete keys from the alist correctly."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/alist>::int<keyboard>:alist:delete"
+      "test<keyboard/alist>::int<keyboard>:alist:delete::local"
       nil
       nil
 
@@ -482,6 +526,55 @@ Usage:
       (should-not (int<keyboard>:alist:get/value :key-0 alist/list)))))
 
 
+;;------------------------------
+;; int<keyboard>:alist:delete - global alist
+;;------------------------------
+
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:delete::global ()
+  "Test that `int<keyboard>:alist:delete' will delete keys from the alist correctly."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:alist:delete::global"
+      (lambda (_)
+        "Set up globals for this test."
+        (setq test<keyboard/alist>:alist/cons (list (cons :key-0 :value-0/initial)
+                                                    (cons :key-1 :value-1/initial)
+                                                    (cons :key-2 :value-2/initial)))
+        (setq test<keyboard/alist>:alist/list (list (list :key-0 :value-0/initial)
+                                                    (list :key-1 :value-1/initial)
+                                                    (list :key-2 :value-2/initial)))
+        )
+      (lambda (_)
+        "Clean up the alist of lists."
+        ;; (unintern test<keyboard/alist>:alist/cons)
+        ;; (unintern test<keyboard/alist>:alist/list)
+        )
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let* (alist/deleted)
+
+      ;;------------------------------
+      ;; Delete keys from the alists.
+      ;;------------------------------
+      (test<keyboard>:should:marker test-name "cons: `:key-0'")
+      (setq alist/deleted (int<keyboard>:alist:delete :key-0 test<keyboard/alist>:alist/cons))
+      (should alist/deleted)
+      ;; Our return value should be our alist.
+      (should (eq alist/deleted test<keyboard/alist>:alist/cons))
+      (should-not (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/cons))
+
+      (test<keyboard>:should:marker test-name "list: `:key-0'")
+      (setq alist/deleted (int<keyboard>:alist:delete :key-0 test<keyboard/alist>:alist/list))
+      (should alist/deleted)
+      ;; Our return value should be our alist.
+      (should (eq alist/deleted test<keyboard/alist>:alist/list))
+      (should-not (int<keyboard>:alist:get/value :key-0 test<keyboard/alist>:alist/list)))))
+
+
 ;;------------------------------------------------------------------------------
 ;; Tests: Regression Tests
 ;;----------
@@ -490,55 +583,44 @@ Usage:
 
 ;;------------------------------
 ;; int<keyboard>:alist:update
-;;----------
-;; [BUG]:
-;;   Calling with a function call (that returns an alist's symbol name) raises an error.
 ;;------------------------------
 
-(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update::regression/func-call-for-alist ()
-  "Test that `int<keyboard>:alist:update' can work if you use a function call that
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update::regression/call-for-alist ()
+  "Test that `int<keyboard>:alist:update' can work if you use a macro call that
 returns a symbol-name as a parameter.
 
-Bug example:
+Bug came from:
   (int<keyboard>:layout:unbind :debug :testing :common '(:n \"s\" :layout:common:undefined))
-Becomes:
-  (int<keyboard>:alist:update :common
-                              '(:n \"s\" :layout:common:undefined)
-                              (int<keyboard>:registrar:symbol :debug :unbinds))
-[BUG]: Resulted in error message:
-  \"if: Wrong type argument: listp, int<keyboard>:registrar<debug>:unbinds\"
 
-[DESIRED]: Should act the same as providing an alist symbol:
-(let ((alist nil))
-  (int<keyboard>:alist:update :common
-                              '(:n \"s\" :layout:common:undefined)
-                              alist))"
+----------
+
+[BUG]:
+  Calling with a function call (that returns an alist's symbol name) raises an error.
+
+[FIX]:
+  - Simplified macros for update and delete a lot: moved updating/deleting to a
+    helper function and macro just saves results back to provided symbol."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/alist>::int<keyboard>:alist:update::regression/func-call-for-alist"
+      "test<keyboard/alist>::int<keyboard>:alist:update::regression/call-for-alist"
       #'test<keyboard/alist>:setup
       #'test<keyboard/alist>:teardown
 
     ;;===
     ;; Run the test.
     ;;===
-    (should test<keyboard/alist>:alist)
+    (should test<keyboard/alist>:alist/values)
+    (should-error alist/values)
+
     (let* ((alist/values (list (cons :key-0 :value-0/initial)
                                (cons :key-1 :value-1/initial)
                                (cons :key-2 :value-2/initial)))
-           (alist/nil nil)
-           (alist-fn/get-symbol-name (lambda (type)
-                                       (cond ((eq type :invalid/local)
-                                              'alist/values)
-                                             ((eq type :valid/global/values)
-                                              'test<keyboard/alist>:alist)
-                                             (t
-                                              (error "wrong input, idiot."))))))
+           (alist/nil nil))
 
       ;;------------------------------
-      ;; Update should work w/ symbols, with lists as values.
+      ;; Update should work when passing in the symbol itself.
       ;;------------------------------
       (should (int<keyboard>:alist:update :key-3
                                           :value-3/00
@@ -551,110 +633,38 @@ Becomes:
       (should (int<keyboard>:alist:update :key-3
                                           :value-3/02
                                           ;; Passes in value of `alist/nil'.
-                                          test<keyboard/alist>:alist))
+                                          test<keyboard/alist>:alist/values))
 
       ;;------------------------------
-      ;; Update should work w/ symbol, with symbols as values, with lists as values.
+      ;; Update should work w/ a macro call which returns the symbol name.
       ;;------------------------------
+      (should (eq 'alist/values
+                  (test<keyboard/alist>:alist:get :local 'alist/values)))
+      (should (eq 'test<keyboard/alist>:alist/nil
+                  (test<keyboard/alist>:alist:get :global/nil)))
+      (should (eq 'test<keyboard/alist>:alist/values
+                  (test<keyboard/alist>:alist:get :global/values)))
 
-      ;; This should be effectively the same as passing in the funcall, so it should be allowed.
-      (let ((alist/symbol/invalid (funcall alist-fn/get-symbol-name :invalid/local))
-            (alist/symbol/valid (funcall alist-fn/get-symbol-name :valid/global/values)))
-        (should (eq alist/symbol/invalid 'alist/values))
-        (should (eq alist/symbol/valid 'test<keyboard/alist>:alist))
-
-        (should-error (int<keyboard>:alist:update :key-3
-                                                  :value-3/03
-                                                  ;; Passes in symbol-name: `alist/values'.
-                                                  alist/symbol/invalid))
-        (should (int<keyboard>:alist:update :key-3
-                                            :value-3/04
-                                            ;; Passes in symbol-name: `test<keyboard/alist>:alist'.
-                                            alist/symbol/valid)))
-
-      ;;------------------------------
-      ;; Update should succeed with a super simple lambda.
-      ;;------------------------------
-      (should (int<keyboard>:alist:update :key-3
-                                          :value-3/05
-                                          (funcall (lambda ()
-                                                     "Create and return an alist."
-                                                     (list (cons :key-0 :value-0/initial-by-lambda))))))
-
-      ;;------------------------------
-      ;; Update should error w/ function call to local lambda.
-      ;;   - Macro has no access to the local lambda?
-      ;;------------------------------
-      (should-error (int<keyboard>:alist:update :key-3
-                                                :value-3/05
-                                                ;; Passes in function that will return symbol-name `alist/cons'.
-                                                (funcall #'alist-fn/get-symbol-name :invalid/local)))
-
-      (should-error (int<keyboard>:alist:update :key-3
-                                                :value-3/06
-                                                ;; Passes in function that will return symbol-name `test<keyboard/alist>:alist'.
-                                                (funcall #'alist-fn/get-symbol-name :invalid/local)))
-
-      ;;------------------------------
-      ;; Update should work w/ function calls, with symbols as return values, with lists as values.
-      ;;------------------------------
+      ;; Dunno how to get lexicals to work? :(
       (should-error (int<keyboard>:alist:update :key-3
                                                 :value-3/07
-                                                (test<keyboard/alist>:alist:get :invalid/local 'alist/values)))
+                                                (test<keyboard/alist>:alist:get :local 'alist/values)))
 
-      ;; `nil' isn't actually an invalid local - it's a list, and we'll update it with the new key/value.
-      (should (int<keyboard>:alist:update :key-3
-                                          :value-3/07
-                                          (test<keyboard/alist>:alist:get :invalid/local)))
-
+      ;; Should update a list if given the values variable name.
       (should (int<keyboard>:alist:update :key-3
                                           :value-3/08
-                                          (test<keyboard/alist>:alist:get :valid/global/values)))
+                                          (test<keyboard/alist>:alist:get :global/values)))
       (should (eq :value-3/08
-                  (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist))))))
+                  (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/values)))
 
-
-;;------------------------------
-;; int<keyboard>:alist:update
-;;----------
-;; [BUG]:
-;;   Calling with a nil alist causes the alist's symbol's value to not be updated.
-;;------------------------------
-
-(ert-deftest test<keyboard/alist>::int<keyboard>:alist:update::regression/result-not-set-on-nil-initial-value ()
-  "Test that `int<keyboard>:alist:update' can work if you use a function call that
-returns a symbol-name as a parameter.
-
-Bug example:
-  (setq int<keyboard>:registrar<actual>:unbinds nil)
-  (int<keyboard>:layout:unbind :debug :testing :common '(:n \"s\" :layout:common:undefined))
-[BUG] result:
-  `int<keyboard>:registrar<actual>:unbinds' is still nil
-Desired result:
-  `int<keyboard>:registrar<actual>:unbinds' set to:
-    '((:n \"s\" :layout:common:undefined))"
-  (test<keyboard>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<keyboard/alist>::int<keyboard>:alist:update::regression/result-not-set-on-nil-initial-value"
-      #'test<keyboard/alist>:setup
-      #'test<keyboard/alist>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-
-
-    ;;------------------------------
-    ;; Update should work even when list is nil to start off with.
-    ;;------------------------------
-    (should (eq nil
-                (symbol-value (test<keyboard/alist>:alist:get :valid/global/nil))))
-
-    (should (int<keyboard>:alist:update :key-0
-                                        :value-0/initial
-                                        (test<keyboard/alist>:alist:get :valid/global/nil)))))
+      ;; Should create a list if given the nil variable name.
+      (should (eq nil
+                  test<keyboard/alist>:alist/nil))
+      (should (int<keyboard>:alist:update :key-3
+                                          :value-3/09
+                                          (test<keyboard/alist>:alist:get :global/nil)))
+      (should (eq :value-3/09
+                  (int<keyboard>:alist:get/value :key-3 test<keyboard/alist>:alist/nil))))))
 
 
 ;;------------------------------------------------------------------------------

@@ -162,3 +162,69 @@
          state
          (test<keyboard/layout>:bind:vars-to-binds type binds-1)
          nil)))))
+
+
+;;------------------------------
+;; int<keyboard>:layout:config
+;;------------------------------
+
+(ert-deftest test<keyboard>::int<keyboard>:layout:config ()
+  "Test that `int<keyboard>:layout:config' behaves appropriately."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:layout:config"
+      ;; Clear out keybinds before test.
+      #'test<keyboard/layout>:setup
+      #'test<keyboard/layout>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    ;; They should all be nil right now.
+    (test<keyboard/layout>:assert:registrar-vars test-name)
+
+    ;;------------------------------
+    ;; Create some valid binds.
+    ;;------------------------------
+    (let ((registrar :debug)
+          (layout    :testing)
+          (type      :evil)
+          (binds '(:nvm "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)))
+
+      (let ((state/before nil)
+            (state/after  :init))
+        (test<keyboard/layout>:assert:registrar-vars
+         test-name
+         state/before
+         nil
+         nil)
+
+        (should (int<keyboard>:layout:bind registrar
+                                           layout
+                                           type
+                                           binds))
+
+        (test<keyboard/layout>:assert:registrar-vars
+         test-name
+         state/after
+         (test<keyboard/layout>:bind:vars-to-binds type binds)
+         nil))
+
+      ;;------------------------------
+      ;; Config the binds.
+      ;;------------------------------
+      (let ((state/before :init)
+            (state/after  :config)
+            (bind/unbind  :full))
+        ;; Config doesn't really do anything except the state change...
+        (should (int<keyboard>:layout:config registrar
+                                             bind/unbind
+                                             layout))
+
+        (test<keyboard/layout>:assert:registrar-vars
+         test-name
+         state/after
+         (test<keyboard/layout>:bind:vars-to-binds type binds)
+         nil)))))

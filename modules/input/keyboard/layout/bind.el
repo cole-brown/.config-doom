@@ -168,10 +168,10 @@ LAYOUT should be a valid keyboard layout keyword."
   ;; Can use finalization's check here w/ known-good type.
   ;;---
   (int<keyboard>:activate/validate "keyboard:layout:config"
-                               registrar
-                               bind/unbind
-                               :common
-                               :config)
+                                   registrar
+                                   bind/unbind
+                                   :common
+                                   :config)
 
   ;;---
   ;; Also verify the `layout'.
@@ -259,7 +259,7 @@ REGISTERING should be a registering state (see `int<keyboard>:registration:state
 
         ;; If we're binding, we need keys to bind.
         ;;   - If we're unbinding, though, we are ok with not having anything to unbind.
-        ((and (memq canon:bind/unbind '(:bind :full))
+        ((and (memq bind/unbind '(:bind :full))
               (null (int<keyboard>:registrar:get registrar :keybinds)))
          (int<keyboard>:output :error
                                caller
@@ -385,7 +385,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                             valids:bind/unbind))
 
     (if-let ((valid (int<keyboard>:activate/validate "int<keyboard>:activate/type"
-                                                 registrar bind/unbind type :active))
+                                                     registrar bind/unbind type :active))
              ;; Could be this keybind has nothing for type, and that's fine...
              ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
              (keybinds (int<keyboard>:alist:get/value

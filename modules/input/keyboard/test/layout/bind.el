@@ -39,6 +39,7 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<keyboard/alist>::int<keyboard>:layout:unbind"
+      ;; Clear out keybinds before test.
       #'test<keyboard/layout>:setup
       #'test<keyboard/layout>:teardown
 
@@ -54,27 +55,44 @@
     ;;------------------------------
     (let ((registrar :debug)
           (layout    :testing)
-          (type      :common)
-          (state     :init)
-          (unbinds   '(:n "s" :layout:common:undefined)))
+          (state     :init))
 
-      (should (int<keyboard>:layout:unbind registrar
-                                           layout
-                                           type
-                                           unbinds))
+     (let ((type      :common)
+           (unbinds-0 '(:n "s" :layout:common:undefined))
+           (unbinds-1 '(:e "u" #'ignore)))
+
+       ;;---
+       ;; Unbinds #0: First!
+       ;;---
+       (should (int<keyboard>:layout:unbind registrar
+                                            layout
+                                            type
+                                            unbinds-0))
+
+       ;; 1) Should have transitioned to init state.
+       ;; 2) <no keybinds>
+       ;; 3) Should only have the `unbinds-0'.
+       (test<keyboard/layout>:assert:registrar-vars
+        test-name
+        state
+        nil
+        (test<keyboard/layout>:bind:vars-to-binds type unbinds-0))
+
+       ;;---
+       ;; Unbinds #1: Something else.
+       ;;---
+       ;; `int<keyboard>:layout:unbind' always just overwrites.
+       (should (int<keyboard>:layout:unbind registrar
+                                            layout
+                                            type
+                                            unbinds-1))
+       ;; 1) Should stay in init state.
+       ;; 2) <no keybinds>
+       ;; 3) Should now have unbinds 1 instead.
+       (test<keyboard/layout>:assert:registrar-vars
+        test-name
+        state
+        nil
+        (test<keyboard/layout>:bind:vars-to-binds type unbinds-1))))))
 
 
-
-      ;; TODO: Fix `int<keyboard>:alist:update' bug first, then get back on this
-      (message "unbinds: %S: %S"
-               (int<keyboard>:registrar:symbol registrar :unbinds)
-               (int<keyboard>:registrar:get registrar :unbinds))
-
-      ;; 1) Should have transitioned to init state.
-      ;; 2) <no keybinds>
-      ;; 3) Should now have the unbindings supplied above.
-      (test<keyboard/layout>:assert:registrar-vars
-       test-name
-       state
-       nil
-       (test<keyboard/layout>:bind:vars-to-binds unbinds)))))

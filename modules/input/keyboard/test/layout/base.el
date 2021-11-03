@@ -59,11 +59,21 @@
 ;; Test Helpers
 ;;------------------------------------------------------------------------------
 
-(defun test<keyboard/layout>:bind:vars-to-binds (&rest binds)
+(defun test<keyboard/layout>:bind:vars-to-binds (type binds)
   "Turns bind vars you supply to e.g. `int<keyboard>:layout:bind' into an alist
-you can use in `test<keyboard/layout>:assert:registrar-vars'."
-  ;; Just the '&rest' has done all our work and turned them into an alist.
-  binds)
+you can use in `test<keyboard/layout>:assert:registrar-vars'.
+
+Does not check for duplicate keys in the binds cons."
+  ;; The `binds' should be a list and not a cons.
+  (should (listp binds))
+  ;; Unfortunately, can't use `consp' since lists are cons? So how do you...
+  (should (proper-list-p binds)) ;; Oh elisp... the fuck are you drinking?
+
+  ;; Create an alist from the type and the binds.
+  ;; Does not check for duplicate keys.
+  (list (cons type binds)))
+;; (test<keyboard/layout>:bind:vars-to-binds :common '(:n "s" :keyword))
+;; (test<keyboard/layout>:bind:vars-to-binds :common '(:v "a" #'function))
 
 
 (defun test<keyboard/layout>:assert:registrar-vars (test-name &optional state keybinds unbinds)

@@ -59,6 +59,8 @@ Unbindings are applied before bindings."
   (int<keyboard>:alist:update type
                               unbind-map
                               (int<keyboard>:registrar:symbol registrar :unbinds)))
+;; (int<keyboard>:registrar:symbol :debug :unbinds)
+;; int<keyboard>:registrar<debug>:unbinds
 
 
 ;;------------------------------

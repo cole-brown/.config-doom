@@ -20,6 +20,8 @@
 ;; Functions for both evil and emacs.
 (load! "bind")
 (load! "bind-debug")
+(load! "utils")
+(load! "derive")
 (load! "layout")
 
 
@@ -47,3 +49,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout)

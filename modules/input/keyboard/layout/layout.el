@@ -11,6 +11,8 @@
 
 
 (imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'layout 'utils)
+(imp:require :input 'keyboard 'layout 'derive)
 
 
 ;;------------------------------------------------------------------------------
@@ -659,3 +661,4 @@ Keybinds
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout 'layout)

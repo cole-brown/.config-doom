@@ -62,3 +62,9 @@
 ;; (int<keyboard>:layout:normalize->modifier (quote (quote control)))
 ;; (int<keyboard>:layout:normalize->modifier 'unshift)
 ;; (int<keyboard>:layout:normalize->modifier 'jeff)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout 'utils)

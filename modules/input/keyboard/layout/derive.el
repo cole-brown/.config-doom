@@ -807,3 +807,9 @@ CASE should be:
 ;; (int<keyboard>:layout/derive:normalize-keys '("LLO" "he") nil)
 ;; (int<keyboard>:layout/derive:normalize-keys '("LLO" "he") :lower)
 ;; (int<keyboard>:layout/derive:normalize-keys '("LLO" "he") :upper)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout 'derive)

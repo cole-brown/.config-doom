@@ -359,4 +359,4 @@ add back in all keybinds you want."
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'registration-debug)
+(imp:provide :input 'keyboard 'bind-debug)

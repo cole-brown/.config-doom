@@ -303,7 +303,12 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     ;;------------------------------
     (when (memq bind/unbind '(:unbind :full))
       (dolist (type types)
-        (push (int<keyboard>:activate/type :unbind type no-eval debug/tags) return-value))
+        (push (int<keyboard>:activate/type registrar
+                                           :unbind
+                                           type
+                                           no-eval
+                                           debug/tags)
+              return-value))
 
       ;; Did we succeed? How do we deal with `return-value'?
       (cond ((not return-value)
@@ -323,7 +328,12 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
     (when (memq bind/unbind '(:bind :full))
       ;; Activate each type.
       (dolist (type types)
-        (push (int<keyboard>:activate/type :bind type no-eval debug/tags) return-value))
+        (push (int<keyboard>:activate/type registrar
+                                           :bind
+                                           type
+                                           no-eval
+                                           debug/tags)
+              return-value))
 
       ;; Prep return value?
       (unless no-eval
@@ -364,13 +374,14 @@ or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
       return-value)))
 
 
-(defun int<keyboard>:activate/type (bind/unbind type &optional no-eval debug/tags)
+(defun int<keyboard>:activate/type (registrar bind/unbind type &optional no-eval debug/tags)
   "Map the BINDINGS for TYPE.
 
-BIND/UNBIND should be either `:bind' or `:unbind'. It will be used to determine
+BIND/UNBIND should be either `:unbind', `:bind', or `:full'. It will be used to determine
 whether to get:
-  - :bind   -> `(int<keyboard>:registrar:get registrar :keybinds)'
   - :unbind -> `(int<keyboard>:registrar:get registrar :unbinds)'
+  - :bind   -> `(int<keyboard>:registrar:get registrar :keybinds)'
+  - :full   -> both of the above
 
 TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 
@@ -405,32 +416,33 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         ;;------------------------------
         (setq return-value
               ;; Return something non-nil.
-              (or (prog1
-                      ;; Should we do any sanity checks before `input//kl:layout:map-process' output is eval'd?
-                      (if no-eval
-                          ;; Not applying the keybinds - returning the sexprs instead.
-                          (progn
-                            (int<keyboard>:debug
-                                "int<keyboard>:activate/type"
-                                debug/tags
-                              "no-eval input for map-process: %S" keybinds)
-                            (int<keyboard>:debug
-                                "int<keyboard>:activate/type"
-                                debug/tags
-                              "no-eval: %S"
-                              (input//kl:layout:map-process keybinds))
-                            (setq return-value (input//kl:layout:map-process keybinds)))
-                        ;; We are applying the keybinds.
-                        (int<keyboard>:debug
-                            "int<keyboard>:activate/type"
-                            debug/tags
-                          "eval: %S"
-                          (input//kl:layout:map-process keybinds))
-                        (eval
-                         ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
-                         ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
-                         (input//kl:layout:map-process keybinds))))
-                  t))
+              (or
+               ;; Should we do any sanity checks before `input//kl:layout:map-process' output is eval'd?
+               (if no-eval
+                   ;; Not applying the keybinds - returning the sexprs instead.
+                   (progn
+                     (int<keyboard>:debug
+                         "int<keyboard>:activate/type"
+                         debug/tags
+                       "no-eval input for map-process: %S" keybinds)
+                     (int<keyboard>:debug
+                         "int<keyboard>:activate/type"
+                         debug/tags
+                       "no-eval: %S"
+                       (input//kl:layout:map-process keybinds))
+                     (setq return-value (input//kl:layout:map-process keybinds)))
+
+                 ;; We are applying the keybinds.
+                 (int<keyboard>:debug
+                     "int<keyboard>:activate/type"
+                     debug/tags
+                   "eval: %S"
+                   (input//kl:layout:map-process keybinds))
+                 (eval
+                  ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
+                  ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
+                  (input//kl:layout:map-process keybinds)))
+               t))
 
       ;;------------------------------
       ;; Invalid or didn't find keybinds...

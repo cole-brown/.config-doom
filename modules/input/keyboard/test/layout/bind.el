@@ -228,3 +228,72 @@
          state/after
          (test<keyboard/layout>:bind:vars-to-binds type binds)
          nil)))))
+
+
+;;------------------------------
+;; int<keyboard>:layout:activate
+;;   - Test with only binds.
+;;------------------------------
+
+(ert-deftest test<keyboard>::int<keyboard>:layout:activate::only-binds ()
+  "Test that `int<keyboard>:layout:activate' will apply some keybinds (no unbinds)."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:layout:activate::only-binds"
+      ;; Clear out keybinds before test.
+      #'test<keyboard/layout>:setup
+      #'test<keyboard/layout>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    ;; They should all be nil right now.
+    (test<keyboard/layout>:assert:registrar-vars test-name)
+
+    ;;------------------------------
+    ;; Create some valid binds.
+    ;;------------------------------
+    (let ((registrar   :debug)
+          (bind/unbind :full)
+          (layout      :testing)
+          (types       '(:evil))
+          ;; This creates the keybinds.
+          (bound       (test<keyboard/layout>:bind:make test-name :init :config))
+          activated)
+
+      ;;------------------------------
+      ;; Activate the binds.
+      ;;------------------------------
+      ;; Don't actually bind these - just want to check the return value.
+      (setq activated
+            (int<keyboard>:layout:activate registrar
+                                           bind/unbind
+                                           types
+                                           :no-eval))
+      ;; Is this wrapped one too many times?
+      ;; Currently is:
+      ;;   ((progn
+      ;;      (general-define-key :states 'insert "C-c <C-F17>" #'test<keyboard/layout>:bind:count/02)
+      ;;      (general-define-key :states 'emacs "C-c <C-F16>" #'test<keyboard/layout>:bind:count/01)
+      ;;      (general-define-key :states 'motion "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)
+      ;;      (general-define-key :states 'visual "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)
+      ;;      (general-define-key :states 'normal "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00))
+      ;;    nil)
+      ;; Should it be?:
+      ;;   (progn
+      ;;     (general-define-key :states 'insert "C-c <C-F17>" #'test<keyboard/layout>:bind:count/02)
+      ;;     (general-define-key :states 'emacs "C-c <C-F16>" #'test<keyboard/layout>:bind:count/01)
+      ;;     (general-define-key :states 'motion "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)
+      ;;     (general-define-key :states 'visual "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)
+      ;;     (general-define-key :states 'normal "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00))
+      ;; TODO [2021-11-03]: That may be our bug, but... that's a bugfix for the 'test/layout/layout.el' tests.
+      ;;
+      ;; Anyways. We should get... something. A non-nil. What, exactly, is for other tests.
+      (should activated)
+
+      (test<keyboard/layout>:assert:registrar-vars test-name
+                                                   :active
+                                                   bound
+                                                   nil))))

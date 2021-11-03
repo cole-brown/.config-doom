@@ -232,6 +232,63 @@
 
 ;;------------------------------
 ;; int<keyboard>:layout:activate
+;;   - Test with only unbinds.
+;;------------------------------
+
+(ert-deftest test<keyboard>::int<keyboard>:layout:activate::only-unbinds ()
+  "Test that `int<keyboard>:layout:activate' will apply some unbinds (no keybinds)."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:layout:activate::only-unbinds"
+      ;; Clear out keybinds before test.
+      #'test<keyboard/layout>:setup
+      #'test<keyboard/layout>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    ;; They should all be nil right now.
+    (test<keyboard/layout>:assert:registrar-vars test-name)
+
+    ;;------------------------------
+    ;; Create some valid binds.
+    ;;------------------------------
+    (-let* ((registrar   :debug)
+            (bind/unbind :full)
+            (layout      :testing)
+            (types       '(:evil))
+            (unbinds     '(:nvm "C-c <C-F15>" :layout:common:undefined
+                           :e   "C-c <C-F16>" :layout:common:undefined
+                           :i   "C-c <C-F17>" :layout:common:undefined))
+            (binds       nil)
+            ;; This creates the keybinds & unbinds.
+            ((unbound . bound) (test<keyboard/layout>:bind:make test-name :init :config binds unbinds))
+            activated)
+
+      (should unbound)
+      (should-not bound)
+
+      ;;------------------------------
+      ;; Activate the binds.
+      ;;------------------------------
+      ;; Don't actually bind these - just want to check the return value.
+      (setq activated
+            (int<keyboard>:layout:activate registrar
+                                           bind/unbind
+                                           types
+                                           :no-eval))
+      (should activated)
+
+      (test<keyboard/layout>:assert:registrar-vars test-name
+                                                   :active
+                                                   bound
+                                                   unbound))))
+
+
+;;------------------------------
+;; int<keyboard>:layout:activate
 ;;   - Test with only binds.
 ;;------------------------------
 
@@ -255,13 +312,20 @@
     ;;------------------------------
     ;; Create some valid binds.
     ;;------------------------------
-    (let ((registrar   :debug)
-          (bind/unbind :full)
-          (layout      :testing)
-          (types       '(:evil))
-          ;; This creates the keybinds.
-          (bound       (test<keyboard/layout>:bind:make test-name :init :config))
-          activated)
+    (-let* ((registrar   :debug)
+            (bind/unbind :full)
+            (layout      :testing)
+            (types       '(:evil))
+            (binds       '(:nvm "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00
+                           :e   "C-c <C-F16>" #'test<keyboard/layout>:bind:count/01
+                           :i   "C-c <C-F17>" #'test<keyboard/layout>:bind:count/02))
+            (unbinds     nil)
+            ;; This creates the keybinds & unbinds.
+            ((unbound . bound) (test<keyboard/layout>:bind:make test-name :init :config binds unbinds))
+            activated)
+
+      (should-not unbound)
+      (should bound)
 
       ;;------------------------------
       ;; Activate the binds.
@@ -296,4 +360,4 @@
       (test<keyboard/layout>:assert:registrar-vars test-name
                                                    :active
                                                    bound
-                                                   nil))))
+                                                   unbound))))

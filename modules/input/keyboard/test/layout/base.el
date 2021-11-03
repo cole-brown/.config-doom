@@ -144,20 +144,23 @@ Does not check for duplicate keys in the binds cons."
   (test<keyboard/layout>:bind:count/increment :count/02 meb))
 
 
-(defun test<keyboard/layout>:bind:make (test-name init? config?)
+(defun test<keyboard/layout>:bind:make (test-name init? config? binds unbinds)
   "A function to create some keybinds to the count funcs.
 
-Returns a list to use in `test<keyboard/layout>:assert:registrar-vars'."
+Returns a cons of two lists to use in `test<keyboard/layout>:assert:registrar-vars'.
+  cons is: '(binds . unbinds)"
   (let* ((registrar :debug)
          (layout    :testing)
          (type      :evil)
-         (binds '(:nvm "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00
-                  :e   "C-c <C-F16>" #'test<keyboard/layout>:bind:count/01
-                  :i   "C-c <C-F17>" #'test<keyboard/layout>:bind:count/02))
-         (bound (test<keyboard/layout>:bind:vars-to-binds type binds)))
+         (unbound   (if (null unbinds)
+                        nil
+                      (test<keyboard/layout>:bind:vars-to-binds type unbinds)))
+         (bound     (if (null binds)
+                        nil
+                      (test<keyboard/layout>:bind:vars-to-binds type binds))))
 
     ;;------------------------------
-    ;; Initialize some valid binds.
+    ;; Initialize the (un)binds.
     ;;------------------------------
     (when init?
       (let ((state/before nil)
@@ -168,19 +171,28 @@ Returns a list to use in `test<keyboard/layout>:assert:registrar-vars'."
          nil
          nil)
 
-        (should (int<keyboard>:layout:bind registrar
-                                           layout
-                                           type
-                                           binds))
+        (when unbinds
+          (test<keyboard>:should:marker test-name "Making unbinds.")
+          (should (int<keyboard>:layout:unbind registrar
+                                               layout
+                                               type
+                                               unbinds)))
+
+        (when binds
+          (test<keyboard>:should:marker test-name "Making binds.")
+          (should (int<keyboard>:layout:bind registrar
+                                             layout
+                                             type
+                                             binds)))
 
         (test<keyboard/layout>:assert:registrar-vars
          test-name
          state/after
          bound
-         nil)))
+         unbound)))
 
     ;;------------------------------
-    ;; Configure the binds.
+    ;; Configure the (un)binds.
     ;;------------------------------
     (when config?
       (let ((state/before :init)
@@ -195,9 +207,9 @@ Returns a list to use in `test<keyboard/layout>:assert:registrar-vars'."
          test-name
          state/after
          bound
-         nil)))
+         unbound)))
 
     ;;------------------------------
-    ;; Return what is bound.
+    ;; Return what is (un)bound.
     ;;------------------------------
-    bound))
+    (cons unbound bound)))

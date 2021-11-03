@@ -8,6 +8,8 @@
 ;;                       Evil/Emacs-Agnostic Keybinds.                        ;;
 ;;                                 ──────────                                 ;;
 
+(imp:require :input 'keyboard 'layout 'define)
+
 
 ;;------------------------------------------------------------------------------
 ;; Create Keywords
@@ -35,3 +37,9 @@
 ;;   ;; └──────────────────────────────┘
 ;;   ;; :layout:emacs:GROUP?-KEYWORD-NAME                     #'function-symbol
 ;;   )
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout 'define 'common)

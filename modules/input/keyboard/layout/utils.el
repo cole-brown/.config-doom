@@ -23,7 +23,7 @@
   ;; "Function" can be nil for unbinding something, so get the entry to check
   ;; for its existance instead.
   (let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
-                                                 int<keyboard>:definitions:keywords)))
+                                                 int<keyboard>:layout/define:keywords)))
     (cond
      ;; Did the keyword exist?
      (key->func

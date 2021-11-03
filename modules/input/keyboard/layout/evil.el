@@ -9,6 +9,8 @@
 ;;         Modal keyboard input isn't exactly Lawful Good, I guess...         ;;
 ;;                                 ──────────                                 ;;
 
+(imp:require :input 'keyboard 'layout 'define)
+
 
 ;;------------------------------------------------------------------------------
 ;; Create Keywords
@@ -261,6 +263,8 @@
 ;;  ;; ...and then etc...
 ;;  )
 
+
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard 'layout 'define 'evil)

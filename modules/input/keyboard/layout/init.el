@@ -18,11 +18,12 @@
 ;;------------------------------------------------------------------------------
 
 ;; Functions for both evil and emacs.
-(load! "bind")
-(load! "bind-debug")
 (load! "utils")
 (load! "derive")
+(load! "define")
 (load! "layout")
+(load! "bind")
+(load! "bind-debug")
 
 
 ;;------------------------------------------------------------------------------

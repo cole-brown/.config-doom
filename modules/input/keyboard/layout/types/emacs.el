@@ -8,7 +8,7 @@
 ;;              Evil or Chaotic-Neutral Keyboard Users Go Away!               ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'layout 'define)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -31,4 +31,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'define 'emacs)
+(imp:provide :input 'keyboard 'layout 'types 'emacs)

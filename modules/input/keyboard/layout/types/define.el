@@ -195,4 +195,4 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'define)
+(imp:provide :input 'keyboard 'layout 'types 'define)

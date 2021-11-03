@@ -9,7 +9,7 @@
 ;;         Modal keyboard input isn't exactly Lawful Good, I guess...         ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'layout 'define)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -267,4 +267,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'define 'evil)
+(imp:provide :input 'keyboard 'layout 'types 'evil)

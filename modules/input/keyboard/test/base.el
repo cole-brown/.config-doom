@@ -61,8 +61,17 @@ debugging messages.")
 (defvar test<keyboard>:should:marker/counter 0
   "Counter for `test<keyboard>:should:marker'.")
 
-(defvar test<keyboard>:signal-error nil
-  "Set to `t' before set-up to let `:error' level output messages to still signal errors.")
+(defvar test<keyboard>:redirect/output:type :error
+  "How to redirect output when not in `test<keyboard>:debugging' mode.
+
+nil     - Squelch outputs/error signals.
+        - Save all outputs to lists.
+:errors - Squelch warning/debug.
+        - Allow error signals.
+        - Save all outputs to lists.
+t       - Allow all outputs to output normally.
+        - Allow error signals.
+        - Save all outputs to lists.")
 
 
 ;;------------------------------------------------------------------------------
@@ -241,10 +250,14 @@ into `test<keyboard>:output:debug' list instead."
 
 
 (defconst test<keyboard>:redirect/output:verbose
-  '(;; Not in test-debugging - save to our lists and squelch output.
+  '(;; Testing output itself, probably. Squelch everything
     (nil . ((:error . test<keyboard>:redirect/output:error)
             (:warn  . test<keyboard>:redirect/output:warn)
             (:debug . test<keyboard>:redirect/output:debug)))
+    ;; Allow errors; squelch warning & debugs.
+    (:errors . ((:error . (test<keyboard>:redirect/output:error t))
+                (:warn  . test<keyboard>:redirect/output:warn)
+                (:debug . test<keyboard>:redirect/output:debug)))
     ;; Debugging the tests - save to our lists and also allow to output as usual.
     (t   . ((:error . (test<keyboard>:redirect/output:error t))
             (:warn  . (test<keyboard>:redirect/output:warn  t))
@@ -256,9 +269,17 @@ into `test<keyboard>:output:debug' list instead."
   "Steals all calls to `int<keyboard>:output' and puts them into `test<keyboard>:output:...' lists instead.
 
 Will also allow the normal output if `test<keyboard>:debugging'."
-  (setq int<keyboard>:output:verbose (alist-get (or test<keyboard>:debugging
-                                                    test<keyboard>:signal-error)
-                                                test<keyboard>:redirect/output:verbose)))
+  (if test<keyboard>:debugging
+      ;; Debugging tests - allow all normal output and still save all output to test output handlers.
+      (setq int<keyboard>:output:verbose (alist-get t
+                                                    test<keyboard>:redirect/output:verbose))
+    ;; Not debugging - decide based on `test<keyboard>:redirect/output:type'.
+    (setq int<keyboard>:output:verbose (alist-get test<keyboard>:redirect/output:type
+                                                  test<keyboard>:redirect/output:verbose))))
+;; TODO: Some tests probably need to start with this now:
+;;   (setq test<keyboard>:redirect/output:type nil/t)
+;; Or they need to change some stuff to `should-error'?
+;; We default to allowing error signals now.
 
 
 (defun test<keyboard>:redirect/output:teardown ()
@@ -459,7 +480,7 @@ FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
 usage isn't affected."
 
   ;; Reset our flag for whether to allow error signals or not.
-  (setq test<keyboard>:signal-error nil)
+  (setq test<keyboard>:redirect/output:type :errors)
 
   ;;------------------------------
   ;; `test<keyboard>:output:...'

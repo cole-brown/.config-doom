@@ -63,8 +63,8 @@ Format:
      ;; Is a keyword; didn't find it. Error.
      ((keywordp keyword-or-func)
       (int<keyboard>:output :error
-                            '("int<keyboard>:layout/types:normalize->func"
-                              "No known keyword for %S.")
+                            "int<keyboard>:layout/types:normalize->func"
+                            "No known keyword for %S."
                             keyword-or-func))
 
      ;; Assume it was a function already, not a keyword, and return it as-is.
@@ -165,31 +165,31 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;;------------------------------
       (cond ((not (keywordp keyword))
              (int<keyboard>:output :error
-                                   '("input:keyboard/layout/types:define/keywords"
-                                     "Expected a keyword, got: %S")
+                                   "input:keyboard/layout/types:define/keywords"
+                                   "Expected a keyword, got: %S"
                                    keyword))
             ((not (int<keyboard>:layout/types:valid/keyword? type keyword))
              (int<keyboard>:output :error
-                                   '("input:keyboard/layout/types:define/keywords"
-                                     "Expected a valid keyboard layout keyword for '%S', got: %S")
+                                   "input:keyboard/layout/types:define/keywords"
+                                   "Expected a valid keyboard layout keyword for '%S', got: %S"
                                    type
                                    keyword))
 
             ((not (symbolp func))
              (int<keyboard>:output :error
-                                   '("input:keyboard/layout/types:define/keywords"
-                                     "Expected a symbol, got: %S")
+                                   "input:keyboard/layout/types:define/keywords"
+                                   "Expected a symbol, got: %S"
                                    func))
             ((not (int<keyboard>:layout/types:valid/function? func))
              (int<keyboard>:output :error
-                                   '("input:keyboard/layout/types:define/keywords"
-                                     "Expected a valid keyboard layout function, got: %S")
+                                   "input:keyboard/layout/types:define/keywords"
+                                   "Expected a valid keyboard layout function, got: %S"
                                    func))
 
             ((not (int<keyboard>:layout:type/valid? type))
              (int<keyboard>:output :error
-                                   '("input:keyboard/layout/types:define/keywords"
-                                     "Type '%S' is not a valid type. "
+                                   "input:keyboard/layout/types:define/keywords"
+                                   '("Type '%S' is not a valid type. "
                                      "Must be one of: %S")
                                    type int<keyboard>:layout:types))
 

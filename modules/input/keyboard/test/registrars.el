@@ -209,8 +209,6 @@
 (ert-deftest test<keyboard/registrars>::int<keyboard>:registration:state/transition:set ()
   "Test that `int<keyboard>:registration:state/transition:set' behaves."
 
-  (setq test<keyboard>:signal-error t)
-
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
       "test<keyboard/registrars>::int<keyboard>:registration:state/transition:set"

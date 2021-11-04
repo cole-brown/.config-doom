@@ -121,8 +121,6 @@
 (ert-deftest test<keyboard/output>::int<keyboard>:states->keyword ()
   "Test that `int<keyboard>:states->keyword' behaves."
 
-  (setq test<keyboard>:signal-error t)
-
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
       "test<keyboard/output>::int<keyboard>:states->keyword"

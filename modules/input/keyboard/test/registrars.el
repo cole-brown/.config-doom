@@ -13,10 +13,10 @@
 ;;---
 ;; Keyboard Files:
 ;;---
-(load! "../vars.el")
-;; (load! "../load.el")
-;; (load! "../alist.el")
-(load! "../registrars.el")
+(test<keyboard>:utils/path:load "vars.el")
+;; (test<keyboard>:utils/path:load "load.el")
+;; (test<keyboard>:utils/path:load "alist.el")
+(test<keyboard>:utils/path:load "registrars.el")
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗

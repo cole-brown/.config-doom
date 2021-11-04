@@ -14,7 +14,7 @@
 ;;---
 ;; Keyboard Layout Files:
 ;;---
-(load! "../../layout/bind.el")
+(test<keyboard>:utils/path:load "layout/bind.el")
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗

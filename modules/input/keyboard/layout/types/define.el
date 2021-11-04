@@ -1,7 +1,5 @@
 ;;; input/keyboard/layout/define.el -*- lexical-binding: t; -*-
 
-input:keyboard
-input//kl
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;

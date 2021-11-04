@@ -259,7 +259,7 @@ single list."
                                                          (eq message :args-as-msg))
                                                      "`magit-pull-from-upstream'"
                                                    message)))
-   (magit-pull-from-upstream)))
+   (magit-pull-from-upstream nil)))
 
 
 ;; TODO: use in status

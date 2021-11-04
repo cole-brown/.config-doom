@@ -13,7 +13,6 @@ input//kl
 
 
 (imp:require :input 'keyboard 'vars)
-(imp:require :input 'keyboard 'layout 'utils)
 (imp:provide :input 'keyboard 'layout 'define)
 (imp:require :input 'keyboard 'layout 'derive)
 
@@ -35,7 +34,7 @@ the `input//kl:layout:valid/keybind?' predicate.
 
 KEYWORD-OR-FUNC must fulfill `input//kl:layout:valid/keyword?' predicate and /is not/
 checked by this function. It will be translated to a function via the
-`int<keyboard>:layout/define:keywords' alist.
+`int<keyboard>:layout/types:keywords' alist.
 
 DESC can be nil or a string describing the keybinding.
 
@@ -63,7 +62,7 @@ Used for side-effects; just returns non-nil (`t')."
     ;; Keyword -> Function
     ;;------------------------------
     ;; Is `keyword-or-func' a keyword? Assume a function if not.
-    (let ((func (int<keyboard>:layout:normalize->func keyword-or-func)))
+    (let ((func (int<keyboard>:layout/types:normalize->func keyword-or-func)))
       (when (keywordp func)
         (int<keyboard>:debug
             "input//kl:layout:map-bind"
@@ -157,7 +156,7 @@ Used for side-effects; just returns non-nil (`t')."
       ;; Always return non-nil as expected by caller.
       ;;------------------------------
       t)))
-;; int<keyboard>:layout/define:keywords
+;; int<keyboard>:layout/types:keywords
 ;; (setq doom--map-batch-forms nil)
 ;; (input//kl:layout:map-bind "c" :layout:evil:line-prev nil "testing...")
 ;; (doom--map-def "c" #'evil-prev-line nil "testing...")

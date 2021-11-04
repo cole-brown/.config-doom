@@ -16,7 +16,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(input:keyboard/layout:define/keywords :common
+(input:keyboard/layout/types:define/keywords :common
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Commands                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -27,7 +27,7 @@
   :layout:common:undefined    nil)
 
   ;; TODO: common keyword/functions
-;; (input:keyboard/layout:define/keywords :common
+;; (input:keyboard/layout/types:define/keywords :common
 ;;   "┌─────────────────────────────────────────────────────────────────────────┐
 ;;    │ GROUP-TITLE                                                             │
 ;;    └─────────────────────────────────────────────────────────────────────────┘"

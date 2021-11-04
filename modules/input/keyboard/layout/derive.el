@@ -40,6 +40,29 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Normalization
+;;------------------------------------------------------------------------------
+
+(defun int<keyboard>:layout/derive:normalize->modifier (symbol)
+  "Normalizes a symbol, quoted symbol, or keyword to a modifier keyword."
+  (let ((symbol/in (doom-unquote symbol)))
+    (cond ((keywordp symbol/in)
+           symbol/in)
+          ((symbolp symbol/in)
+           (intern (concat ":" (symbol-name symbol/in))))
+          (t
+           (int<keyboard>:output :error
+                                 '("int<keyboard>:layout/derive:normalize->modifier"
+                                   "Unknown input type: %S. Not a keyword or symbol.")
+                                 symbol)))))
+;; (int<keyboard>:layout/derive:normalize->modifier ':control)
+;; (int<keyboard>:layout/derive:normalize->modifier 'control)
+;; (int<keyboard>:layout/derive:normalize->modifier (quote (quote control)))
+;; (int<keyboard>:layout/derive:normalize->modifier 'unshift)
+;; (int<keyboard>:layout/derive:normalize->modifier 'jeff)
+
+
+;;------------------------------------------------------------------------------
 ;; Layout Derivations
 ;;------------------------------------------------------------------------------
 
@@ -52,7 +75,7 @@ REGISTERED-BINDS should be `(int<keyboard>:registrar:get registrar :keybinds)'.
 
 Returns keybind string or nil."
   (let ((debug/tags '(:derive :derive/search))
-        (func (int<keyboard>:layout:normalize->func func))
+        (func (int<keyboard>:layout/types:normalize->func func))
         keybind-found
         (types int<keyboard>:layout:types))
     ;;------------------------------
@@ -240,7 +263,7 @@ Returns keybind string or nil."
                    (error nil))
 
                  (let ((check/key (nth (+ index 1) keymaps))
-                       (check/func (int<keyboard>:layout:normalize->func (nth (+ index 2) keymaps))))
+                       (check/func (int<keyboard>:layout/types:normalize->func (nth (+ index 2) keymaps))))
                    (int<keyboard>:debug
                        debug/name
                        debug/tags
@@ -254,7 +277,7 @@ Returns keybind string or nil."
                 ;; Are we looking at: <keybind> <func/func-keyword>?
                 ((stringp item)
                  (let ((check/key (nth index keymaps))
-                       (check/func (int<keyboard>:layout:normalize->func (nth (1+ index) keymaps))))
+                       (check/func (int<keyboard>:layout/types:normalize->func (nth (1+ index) keymaps))))
                    (int<keyboard>:debug
                        debug/name
                        debug/tags
@@ -538,7 +561,7 @@ Examples:
     ;; Work through our args to build binding.
     (dolist (arg args)
       ;; What kind of arg is it?
-      (cond ((memq (int<keyboard>:layout:normalize->modifier arg)
+      (cond ((memq (int<keyboard>:layout/derive:normalize->modifier arg)
                    '(:control :shift :meta ;; Common Modifiers
                      :alt :super :hyper    ;; Uncommon Modifiers
                      :unshift))            ;; Cheating a bit...
@@ -547,13 +570,13 @@ Examples:
                  debug/tags
                "derive found modifier: %S"
                arg)
-             (push (int<keyboard>:layout:normalize->modifier arg) modifiers))
+             (push (int<keyboard>:layout/derive:normalize->modifier arg) modifiers))
 
             ;; Our keyword/function we want to derive from.
             ;; Find its keybind string.
             ((or (functionp (doom-unquote arg))
                  (keywordp arg))
-             (when-let* ((func (int<keyboard>:layout:normalize->func arg))
+             (when-let* ((func (int<keyboard>:layout/types:normalize->func arg))
                          ;; Search for a keybind in order of what will be the bind when everything is applied and done.
                          (found (or
                                  ;; Search the in-progress keybinds for a match.

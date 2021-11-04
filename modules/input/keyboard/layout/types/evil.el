@@ -16,7 +16,7 @@
 ;; Create Keywords
 ;;------------------------------------------------------------------------------
 
-(input:keyboard/layout:define/keywords :evil
+(input:keyboard/layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Movement                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -124,7 +124,7 @@
   :layout:evil:mark-goto                     #'evil-goto-mark)
 
 
-(input:keyboard/layout:define/keywords :evil
+(input:keyboard/layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Repeating                                                               │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -146,7 +146,7 @@
   )
 
 
-(input:keyboard/layout:define/keywords :evil
+(input:keyboard/layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Text Manipulation                                                       │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -210,7 +210,7 @@
   :layout:evil:edit-repeat                   #'evil-repeat)
 
 
-(input:keyboard/layout:define/keywords :evil
+(input:keyboard/layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Commands                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"

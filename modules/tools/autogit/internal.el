@@ -11,7 +11,7 @@
 ;; Version: 0.0.1
 ;; Keywords:
 ;; Homepage: https://github.com/cole-brown/.config-secret
-;; Package-Requires: ((emacs 27.1) (magit))
+;; Package-Requires: ((emacs "27.1") (magit "3.0"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -208,28 +208,58 @@ single list."
 ;; Magit
 ;;------------------------------------------------------------------------------
 
-;; TODO [2021-07-08]: if no one complains about this being commented out, delete.
-;; ;; TODO: Delete, replace usage with `autogit//changes:in-subdir'.
-;; (defun autogit//magit/changes-in-subdir (subdir-abs)
-;;   "Determines if magit knows of any changes (staged, unstaged, untracked), and
-;; if any of them are in SUBDIR-ABS (an absolute path to a (sub-dir of a) repo).
-;; Could be repo root, but a subdir of the repo is what magit can't handle with
-;; e.g. `magit-anything-modified-p' and is why this exists."
-;;   ;; Magit works on `default-directory', so make sure to set that. Also magit
-;;   ;; returns lowercase paths, so make sure to downcase for Windows.
-;;   (let* ((subdir-abs (downcase subdir-abs))
-;;          (default-directory subdir-abs)
-;;          ;; these are all changes in repo, not subdir
-;;          (changes-rel (append (magit-staged-files)
-;;                               (magit-unstaged-files)
-;;                               (magit-untracked-files)))
-;;          (git-root (magit-toplevel))
-;;          (changes-abs (mapcar (lambda (x) (autogit//path:join git-root x))
-;;                               changes-rel)))
+(defmacro autogit//magit/with-errors (&rest body)
+  "Set magit error flag and run BODY."
+  `(let ((magit-process-raise-error t))
+     ,@body))
 
-;;     ;; Now just filter and return.
-;;     (seq-filter (lambda (x) (string-prefix-p subdir-abs x)) changes-abs)))
-;; ;; (autogit//magit/changes-in-subdir (car autogit:repos:path/commit))
+
+(defun autogit//magit:fetch (dry-run buffer indent &optional message)
+  "Fetch from remotes (w/ prune) and then pull current branch."
+  (autogit//magit/with-errors
+   ;;------------------------------
+   ;; Fetch from remotes.
+   ;;------------------------------
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 1)
+                                     ;; Dry-Run prefix?
+                                     (list :prop :face:failure
+                                           :text (concat (if dry-run
+                                                             autogit:text:dry-run
+                                                           "GIT")
+                                                         ":")))
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 2)
+
+                                     ;; Command or message.
+                                     (list :prop :face:git
+                                           :text (if (or (null message)
+                                                         (eq message :args-as-msg))
+                                                     "`magit-fetch-all-prune'"
+                                                   message)))
+   (magit-fetch-all-prune)
+
+   ;;------------------------------
+   ;; Pull current branch.
+   ;;------------------------------
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 1)
+                                     ;; Dry-Run prefix?
+                                     (list :prop :face:failure
+                                           :text (concat (if dry-run
+                                                             autogit:text:dry-run
+                                                           "GIT")
+                                                         ":")))
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 2)
+
+                                     ;; Command or message.
+                                     (list :prop :face:git
+                                           :text (if (or (null message)
+                                                         (eq message :args-as-msg))
+                                                     "`magit-pull-from-upstream'"
+                                                   message)))
+   (magit-pull-from-upstream)))
 
 
 ;; TODO: use in status
@@ -245,7 +275,7 @@ single list."
          (branch (magit-name-branch headish)))
     (or branch headish)))
 ;; (autogit//magit/head default-directory)
-(shell-quote-argument "hello\nthere")
+;; (shell-quote-argument "hello\nthere")
 
 
 (defun autogit//magit:git (dry-run buffer indent message &rest args)
@@ -264,28 +294,29 @@ Example:
                       \"adding all changes...\"
                       \"add\" \"-A\" \".\")
      message: \"calling git: adding all changes...\""
-  ;; Output messages first.
-  (autogit//output:message/indented buffer
-                                    (autogit//output:indent indent 1)
+  (autogit//magit/with-errors
+   ;; Output messages first.
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 1)
 
-                                    ;; Dry-Run prefix?
-                                    (list :prop :face:failure
-                                          :text (concat (if dry-run
-                                                            autogit:text:dry-run
-                                                          "GIT")
-                                                        ":")))
-  (autogit//output:message/indented buffer
-                                    (autogit//output:indent indent 2)
+                                     ;; Dry-Run prefix?
+                                     (list :prop :face:failure
+                                           :text (concat (if dry-run
+                                                             autogit:text:dry-run
+                                                           "GIT")
+                                                         ":")))
+   (autogit//output:message/indented buffer
+                                     (autogit//output:indent indent 2)
 
-                                    ;; Command or message.
-                                    (list :prop :face:git
-                                          :text (if (eq message :args-as-msg)
-                                                    (concat "git " (string-join args " "))
-                                                  message)))
+                                     ;; Command or message.
+                                     (list :prop :face:git
+                                           :text (if (eq message :args-as-msg)
+                                                     (concat "git " (string-join args " "))
+                                                   message)))
 
-  ;; Do not actually run the command in dry-run mode.
-  (unless dry-run
-    (apply #'magit-call-git args)))
+   ;; Do not actually run the command in dry-run mode.
+   (unless dry-run
+     (apply #'magit-call-git args))))
 
 
 ;;------------------------------------------------------------------------------
@@ -606,10 +637,10 @@ NOTE: If BUFFER is not `:message', it will print to the current buffer,
 so it must be used inside the `autogit//macro:with-buffer' macro body!"
   (let ((msg (autogit//output:finalize args))
         (indent-str (cond ((wholenump indent)
-                            (make-string indent ?\s))
-                           ((stringp indent)
-                            indent)
-                           (t
+                           (make-string indent ?\s))
+                          ((stringp indent)
+                           indent)
+                          (t
                            ""))))
     ;; Apply indent to all lines in message.
     (when indent-str
@@ -619,7 +650,7 @@ so it must be used inside the `autogit//macro:with-buffer' macro body!"
           (push (concat indent-str line) indented))
         (setq msg (mapconcat 'identity indented "\n"))))
 
-  (autogit//output:insert buffer msg)))
+    (autogit//output:insert buffer msg)))
 
 
 ;; TODO: namespace for 'message', 'section', 'buffer' type things.

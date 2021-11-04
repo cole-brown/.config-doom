@@ -154,6 +154,10 @@ If DRY-RUN is non-nil, does not execute git commands."
                      ;; Filtered changes or "do-not-commit" reason keyword.
                      (changes/abs (autogit//changes:commit-filter alist/changes)))
 
+                ;; Pull & check first.
+                (autogit//output:newline buffer)
+                (autogit//magit:fetch dry-run buffer indent/commands)
+
                 ;; Not allowed to commit?
                 (cond ((and (keywordp changes/abs)
                             (eq changes/abs :unmerged))

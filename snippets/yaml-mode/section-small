@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# contributor: Cole Brown <git@spydez.com>
+# name: section small: prog-mode "small"-width (3) comment header
+# key: sec/sm
+# --
+
+`(mis0/comment/wrap (make-string 3 ?-) (mis0/string/trim t))`
+`(mis0/comment/wrap "" (mis0/string/trim t))` ${0:`yas-selected-text`}
+`(mis0/comment/wrap (make-string 3 ?-) (mis0/string/trim t))`

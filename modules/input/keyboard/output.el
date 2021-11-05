@@ -158,7 +158,7 @@ ARGS based on current verbosity for the level."
        (error (concat "int<keyboard>:output:output: "
                       "Verbosity level '%S' doesn't exist; don't know how to output message:\n%s ")
               level
-              unknown-value
+              verbosity
               (apply #'format msg args)))
 
       (unknown-value

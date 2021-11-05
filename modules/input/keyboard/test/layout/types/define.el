@@ -221,3 +221,45 @@
    (should (int<keyboard>:layout/types:valid/function? nil))
    (should (int<keyboard>:layout/types:valid/function? #'ignore))
    (should (int<keyboard>:layout/types:valid/function? 'ignore))))
+
+
+;;------------------------------
+;; input:keyboard/layout/types:define/keywords
+;;------------------------------
+
+(ert-deftest test<keyboard>::input:keyboard/layout/types:define/keywords ()
+  "Test that `input:keyboard/layout/types:define/keywords' behaves appropriately."
+  (test<keyboard>:fixture
+   ;;===
+   ;; Test name, setup & teardown func.
+   ;;===
+   "test<keyboard/alist>::input:keyboard/layout/types:define/keywords"
+   #'test<keyboard/layout/define>:setup
+   #'test<keyboard/layout/define>:teardown
+
+
+   ;;===
+   ;; Run the test.
+   ;;===
+
+   ;; Shouldn't have anything defined yet.
+   (should-not int<keyboard>:layout/types:keywords)
+
+   ;;------------------------------
+   ;; Evil: Define some keywords.
+   ;;------------------------------
+
+   ;; TODO: get this working...
+   (should (input:keyboard/layout/types:define/keywords
+               :evil
+             "Eeeevil keywords..."
+             '(:layout:evil:line-prev #'evil-previous-line
+               :layout:evil:line-next #'evil-next-line
+               :layout:evil:char-prev #'evil-backward-char
+               :layout:evil:char-next #'evil-forward-char)))
+   (should int<keyboard>:layout/types:keywords)
+   (should (eq int<keyboard>:layout/types:keywords
+               '(:evil . (:layout:evil:line-prev #'evil-previous-line
+                          :layout:evil:line-next #'evil-next-line
+                          :layout:evil:char-prev #'evil-backward-char
+                          :layout:evil:char-next #'evil-forward-char))))))

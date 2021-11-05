@@ -3,20 +3,6 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Loading Files...
-;;------------------------------------------------------------------------------
-
-;; We're defining this here, but try not to use until after 'load.el' has been tested.
-(defun test<keyboard>:utils/path:load (filepath)
-    "Load FILENAME, an ':input/keyboard' code file, without having to worry about
-the relative path up.
-
-FILENAME should be a path relative to the root of ':input/layout'."
-    ;; We already have `int<keyboard>:path:join', which will default to our root for relative paths.
-    (load (int<keyboard>:path:join filepath)))
-
-
-;;------------------------------------------------------------------------------
 ;; Base Functionality for Testing
 ;;------------------------------------------------------------------------------
 

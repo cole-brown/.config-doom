@@ -50,26 +50,58 @@ Format:
 
 (defun int<keyboard>:layout/types:normalize->func (keyword-or-func)
   "Normalizes a KEYWORD-OR-FUNC to a function."
-  ;; "Function" can be nil for unbinding something, so get the entry to check
-  ;; for its existance instead.
-  (let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
-                                                 int<keyboard>:layout/types:keywords)))
-    (cond
-     ;; Did the keyword exist?
-     (key->func
-      ;; Return its function/nil.
-      (cdr key->func))
+  (if (not (keywordp keyword-or-func))
+      ;;------------------------------
+      ;; Function
+      ;;------------------------------
+      ;; Well it's not a keyword so we'll assume it's a function and return as-is.
+      keyword-or-func
 
-     ;; Is a keyword; didn't find it. Error.
-     ((keywordp keyword-or-func)
-      (int<keyboard>:output :error
-                            "int<keyboard>:layout/types:normalize->func"
-                            "No known keyword for %S."
-                            keyword-or-func))
+    ;;------------------------------
+    ;; Keyword -> Function
+    ;;------------------------------
 
-     ;; Assume it was a function already, not a keyword, and return it as-is.
-     (t
-      keyword-or-func))))
+    ;; Get first type's alist, and other prep-for-search-loop stuff.
+    (let* ((assoc/type (car int<keyboard>:layout/types:keywords))
+           (rest/types (cdr int<keyboard>:layout/types:keywords))
+           (keywords/type (cdr assoc/type))
+           ;; Keyword's value/function can be nil, so we need a flag to say we found
+           ;; it and another var to save it to.
+           found-keyword?
+           keyword/found)
+
+      (message "assoc/type: %S" assoc/type)
+      (message "rest/types: %S" rest/types)
+      (message "keywords/type: %S" keywords/type)
+
+      ;; Search each type's alist for the KEYWORD-OR-FUNC.
+      (while (and keywords/type
+                  (not found-keyword?))
+        ;; "Function" can be nil for unbinding something, so get the key and value to check
+        ;; for its existance instead.
+        (message "Check %S for %S: %S"
+                 (car assoc/type)
+                 keyword-or-func
+                 (int<keyboard>:alist:get/pair keyword-or-func
+                                               keywords/type))
+        (when-let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
+                                                            keywords/type)))
+            ;; Found the kvp; save its value (function/nil).
+            (setq found-keyword? t
+                  keyword/found (cdr key->func)))
+
+        ;; Get the next type to check.
+        (setq assoc/type (car rest/types)
+              rest/types (cdr rest/types)
+              keywords/type (cdr assoc/type)))
+
+      ;; Return the keyword or error on not finding it.
+      (if found-keyword?
+          keyword/found
+        (int<keyboard>:output :error
+                              "int<keyboard>:layout/types:normalize->func"
+                              "No known keyword for %S."
+                              keyword-or-func)))))
 ;; (int<keyboard>:layout/types:normalize->func :layout:evil:line-prev)
 ;; (int<keyboard>:layout/types:normalize->func :layout:common:undefined)
 ;; (int<keyboard>:layout/types:normalize->func :layout:DNE:should-error)

@@ -13,10 +13,34 @@
 ;; And will assist you in keeping you alist up-to-date, like it's a variable
 ;; or something.
 
+(require 'seq)
+
 
 ;;------------------------------------------------------------------------------
 ;; A-list functions that are sane.
 ;;------------------------------------------------------------------------------
+
+(defun int<keyboard>:alist:alist? (item)
+  "Returns non-nil if ITEM is an alist.
+
+If ITEM is nil, returns `t', because:
+  1. We cannot be sure it's /NOT/ an alist.
+  2. `nil' is a valid list, and an empty list is a valid alist."
+  ;; We'll consider `nil' a valid alist.
+  (cond (nil
+         t)
+
+        ;; An alist has to be a list.
+        ((not (listp item))
+         nil)
+
+        ;; An alist has to have only lists (or cons, which are lists).
+        ;; If this is truthy, we'll just return its truthiness.
+        ((seq-every-p #'listp item))
+
+        (t
+         nil)))
+
 
 (defun int<keyboard>:alist:get/value (key alist)
   "Get cdr of KEY's entry in ALIST."

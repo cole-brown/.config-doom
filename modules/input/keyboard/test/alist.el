@@ -96,6 +96,70 @@ Usage:
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
+;; int<keyboard>:alist:alist?
+;;------------------------------
+
+(ert-deftest test<keyboard/alist>::int<keyboard>:alist:alist? ()
+  "Test that `int<keyboard>:alist:alist?' behaves appropriately."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard/alist>::int<keyboard>:alist:alist?"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let ((alist/cons (list (cons :key-0 :value-0)
+                            (cons :key-1 :value-1)
+                            (cons :key-2 :value-2)))
+          (alist/list (list (list :key-0 :value-0)
+                            (list :key-1 :value-1)
+                            (list :key-2 :value-2))))
+
+      ;;------------------------------
+      ;; Not alists.
+      ;;------------------------------
+      (should-not (int<keyboard>:alist:alist? t))
+      (should-not (int<keyboard>:alist:alist? :jeff))
+      (should-not (int<keyboard>:alist:alist? #'ignore))
+      (should-not (int<keyboard>:alist:alist? 'some-symbol))
+
+      ;; Quoting our vars is just providing a symbol name, which is
+      ;; not providing an alist to the predicate function.
+      (should-not (int<keyboard>:alist:alist? 'alist/cons))
+      (should-not (int<keyboard>:alist:alist? 'alist/list))
+
+      ;;------------------------------
+      ;; Are alists.
+      ;;------------------------------
+      ;; `nil' is a valid (empty) list, and empty lists are valid alists.
+      (should (int<keyboard>:alist:alist? nil))
+
+      ;; Our alist vars should be alists.
+      (should (int<keyboard>:alist:alist? alist/cons))
+      (should (int<keyboard>:alist:alist? alist/list))
+
+      ;; Alists themselves should also be alists.
+      (should (int<keyboard>:alist:alist? (list (cons :key-0 :value-0)
+                                                (cons :key-1 :value-1)
+                                                (cons :key-2 :value-2))))
+      (should (int<keyboard>:alist:alist? (list (list :key-0 :value-0)
+                                                (list :key-1 :value-1)
+                                                (list :key-2 :value-2))))
+
+      ;; Alists which have more than one thing as the value: still alists.
+      (should (int<keyboard>:alist:alist? (list (cons :key-0 '(:value-00 :value-01 :value-02))
+                                                (cons :key-1 '(:value-11 :value-11 :value-12))
+                                                (cons :key-2 '(:value-22 :value-21 :value-22)))))
+      (should (int<keyboard>:alist:alist? (list (list :key-0 :value-00 :value-01 :value-02)
+                                                (list :key-1 :value-11 :value-11 :value-12)
+                                                (list :key-2 :value-22 :value-21 :value-22)))))))
+
+
+;;------------------------------
 ;; int<keyboard>:alist:get/value
 ;;------------------------------
 
@@ -398,13 +462,13 @@ Usage:
       "test<keyboard/alist>::int<keyboard>:alist:update::global"
       (lambda (_)
         "Set up globals for this test."
-             (setq test<keyboard/alist>:alist/cons (list (cons :key-0 :value-0/initial)
-                                                         (cons :key-1 :value-1/initial)
-                                                         (cons :key-2 :value-2/initial)))
-             (setq test<keyboard/alist>:alist/list (list (list :key-0 :value-0/initial)
-                                                         (list :key-1 :value-1/initial)
-                                                         (list :key-2 :value-2/initial)))
-             )
+        (setq test<keyboard/alist>:alist/cons (list (cons :key-0 :value-0/initial)
+                                                    (cons :key-1 :value-1/initial)
+                                                    (cons :key-2 :value-2/initial)))
+        (setq test<keyboard/alist>:alist/list (list (list :key-0 :value-0/initial)
+                                                    (list :key-1 :value-1/initial)
+                                                    (list :key-2 :value-2/initial)))
+        )
       (lambda (_)
         "Clean up the alist of lists."
         ;; (unintern test<keyboard/alist>:alist/cons)

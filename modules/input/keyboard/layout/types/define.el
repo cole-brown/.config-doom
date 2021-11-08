@@ -139,7 +139,7 @@ Returns non-nil for valid KEYWORD."
 ;; API: Create Layout Keywords
 ;;------------------------------------------------------------------------------
 
-(defmacro input:keyboard/layout/types:define/keywords (type _docstr &rest rest)
+(defun input:keyboard/layout/types:define/keywords (type _docstr &rest rest)
   "Define TYPE's layout keywords and their default functions in REST.
 
 TYPE should be one of:
@@ -158,7 +158,9 @@ REST: Repeating list of: '(keyword function keyword function ...)"
   (while rest
     (let* ((keyword (pop rest))
            (value (pop rest))
-           (func (doom-unquote value)))
+           (func (doom-unquote value))
+           ;; Get TYPE's alist from `int<keyboard>:layout/types:keywords'.
+           (alist (int<keyboard>:alist:get/value type int<keyboard>:layout/types:keywords)))
 
       ;;------------------------------
       ;; Error check vars.
@@ -211,13 +213,20 @@ REST: Repeating list of: '(keyword function keyword function ...)"
             kw-str
             pad-str
             value)))
-      (int<keyboard>:alist:update keyword
-                                  value ;; Save the quoted value, not `func'.
-                                  int<keyboard>:layout/types:keywords))))
+
+      ;; Update full alist.
+      (int<keyboard>:alist:update
+       type
+       ;; Update TYPE's alist.
+       (int<keyboard>:alist:update keyword
+                                   value
+                                   alist)
+       int<keyboard>:layout/types:keywords))))
 ;; int<keyboard>:layout/types:keywords
 ;; (setq int<keyboard>:layout/types:keywords nil)
-;; (input:keyboard/layout/types:define/keywords :evil "docstring here" :layout:test-keyword #'ignore)
-;; (alist-get :layout:test-keyword int<keyboard>:layout/types:keywords)
+;; (input:keyboard/layout/types:define/keywords :evil "docstring here" :layout:evil:test-keyword #'ignore)
+;; (alist-get :evil int<keyboard>:layout/types:keywords)
+;; (alist-get :layout:evil:test-keyword (alist-get :evil int<keyboard>:layout/types:keywords))
 
 
 ;;------------------------------------------------------------------------------

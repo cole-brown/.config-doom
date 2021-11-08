@@ -54,7 +54,7 @@
 ;; This allows our tests to take over output easier.
 ;;------------------------------
 
-(defvar int<keyboard>:output:verbose
+(defconst int<keyboard>:output:verbose//default-value
   '((:error . t)
     (:warn  . t)
     (:debug . t))
@@ -65,10 +65,21 @@ Valid values:
   nil - do not output
   <function> - Use <function> to output instead.
     - Used by unit testing.")
+
+
+(defvar int<keyboard>:output:verbose
+  (copy-alist int<keyboard>:output:verbose//default-value)
+  "Verbosity of various log levels for the ':keyboard' module.
+
+Valid values:
+  t   - output normally
+  nil - do not output
+  <function> - Use <function> to output instead.
+    - Used by unit testing.")
 ;; (alist-get :error int<keyboard>:output:verbose)
 
 
-(defvar int<keyboard>:output:default
+(defconst int<keyboard>:output:default//default-value
   '((:error . error)
     (:warn  . warn)
     (:debug . message))
@@ -81,18 +92,21 @@ Valid values:
     - Used by unit testing.")
 
 
-;;---
-;; Save the default values to a symbol property.
-;; This allows the unit tests to reset it easily.
-;;---
-(put 'int<keyboard>:output:verbose :default (copy-alist int<keyboard>:output:verbose))
-(put 'int<keyboard>:output:default :default (copy-alist int<keyboard>:output:default))
+(defvar int<keyboard>:output:default
+  (copy-alist int<keyboard>:output:default//default-value)
+  "Verbosity of various log levels for the ':keyboard' module.
+
+Valid values:
+  t   - output normally
+  nil - do not output
+  <function> - Use <function> to output instead.
+    - Used by unit testing.")
 
 
 (defun int<keyboard>:output:vars/reset ()
   "Reset output vars to their default values."
-  (setq int<keyboard>:output:verbose (get 'int<keyboard>:output:verbose :default)
-        int<keyboard>:output:default (get 'int<keyboard>:output:default :default)))
+  (setq int<keyboard>:output:verbose (copy-alist int<keyboard>:output:verbose//default-value)
+        int<keyboard>:output:default (copy-alist int<keyboard>:output:default//default-value)))
 ;; (setq int<keyboard>:output:verbose nil)
 ;; (int<keyboard>:output:vars/reset)
 

@@ -132,10 +132,11 @@ If DRY-RUN is non-nil, does not execute git commands."
               (autogit//output:message buffer
                                        (list :prop :face:self
                                              :text autogit:text:name)
-                                       ": "
-                                       "Checking "
-                                       (list :prop :face:path :text (list "%s" path))
-                                       "...")
+                                       "\n  repository: "
+                                       (list :prop :face:path :text (file-name-nondirectory
+                                                                     (directory-file-name path)))
+                                       "\n  path:       "
+                                       (list :prop :face:path :text path))
 
               ;; Change the default-directory just for this scope...
               (let* ((default-directory (if (file-directory-p path)
@@ -156,8 +157,17 @@ If DRY-RUN is non-nil, does not execute git commands."
 
                 ;; Pull & check first.
                 (autogit//output:newline buffer)
+                (autogit//output:message buffer
+                                         (list :prop :face:self
+                                               :text autogit:text:name)
+                                         ": Pull from upstream...")
                 (autogit//magit:fetch dry-run buffer indent/commands)
 
+                (autogit//output:newline buffer)
+                (autogit//output:message buffer
+                                         (list :prop :face:self
+                                               :text autogit:text:name)
+                                         ": Check for changes to commit...")
                 ;; Not allowed to commit?
                 (cond ((and (keywordp changes/abs)
                             (eq changes/abs :unmerged))
@@ -178,7 +188,7 @@ If DRY-RUN is non-nil, does not execute git commands."
                        ;; Say why nothing happened.)
                        (autogit//output:message buffer
                                                 "  No changes to auto-commit: "
-                                                (list :prorp :face:path "%s"
+                                                (list :prop :face:path
                                                       :text default-directory)))
 
                       ;; Ok. Commit.
@@ -278,12 +288,15 @@ If DRY-RUN is non-nil, does not execute git commands."
                       (setq first-result nil)
                     (autogit//output:newline buffer))
                   (autogit//output:message buffer
-                                           "  path: "
+                                           "  repository: "
+                                           (list :prop :face:path :text (file-name-nondirectory
+                                                                         (directory-file-name (car result))))
+                                           "\n  path:       "
                                            (list :prop :face:path
-                                                 :text (list "%s" (car result)))
-                                           "\n  changes: "
+                                                 :text (car result))
+                                           "\n  changes:    "
                                            (list :prop :face:path
-                                                 :text (list "%s" (cdr result)))))))))
+                                                 :text (cdr result))))))))
 
         ;; `deferred:nextc' so that this waits on the loop to finish before printing.
         (deferred:nextc it
@@ -354,7 +367,7 @@ uncommitted(/unpushed?) changes."
                                    ": "
                                    ;; TODO: remove "Checking " if not much time between this output and status output.
                                    "Checking "
-                                   (list :prop :face:path :text (list "%s" path))
+                                   (list :prop :face:path :text path)
                                    "...")
           (autogit//output:status buffer (autogit//changes:in-subdir path))))
       (deferred:error it

@@ -534,3 +534,82 @@ When BODY is done, deal with the buffer/file according to KILL? and DELETE?.
          (kill-buffer test<dlv>:with:file-buffer/buffer))
        (when ,delete?
          (delete-file test<dlv>:with:file-buffer/path)))))
+
+
+;;------------------------------------------------------------------------------
+;; Test Helpers: Assertions
+;;------------------------------------------------------------------------------
+
+(defun test<keyboard>:assert:alists-equivalent (caller alist/expected alist/actual)
+  "Assert that two alists have the same keys and values, not caring about the
+order of two the lists."
+
+  (test<keyboard>:should:marker caller
+                                "Alists should be equivaluent...")
+  (test<keyboard>:debug caller "alist/expected:\n%S" (pp-to-string alist/expected))
+  (test<keyboard>:debug caller "alist/actual:\n%S"   (pp-to-string alist/actual))
+
+  ;;---
+  ;; Expecting nil?
+  ;;---
+  (if (null alist/expected)
+      (should-not alist/actual)
+
+    ;;---
+    ;; Expecting something...
+    ;;---
+    ;; Lists must be the same length to be equal.
+    (should (= (length alist/expected)
+               (length alist/actual)))
+
+    ;; Each assoc in expected should be in actual.
+    (dolist (assoc/expected alist/expected)
+      ;;---
+      ;; Assocs should be valid.
+      ;;---
+      ;; We should have... something as expected?
+      ;; Well, we should have a list, maybe? Unless we want to disallow `nil'
+      ;; as an (entire) entry in an alist.
+      ;; Let's try disallowing `nil' entries.
+      (should assoc/expected)
+      ;; If that doesn't work and we need `nil', just delete that - there's a check for listp below a bit.
+
+      ;; We should have the same key/value in actual.
+      (let* ((key/expected   (car assoc/expected))
+             (value/expected (cdr assoc/expected))
+             (assoc/actual   (assoc key/expected alist/actual)))
+
+        ;; We need each expected alist entry to be a list.
+        (should (listp assoc/expected))
+
+        ;; We should have... something as actual?
+        ;; Well, we should have a list, maybe? Unless we want to disallow `nil'
+        ;; as an (entire) entry in an alist.
+        ;; Let's try disallowing `nil' entries.
+        (should assoc/actual)
+        ;; If that doesn't work and we need `nil', just delete that and still do this:
+        ;; We need each actual alist entry to be a list.
+        (should (listp assoc/actual))
+
+        (let ((key/actual     (car assoc/actual))
+              (value/actual   (cdr assoc/actual)))
+          ;;---
+          ;; Keys should be equal.
+          ;;---
+          (should (equal key/expected key/actual))
+
+          ;;---
+          ;; Values should be equal.
+          ;;---
+          ;; Do we have alists of alists?
+          (if (int<keyboard>:alist:alist? value/expected)
+              ;; The alists we found as values should be equal for the parent to be equal.
+              (test<keyboard>:assert:alists-equivalent caller value/expected value/actual)
+
+            ;; Value is not an alist - just compare.
+            (should assoc/actual)
+            (should (equal key/expected
+                           key/actual))
+            (should (equal value/expected
+                           value/actual))))))))
+

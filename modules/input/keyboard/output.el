@@ -170,9 +170,17 @@ ARGS based on current verbosity for the level."
       (:does-not-exist
        ;; Didn't find LEVEL in `int<keyboard>:output:verbose'.
        (error (concat "int<keyboard>:output:output: "
-                      "Verbosity level '%S' doesn't exist; don't know how to output message:\n%s ")
+                      "Ouput function for verbosity level doesn't exist; don't know how to output message.\n"
+                      "  verbosity level:    %S\n"
+                      "  '%S' func:      %S\n"
+                      "  existing 'verbose': %S\n"
+                      "  existing 'default': %S\n"
+                      "  message: %s")
+              level
               level
               verbosity
+              int<keyboard>:output:verbose
+              int<keyboard>:output:default
               (apply #'format msg args)))
 
       (unknown-value

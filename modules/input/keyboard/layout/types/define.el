@@ -11,6 +11,8 @@
 
 
 (imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -22,7 +24,7 @@
 ;;------------------------------
 
 (defconst int<keyboard>:layout/types:keyword/prefix ":layout:"
-  "Keyboard layout keywords must always begin with ':layout:' so that they can
+"Keyboard layout keywords must always begin with ':layout:' so that they can
 be parsed properly.")
 
 
@@ -31,14 +33,14 @@ be parsed properly.")
 ;;------------------------------
 
 (defvar int<keyboard>:layout/types:keywords nil
-  "Definition of the keywords->functions created by calling
+"Definition of the keywords->functions created by calling
 `input:keyboard/layout/types:define/keywords'.
 
 Multiple calls to `input:keyboard/layout/types:define/keywords' accumulate the
 result here.
 
 Format:
-  - alist of alists of cons:
+- alist of alists of cons:
     - type (:common, :emacs, :evil) -> keyword alist
       - keybind-keyword -> keybind-function")
 ;; (pp-macroexpand-expression int<keyboard>:layout/types:keywords)
@@ -48,60 +50,74 @@ Format:
 ;; Normalization
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:layout/types:normalize->func (keyword-or-func)
-  "Normalizes a KEYWORD-OR-FUNC to a function."
-  (if (not (keywordp keyword-or-func))
-      ;;------------------------------
-      ;; Function
-      ;;------------------------------
-      ;; Well it's not a keyword so we'll assume it's a function and return as-is.
+(defun int<keyboard>:layout/types:normalize->func (keyword-or-func &optional keywords)
+  "Normalizes a KEYWORD-OR-FUNC to a function.
+
+If KEYWORDS is non-nil, it will be searched for keyword matches to KEYWORD-OR-FUNC.
+If KEYWORDS is nil, it will search `int<keyboard>:layout/types:keywords'."
+  (let ((debug/tags '(:normalize))
+        (debug/name "int<keyboard>:layout/types:normalize->func"))
+    (int<keyboard>:debug
+        debug/name
+        debug/tags
+      '("Inputs:\n"
+        "  Normalize: %S\n"
+        "  Search:    %S")
       keyword-or-func
+      keywords)
 
-    ;;------------------------------
-    ;; Keyword -> Function
-    ;;------------------------------
+    (if (not (keywordp keyword-or-func))
+        ;;------------------------------
+        ;; Function
+        ;;------------------------------
+        ;; Well it's not a keyword so we'll assume it's a function and return as-is.
+        keyword-or-func
 
-    ;; Get first type's alist, and other prep-for-search-loop stuff.
-    (let* ((assoc/type (car int<keyboard>:layout/types:keywords))
-           (rest/types (cdr int<keyboard>:layout/types:keywords))
-           (keywords/type (cdr assoc/type))
-           ;; Keyword's value/function can be nil, so we need a flag to say we found
-           ;; it and another var to save it to.
-           found-keyword?
-           keyword/found)
+      ;;------------------------------
+      ;; Keyword -> Function
+      ;;------------------------------
 
-      (message "assoc/type: %S" assoc/type)
-      (message "rest/types: %S" rest/types)
-      (message "keywords/type: %S" keywords/type)
+      ;; Get first type's alist, and other prep-for-search-loop stuff.
+      (let* ((keywords (or keywords
+                           int<keyboard>:layout/types:keywords))
+             (assoc/type (car keywords))
+             (rest/types (cdr keywords))
+             (keywords/type (cdr assoc/type))
+             ;; Keyword's value/function can be nil, so we need a flag to say we found
+             ;; it and another var to save it to.
+             found-keyword?
+             keyword/found)
 
-      ;; Search each type's alist for the KEYWORD-OR-FUNC.
-      (while (and keywords/type
-                  (not found-keyword?))
-        ;; "Function" can be nil for unbinding something, so get the key and value to check
-        ;; for its existance instead.
-        (message "Check %S for %S: %S"
-                 (car assoc/type)
-                 keyword-or-func
-                 (int<keyboard>:alist:get/pair keyword-or-func
-                                               keywords/type))
-        (when-let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
-                                                            keywords/type)))
+        ;; Search each type's alist for the KEYWORD-OR-FUNC.
+        (while (and keywords/type
+                    (not found-keyword?))
+          ;; "Function" can be nil for unbinding something, so get the key and value to check
+          ;; for its existance instead.
+          (when-let ((key->func (int<keyboard>:alist:get/pair keyword-or-func
+                                                              keywords/type)))
             ;; Found the kvp; save its value (function/nil).
             (setq found-keyword? t
                   keyword/found (cdr key->func)))
 
-        ;; Get the next type to check.
-        (setq assoc/type (car rest/types)
-              rest/types (cdr rest/types)
-              keywords/type (cdr assoc/type)))
+          ;; Get the next type to check.
+          (setq assoc/type (car rest/types)
+                rest/types (cdr rest/types)
+                keywords/type (cdr assoc/type)))
 
-      ;; Return the keyword or error on not finding it.
-      (if found-keyword?
-          keyword/found
-        (int<keyboard>:output :error
-                              "int<keyboard>:layout/types:normalize->func"
-                              "No known keyword for %S."
-                              keyword-or-func)))))
+        ;; Return the keyword or error on not finding it.
+        (if (not found-keyword?)
+            (int<keyboard>:output :error
+                                  "int<keyboard>:layout/types:normalize->func"
+                                  "No known keyword for %S."
+                                  keyword-or-func)
+          (int<keyboard>:debug
+              debug/name
+              debug/tags
+            "%S -> %S"
+            keyword-or-func
+            keyword/found)
+
+          keyword/found)))))
 ;; (int<keyboard>:layout/types:normalize->func :layout:evil:line-prev)
 ;; (int<keyboard>:layout/types:normalize->func :layout:common:undefined)
 ;; (int<keyboard>:layout/types:normalize->func :layout:DNE:should-error)

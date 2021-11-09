@@ -67,12 +67,15 @@
 ;; Layout Derivations
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:layout/derive:search/registered:in-list (func keymaps)
-  "Search KEYMAPS for a match to the desired FUNC.
+(defun int<keyboard>:layout/derive:search/registered:in-list (func-or-kwd keymaps keywords)
+  "Search KEYMAPS for a match to the desired FUNC-OR-KWD.
 
-FUNC should be the function to search for.
+FUNC-OR-KWD should be the function or keyword to search for.
 
 KEYMAPS should be a list suitable for `input:keyboard/layout:map!'.
+
+KEYWORDS will be used to normalize FUNC-OR-KWD to a function.
+It should be `int<keyboard>:layout/types:keywords'.
 
 Returns keybind string or nil."
   ;;------------------------------
@@ -80,152 +83,164 @@ Returns keybind string or nil."
   ;;------------------------------
   (let ((debug/tags '(:derive :derive/search))
         (debug/name "int<keyboard>:layout/derive:search/registered:in-list")
-        (keymaps/len (length keymaps))
-        (index 0)
-        found/start
-        found/keybind)
-    (int<keyboard>:debug
-        debug/name
-        debug/tags
-      "search for `%S' in list: %S"
-      func keymaps)
+        (func (int<keyboard>:layout/types:normalize->func func-or-kwd keywords)))
+    (int<keyboard>:debug:func debug/name debug/tags
+                              :start
+                              (list (cons 'func-or-kwd func-or-kwd)
+                                    (cons 'keymaps keymaps)
+                                    (cons 'keywords keywords)))
 
-    (while (and (not found/start)
-                (not found/keybind)
-                (< index keymaps/len))
-      (let ((item (nth index keymaps)))
-        (int<keyboard>:debug
-            debug/name
-            debug/tags
-          "Start search here? index: %d, item: %S"
-          index item)
+    (let ((keymaps/len (length keymaps))
+          (index 0)
+          found/start
+          found/keybind
+          return/value)
 
-        ;; Get past any `:map' or such.
-        (cond ((and (keywordp item) ;; Currently everything in skips is a keyword.
-                    (alist-get item int<keyboard>:layout/derive:search/skips))
-               ;; `:after <mode-name>'
-               ;; `:map <map-name'
-               ;; etc.
-               (setq index (+ index (alist-get item int<keyboard>:layout/derive:search/skips))))
+      (while (and (not found/start)
+                  (not found/keybind)
+                  (< index keymaps/len))
+        (let ((item (nth index keymaps)))
+          (int<keyboard>:debug
+              debug/name
+              debug/tags
+            "Start search here? index: %d, item: %S"
+            index item)
 
-              ((and (listp item)
-                    (memq (car item) int<keyboard>:layout/derive:search/ignores))
-               (setq index (1+ index)))
+          ;; Get past any `:map' or such.
+          (cond ((and (keywordp item) ;; Currently everything in skips is a keyword.
+                      (alist-get item int<keyboard>:layout/derive:search/skips))
+                 ;; `:after <mode-name>'
+                 ;; `:map <map-name'
+                 ;; etc.
+                 (setq index (+ index (alist-get item int<keyboard>:layout/derive:search/skips))))
 
-              ((listp item)
-               ;; Search down into this list...
-               (int<keyboard>:debug
-                   debug/name
-                   debug/tags
-                 "Search into list first: %d -> %S"
-                 index item)
+                ((and (listp item)
+                      (memq (car item) int<keyboard>:layout/derive:search/ignores))
+                 (setq index (1+ index)))
 
-               (setq found/keybind (int<keyboard>:layout/derive:search/registered:in-list func item))
-
-               ;; And prep for if it failed to find anything.
-               (setq index (1+ index)))
-
-              (t
-               (setq found/start index)))))
-
-    (int<keyboard>:debug
-        debug/name
-        debug/tags
-      "Start search at index %d: %S"
-      index (nth index keymaps))
-
-    ;; Return something now or finish searching the KEYMAPS.
-    (cond (found/keybind
-           (int<keyboard>:debug
-               debug/name
-               debug/tags
-             "Already found: %d; found: %S"
-             index found/keybind)
-           found/keybind)
-
-          (found/start
-           ;; Search through the rest of the list for the FUNC.
-           (while (and (not found/keybind)
-                       (< index keymaps/len))
-
-             ;; Want something like:
-             ;;   :nvm "." :layout:evil:line-prev
-             ;;   "." #'func
-             (let* ((item (nth index keymaps)))
-               (int<keyboard>:debug
-                   debug/name
-                   debug/tags
-                 "Searching at: %d -> %S"
-                 index item)
-
-               (cond
-                ;; A thing to search down into?
                 ((listp item)
+                 ;; Search down into this list...
                  (int<keyboard>:debug
                      debug/name
                      debug/tags
-                   "Searching into list at: %d -> %S"
+                   "Search into list first: %d -> %S"
                    index item)
 
-                 ;; Search down into this list...
-                 (setq found/keybind (int<keyboard>:layout/derive:search/registered:in-list func item))
+                 (setq found/keybind (int<keyboard>:layout/derive:search/registered:in-list func item keywords))
 
                  ;; And prep for if it failed to find anything.
                  (setq index (1+ index)))
 
-                ;; Are we looking at: <states-keyword> <keybind> <func/func-keyword>?
-                ((condition-case nil
-                     (doom--map-keyword-to-states item)
-                   ;; Ignore error signal from `doom--map-keyword-to-states'.
-                   (error nil))
-
-                 (let ((check/key (nth (+ index 1) keymaps))
-                       (check/func (int<keyboard>:layout/types:normalize->func (nth (+ index 2) keymaps))))
-                   (int<keyboard>:debug
-                       debug/name
-                       debug/tags
-                     "Found evil states/key/bind at: %d -> %S %S %S"
-                     index item check/key check/func)
-                   (when (eq (doom-unquote check/func) (doom-unquote func))
-                     (setq found/keybind check/key)))
-
-                 (setq index (+ index 3)))
-
-                ;; Are we looking at: <keybind> <func/func-keyword>?
-                ((stringp item)
-                 (let ((check/key (nth index keymaps))
-                       (check/func (int<keyboard>:layout/types:normalize->func (nth (1+ index) keymaps))))
-                   (int<keyboard>:debug
-                       debug/name
-                       debug/tags
-                     "Found emacs states/key/bind at: %d -> %S %S"
-                     index item check/key check/func)
-
-                   (setq index (+ index 2))
-
-                   (when (eq (doom-unquote check/func) (doom-unquote func))
-                     (setq found/keybind check/key))))
-
-                ;; Dunno. Skip.
                 (t
-                 (setq index (1+ index))))))
+                 (setq found/start index)))))
 
-           (int<keyboard>:debug
-               debug/name
-               debug/tags
-             "Search result for: %d -> %S"
-             index found/keybind)
-           ;; Done searching - return whatever we did (or didn't) find.
-           found/keybind)
+      (int<keyboard>:debug
+          debug/name
+          debug/tags
+        "Start search at index %d: %S"
+        index (nth index keymaps))
 
-          (t
-           (int<keyboard>:debug
-               debug/name
-               debug/tags
-             "Nothing at: %d"
-             index)
-           ;; Nothing of note in this KEYMAPS list?
-           nil))))
+      ;; Return something now or finish searching the KEYMAPS.
+      (setq return/value
+            (cond (found/keybind
+                   (int<keyboard>:debug
+                       debug/name
+                       debug/tags
+                     "Already found: %d; found: %S"
+                     index found/keybind)
+                   found/keybind)
+
+                  (found/start
+                   ;; Search through the rest of the list for the FUNC.
+                   (while (and (not found/keybind)
+                               (< index keymaps/len))
+
+                     ;; Want something like:
+                     ;;   :nvm "." :layout:evil:line-prev
+                     ;;   "." #'func
+                     (let* ((item (nth index keymaps)))
+                       (int<keyboard>:debug
+                           debug/name
+                           debug/tags
+                         "Searching at: %d -> %S"
+                         index item)
+
+                       (cond
+                        ;; A thing to search down into?
+                        ((listp item)
+                         (int<keyboard>:debug
+                             debug/name
+                             debug/tags
+                           "Searching into list at: %d -> %S"
+                           index item)
+
+                         ;; Search down into this list...
+                         (setq found/keybind (int<keyboard>:layout/derive:search/registered:in-list func item keywords))
+
+                         ;; And prep for if it failed to find anything.
+                         (setq index (1+ index)))
+
+                        ;; Are we looking at: <states-keyword> <keybind> <func/func-keyword>?
+                        ((condition-case nil
+                             (doom--map-keyword-to-states item)
+                           ;; Ignore error signal from `doom--map-keyword-to-states'.
+                           (error nil))
+
+                         (let ((check/key (nth (+ index 1) keymaps))
+                               (check/func (int<keyboard>:layout/types:normalize->func (nth (+ index 2) keymaps)
+                                                                                       keywords)))
+                           (int<keyboard>:debug
+                               debug/name
+                               debug/tags
+                             "Found evil states/key/bind at: %d -> %S %S %S"
+                             index item check/key check/func)
+                           (when (eq (doom-unquote check/func) (doom-unquote func))
+                             (setq found/keybind check/key)))
+
+                         (setq index (+ index 3)))
+
+                        ;; Are we looking at: <keybind> <func/func-keyword>?
+                        ((stringp item)
+                         (let ((check/key (nth index keymaps))
+                               (check/func (int<keyboard>:layout/types:normalize->func (nth (1+ index) keymaps)
+                                                                                       keywords)))
+                           (int<keyboard>:debug
+                               debug/name
+                               debug/tags
+                             "Found emacs states/key/bind at: %d -> %S %S"
+                             index item check/key check/func)
+
+                           (setq index (+ index 2))
+
+                           (when (eq (doom-unquote check/func) (doom-unquote func))
+                             (setq found/keybind check/key))))
+
+                        ;; Dunno. Skip.
+                        (t
+                         (setq index (1+ index))))))
+
+                   (int<keyboard>:debug
+                       debug/name
+                       debug/tags
+                     "Search result for: %d -> %S"
+                     index found/keybind)
+                   ;; Done searching - return whatever we did (or didn't) find.
+                   found/keybind)
+
+                  (t
+                   (int<keyboard>:debug
+                       debug/name
+                       debug/tags
+                     "Nothing at: %d"
+                     index)
+                   ;; Nothing of note in this KEYMAPS list?
+                   nil)))
+
+      ;; Debug and return it.
+      (int<keyboard>:debug:func debug/name debug/tags
+                                :end return/value)
+
+      return/value)))
 
 
 (defun int<keyboard>:layout/derive:search/registered (func-or-kwd registered-binds keywords)
@@ -257,7 +272,7 @@ Returns keybind string or nil."
           "search type: %S" type)
 
         ;; Search this type's list.
-        (setq keybind-found (int<keyboard>:layout/derive:search/registered:in-list func keymaps))))
+        (setq keybind-found (int<keyboard>:layout/derive:search/registered:in-list func keymaps keywords))))
 
     ;; Done searching - return whatever we did (or didn't) find.
     (if keybind-found
@@ -583,7 +598,7 @@ Examples:
             ;; Find its keybind string.
             ((or (functionp (doom-unquote arg))
                  (keywordp arg))
-             (when-let* ((func (int<keyboard>:layout/types:normalize->func arg))
+             (when-let* ((func (int<keyboard>:layout/types:normalize->func arg keywords))
                          ;; Search for a keybind in order of what will be the bind when everything is applied and done.
                          (found (or
                                  ;; Search the in-progress keybinds for a match.

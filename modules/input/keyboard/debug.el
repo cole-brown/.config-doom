@@ -8,6 +8,8 @@
 
 
 (imp:require :input 'keyboard 'utils)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -231,34 +233,6 @@ Debugging when `int<keyboard>:debugging' is non-nil and one of these is true:
     (seq-intersection tags int<keyboard>:debug:tags))))
 
 
-(defmacro int<keyboard>:debug (caller tags msg &rest args)
-  "Print out a debug message.
-
-Will only evaluate CALLER, MSG, and ARGS when debugging.
-
-Only prints if debugging (`int<keyboard>:debugging') and if any tag in TAGS
-matches active debugging tags (`int<keyboard>:debug:tags').
-
-CALLER should be the calling function's name (string).
-
-MSG should be the `message' formatting string.
-
-ARGS should be the `message' arguments."
-  (declare (indent 2))
-
-  `(when (int<keyboard>:debugging? ,tags)
-     ;; (ignore caller msg args)))
-     (int<keyboard>:output :debug ,caller ,msg ,@args)))
-;; Make sure it only evals args when debugging:
-;; (int<keyboard>:debug "test-func" nil (message "test"))
-;; (int<keyboard>:debug "test-func" '(:derive) (message "test"))
-;; (int<keyboard>:debug "test-func" '(:jeff) (message "test"))
-;; (let ((caller "test-func")
-;;       (tags '(:derive))
-;;       (msg "test message"))
-;;   (int<keyboard>:debug caller tags msg))
-
-
 (defmacro int<keyboard>:debug/message? (caller tags message? msg &rest args)
   "Print out a debug message or `message'.
 
@@ -296,6 +270,129 @@ ARGS should be the `message' arguments."
 ;; (int<keyboard>:debug/message? "test-func" '(:jeff) :always-message (message "test"))
 
 
+(defmacro int<keyboard>:debug (caller tags msg &rest args)
+  "Print out a debug message.
+
+Will only evaluate CALLER, MSG, and ARGS when debugging.
+
+Only prints if debugging (`int<keyboard>:debugging') and if any tag in TAGS
+matches active debugging tags (`int<keyboard>:debug:tags').
+
+CALLER should be the calling function's name (string).
+
+MSG should be the `message' formatting string.
+
+ARGS should be the `message' arguments."
+  (declare (indent 2))
+
+  `(when (int<keyboard>:debugging? ,tags)
+     ;; (ignore caller msg args)))
+     (int<keyboard>:output :debug ,caller ,msg ,@args)))
+;; Make sure it only evals args when debugging:
+;; (int<keyboard>:debug "test-func" nil (message "test"))
+;; (int<keyboard>:debug "test-func" '(:derive) (message "test"))
+;; (int<keyboard>:debug "test-func" '(:jeff) (message "test"))
+;; (let ((caller "test-func")
+;;       (tags '(:derive))
+;;       (msg "test message"))
+;;   (int<keyboard>:debug caller tags msg))
+
+
+(defun int<keyboard>:debug:func (debug/name debug/tags start-or-end &optional value)
+  "Print out start/end function message, with optional VALUE.
+
+Prints start message when START-OR-END is `:start'.
+Prints end message w/ optional return value when START-OR-END is `:end'.
+
+VALUE is optional and should be:
+  - If START-OR-END is `:start':
+    + An alist of: '((input-symbol-name . input-symbol-value) ...)
+  - If START-OR-END is `:end':
+    + The return value."
+  (let ((func/name/this "int<keyboard>:debug:func"))
+
+    ;;------------------------------
+    ;; Start-of-function messages.
+    ;;------------------------------
+    (cond ((and (null value)
+                (eq :start start-or-end))
+           (int<keyboard>:debug
+               debug/name
+               debug/tags
+             '("\n"
+               "---[BEGIN]------>\n")))
+
+          ;; VALUE have been provided. Is it valid for `:start'?
+          ((and (eq :start start-or-end)
+                (not (int<keyboard>:alist:alist? value)))
+           (int<keyboard>:output :error
+                                 func/name/this
+                                 "VALUE is invalid for `:start'! Must be an alist. Got: %S"
+                                 value))
+
+          ;; VALUE exists and is valid; print it too.
+          ((eq :start start-or-end)
+           (let ((width/name 0)
+                 values/print
+                 fmt
+                 inputs)
+             ;; Convert names to strings, figure out print formatting.
+             (dolist (input value)
+               (let ((input/name (format "    %s:" (car input)))
+                     (input/value (cdr input)))
+                 (push (cons input/name input/value) values/print)
+                 (setq width/name (max (length input/name)
+                                       width/name))))
+             ;; ":" separator already provided above.
+             (setq fmt (concat "%-" (number-to-string width/name) "s %S\n"))
+
+             ;; Convert alist of strings to a single string.
+             (dolist (input (nreverse values/print))
+               (setq inputs (concat inputs
+                                    (format fmt (car input) (cdr input)))))
+
+             ;; Annnnd... print!
+             (int<keyboard>:debug
+                 debug/name
+                 debug/tags
+               '("\n"
+                 "---[BEGIN]------>\n"
+                 "  ---[INPUTS]--->\n"
+                 "%s")
+               inputs)))
+
+          ;;------------------------------
+          ;; End-of-function messages.
+          ;;------------------------------
+          ((and (null value)
+                (eq :end start-or-end))
+           (int<keyboard>:debug
+               debug/name
+               debug/tags
+             '("\n"
+               "<--[END]-------\n")))
+
+          ;; VALUE has been provided; print it too.
+          ((eq :end start-or-end)
+           (int<keyboard>:debug
+               debug/name
+               debug/tags
+             '("\n"
+               "<--[END]-------\n"
+               "  <--[RETURN]-- %S")
+             value))
+
+          ;;------------------------------
+          ;; Error: Bad START-OR-END
+          ;;------------------------------
+          (t
+           (int<keyboard>:output :error
+                                 func/name/this
+                                 "Invalid start/end tag! Must be `:start' or `:end'; got: %S"
+                                 start-or-end)))))
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:require :input 'keyboard 'debug)

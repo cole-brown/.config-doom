@@ -10,6 +10,7 @@
 
 
 (imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -65,90 +66,6 @@
 ;;------------------------------------------------------------------------------
 ;; Layout Derivations
 ;;------------------------------------------------------------------------------
-
-(defun int<keyboard>:layout/derive:search/registered (func registered-binds)
-  "Search REGISTERED-BINDS for a match to the desired FUNC.
-
-FUNC should be the function to search for.
-
-REGISTERED-BINDS should be `(int<keyboard>:registrar:get registrar :keybinds)'.
-
-Returns keybind string or nil."
-  (let ((debug/tags '(:derive :derive/search))
-        (func (int<keyboard>:layout/types:normalize->func func))
-        keybind-found
-        (types int<keyboard>:layout:types))
-    ;;------------------------------
-    ;; Types: :evil, :emacs, :common
-    ;;------------------------------
-    (while (and (not keybind-found)
-                types)
-      (let* ((type (caar types)) ;; types is alist, and we want the keys.
-             (keymaps (alist-get type registered-binds)))
-        (setq types (cdr types)) ;; Drop current type kvp from alist.
-        (int<keyboard>:debug
-            "int<keyboard>:layout/derive:search/registered"
-            debug/tags
-          "search type: %S" type)
-
-        ;; Search this type's list.
-        (setq keybind-found (int<keyboard>:layout/derive:search/registered:in-list func keymaps))))
-
-    ;; Done searching - return whatever we did (or didn't) find.
-    (if keybind-found
-        (int<keyboard>:debug
-            "int<keyboard>:layout/derive:search/registered"
-            debug/tags
-          "\n>>> [FOUND!]: %S" keybind-found)
-      (int<keyboard>:debug
-          "int<keyboard>:layout/derive:search/registered"
-          debug/tags
-        "\n>>> [absent]: %S" keybind-found))
-    keybind-found))
-;; `registered-binds' example:
-;; (pp (int<keyboard>:registrar:get registrar :keybinds))
-;; (int<keyboard>:layout/derive:search/registered
-;;  'evil-org-open-below
-;;  ;; :layout:evil:state-insert-before
-;;  '((:evil
-;;     (:prefix ("s" . "Evil States")
-;;      :nv "h" :layout:evil:state-insert-before
-;;      :nv "n" :layout:evil:state-insert-after
-;;      :n "t" :layout:evil:state-insert-line-open-below
-;;      :n "c" :layout:evil:state-insert-line-open-above
-;;      :n (:derive 'shift :layout:evil:state-insert-before) :layout:evil:state-insert-line-start
-;;      :n (:derive 'shift :layout:evil:state-insert-after) :layout:evil:state-insert-line-end
-;;      :n (:derive 'shift :layout:evil:state-insert-line-open-below) :layout:evil:state-replace
-;;      :m "v" :layout:evil:state-visual-char-wise
-;;      :m "V" :layout:evil:state-visual-line-wise)
-;;     :nvm "." :layout:evil:line-prev
-;;     :nvm "e" :layout:evil:line-next
-;;     :nvm "o" :layout:evil:char-prev
-;;     :nvm "u" :layout:evil:char-next
-;;     :m "A" :layout:evil:word-prev-begin
-;;     :m (:derive 'shift :layout:evil:char-prev) :layout:evil:word-prev-end
-;;     :m (:derive 'shift :layout:evil:char-next) :layout:evil:word-next-begin
-;;     :m "I" :layout:evil:word-next-end
-;;     :m (:derive 'meta 'unshift :layout:evil:word-prev-begin) :layout:evil:word-prev-begin-bigword
-;;     :m (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword
-;;     :m (:derive 'meta 'unshift :layout:evil:word-next-begin) :layout:evil:word-next-begin-bigword
-;;     :m (:derive 'meta 'unshift :layout:evil:word-next-end) :layout:evil:word-next-end-bigword
-;;     :m "(" :layout:evil:sentence-begin-prev
-;;     :m ")" :layout:evil:sentence-begin-next
-;;     :m "{" :layout:evil:paragraph-prev
-;;     :m "}" :layout:evil:paragraph-next
-;;     :m (:derive 'control :layout:evil:line-prev) :layout:evil:scroll-up
-;;     :m (:derive 'control :layout:evil:line-next) :layout:evil:scroll-down
-;;     :m (:derive 'control 'meta :layout:evil:line-prev) :layout:evil:scroll-page-up
-;;     :m (:derive 'control 'meta :layout:evil:line-next) :layout:evil:scroll-page-down
-;;     :m (:derive 'control :layout:evil:char-prev) :layout:evil:line-begin
-;;     :m (:derive 'control :layout:evil:char-next) :layout:evil:line-end
-;;     (:after org
-;;      :after evil-org
-;;      :map evil-org-mode-map
-;;      (:prefix ("s" . "Evil States")
-;;       :n "t" #'evil-org-open-below)))))
-
 
 (defun int<keyboard>:layout/derive:search/registered:in-list (func keymaps)
   "Search KEYMAPS for a match to the desired FUNC.
@@ -309,6 +226,93 @@ Returns keybind string or nil."
              index)
            ;; Nothing of note in this KEYMAPS list?
            nil))))
+
+
+(defun int<keyboard>:layout/derive:search/registered (func-or-kwd registered-binds keywords)
+  "Search REGISTERED-BINDS for a match to the desired FUNC-OR-KWD.
+
+FUNC-OR-KWD should be the function/keyword to search for.
+
+REGISTERED-BINDS should be `(int<keyboard>:registrar:get registrar :keybinds)'.
+
+KEYWORDS will be used to normalize FUNC-OR-KWD to a function.
+It should be `int<keyboard>:layout/types:keywords'.
+
+Returns keybind string or nil."
+  (let ((debug/tags '(:derive :derive/search))
+        (func (int<keyboard>:layout/types:normalize->func func-or-kwd keywords))
+        keybind-found
+        (types int<keyboard>:layout:types))
+    ;;------------------------------
+    ;; Types: :evil, :emacs, :common
+    ;;------------------------------
+    (while (and (not keybind-found)
+                types)
+      (let* ((type (caar types)) ;; types is alist, and we want the keys.
+             (keymaps (alist-get type registered-binds)))
+        (setq types (cdr types)) ;; Drop current type kvp from alist.
+        (int<keyboard>:debug
+            "int<keyboard>:layout/derive:search/registered"
+            debug/tags
+          "search type: %S" type)
+
+        ;; Search this type's list.
+        (setq keybind-found (int<keyboard>:layout/derive:search/registered:in-list func keymaps))))
+
+    ;; Done searching - return whatever we did (or didn't) find.
+    (if keybind-found
+        (int<keyboard>:debug
+            "int<keyboard>:layout/derive:search/registered"
+            debug/tags
+          "\n>>> [FOUND!]: %S" keybind-found)
+      (int<keyboard>:debug
+          "int<keyboard>:layout/derive:search/registered"
+          debug/tags
+        "\n>>> [absent]: %S" keybind-found))
+    keybind-found))
+;; `registered-binds' example:
+;; (pp (int<keyboard>:registrar:get registrar :keybinds))
+;; (int<keyboard>:layout/derive:search/registered
+;;  'evil-org-open-below
+;;  ;; :layout:evil:state-insert-before
+;;  '((:evil
+;;     (:prefix ("s" . "Evil States")
+;;      :nv "h" :layout:evil:state-insert-before
+;;      :nv "n" :layout:evil:state-insert-after
+;;      :n "t" :layout:evil:state-insert-line-open-below
+;;      :n "c" :layout:evil:state-insert-line-open-above
+;;      :n (:derive 'shift :layout:evil:state-insert-before) :layout:evil:state-insert-line-start
+;;      :n (:derive 'shift :layout:evil:state-insert-after) :layout:evil:state-insert-line-end
+;;      :n (:derive 'shift :layout:evil:state-insert-line-open-below) :layout:evil:state-replace
+;;      :m "v" :layout:evil:state-visual-char-wise
+;;      :m "V" :layout:evil:state-visual-line-wise)
+;;     :nvm "." :layout:evil:line-prev
+;;     :nvm "e" :layout:evil:line-next
+;;     :nvm "o" :layout:evil:char-prev
+;;     :nvm "u" :layout:evil:char-next
+;;     :m "A" :layout:evil:word-prev-begin
+;;     :m (:derive 'shift :layout:evil:char-prev) :layout:evil:word-prev-end
+;;     :m (:derive 'shift :layout:evil:char-next) :layout:evil:word-next-begin
+;;     :m "I" :layout:evil:word-next-end
+;;     :m (:derive 'meta 'unshift :layout:evil:word-prev-begin) :layout:evil:word-prev-begin-bigword
+;;     :m (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword
+;;     :m (:derive 'meta 'unshift :layout:evil:word-next-begin) :layout:evil:word-next-begin-bigword
+;;     :m (:derive 'meta 'unshift :layout:evil:word-next-end) :layout:evil:word-next-end-bigword
+;;     :m "(" :layout:evil:sentence-begin-prev
+;;     :m ")" :layout:evil:sentence-begin-next
+;;     :m "{" :layout:evil:paragraph-prev
+;;     :m "}" :layout:evil:paragraph-next
+;;     :m (:derive 'control :layout:evil:line-prev) :layout:evil:scroll-up
+;;     :m (:derive 'control :layout:evil:line-next) :layout:evil:scroll-down
+;;     :m (:derive 'control 'meta :layout:evil:line-prev) :layout:evil:scroll-page-up
+;;     :m (:derive 'control 'meta :layout:evil:line-next) :layout:evil:scroll-page-down
+;;     :m (:derive 'control :layout:evil:char-prev) :layout:evil:line-begin
+;;     :m (:derive 'control :layout:evil:char-next) :layout:evil:line-end
+;;     (:after org
+;;      :after evil-org
+;;      :map evil-org-mode-map
+;;      (:prefix ("s" . "Evil States")
+;;       :n "t" #'evil-org-open-below)))))
 
 
 (defun int<keyboard>:layout/derive:search/in-progress (states func in-progress-map-forms)
@@ -507,7 +511,10 @@ Returns keybind string or nil."
 ;; API
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:layout:derive (states keybinds/in-progress keybinds/registered args)
+;; TODO: Newparam KEYWORDS/REGISTERED for `keywords` param of `int<keyboard>:layout/derive:search/registered` call(s).
+;;   - Add to docstr.
+;;   - Add to callers - it should be `int<keyboard>:layout/types:keywords' for the real call(s).
+(defun int<keyboard>:layout:derive (states keybinds/in-progress keybinds/registered keywords/registered args)
   "Derive a `kbd' string from another function/layout-keyword's keybinding.
 
 STATES should be a list of the evil state(s) of the existing keybind.
@@ -580,9 +587,13 @@ Examples:
                          ;; Search for a keybind in order of what will be the bind when everything is applied and done.
                          (found (or
                                  ;; Search the in-progress keybinds for a match.
-                                 (int<keyboard>:layout/derive:search/in-progress states func keybinds/in-progress)
+                                 (int<keyboard>:layout/derive:search/in-progress states
+                                                                                 func
+                                                                                 keybinds/in-progress)
                                  ;; Search the registered-but-not-applied keybinds for a match...
-                                 (int<keyboard>:layout/derive:search/registered func keybinds/registered)
+                                 (int<keyboard>:layout/derive:search/registered func
+                                                                                keybinds/registered
+                                                                                keywords/registered)
                                  ;; Search for an existing keybind.
                                  (int<keyboard>:layout/derive:search/existing states func))))
                ;; Found the keybind - save it.

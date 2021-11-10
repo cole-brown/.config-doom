@@ -121,6 +121,7 @@
                                         (:layout:evil:char-next . evil-forward-char)
                                         (:layout:evil:word-prev-begin . evil-backward-word-begin)))
                             (:common . ((:layout:common:undefined . nil)
+                                        (:layout:common:not-bound . some-func-name)
                                         (:layout:common:char-prev . backward-char))))))
 
       ;;------------------------------
@@ -136,15 +137,29 @@
                         :layout:evil:char-next
                         register/binds
                         keyword->func)))
-
-      ;; TODO: more valid searches
+      (should (string= "t"
+                       (int<keyboard>:layout/derive:search/registered:in-list
+                        #'evil-org-open-below
+                        register/binds
+                        keyword->func)))
 
       ;;------------------------------
       ;; Invalid Searches
       ;;------------------------------
-
-      ;; TODO: more valid searches
-      )))
+      ;; Unregistered keyword -> error.
+      (should-error (int<keyboard>:layout/derive:search/registered:in-list
+                     :layout:common:does-not-exist
+                     register/binds
+                     keyword->func))
+      ;; Failed to find during search -> nil.
+      (should-not (int<keyboard>:layout/derive:search/registered:in-list
+                   #'func-does-not-exist
+                   register/binds
+                   keyword->func))
+      (should-not (int<keyboard>:layout/derive:search/registered:in-list
+                   :layout:common:not-bound
+                   register/binds
+                   keyword->func)))))
 
 
 ;; ;;------------------------------

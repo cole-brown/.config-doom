@@ -177,20 +177,19 @@
                 :spydez))
     (should (eq int<keyboard>:layout:desired
                 int<keyboard>:layout:active))
+    (should (eq (int<keyboard>:registrar:get :actual :state)
+                :config))
+
+    ;; Do we have something in binds and unbinds?
+    (should (int<keyboard>:registrar:get :actual :unbinds))
+    (should (int<keyboard>:registrar:get :actual :keybinds))
+
+    ;;------------------------------
+    ;; Test config-specific stuff.
+    ;;------------------------------
+    ;; ...currently there is nothing special for config.
+    ;; Hopefully will change - would be nice to get rid of the finalize delay.
     ))
-    ;; (should (eq (int<keyboard>:registrar:get :actual :state)
-    ;;             :config))
-
-    ;; ;; Do we have something in binds and unbinds?
-    ;; (should (int<keyboard>:registrar:get :actual :unbinds))
-    ;; (should (int<keyboard>:registrar:get :actual :keybinds))
-
-    ;; ;;------------------------------
-    ;; ;; Test config-specific stuff.
-    ;; ;;------------------------------
-    ;; ;; ...currently there is nothing special for config.
-    ;; ;; Hopefully will change - would be nice to get rid of the finalize delay.
-    ;; ))
 
 
 ;;------------------------------------------------------------------------------

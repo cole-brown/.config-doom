@@ -1,8 +1,5 @@
 ;;; input/keyboard/layout/layout.el -*- lexical-binding: t; -*-
 
-input:keyboard
-input//kl
-
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
 ;; ║             Layout Definition & Keybind Mapping Functions              ║ ;;

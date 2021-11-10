@@ -67,7 +67,7 @@ FILENAME should be a path relative to the root of ':input/layout'."
                                nil))
 
 
-(defun test<keyboard/layout>:teardown (test-name)
+(defun test<keyboard/layout>:teardown (_)
   "Tear-down for 'layout/*.el' tests."
   )
 

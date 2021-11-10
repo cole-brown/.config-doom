@@ -33,32 +33,48 @@ If called twice with the same TYPE, the later UNBIND-MAP will overwrite the
 earlier.
 
 Unbindings are applied before bindings."
-  (when (not (int<keyboard>:layout:valid? layout))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:unbind"
-                          '("`layout' must be a keyword. "
-                            "Got: %S")
-                          layout))
+  (let ((func.name "int<keyboard>:layout:unbind")
+        (debug/tags '(:registering :init)))
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :start
+     (list (cons 'registrar registrar)
+           (cons 'layout layout)
+           (cons 'type type)
+           (cons 'unbind-map unbind-map)))
 
-  (when (not (int<keyboard>:layout:type/valid? type))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:unbind"
-                          '("Type '%S' is not a valid type. "
-                            "Must be one of: %S")
-                          type int<keyboard>:layout:types))
+    (when (not (int<keyboard>:layout:valid? layout))
+      (int<keyboard>:output :error
+                            "input:keyboard/layout:unbind"
+                            '("`layout' must be a keyword. "
+                              "Got: %S")
+                            layout))
 
-  ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
-  ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
-  ;; TODO: move finalized states to a var.
-  (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
-    ;; This will error out for us.
-    (int<keyboard>:registration:state/transition:set registrar :init))
+    (when (not (int<keyboard>:layout:type/valid? type))
+      (int<keyboard>:output :error
+                            "input:keyboard/layout:unbind"
+                            '("Type '%S' is not a valid type. "
+                              "Must be one of: %S")
+                            type int<keyboard>:layout:types))
 
-  ;; Ok - errors checked; set it.
-  (setq int<keyboard>:layout:active layout)
-  (int<keyboard>:alist:update type
-                              unbind-map
-                              (int<keyboard>:registrar:symbol registrar :unbinds)))
+    ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
+    ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
+    ;; TODO: move finalized states to a var.
+    (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
+      ;; This will error out for us.
+      (int<keyboard>:registration:state/transition:set registrar :init))
+
+    ;; Ok - errors checked; set it.
+    (setq int<keyboard>:layout:active layout)
+    (prog1
+        (int<keyboard>:alist:update type
+                                    unbind-map
+                                    (int<keyboard>:registrar:symbol registrar :unbinds))
+      (int<keyboard>:debug:func
+       func.name
+       debug/tags
+       :end))))
 ;; (int<keyboard>:registrar:symbol :debug :unbinds)
 ;; int<keyboard>:registrar<debug>:unbinds
 
@@ -103,33 +119,49 @@ TYPE should be one of:
 
 If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
 earlier."
-  (when (not (int<keyboard>:layout:valid? layout))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:set"
-                          '("`layout' must be a keyword. "
-                            "Got: %S")
-                          layout))
+  (let ((func.name "int<keyboard>:layout:bind")
+        (debug/tags '(:registering :init)))
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :start
+     (list (cons 'registrar registrar)
+           (cons 'layout layout)
+           (cons 'type type)
+           (cons 'keybind-map keybind-map)))
 
-  (when (not (int<keyboard>:layout:type/valid? type))
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:set"
-                          '("Type '%S' is not a valid type. "
-                            "Must be one of: %S")
-                          type int<keyboard>:layout:types))
+    (when (not (int<keyboard>:layout:valid? layout))
+      (int<keyboard>:output :error
+                            "input:keyboard/layout:set"
+                            '("`layout' must be a keyword. "
+                              "Got: %S")
+                            layout))
 
-  ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
-  ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
-  ;; TODO: move finalized states to a var.
-  (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
-    ;; This will error out for us.
-    (int<keyboard>:registration:state/transition:set registrar :init))
+    (when (not (int<keyboard>:layout:type/valid? type))
+      (int<keyboard>:output :error
+                            "input:keyboard/layout:set"
+                            '("Type '%S' is not a valid type. "
+                              "Must be one of: %S")
+                            type int<keyboard>:layout:types))
 
-  ;; Ok - errors checked; set it.
-  (setq int<keyboard>:layout:active layout)
-  ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
-  (int<keyboard>:alist:update type
-                              keybind-map
-                              (int<keyboard>:registrar:symbol registrar :keybinds)))
+    ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
+    ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
+    ;; TODO: move finalized states to a var.
+    (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
+      ;; This will error out for us.
+      (int<keyboard>:registration:state/transition:set registrar :init))
+
+    ;; Ok - errors checked; set it.
+    (setq int<keyboard>:layout:active layout)
+    ;; Get the symbol name of the variable that stores these keybinds so we can use the alist helper macros to update it.
+    (prog1
+        (int<keyboard>:alist:update type
+                                    keybind-map
+                                    (int<keyboard>:registrar:symbol registrar :keybinds))
+      (int<keyboard>:debug:func
+       func.name
+       debug/tags
+       :end))))
 
 
 ;;------------------------------
@@ -164,38 +196,53 @@ REGISTRAR should be a keyword from `int<keyboard>:registrars'.
 BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
 LAYOUT should be a valid keyboard layout keyword."
-  ;;---
-  ;; Can use finalization's check here w/ known-good type.
-  ;;---
-  (int<keyboard>:activate/validate "keyboard:layout:config"
-                                   registrar
-                                   bind/unbind
-                                   :common
-                                   :config)
+  (let ((func.name "int<keyboard>:layout:config")
+        (debug/tags '(:registering :config)))
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :start
+     (list (cons 'registrar registrar)
+           (cons 'bind/unbind bind/unbind)
+           (cons 'layout layout)))
 
-  ;;---
-  ;; Also verify the `layout'.
-  ;;---
-  (unless (int<keyboard>:layout:valid? layout :active)
-    (int<keyboard>:output :error
-                          "input:keyboard/layout:set"
-                          '("`layout' must be a keyword. "
-                            "Got: %S")
-                          layout))
+    ;;---
+    ;; Can use finalization's check here w/ known-good type.
+    ;;---
+    (int<keyboard>:activate/validate func.name
+                                     registrar
+                                     bind/unbind
+                                     :common
+                                     :config)
 
-  ;; This will error out for us.
-  (int<keyboard>:registration:state/transition:set registrar :config)
+    ;;---
+    ;; Also verify the `layout'.
+    ;;---
+    (unless (int<keyboard>:layout:valid? layout :active)
+      (int<keyboard>:output :error
+                            func.name
+                            '("`layout' must be a keyword. "
+                              "Got: %S")
+                            layout))
 
-  ;;------------------------------
-  ;; Configuration
-  ;;------------------------------
-  ;; Nothing to do, currently.
-  ;;
-  ;; Only steps that need to happen after `input:keyboard/layout:set' is the
-  ;; `int<keyboard>:layout:activate', which happens in Finalization.
-  ;;
-  ;; NOTE: If we get something to do: obey `bind/unbind'!
-  )
+    ;; This will error out for us.
+    (int<keyboard>:registration:state/transition:set registrar :config)
+
+    ;;------------------------------
+    ;; Configuration
+    ;;------------------------------
+    ;; Nothing to do, currently.
+    ;;
+    ;; Only steps that need to happen after `input:keyboard/layout:set' is the
+    ;; `int<keyboard>:layout:activate', which happens in Finalization.
+    ;;
+    ;; NOTE: If we get something to do: obey `bind/unbind'!
+
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :end
+     nil)))
 
 
 ;;------------------------------
@@ -208,7 +255,23 @@ LAYOUT should be a valid keyboard layout keyword."
 BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
 LAYOUT should be a valid keyboard layout keyword."
-  (int<keyboard>:layout:config :actual bind/unbind layout))
+  (let ((func.name "keyboard:layout:config")
+        (debug/tags '(:registering :config)))
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :start
+     (list (cons 'bind/unbind bind/unbind)
+           (cons 'layout layout)))
+
+    (int<keyboard>:layout:config :actual bind/unbind layout)
+
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :end
+     nil)))
+
 
 
 ;;------------------------------------------------------------------------------

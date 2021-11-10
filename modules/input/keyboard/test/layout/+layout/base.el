@@ -15,9 +15,6 @@
 ;; Keyboard Files:
 ;;---
 (test<keyboard>:utils/path:load "layout/types/define.el")
-(test<keyboard>:utils/path:load "layout/types/common.el")
-(test<keyboard>:utils/path:load "layout/types/emacs.el")
-(test<keyboard>:utils/path:load "layout/types/evil.el")
 (test<keyboard>:utils/path:load "layout/bind.el")
 (test<keyboard>:utils/path:load "layout/bind-debug.el")
 (test<keyboard>:utils/path:load "layout/derive.el")
@@ -43,6 +40,11 @@
   "Set-up for 'layout/+<layout>/*.el' tests."
   ;; Clear out registrar vars for `test<keyboard/layout>:registrar' registrar.
   (test<keyboard/layout>:setup test-name)
+
+  ;; Define the types and their keywords.
+  (test<keyboard>:utils/path:load "layout/types/common.el")
+  (test<keyboard>:utils/path:load "layout/types/emacs.el")
+  (test<keyboard>:utils/path:load "layout/types/evil.el")
 
   ;; Set the layout if it's valid.
   (should (int<keyboard>:layout:valid? layout))

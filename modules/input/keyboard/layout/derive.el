@@ -598,7 +598,7 @@ Examples:
             ;; Find its keybind string.
             ((or (functionp (doom-unquote arg))
                  (keywordp arg))
-             (when-let* ((func (int<keyboard>:layout/types:normalize->func arg keywords))
+             (when-let* ((func (int<keyboard>:layout/types:normalize->func arg keywords/registered))
                          ;; Search for a keybind in order of what will be the bind when everything is applied and done.
                          (found (or
                                  ;; Search the in-progress keybinds for a match.

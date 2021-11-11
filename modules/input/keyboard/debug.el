@@ -308,13 +308,58 @@ VALUE is optional and should be:
   - If START-OR-END is `:start':
     + An alist of: '((input-symbol-name . input-symbol-value) ...)
   - If START-OR-END is `:end':
-    + The return value."
-  (let ((func/name/this "int<keyboard>:debug:func"))
+    + The return value.
+  - If START-OR-END is `:end/list':
+    + A alist of: '((key . value) ...)
+      - This will be displayed similar to `:start' alist."
+  (let ((func/name/this "int<keyboard>:debug:func")
+        value/formatted)
+
+    ;;------------------------------
+    ;; Format output?
+    ;;------------------------------
+    (when (memq start-or-end '(:start :end/list))
+      ;; No value alist - no output string.
+      (cond ((not value)
+             (setq value/formatted ""))
+
+            ;; Invalid value alist - error out.
+            ((not (int<keyboard>:alist:alist? value))
+             (int<keyboard>:output :error
+                                   func/name/this
+                                   "VALUE is invalid for `%S'! Must be an alist. Got: %S"
+                                   start-or-end
+                                   value))
+
+            ;; Format nicely into columns.
+            (t
+             (let ((width/name 0)
+                   values/print
+                   fmt)
+               ;; Convert names to strings, figure out print formatting.
+               (dolist (input value)
+                 (let ((key (car input))
+                       (value (cdr input)))
+                   (if (eq :title key)
+                       ;; Just push the title string.
+                       (push (cons value "") values/print)
+                     ;; Push formatted (to-string'd) key and value.
+                     (let ((key/formatted (format "    %s:" key)))
+                       (push (cons key/formatted value) values/print)
+                       (setq width/name (max (length key/formatted)
+                                             width/name))))))
+               ;; ":" separator already provided above.
+               (setq fmt (concat "%-" (number-to-string width/name) "s %S\n"))
+
+               ;; Convert alist of strings to a single string.
+               (dolist (input (nreverse values/print))
+                 (setq value/formatted (concat value/formatted
+                                               (format fmt (car input) (cdr input)))))))))
 
     ;;------------------------------
     ;; Start-of-function messages.
     ;;------------------------------
-    (cond ((and (null value)
+    (cond ((and (null value/formatted)
                 (eq :start start-or-end))
            (int<keyboard>:debug
                debug/name
@@ -322,64 +367,50 @@ VALUE is optional and should be:
              '("\n"
                "---[BEGIN]------>\n")))
 
-          ;; VALUE have been provided. Is it valid for `:start'?
-          ((and (eq :start start-or-end)
-                (not (int<keyboard>:alist:alist? value)))
-           (int<keyboard>:output :error
-                                 func/name/this
-                                 "VALUE is invalid for `:start'! Must be an alist. Got: %S"
-                                 value))
-
           ;; VALUE exists and is valid; print it too.
           ((eq :start start-or-end)
-           (let ((width/name 0)
-                 values/print
-                 fmt
-                 inputs)
-             ;; Convert names to strings, figure out print formatting.
-             (dolist (input value)
-               (let ((input/name (format "    %s:" (car input)))
-                     (input/value (cdr input)))
-                 (push (cons input/name input/value) values/print)
-                 (setq width/name (max (length input/name)
-                                       width/name))))
-             ;; ":" separator already provided above.
-             (setq fmt (concat "%-" (number-to-string width/name) "s %S\n"))
-
-             ;; Convert alist of strings to a single string.
-             (dolist (input (nreverse values/print))
-               (setq inputs (concat inputs
-                                    (format fmt (car input) (cdr input)))))
-
-             ;; Annnnd... print!
-             (int<keyboard>:debug
-                 debug/name
-                 debug/tags
-               '("\n"
-                 "---[BEGIN]------>\n"
-                 "  ---[INPUTS]--->\n"
-                 "%s")
-               inputs)))
-
-          ;;------------------------------
-          ;; End-of-function messages.
-          ;;------------------------------
-          ((and (null value)
-                (eq :end start-or-end))
+           ;; Print start w/ input vars.
            (int<keyboard>:debug
                debug/name
                debug/tags
              '("\n"
-               "<--[END]-------\n")))
+               "---[BEGIN]------>\n"
+               "  ---[INPUTS]--->\n"
+               "%s")
+             value/formatted))
 
-          ;; VALUE has been provided; print it too.
-          ((eq :end start-or-end)
+          ;;------------------------------
+          ;; End-of-function messages.
+          ;;------------------------------
+          ;; `:end' + VALUE; print end w/ return VALUE.
+          ((and (eq :end start-or-end)
+                value)
            (int<keyboard>:debug
                debug/name
                debug/tags
              '("\n"
                "<--[END]-------\n"
                "  <--[RETURN]-- %S")
+             value))
+
+          ;; No value provided; just print end.
+          ((eq :end start-or-end)
+           (int<keyboard>:debug
+               debug/name
+               debug/tags
+             '("\n"
+               "<--[END]-------\n")))
+
+
+          ;; `:end/list' + VALUE; print end w/ formatted VALUE.
+          ((eq :end/list start-or-end)
+           (int<keyboard>:debug
+               debug/name
+               debug/tags
+             '("\n"
+               "<--[END]-------\n"
+               "  <--[RETURN]--\n"
+               "%s")
              value))
 
           ;;------------------------------

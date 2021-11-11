@@ -18,6 +18,7 @@
 ;; Layout-Aware Keybind Mapping
 ;;------------------------------------------------------------------------------
 
+;; Equivalent to `doom--map-def'.
 (defun int<keyboard>:layout:map/bind (registrar keybind keyword-or-func &optional states desc)
   "Map KEYBIND to a function indicated by KEYWORD-OR-FUNC with DESC description string
 for evil STATES.
@@ -38,11 +39,15 @@ DESC can be nil or a string describing the keybinding.
 Used for side-effects; just returns non-nil (`t')."
   (let ((func/name "int<keyboard>:layout:map/bind")
         (debug/tags '(:map :map/bind)))
-    (int<keyboard>:debug
-        func/name
-        debug/tags
-      "keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
-      keybind keyword-or-func states desc)
+    (int<keyboard>:debug:func
+     func/name
+     debug/tags
+     :start
+     (list (cons 'registrar registrar)
+           (cons 'keybind keybind)
+           (cons 'keyword-or-func keyword-or-func)
+           (cons 'states states)
+           (cons 'desc desc)))
 
     ;;------------------------------
     ;; Normalize States.
@@ -53,8 +58,8 @@ Used for side-effects; just returns non-nil (`t')."
     (int<keyboard>:debug
         func/name
         debug/tags
-      "map-bind: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
-      keybind keyword-or-func states desc)
+      "states -> %S"
+      states)
 
     ;;------------------------------
     ;; Keyword -> Function
@@ -65,7 +70,7 @@ Used for side-effects; just returns non-nil (`t')."
         (int<keyboard>:debug
             func/name
             debug/tags
-          "Um... Unknown keybind keyword: %s -> %s"
+          "Unknown keybind keyword: %s -> %s"
           keyword-or-func func)
         (int<keyboard>:output :error
                               func/name
@@ -74,7 +79,7 @@ Used for side-effects; just returns non-nil (`t')."
       (int<keyboard>:debug
           func/name
           debug/tags
-        "map-bind: keyword-or-func: %S -> func: %S"
+        "keyword-or-func: %S -> func: %S"
         keyword-or-func func)
       ;; Empty string keybind and null func are modified into an ignored keybind.
       ;; Null func is an unbind.
@@ -86,7 +91,7 @@ Used for side-effects; just returns non-nil (`t')."
       ;; (int<keyboard>:debug
       ;;     func/name
       ;;     debug/tags
-      ;;   "map-bind: IS IT DERIVED???: %S %S -> %S"
+      ;;   "IS IT DERIVED???: %S %S -> %S"
       ;;   (listp keybind)
       ;;   (if (listp keybind)
       ;;       (car keybind)
@@ -151,12 +156,18 @@ Used for side-effects; just returns non-nil (`t')."
         (int<keyboard>:debug
             func/name
             debug/tags
-          "map-bind: SAVE: %S + %S -> %S"
+          "SAVE: %S + %S -> %S"
           state keybind func))
 
       ;;------------------------------
       ;; Always return non-nil as expected by caller.
       ;;------------------------------
+      (int<keyboard>:debug:func
+             func/name
+             debug/tags
+             :end
+             t)
+
       t)))
 ;; int<keyboard>:layout/types:keywords
 ;; (setq doom--map-batch-forms nil)
@@ -294,7 +305,9 @@ input keywords and such."
                       debug/tags
                     "---pcase->keyword: `%S': create `doom-leader-%s-map'" key desc)
                   (cl-destructuring-bind (prefix . desc)
-                      (doom-enlist (pop rest))
+                      ;; I'm not really sure what this does besides delete `arg' from `rest'... with extra steps.
+                      (let ((arg (pop rest)))
+                        (if (consp arg) arg (list arg)))
                     (let ((keymap (intern (format "doom-leader-%s-map" desc))))
                       (setq rest
                             (append (list :desc desc prefix keymap
@@ -308,7 +321,9 @@ input keywords and such."
                       debug/tags
                     "---pcase->keyword: `%S': prefix stuff" key)
                   (cl-destructuring-bind (prefix . desc)
-                      (doom-enlist (pop rest))
+                      ;; I'm not really sure what this does besides delete `arg' from `rest'... with extra steps.
+                      (let ((arg (pop rest)))
+                        (if (consp arg) arg (list arg)))
                     (int<keyboard>:debug
                         func/name
                         debug/tags

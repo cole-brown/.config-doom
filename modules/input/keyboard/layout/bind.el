@@ -10,6 +10,8 @@
 ;;                                 ──────────                                 ;;
 
 
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
 (imp:require :input 'keyboard 'registrars)
 (imp:require :input 'keyboard 'vars)
 
@@ -356,7 +358,15 @@ Return value will be either nil/non-nil (normally),
 or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
   (let ((func.name "int<keyboard>:layout:activate")
         (debug/tags '(:registering :finalize))
-        return-value)
+        results)
+    (int<keyboard>:debug:func
+     func.name
+     debug/tags
+     :start
+     (list (cons 'registrar registrar)
+           (cons 'bind/unbind bind/unbind)
+           (cons 'types types)
+           (cons 'no-eval no-eval)))
 
     ;; Validate inputs.
     (int<keyboard>:registration:valid/action? bind/unbind)
@@ -366,21 +376,26 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
     ;;------------------------------
     (when (memq bind/unbind '(:unbind :full))
       (dolist (type types)
-        (push (int<keyboard>:activate/type registrar
-                                           :unbind
-                                           type
-                                           no-eval
-                                           debug/tags)
-              return-value))
+        (let ((result/unbind (int<keyboard>:activate/type registrar
+                                                          :unbind
+                                                          type
+                                                          no-eval
+                                                          debug/tags)))
+          (int<keyboard>:debug
+              func.name
+              debug/tags
+            "unbind result:\n%S"
+            result/unbind)
+          (push result/unbind results)))
 
-      ;; Did we succeed? How do we deal with `return-value'?
-      (cond ((not return-value)
+      ;; Did we succeed? How do we deal with `results'?
+      (cond ((not results)
              (int<keyboard>:output :error
                                    func.name
                                    '("Failed to activate unbindings.")))
             ((not no-eval)
              ;; Don't need to save these. Clear out for binding.
-             (setq return-value nil)))
+             (setq results nil)))
 
       ;; Do not set registering state for unbindings.
       )
@@ -391,50 +406,62 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
     (when (memq bind/unbind '(:bind :full))
       ;; Activate each type.
       (dolist (type types)
-        (push (int<keyboard>:activate/type registrar
-                                           :bind
-                                           type
-                                           no-eval
-                                           debug/tags)
-              return-value))
+        (let ((result/bind (int<keyboard>:activate/type registrar
+                                                        :bind
+                                                        type
+                                                        no-eval
+                                                        debug/tags)))
+          (int<keyboard>:debug
+              func.name
+              debug/tags
+            "bind result:\n%S"
+            result/bind)
+          (push result/bind results)))
 
       ;; Prep return value?
       (unless no-eval
-        (setq return-value (seq-reduce (lambda (x y)
-                                         "Returns t/nil for (and x y)."
-                                         (not (null (and x y))))
-                                       return-value
-                                       t)))
+        (setq results (seq-reduce (lambda (x y)
+                                    "Returns t/nil for (and x y)."
+                                    (not (null (and x y))))
+                                  results
+                                  t)))
 
       ;; If we have a non-nil return we're `:active'.
       ;;
       ;; This will error out if invalid transition.
       (int<keyboard>:registration:state/transition:set registrar
-                                                       (if return-value
+                                                       (if results
                                                            :active
                                                          :inactive)))
 
     ;;------------------------------
     ;; Done.
     ;;------------------------------
-    ;; Small thing: if only unbinding, and we got here, and we have a nil
-    ;; return-value and nil NO-EVAL... it's ok; that's valid. Change to t.
-    (int<keyboard>:debug
-        func.name
-        debug/tags
-      "Returning for `no-eval'=%S: return-value? %S, no-eval? %S, unbind? %S -> sexprs? %S"
-      no-eval
-      return-value
-      no-eval
-      bind/unbind
-      (and (not return-value)
-           (null no-eval)
-           (eq bind/unbind :unbind)))
-    (if (and (not return-value)
+    ;; If only unbinding (no binds), and we got here, and we have a nil
+    ;; results and nil NO-EVAL... it's ok; that's valid: change to `t' return.
+    (if (and (not results)
              (null no-eval)
              (eq bind/unbind :unbind))
-        t
-      return-value)))
+        (progn
+          (int<keyboard>:debug:func
+           func.name
+           debug/tags
+           :end/list
+           (list
+            (cons :title "'Only unbinding but still true' return:")
+            (cons 'no-eval no-eval)
+            (cons 'bind/unbind bind/unbind)
+            (cons 'results results)
+            results))
+
+          t)
+
+      (int<keyboard>:debug:func
+       func.name
+       debug/tags
+       :end
+       results)
+      results)))
 
 
 (defun int<keyboard>:activate/type (registrar bind/unbind type &optional no-eval debug/tags)
@@ -450,7 +477,7 @@ TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 
 If NO-EVAL is non-nil, instead of mapping will return the code it would have used to map."
   (let ((valids:bind/unbind '(:bind :unbind))
-        return-value)
+        results)
     ;; We just apply the BINDINGS; what does `:full' mean in that context?
     (unless (memq bind/unbind valids:bind/unbind)
       (int<keyboard>:output :error
@@ -477,7 +504,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         ;;------------------------------
         ;; Valid and have keybinds:
         ;;------------------------------
-        (setq return-value
+        (setq results
               ;; Return something non-nil.
               (or
                ;; Should we do any sanity checks before `int<keyboard>:layout:map/process' output is eval'd?
@@ -493,7 +520,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                          debug/tags
                        "no-eval: %S"
                        (int<keyboard>:layout:map/process registrar keybinds))
-                     (setq return-value (int<keyboard>:layout:map/process registrar keybinds)))
+                     (setq results (int<keyboard>:layout:map/process registrar keybinds)))
 
                  ;; We are applying the keybinds.
                  (int<keyboard>:debug
@@ -527,7 +554,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       ;;                       valid keybinds)
 
       ;; Return nil for invalid case.
-      (setq return-value nil))
+      (setq results nil))
 
     (int<keyboard>:debug
         "int<keyboard>:activate/type"
@@ -535,8 +562,8 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       "Returning for `no-eval': %S" no-eval)
     ;; Return t/nil normally, or the map-process output if `no-eval'.
     (if no-eval
-        return-value
-      (not (null return-value)))))
+        results
+      (not (null results)))))
 
 
 ;;------------------------------

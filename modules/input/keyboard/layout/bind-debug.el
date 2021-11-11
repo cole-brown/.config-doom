@@ -47,7 +47,7 @@ LAYOUT should be a keyboard layout keyword.
 
 TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 
-KEYBIND-MAP should be a list of input to `input:keyboard/layout:map!'.
+KEYBIND-MAP should be a list of input to `keyboard:layout:map!'.
 
 Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.
@@ -156,7 +156,7 @@ LAYOUT should be a keyboard layout keyword.
 
 TYPE should be one of the keywords from `int<keyboard>:layout:types'.
 
-KEYBIND-MAP should be a list of input to `input:keyboard/layout:map!'.
+KEYBIND-MAP should be a list of input to `keyboard:layout:map!'.
 
 Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.

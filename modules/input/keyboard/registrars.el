@@ -178,7 +178,7 @@ This is an alist with 3 expected entries:
   :evil   - Any Evil-only keybinds.
 
 Each alist key's value should be a list of args for
-`input:keyboard/layout:map!'.")
+`keyboard:layout:map!'.")
 ;; (pp-macroexpand-expression int<keyboard>:registrar<actual>:keybinds)
 
 
@@ -194,7 +194,7 @@ This is an alist with 3 expected entries:
   :evil   - Any Evil-only unbinds.
 
 Each alist key's value should be a list of args for
-`input:keyboard/layout:map!'.")
+`keyboard:layout:map!'.")
 
 
 (defvar int<keyboard>:registrar<actual>:state nil
@@ -226,7 +226,7 @@ This is an alist with 3 expected entries:
   :evil   - Any Evil-only keybinds.
 
 Each alist key's value should be a list of args for
-`input:keyboard/layout:map!'.")
+`keyboard:layout:map!'.")
 ;; (pp-macroexpand-expression int<keyboard>:layout/temp:keybinds)
 
 
@@ -242,7 +242,7 @@ This is an alist with 3 expected entries:
   :evil   - Any Evil-only unbinds.
 
 Each alist key's value should be a list of args for
-`input:keyboard/layout:map!'.")
+`keyboard:layout:map!'.")
 
 
 (defvar int<keyboard>:registrar<debug>:state nil

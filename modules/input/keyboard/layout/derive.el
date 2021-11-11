@@ -72,7 +72,7 @@
 
 FUNC-OR-KWD should be the function or keyword to search for.
 
-KEYMAPS should be a list suitable for `input:keyboard/layout:map!'.
+KEYMAPS should be a list suitable for `keyboard:layout:map!'.
 
 KEYWORDS will be used to normalize FUNC-OR-KWD to a function.
 It should be `int<keyboard>:layout/types:keywords'.
@@ -526,24 +526,23 @@ Returns keybind string or nil."
 ;; API
 ;;------------------------------------------------------------------------------
 
-;; TODO: Newparam KEYWORDS/REGISTERED for `keywords` param of `int<keyboard>:layout/derive:search/registered` call(s).
-;;   - Add to docstr.
-;;   - Add to callers - it should be `int<keyboard>:layout/types:keywords' for the real call(s).
-(defun int<keyboard>:layout:derive (states keybinds/in-progress keybinds/registered keywords/registered args)
+(defun int<keyboard>:layout:derive (states args keybinds/in-progress keybinds/registered keywords/registered)
   "Derive a `kbd' string from another function/layout-keyword's keybinding.
 
 STATES should be a list of the evil state(s) of the existing keybind.
 
 KEYBINDS/IN-PROGRESS should be all the current/in-progress
-`input//kl:layout:map-process' keybinds.
+`int<keyboard>:layout:map/process' keybinds.
   - Which, currently, should be `doom--map-batch-forms'.
 
 KEYBINDS/REGISTERED should be all the registered-but-not-yet-applied
-`input//kl:layout:map-process' keybinds.
+`int<keyboard>:layout:map/process' keybinds.
   - Which should be `(int<keyboard>:registrar:get registrar :keybinds)'.
 
 We will look through that and bound keys to figure out the correct derivation,
 preferring `existing' over currently bound keys.
+
+KEYWORDS/REGISTERED should be `int<keyboard>:layout/types:keywords'.
 
 ARGS should be a list of:
   - Modifier key symbols:
@@ -558,7 +557,7 @@ ARGS should be a list of:
     + :layout:evil:char-prev
     + #'evil-backward-char
 
-`input:keyboard/layout:map!' Usage Examples:
+`keyboard:layout:map!' Usage Examples:
     :nvm  \"o\"                                                 :layout:evil:char-prev
     :m    (:derive 'shift :layout:evil:char-prev)             :layout:evil:word-prev-end
     :m    (:derive 'meta 'unshift :layout:evil:word-prev-end) :layout:evil:word-prev-end-bigword
@@ -571,11 +570,12 @@ Examples:
   2. If `:layout:evil:word-prev-end' is \"C-A\":
     (:derive 'meta :layout:evil:word-prev-end)
       -> \"M-C-A\""
-  (let ((debug/tags '(:derive))
+  (let ((func/name "int<keyboard>:layout:derive")
+        (debug/tags '(:derive))
         modifiers
         keys)
     (int<keyboard>:debug
-        "int<keyboard>:layout:derive"
+        func/name
         debug/tags
       "INPUTS: \n  states: %S\n  args: %S\n  in-progress: %S\n  registered: %S"
       states args keybinds/in-progress keybinds/registered)
@@ -588,7 +588,7 @@ Examples:
                      :alt :super :hyper    ;; Uncommon Modifiers
                      :unshift))            ;; Cheating a bit...
              (int<keyboard>:debug
-                 "int<keyboard>:layout:derive"
+                 func/name
                  debug/tags
                "derive found modifier: %S"
                arg)
@@ -613,7 +613,7 @@ Examples:
                                  (int<keyboard>:layout/derive:search/existing states func))))
                ;; Found the keybind - save it.
                (int<keyboard>:debug
-                   "int<keyboard>:layout:derive"
+                   func/name
                    debug/tags
                  "derive found key: %S"
                  arg)
@@ -622,23 +622,23 @@ Examples:
             ;; Fallthrough: Failed to parse arg - error.
             (t
              (int<keyboard>:debug
-                 "int<keyboard>:layout:derive"
+                 func/name
                  debug/tags
                "derive found nothing - error: %S"
                arg)
-             (int<keyboard>:output :error"int<keyboard>:layout:derive"
+             (int<keyboard>:output :errorfunc/name
                                    "Don't know how to process '%S' (type: %S) for deriving keybind. derivation: %S"
                                    arg
                                    (type-of arg)
                                    args))))
 
     (int<keyboard>:debug
-        "int<keyboard>:layout:derive"
+        func/name
         debug/tags
       "\n  --> Final Modifiers: %S"
       modifiers)
     (int<keyboard>:debug
-        "int<keyboard>:layout:derive"
+        func/name
         debug/tags
       "\n  --> Final Keys: %S"
       keys)
@@ -652,7 +652,7 @@ Examples:
                (not (eq modifiers '(shift))))
       ;; Error until a good solution is figured out.
       (int<keyboard>:output :error
-                            "int<keyboard>:layout:derive"
+                            func/name
                             '("Don't have a good solution for deriving from multi-key sequences... "
                               "modifiers: %S, original keybind: %S")
                             modifiers
@@ -688,7 +688,7 @@ Examples:
                (setq mod/string (concat mod/string "A-")))
               (t
                (int<keyboard>:output :error
-                                     "int<keyboard>:layout:derive"
+                                     func/name
                                      "Don't know how to process modifier '%s' for deriving keybind: %S"
                                      mod/symbol
                                      args))))
@@ -696,13 +696,13 @@ Examples:
       ;; Check our `keys'? Zero is bad; more than one might be weird...
       (cond ((= (length keys) 0)
              (int<keyboard>:output :error
-                                   "int<keyboard>:layout:derive"
+                                   func/name
                                    "No keybind found for: %S"
                                    args))
 
             ((> (length keys) 1)
              (int<keyboard>:output :error
-                                   "int<keyboard>:layout:derive"
+                                   func/name
                                    '("Not currently sure what to do with more than one keybind string. "
                                      "Found: %S, Args: %S")
                                    keys
@@ -716,7 +716,7 @@ Examples:
               ((and (listp keys)
                     (stringp (car keys)))
                (int<keyboard>:debug
-                   "int<keyboard>:layout:derive"
+                   func/name
                    debug/tags
                  "\n[DERIVE]\n>>>>> %S <-- %S"
                  (concat mod/string (key-description
@@ -729,7 +729,7 @@ Examples:
               ((and (listp keys)
                     (eq (car keys) :derive))
                (int<keyboard>:debug
-                   "int<keyboard>:layout:derive"
+                   func/name
                    debug/tags
                  "\n  --> RECURSIVE DERIVE: %S\n[DERIVE:recurse-start]"
                  keys)
@@ -740,7 +740,7 @@ Examples:
                                                    keybinds/registered
                                                    (cdr keys)))
                (int<keyboard>:debug
-                   "int<keyboard>:layout:derive"
+                   func/name
                    debug/tags
                  "\n[DERIVE:recurse-end]\n[DERIVE]\n>>>>> %S <-- %S"
                  (concat mod/string (key-description
@@ -752,7 +752,7 @@ Examples:
               ;; No idea - error.
               (t
                (int<keyboard>:debug
-                   "int<keyboard>:layout:derive"
+                   func/name
                    debug/tags
                  "\n  --> RECURSIVE DERIVE: %S\n[DERIVE:recurse-start]"
                  keys))))))))
@@ -775,9 +775,9 @@ Examples:
 ;;                        (list :def #'evil-next-line :which-key "hello"))
 ;;                       ("C" #'evil-previous-line)))))
 ;;   ;; Should get "C-h" because char-prev is "h".
-;;   (int<keyboard>:layout:derive '(motion) batch-forms '(control :layout:evil:char-prev))
+;;   (int<keyboard>:layout:derive '(motion) batch-forms <TODO> '(control :layout:evil:char-prev))
 ;;   ;; Should get "c" from unshifting "C".
-;;   (int<keyboard>:layout:derive '(motion) batch-forms '(unshift #'evil-previous-line)))
+;;   (int<keyboard>:layout:derive '(motion) batch-forms <TODO> '(unshift #'evil-previous-line)))
 
 
 ;; TODO: This?

@@ -18,7 +18,7 @@
 ;; Layout-Aware Keybind Mapping
 ;;------------------------------------------------------------------------------
 
-(defun input//kl:layout:map-bind (keybind keyword-or-func &optional states desc)
+(defun int<keyboard>:layout:map/bind (registrar keybind keyword-or-func &optional states desc)
   "Map KEYBIND to a function indicated by KEYWORD-OR-FUNC with DESC description string
 for evil STATES.
 
@@ -36,9 +36,10 @@ checked by this function. It will be translated to a function via the
 DESC can be nil or a string describing the keybinding.
 
 Used for side-effects; just returns non-nil (`t')."
-  (let ((debug/tags '(:map :map/bind)))
+  (let ((func/name "int<keyboard>:layout:map/bind")
+        (debug/tags '(:map :map/bind)))
     (int<keyboard>:debug
-        "input//kl:layout:map-bind"
+        func/name
         debug/tags
       "keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
       keybind keyword-or-func states desc)
@@ -50,7 +51,7 @@ Used for side-effects; just returns non-nil (`t')."
               (null states))
       (setq states (cons 'nil (delq 'global states))))
     (int<keyboard>:debug
-        "input//kl:layout:map-bind"
+        func/name
         debug/tags
       "map-bind: keybind: %S, keyword-or-func: %S, states: %S, desc: %S"
       keybind keyword-or-func states desc)
@@ -62,16 +63,16 @@ Used for side-effects; just returns non-nil (`t')."
     (let ((func (int<keyboard>:layout/types:normalize->func keyword-or-func)))
       (when (keywordp func)
         (int<keyboard>:debug
-            "input//kl:layout:map-bind"
+            func/name
             debug/tags
           "Um... Unknown keybind keyword: %s -> %s"
           keyword-or-func func)
         (int<keyboard>:output :error
-                              "input//kl:layout:map-bind"
+                              func/name
                               "Unknown keybind keyword: %s -> %s"
                               keyword-or-func func))
       (int<keyboard>:debug
-          "input//kl:layout:map-bind"
+          func/name
           debug/tags
         "map-bind: keyword-or-func: %S -> func: %S"
         keyword-or-func func)
@@ -83,7 +84,7 @@ Used for side-effects; just returns non-nil (`t')."
       ;; Is it a derived keybind?
       ;;------------------------------
       ;; (int<keyboard>:debug
-      ;;     "input//kl:layout:map-bind"
+      ;;     func/name
       ;;     debug/tags
       ;;   "map-bind: IS IT DERIVED???: %S %S -> %S"
       ;;   (listp keybind)
@@ -95,30 +96,34 @@ Used for side-effects; just returns non-nil (`t')."
       (when (and (listp keybind)
                  (eq (car keybind) :derive))
         (int<keyboard>:debug
-            "input//kl:layout:map-bind"
+            func/name
             debug/tags
           "  states: %S\n  batch-forms: %S\n derive-info: %S"
           states doom--map-batch-forms (cdr keybind))
         (int<keyboard>:debug
-            "input//kl:layout:map-bind"
+            func/name
             debug/tags
           "-->map-bind derived: %S <- %S"
           (int<keyboard>:layout:derive states
+                                       (cdr keybind)
                                        doom--map-batch-forms
-                                       (input//kl:registrar:get registrar :keybinds)
-                                       (cdr keybind))
+                                       (int<keyboard>:registrar:get registrar :keybinds)
+                                       int<keyboard>:layout/types:keywords
+                                       )
           keybind)
         (let ((debug-orig keybind))
           (setq keybind
                 ;; We've guarenteed that `states' is a list of at least `nil'.
                 (int<keyboard>:layout:derive states
+                                             (cdr keybind)
                                              doom--map-batch-forms
-                                             (input//kl:registrar:get registrar :keybinds)
-                                             (cdr keybind)))
+                                             (int<keyboard>:registrar:get registrar :keybinds)
+                                             int<keyboard>:layout/types:keywords
+                                             ))
           (int<keyboard>:debug
-              "input//kl:layout:map-bind"
+              func/name
               debug/tags
-            "input//kl:layout:map-bind: derived %S from: %S"
+            "derived %S from: %S"
             keybind
             debug-orig)))
 
@@ -144,7 +149,7 @@ Used for side-effects; just returns non-nil (`t')."
         (push (list keybind func)
               (alist-get state doom--map-batch-forms))
         (int<keyboard>:debug
-            "input//kl:layout:map-bind"
+            func/name
             debug/tags
           "map-bind: SAVE: %S + %S -> %S"
           state keybind func))
@@ -155,30 +160,31 @@ Used for side-effects; just returns non-nil (`t')."
       t)))
 ;; int<keyboard>:layout/types:keywords
 ;; (setq doom--map-batch-forms nil)
-;; (input//kl:layout:map-bind "c" :layout:evil:line-prev nil "testing...")
+;; (int<keyboard>:layout:map/bind :debug "c" :layout:evil:line-prev nil "testing...")
 ;; (doom--map-def "c" #'evil-prev-line nil "testing...")
-;; (input//kl:layout:map-bind '(derive control :layout:evil:line-prev) :layout:evil:scroll-up (doom--map-keyword-to-states :n))
+;; (int<keyboard>:layout:map/bind :debug '(derive control :layout:evil:line-prev) :layout:evil:scroll-up (doom--map-keyword-to-states :n))
 ;; doom--map-batch-forms
 
 
-(defun input//kl:layout:map-nested (wrapper rest)
-  "Map a nested list in `input//kl:layout:map-process'."
+(defun int<keyboard>:layout:map/nested (registrar wrapper rest)
+  "Map a nested list in `int<keyboard>:layout:map/process'."
   ;; Finish current map-forms.
   (doom--map-commit)
   ;; Setup for the nested call.
   (let ((doom--map-parent-state (doom--map-state)))
     (push (if wrapper
-              (append wrapper (list (input//kl:layout:map-process rest)))
-            (input//kl:layout:map-process rest))
+              (append wrapper (list (int<keyboard>:layout:map/process registrar rest)))
+            (int<keyboard>:layout:map/process registrar rest))
           doom--map-forms)))
 
 
-(defun input//kl:layout:map-process (rest)
+(defun int<keyboard>:layout:map/process (registrar rest)
   "Layout-aware backend for `map!' - equivalent to `doom--map-process'.
 
 Create sexprs required for `map!' to be able to map keybinds based on its
 input keywords and such."
-  (let ((debug/tags '(:map :map/process))
+  (let ((func/name "int<keyboard>:layout:map/process")
+        (debug/tags '(:map :map/process))
         (doom--map-fn doom--map-fn)
         doom--map-state
         doom--map-forms
@@ -186,7 +192,7 @@ input keywords and such."
     (while rest
       (let ((key (pop rest)))
         (int<keyboard>:debug
-            "input//kl:layout:map-process"
+            func/name
             debug/tags
           "MAP-PROCESS _KEY_ LOOP: %S"
           key)
@@ -195,17 +201,17 @@ input keywords and such."
         ;;------------------------------
         (cond ((listp key)
                (int<keyboard>:debug
-                   "input//kl:layout:map-process"
+                   func/name
                    debug/tags
-                 "-cond->list: list: send to input//kl:layout:map-nested: %S" key)
-               (input//kl:layout:map-nested nil key))
+                 "-cond->list: list: send to int<keyboard>:layout:map/nested: %S" key)
+               (int<keyboard>:layout:map/nested registrar nil key))
 
               ;;------------------------------
               ;; `map!' keyword to parse.
               ;;------------------------------
               ((keywordp key)
                (int<keyboard>:debug
-                   "input//kl:layout:map-process"
+                   func/name
                    debug/tags
                  "-cond->keyword: keyword->pcase: %S" key)
                (pcase key
@@ -215,14 +221,14 @@ input keywords and such."
                  ;; Save off info for later.
                  (:leader
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': doom--map-fn -> `doom--define-leader-key'" key)
                   (doom--map-commit)
                   (setq doom--map-fn 'doom--define-leader-key))
                  (:localleader
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': doom--map-fn -> `define-localleader-key!'" key)
                   (doom--map-commit)
@@ -232,10 +238,10 @@ input keywords and such."
                  ;;---
                  (:after
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': Call `doom--map-nested'" key)
-                  (input//kl:layout:map-nested (list 'after! (pop rest)) rest)
+                  (int<keyboard>:layout:map/nested registrar (list 'after! (pop rest)) rest)
                   (setq rest nil))
                  ;;---
                  ;; Description
@@ -243,7 +249,7 @@ input keywords and such."
                  ;; Save for next item that wants a description.
                  (:desc
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': setq desc: %S" key (car rest))
                   (setq desc (pop rest)))
@@ -252,7 +258,7 @@ input keywords and such."
                  ;;---
                  (:map
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': doom--map-set: %S" key rest)
                   ;; TODO: do I need to remake `doom--map-set'?
@@ -262,7 +268,7 @@ input keywords and such."
                  ;;---
                  (:mode
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': Push mode stuff into rest." key)
                   (push (cl-loop for m in (doom-enlist (pop rest))
@@ -274,7 +280,7 @@ input keywords and such."
                  ;;---
                  ((or :when :unless)
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': -> `doom--map-nested'" key)
                   (doom--map-nested (list (intern (doom-keyword-name key)) (pop rest)) rest)
@@ -284,7 +290,7 @@ input keywords and such."
                  ;;---
                  (:prefix-map
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': create `doom-leader-%s-map'" key desc)
                   (cl-destructuring-bind (prefix . desc)
@@ -298,25 +304,25 @@ input keywords and such."
                             doom--map-forms))))
                  (:prefix
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': prefix stuff" key)
                   (cl-destructuring-bind (prefix . desc)
                       (doom-enlist (pop rest))
                     (int<keyboard>:debug
-                        "input//kl:layout:map-process"
+                        func/name
                         debug/tags
                       "---pcase->:prefix: (%S . %S): rest=%S" prefix desc rest)
                     (doom--map-set (if doom--map-fn :infix :prefix)
                                    prefix)
                     (when (stringp desc)
                       (int<keyboard>:debug
-                          "input//kl:layout:map-process"
+                          func/name
                           debug/tags
                         "---pcase->:prefix: string desc %S" desc)
                       (setq rest (append (list :desc desc "" nil) rest))
                       (int<keyboard>:debug
-                          "input//kl:layout:map-process"
+                          func/name
                           debug/tags
                         "---pcase->:prefix: rest w/ desc -> %S" rest)
                       )))
@@ -325,7 +331,7 @@ input keywords and such."
                  ;;---
                  (:textobj
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->keyword: `%S': text-objects-map stuff: key: %S, inner: %S, outer: %S"
                     key key inner outer)
@@ -340,7 +346,7 @@ input keywords and such."
                  ;;---
                  (_
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "---pcase->_/fallthrough: `%S': evil state? %S + %S -> %S"
                     key
@@ -348,21 +354,22 @@ input keywords and such."
                     (nth 0 rest)
                     (nth 1 rest))
                   ;; `doom--map-process' did a condition-case around this equivalent and then raised a different error message if an error
-                  ;; was caught. But I want `input//kl:layout:map-bind' to do the erroring - it knows more than we do about what went wrong.
+                  ;; was caught. But I want `int<keyboard>:layout:map/bind' to do the erroring - it knows more than we do about what went wrong.
                   ;;
                   ;; Evil states are followed by a `kbd'-type string, then
                   ;; either a function or a layout-keyword to bind to the
                   ;; keyword/string.
                   ;;
                   ;; NOTE: Keep `progn'! I keep adding a debug print or something here and ruining the flow into
-                  ;; `input//kl:layout:map-bind'...
+                  ;; `int<keyboard>:layout:map/bind'...
                   (int<keyboard>:debug
-                      "input//kl:layout:map-process"
+                      func/name
                       debug/tags
                     "-----map-bind->:state: %S=%S, %S -> %S"
                     key (doom--map-keyword-to-states key)
                     (nth 0 rest) (nth 1 rest))
-                  (input//kl:layout:map-bind (pop rest)
+                  (int<keyboard>:layout:map/bind registrar
+                                             (pop rest)
                                              (pop rest)
                                              (doom--map-keyword-to-states key)
                                              desc)
@@ -375,12 +382,13 @@ input keywords and such."
               ;;------------------------------
               (t
                (int<keyboard>:debug
-                   "input//kl:layout:map-process"
+                   func/name
                    debug/tags
                  "-cond->t/default: 'string'?: %S -> %S" key (car rest))
                ;; Takes over for `doom--map-def' - handles normal string->func
                ;; and new layout-keyword->func functionality.
-               (input//kl:layout:map-bind key
+               (int<keyboard>:layout:map/bind registrar
+                                          key
                                           (pop rest)
                                           nil
                                           desc)
@@ -395,7 +403,7 @@ input keywords and such."
     ;; Get rid of nils and order correctly.
     (macroexp-progn (nreverse (delq nil doom--map-forms)))))
 ;; (pp-macroexpand-expression (list :layout-keyword
-;;                                  (input//kl:layout:map-process '(:desc "test" :nvm "t" :layout:line-next))
+;;                                  (int<keyboard>:layout:map/process :debug '(:desc "test" :nvm "t" :layout:line-next))
 ;;                                  :should-equal-keybind-string
 ;;                                  (doom--map-process '(:desc "test" :nvm "t" #'evil-next-line))))
 ;; (doom--map-process '(:nvm  "c"  :layout:evil:line-prev
@@ -404,7 +412,7 @@ input keywords and such."
 ;;                      :nvm  "h"  :layout:evil:char-next))
 
 
-(defmacro input:keyboard/layout:map! (&rest rest)
+(defmacro keyboard:layout:map! (&rest rest)
   "A convenience macro for defining keyboard-layout-aware keybinds,
 powered by `general' - equivalent to Doom's `map!' macro.
 
@@ -446,13 +454,13 @@ States
   These must be placed right before the keybind.
 
   Do
-    (input:keyboard/layout:map! :leader :desc \"Description\" :n \"C-c\" #'dosomething)
-    (input:keyboard/layout:map! :leader :desc \"Description\" :n \"C-c\" :layout:action-name)
+    (keyboard:layout:map! :leader :desc \"Description\" :n \"C-c\" #'dosomething)
+    (keyboard:layout:map! :leader :desc \"Description\" :n \"C-c\" :layout:action-name)
   Don't
-    (input:keyboard/layout:map! :n :leader :desc \"Description\" \"C-c\" #'dosomething)
-    (input:keyboard/layout:map! :n :leader :desc \"Description\" \"C-c\" :layout:action-name)
-    (input:keyboard/layout:map! :leader :n :desc \"Description\" \"C-c\" #'dosomething)
-    (input:keyboard/layout:map! :leader :n :desc \"Description\" \"C-c\" :layout:action-name)
+    (keyboard:layout:map! :n :leader :desc \"Description\" \"C-c\" #'dosomething)
+    (keyboard:layout:map! :n :leader :desc \"Description\" \"C-c\" :layout:action-name)
+    (keyboard:layout:map! :leader :n :desc \"Description\" \"C-c\" #'dosomething)
+    (keyboard:layout:map! :leader :n :desc \"Description\" \"C-c\" :layout:action-name)
 
 Keybinds
   A keybind is in two parts:
@@ -467,17 +475,17 @@ Keybinds
        - A function symbol (e.g. #'evil-previous-line).
        - nil (which will unbind the key)."
   ;; Process args into a progn of calls to `general' to bind the keys.
-  (input//kl:layout:map-process rest))
+  (int<keyboard>:layout:map/process :actual rest))
 ;; Dvorak keyboard right-handed WASD-type movement:
-;; (input:keyboard/layout:map!
+;; (keyboard:layout:map!
 ;;  :nvm  "c"  :layout:evil:line-prev
 ;;  :nvm  "t"  :layout:evil:line-next
 ;;  :nvm  "h"  :layout:evil:char-next
 ;;  :nvm  "n"  :layout:evil:char-prev)
-;; (input:keyboard/layout:map! :nvm  "c"  :layout:evil:line-prev
-;;                             :desc "hello" :nvm  "t"  :layout:evil:line-next
-;;                             :nvm  "n"  :layout:evil:char-prev
-;;                             :nvm  "h"  :layout:evil:char-next)
+;; (keyboard:layout:map! :nvm  "c"  :layout:evil:line-prev
+;;                       :desc "hello" :nvm  "t"  :layout:evil:line-next
+;;                       :nvm  "n"  :layout:evil:char-prev
+;;                       :nvm  "h"  :layout:evil:char-next)
 
 
 ;;------------------------------------------------------------------------------

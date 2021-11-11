@@ -33,7 +33,7 @@
 ;; (test<keyboard>:layout:unbind :eval :spydez :evil
 (keyboard:layout:unbind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
-  ;; `input:keyboard/layout:map!'.
+  ;; `keyboard:layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: nil/global                                             ║
     ;; ╚════════════════════════════════════════════════════════════════╝
@@ -112,7 +112,7 @@
 ;;                             :spydez :evil
 (keyboard:layout:bind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
-  ;; `input:keyboard/layout:map!'.
+  ;; `keyboard:layout:map!'.
   '(;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: nil/global                                             ║
     ;; ╚════════════════════════════════════════════════════════════════╝
@@ -255,7 +255,7 @@
     ;; ╠═ END: evil-org-mode-map ═╣
     ;; ╚══════════════════════════╝
     ))
-;; (pp-macroexpand-expression (input//kl:registrar:get :actual :keybinds))
+;; (pp-macroexpand-expression (int<keyboard>:registrar:get :actual :keybinds))
 
 
 ;;------------------------------------------------------------------------------
@@ -295,7 +295,7 @@
       (test<keyboard>:layout:bind :pp-sexpr ; :eval
           :spydez :evil
         ;; Keybinds for the `:spydez' layout: a big list of inputs to
-        ;; `input:keyboard/layout:map!'.
+        ;; `keyboard:layout:map!'.
         ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
         `(:after magit
 
@@ -344,7 +344,7 @@
       (test<keyboard>:layout:bind :pp-sexpr ; :eval
           :spydez :evil
         ;; Keybinds for the `:spydez' layout: a big list of inputs to
-        ;; `input:keyboard/layout:map!'.
+        ;; `keyboard:layout:map!'.
         ;; Wait until after `magit' shows up or else these binds will get overwritten. Hooray lazy loading! :eyeroll:
         `(:after magit
 

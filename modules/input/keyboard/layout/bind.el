@@ -353,7 +353,7 @@ BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 TYPES should be a list of keywords from `int<keyboard>:layout:types'.
 
 Return value will be either nil/non-nil (normally),
-or `input//kl:layout:map-process' output if NO-EVAL is non-nil."
+or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
   (let ((func.name "int<keyboard>:layout:activate")
         (debug/tags '(:registering :finalize))
         return-value)
@@ -480,7 +480,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         (setq return-value
               ;; Return something non-nil.
               (or
-               ;; Should we do any sanity checks before `input//kl:layout:map-process' output is eval'd?
+               ;; Should we do any sanity checks before `int<keyboard>:layout:map/process' output is eval'd?
                (if no-eval
                    ;; Not applying the keybinds - returning the sexprs instead.
                    (progn
@@ -492,19 +492,19 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
                          "int<keyboard>:activate/type"
                          debug/tags
                        "no-eval: %S"
-                       (input//kl:layout:map-process keybinds))
-                     (setq return-value (input//kl:layout:map-process keybinds)))
+                       (int<keyboard>:layout:map/process registrar keybinds))
+                     (setq return-value (int<keyboard>:layout:map/process registrar keybinds)))
 
                  ;; We are applying the keybinds.
                  (int<keyboard>:debug
                      "int<keyboard>:activate/type"
                      debug/tags
                    "eval: %S"
-                   (input//kl:layout:map-process keybinds))
+                   (int<keyboard>:layout:map/process registrar keybinds))
                  (eval
-                  ;; This is the function that actually creates the keybinds for `input:keyboard/layout:map!'.
+                  ;; This is the function that actually creates the keybinds for `keyboard:layout:map!'.
                   ;; It'll return a `progn' of 'general' function calls, and we'll evaluate it.
-                  (input//kl:layout:map-process keybinds)))
+                  (int<keyboard>:layout:map/process registrar keybinds)))
                t))
 
       ;;------------------------------
@@ -538,10 +538,6 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
         return-value
       (not (null return-value)))))
 
-
-;;------------------------------------------------------------------------------
-;; Finalization
-;;------------------------------------------------------------------------------
 
 ;;------------------------------
 ;; API

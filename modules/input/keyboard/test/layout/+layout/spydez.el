@@ -159,16 +159,7 @@
     ;;------------------------------
     ;; Initialize unbinds/keybinds.
     ;;------------------------------
-
-    ;; Initialize the binds; should return truthy to indicate it loaded a file.
-    (should (int<keyboard>:load:file :spydez "init"))
-    ;; Did we set the keyboard layout and state?
-    (should (eq int<keyboard>:layout:desired
-                :spydez))
-    (should (eq int<keyboard>:layout:desired
-                int<keyboard>:layout:active))
-    (should (eq (int<keyboard>:registrar:get :actual :state)
-                :init))
+    (test<keyboard/layout/+layout>:init :spydez)
 
     ;;------------------------------
     ;; Configure unbinds/keybinds.

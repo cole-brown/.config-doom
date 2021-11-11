@@ -83,11 +83,11 @@
     ;;===
 
     ;;------------------------------
-    ;; Define unbinds/keybinds.
+    ;; Initialize unbinds/keybinds.
     ;;------------------------------
 
     (should (eq int<keyboard>:testing:disable-start-up-init nil))
-    ;; Define the binds; should return truthy to indicate it loaded a file.
+    ;; Initialize the binds; should return truthy to indicate it loaded a file.
     (should (int<keyboard>:load:file :spydez "init"))
 
     ;; Did we set the keyboard layout and state?
@@ -157,10 +157,10 @@
     ;;===
 
     ;;------------------------------
-    ;; Define unbinds/keybinds.
+    ;; Initialize unbinds/keybinds.
     ;;------------------------------
 
-    ;; Define the binds; should return truthy to indicate it loaded a file.
+    ;; Initialize the binds; should return truthy to indicate it loaded a file.
     (should (int<keyboard>:load:file :spydez "init"))
     ;; Did we set the keyboard layout and state?
     (should (eq int<keyboard>:layout:desired
@@ -169,6 +169,10 @@
                 int<keyboard>:layout:active))
     (should (eq (int<keyboard>:registrar:get :actual :state)
                 :init))
+
+    ;;------------------------------
+    ;; Configure unbinds/keybinds.
+    ;;------------------------------
 
     ;; Configure the binds; should return truthy to indicate it loaded a file.
     (should (int<keyboard>:load:file :spydez "config"))

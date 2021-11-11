@@ -38,8 +38,13 @@
 
 (defun test<keyboard/layout/+layout>:setup (test-name layout)
   "Set-up for 'layout/+<layout>/*.el' tests."
-  ;; Clear out registrar vars for `test<keyboard/layout>:registrar' registrar.
-  (test<keyboard/layout>:setup test-name)
+  ;; Clear out all vars of all registrars.
+  (dolist (cons/registrar->vars int<keyboard>:registrars)
+    (let ((registrar (car cons/registrar->vars))
+          (vars      (cdr cons/registrar->vars)))
+      (dolist (cons/keyword->symbol vars)
+        (let ((keyword (car cons/keyword->symbol)))
+          (int<keyboard>:registrar:set registrar keyword nil)))))
 
   ;; Define the types and their keywords.
   (test<keyboard>:utils/path:load "layout/types/common.el")
@@ -47,9 +52,11 @@
   (test<keyboard>:utils/path:load "layout/types/evil.el")
 
   ;; Set the layout if it's valid.
+  (setq int<keyboard>:layout:desired nil) ;; Unset desired so `int<keyboard>:layout:valid?' is checking less.
   (should (int<keyboard>:layout:valid? layout))
   (setq test<keyboard/layout/+layout>:layout/keyword layout)
   (setq int<keyboard>:layout:desired layout))
+;; (test<keyboard/layout/+layout>:setup "test" :jeff)
 
 
 (defun test<keyboard/layout/+layout>:teardown (test-name)

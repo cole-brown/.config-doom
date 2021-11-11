@@ -195,4 +195,38 @@
 ;; Test that init'd & config'd keybinds can be applied.
 ;;------------------------------
 
-;; TODO: This test.
+(ert-deftest test<keyboard>::layout/+spydez:apply ()
+  "Test the `:spydez' layout's config.el."
+  (test<keyboard>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<keyboard>::layout/+spydez:config"
+      ;; Clear out keybinds before test.
+      #'test<keyboard/layout/+layout/spydez>:setup
+      #'test<keyboard/layout/+layout/spydez>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    ;;------------------------------
+    ;; Initialize unbinds/keybinds.
+    ;;------------------------------
+    (test<keyboard/layout/+layout>:init :spydez)
+
+    ;;------------------------------
+    ;; Configure unbinds/keybinds.
+    ;;------------------------------
+    (test<keyboard/layout/+layout>:config :spydez)
+
+    ;;------------------------------
+    ;; Finalize/apply unbinds/keybinds.
+    ;;------------------------------
+    ;; Should get a non-nil output.
+    (should (keyboard:layout:finalize))
+
+    ;; TODO: Test that unbinds have been applied?
+
+    ;; TODO: Test that keys are bound to correct funcs?
+    ))

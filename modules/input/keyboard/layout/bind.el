@@ -540,6 +540,28 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
 
 
 ;;------------------------------------------------------------------------------
+;; Finalization
+;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; API
+;;------------------------------
+
+(defun keyboard:layout:finalize ()
+  "Hook to run ONCE under `doom-init-modules-hook' for finalizing all
+evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
+
+  ;; Common first, then +Good+ Emacs vs Evil.
+  (let ((types '(:common)))
+    ;; Evil or Emacs? Only load one...
+    (if (featurep! :editor evil)
+        (push :evil types)
+      (push :emacs types))
+    ;; Activate the keybinds for types.
+    (int<keyboard>:layout:activate :actual :full types)))
+
+
+;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
 (imp:provide :input 'keyboard 'layout 'bind)

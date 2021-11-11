@@ -18,24 +18,6 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Config: Set-Up Active Layout for Use
-;;------------------------------------------------------------------------------
-
-(defun input:keyboard/layout:finalize ()
-  "Hook to run ONCE under `doom-init-modules-hook' for finalizing all
-evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
-
-  ;; Common first, then +Good+ Emacs vs Evil.
-  (let ((types '(:common)))
-    ;; Evil or Emacs? Only load one...
-    (if (featurep! :editor evil)
-        (push :evil types)
-      (push :emacs types))
-    ;; Activate the keybinds for types.
-    (int<keyboard>:layout:activate :actual :full types)))
-
-
-;;------------------------------------------------------------------------------
 ;; Hooks
 ;;------------------------------------------------------------------------------
 
@@ -71,14 +53,14 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
   (add-transient-hook!
       'doom-init-modules-hook
     ;; Finalize by actually finally mapping the layout's keybinds.
-    (input:keyboard/layout:finalize)))
+    (keyboard:layout:finalize)))
 
 ;;------------------------------
 ;; FOR TESTING LAYOUTS:
 ;;------------------------------
 ;; If testing, and you want to apply the keybind like the transient hook will,
 ;; just evaluate this:
-;;   (input:keyboard/layout:finalize)
+;;   (keyboard:layout:finalize)
 
 
 ;;------------------------------------------------------------------------------

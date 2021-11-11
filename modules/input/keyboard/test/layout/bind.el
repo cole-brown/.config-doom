@@ -353,6 +353,9 @@
       ;;     (general-define-key :states 'visual "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00)
       ;;     (general-define-key :states 'normal "C-c <C-F15>" #'test<keyboard/layout>:bind:count/00))
       ;; TODO [2021-11-03]: That may be our bug, but... that's a bugfix for the 'test/layout/layout.el' tests.
+      ;; Actually this is probably expected?
+      ;;   1. `nil' pushed for unbinds
+      ;;   2. `progn' pushed for the binds
       ;;
       ;; Anyways. We should get... something. A non-nil. What, exactly, is for other tests.
       (should activated)

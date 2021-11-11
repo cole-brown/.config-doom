@@ -64,7 +64,7 @@ Returns nil if not valid."
 (defun int<keyboard>:registration:state/transition:valid? (registrar state/to &optional no-error)
   "Returns non-nil if transition of current registration state to new STATE/TO
 state is valid/allowed."
-  (let ((func.name "int<keyboard>:registration:state/transition:valid?")
+  (let ((func/name "int<keyboard>:registration:state/transition:valid?")
         (debug.tags '(:registering))
         (state/current (int<keyboard>:registrar:get registrar :state)))
 
@@ -74,7 +74,7 @@ state is valid/allowed."
     (cond ((not (memq state/current
                       int<keyboard>:registration:states))
            (int<keyboard>:debug
-               func.name
+               func/name
                debug.tags
              "Current state %S for registrar %S is not a valid state: %S"
              state/current
@@ -85,7 +85,7 @@ state is valid/allowed."
                nil
              (int<keyboard>:output
               :error
-              func.name
+              func/name
               "Current state %S for registrar %S is not a valid state: %S"
               state/current
               registrar
@@ -93,7 +93,7 @@ state is valid/allowed."
 
           ((not (memq state/to int<keyboard>:registration:states))
            (int<keyboard>:debug
-               func.name
+               func/name
                debug.tags
              "Desired state %S for registrar %S is not a valid state: %S"
              state/to
@@ -104,7 +104,7 @@ state is valid/allowed."
                nil
              (int<keyboard>:output
               :error
-              func.name
+              func/name
               "Desired state %S for registrar %S is not a valid state: %S"
               state/to
               registrar
@@ -125,7 +125,7 @@ state is valid/allowed."
                  (if no-error
                      nil
                    (int<keyboard>:output :error
-                                         func.name
+                                         func/name
                                          '("Registrar %S at current registration state %S cannot transition to %S state. "
                                            "Must be one of: %S")
                                          registrar

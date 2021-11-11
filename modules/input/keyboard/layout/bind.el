@@ -35,10 +35,10 @@ If called twice with the same TYPE, the later UNBIND-MAP will overwrite the
 earlier.
 
 Unbindings are applied before bindings."
-  (let ((func.name "int<keyboard>:layout:unbind")
+  (let ((func/name "int<keyboard>:layout:unbind")
         (debug/tags '(:registering :init)))
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :start
      (list (cons 'registrar registrar)
@@ -74,7 +74,7 @@ Unbindings are applied before bindings."
                                     unbind-map
                                     (int<keyboard>:registrar:symbol registrar :unbinds))
       (int<keyboard>:debug:func
-       func.name
+       func/name
        debug/tags
        :end))))
 ;; (int<keyboard>:registrar:symbol :debug :unbinds)
@@ -121,10 +121,10 @@ TYPE should be one of:
 
 If called twice with the same TYPE, the later KEYBIND-MAP will overwrite the
 earlier."
-  (let ((func.name "int<keyboard>:layout:bind")
+  (let ((func/name "int<keyboard>:layout:bind")
         (debug/tags '(:registering :init)))
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :start
      (list (cons 'registrar registrar)
@@ -161,7 +161,7 @@ earlier."
                                     keybind-map
                                     (int<keyboard>:registrar:symbol registrar :keybinds))
       (int<keyboard>:debug:func
-       func.name
+       func/name
        debug/tags
        :end))))
 
@@ -198,10 +198,10 @@ REGISTRAR should be a keyword from `int<keyboard>:registrars'.
 BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
 LAYOUT should be a valid keyboard layout keyword."
-  (let ((func.name "int<keyboard>:layout:config")
+  (let ((func/name "int<keyboard>:layout:config")
         (debug/tags '(:registering :config)))
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :start
      (list (cons 'registrar registrar)
@@ -211,7 +211,7 @@ LAYOUT should be a valid keyboard layout keyword."
     ;;---
     ;; Can use finalization's check here w/ known-good type.
     ;;---
-    (int<keyboard>:activate/validate func.name
+    (int<keyboard>:activate/validate func/name
                                      registrar
                                      bind/unbind
                                      :common
@@ -222,7 +222,7 @@ LAYOUT should be a valid keyboard layout keyword."
     ;;---
     (unless (int<keyboard>:layout:valid? layout :active)
       (int<keyboard>:output :error
-                            func.name
+                            func/name
                             '("`layout' must be a keyword. "
                               "Got: %S")
                             layout))
@@ -241,7 +241,7 @@ LAYOUT should be a valid keyboard layout keyword."
     ;; NOTE: If we get something to do: obey `bind/unbind'!
 
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :end
      nil)))
@@ -257,10 +257,10 @@ LAYOUT should be a valid keyboard layout keyword."
 BIND/UNBIND should be a valid keyword in `int<keyboard>:registration:action'.
 
 LAYOUT should be a valid keyboard layout keyword."
-  (let ((func.name "keyboard:layout:config")
+  (let ((func/name "keyboard:layout:config")
         (debug/tags '(:registering :config)))
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :start
      (list (cons 'bind/unbind bind/unbind)
@@ -269,7 +269,7 @@ LAYOUT should be a valid keyboard layout keyword."
     (int<keyboard>:layout:config :actual bind/unbind layout)
 
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :end
      nil)))
@@ -356,11 +356,11 @@ TYPES should be a list of keywords from `int<keyboard>:layout:types'.
 
 Return value will be either nil/non-nil (normally),
 or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
-  (let ((func.name "int<keyboard>:layout:activate")
+  (let ((func/name "int<keyboard>:layout:activate")
         (debug/tags '(:registering :finalize))
         results)
     (int<keyboard>:debug:func
-     func.name
+     func/name
      debug/tags
      :start
      (list (cons 'registrar registrar)
@@ -382,7 +382,7 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
                                                           no-eval
                                                           debug/tags)))
           (int<keyboard>:debug
-              func.name
+              func/name
               debug/tags
             "unbind result:\n%S"
             result/unbind)
@@ -391,7 +391,7 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
       ;; Did we succeed? How do we deal with `results'?
       (cond ((not results)
              (int<keyboard>:output :error
-                                   func.name
+                                   func/name
                                    '("Failed to activate unbindings.")))
             ((not no-eval)
              ;; Don't need to save these. Clear out for binding.
@@ -412,7 +412,7 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
                                                         no-eval
                                                         debug/tags)))
           (int<keyboard>:debug
-              func.name
+              func/name
               debug/tags
             "bind result:\n%S"
             result/bind)
@@ -444,7 +444,7 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
              (eq bind/unbind :unbind))
         (progn
           (int<keyboard>:debug:func
-           func.name
+           func/name
            debug/tags
            :end/list
            (list
@@ -457,7 +457,7 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
           t)
 
       (int<keyboard>:debug:func
-       func.name
+       func/name
        debug/tags
        :end
        results)

@@ -125,13 +125,13 @@ The extension '.el' is used to check for file existance.
 
 ERROR?, if non-nil, will signal an error if the file does not exist.
   - If nil, a debug message will (try to) be output instead."
-  (let ((func.name "int<keyboard>:load:file")
+  (let ((func/name "int<keyboard>:load:file")
         (debug.tags '(:load))
         (load-name.ext (file-name-extension load-name))
         path.load
         path.file)
     (int<keyboard>:debug
-        func.name
+        func/name
         debug.tags
       '("args:\n"
         "  layout:        %S\n"
@@ -155,7 +155,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
      ((and root
            (not (stringp root)))
       (int<keyboard>:output :error
-                            func.name
+                            func/name
                             "ROOT must be a string or `nil'! Got '%s' from: %S"
                             (type-of root)
                             root))
@@ -168,7 +168,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
            (or (= 2 (length load-name.ext))
                (= 3 (length load-name.ext))))
       (int<keyboard>:output :error
-                            func.name
+                            func/name
                             "LOAD-NAME should not include an emacs file extension ('el*')! Got '%s' from: %s"
                             load-name.ext
                             load-name))
@@ -177,7 +177,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
      ((and root
            (not (file-name-absolute-p root)))
       (int<keyboard>:output :error
-                            func.name
+                            func/name
                             "ROOT, if provided, must be absolute! Got: %S"
                             root))
 
@@ -192,7 +192,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
      (t
       (setq root int<keyboard>:path:dir/root)
       (int<keyboard>:debug
-          func.name
+          func/name
           debug.tags
         '("No ROOT provided; using `int<keyboard>:path:dir/root'."
           "  root: %S")
@@ -202,7 +202,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
     ;; PATH setup part 2 - the relative part.
     ;;------------------------------
     (int<keyboard>:debug
-        func.name
+        func/name
         debug.tags
       '("Creating PATH from:\n"
         "  root: %S\n"
@@ -227,7 +227,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
                                              load-name)
           path.file (concat path.load ".el"))
     (int<keyboard>:debug
-        func.name
+        func/name
         debug.tags
       '("Created path:\n"
         "  <-path.load: %S\n"
@@ -240,7 +240,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
     (if (int<keyboard>:path:file/exists? path.file)
         (progn
           (int<keyboard>:debug
-              func.name
+              func/name
               debug.tags
             "Path exists; loading...")
           (load path.load))
@@ -248,12 +248,12 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
       ;; If it's not ok to not exist, switch this to always output `:error' or `:warn'.
       (if error?
           (int<keyboard>:output :error
-                                func.name
+                                func/name
                                 '("Path does not exist!\n"
                                   "  path.load: %s")
                                 path.load)
         (int<keyboard>:debug
-            func.name
+            func/name
             debug.tags
           '("Path does not exist!\n"
             "  path.load: %s")

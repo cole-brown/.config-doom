@@ -61,7 +61,7 @@ Calls:
 For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
   (declare (indent 3))
 
-  (let* ((func.name "debug<keyboard>:layout:bind")
+  (let* ((func/name "debug<keyboard>:layout:bind")
          (registrar :temp) ;; Do all this work in the temp registrar.
          (registration/current (int<keyboard>:registrar:get registrar :state))
          (no-eval (cond ((eq eval/sexpr :eval)
@@ -70,16 +70,16 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                          t)
                         (t
                          (int<keyboard>:output :error
-                                               func.name
+                                               func/name
                                                '("`eval/sexpr' must be one of: %S; "
                                                  "got: %S")
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
 
-    (int<keyboard>:debug func.name
+    (int<keyboard>:debug func/name
                          '(:registering)
                          "map: %S" keybind-map)
-    (int<keyboard>:debug func.name
+    (int<keyboard>:debug func/name
                          '(:registering)
                          "registering: %S, valids: %S, valid? %S"
                          registration/current
@@ -90,7 +90,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                    registration/valids))
         ;; [FAIL]: Current registration state doesn't allowed running the temp block.
         (progn
-          (int<keyboard>:debug func.name
+          (int<keyboard>:debug func/name
                                '(:registering)
                                (concat "Skipping this as not in a valid state for it:\n"
                                        "registering: %S\n"
@@ -102,7 +102,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
           ;; Explain why we're doing nothing.
           (int<keyboard>:debug/message?
-           (format "%s(%S %S ...)" func.name layout type)
+           (format "%s(%S %S ...)" func/name layout type)
            '(:register)
            ;; Message if not in some set-up state, else debug.
            (not (memq registration/current '(nil :init :config)))
@@ -114,7 +114,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
       ;; [ OK ]: Run the temp block.
       (prog1
-          (int<keyboard>:debug func.name
+          (int<keyboard>:debug func/name
                                '(:registering)
                                (concat "EXECUTING 'temp binds' BLOCK!!!\n"
                                        "registering: %S\n"
@@ -170,7 +170,7 @@ Calls:
 For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
   (declare (indent 3))
 
-  (let* ((func.name "debug<keyboard>:layout:unbind")
+  (let* ((func/name "debug<keyboard>:layout:unbind")
          (registrar :temp) ;; Do all this work in the temp registrar.
          (registration/current (int<keyboard>:registrar:get registrar :state))
          (no-eval (cond ((eq eval/sexpr :eval)
@@ -179,16 +179,16 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                          t)
                         (t
                          (int<keyboard>:output :error
-                                               func.name
+                                               func/name
                                                '("`eval/sexpr' must be one of: %S; "
                                                  "got: %S")
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
 
-    (int<keyboard>:debug func.name
+    (int<keyboard>:debug func/name
                          '(:registering)
                          "map: %S" keybind-map)
-    (int<keyboard>:debug func.name
+    (int<keyboard>:debug func/name
                          '(:registering)
                          "registering: %S, valids: %S, valid? %S"
                          registration/current
@@ -199,7 +199,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                    registration/valids))
         ;; [FAIL]: Current registration state doesn't allowed running the temp block.
         (progn
-          (int<keyboard>:debug func.name
+          (int<keyboard>:debug func/name
                                '(:registering)
                                (concat "Skipping this as not in a valid state for it:\n"
                                        "registering: %S\n"
@@ -211,7 +211,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
           ;; Explain why we're doing nothing.
           (int<keyboard>:debug/message?
-           (format "%s(%S %S ...)" func.name layout type)
+           (format "%s(%S %S ...)" func/name layout type)
            '(:register)
            ;; Message if not in some set-up state, else debug.
            (not (memq registration/current '(nil :init :config)))
@@ -223,7 +223,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
       ;; [ OK ]: Run the temp block.
       (prog1
-          (int<keyboard>:debug func.name
+          (int<keyboard>:debug func/name
                                '(:registering)
                                (concat "EXECUTING 'temp binds' BLOCK!!!\n"
                                        "registering: %S\n"

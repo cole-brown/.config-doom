@@ -226,6 +226,13 @@
     ;; Should get a non-nil output.
     (should (keyboard:layout:finalize))
 
+    ;; TODO
+    ;; TODO
+    ;; TODO: Need to save the functions as `#'func-name' instead of `func-name'?
+    ;; TODO:   - (in the keybinds)
+    ;; TODO
+    ;; TODO
+
     ;; TODO: Test that unbinds have been applied?
 
     ;; TODO: Test that keys are bound to correct funcs?

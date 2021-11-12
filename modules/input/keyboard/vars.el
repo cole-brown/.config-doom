@@ -8,7 +8,7 @@
 ;;             Not everyone uses Qwerty - there are dozens of us!             ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'alist)
+;; (imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -102,4 +102,4 @@ LAYOUT must fulfill these criteria:
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'vars)
+;; (imp:provide :input 'keyboard 'vars)

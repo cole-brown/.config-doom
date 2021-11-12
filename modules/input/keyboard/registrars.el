@@ -396,4 +396,4 @@ NOTE: Does not validate/error check VALUE."
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'registrars)
+;; (imp:provide :input 'keyboard 'registrars)

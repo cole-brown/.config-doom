@@ -9,7 +9,7 @@
 ;;                               PC LOAD LETTER                               ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'utils)
+;; (imp:require :input 'keyboard 'utils)
 
 
 ;;------------------------------------------------------------------------------
@@ -404,4 +404,4 @@ E.g. if 'input/keyboard/layout/' dir has subdirs '+foo', '+bar', and 'baz':
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'load)
+;; (imp:provide :input 'keyboard 'load)

@@ -14,9 +14,8 @@
 ;; Layout Building Functions
 ;;------------------------------------------------------------------------------
 
-(load! "utils")
 (load! "derive")
-(load! "define/init")
+(load! "types/init")
 (load! "layout")
 (load! "bind")
 (load! "bind-debug")
@@ -33,4 +32,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout)
+;; (imp:provide :input 'keyboard 'layout)

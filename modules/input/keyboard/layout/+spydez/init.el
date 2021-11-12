@@ -10,7 +10,7 @@
 ;;             Non-standard Evil Layout: Cuz I'm weird that way.              ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input)
+;; (imp:require :input)
 
 ;;------------------------------------------------------------------------------
 ;; Common

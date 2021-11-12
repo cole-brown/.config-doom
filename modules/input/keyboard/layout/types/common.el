@@ -8,7 +8,7 @@
 ;;                       Evil/Emacs-Agnostic Keybinds.                        ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'layout 'types 'define)
+;; (imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -42,4 +42,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'types 'common)
+;; (imp:provide :input 'keyboard 'layout 'types 'common)

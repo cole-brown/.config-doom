@@ -9,9 +9,9 @@
 ;;                                 ──────────                                 ;;
 
 
-(imp:require :input 'keyboard 'vars)
-(imp:provide :input 'keyboard 'layout 'define)
-(imp:require :input 'keyboard 'layout 'derive)
+;; (imp:require :input 'keyboard 'vars)
+;; (imp:provide :input 'keyboard 'layout 'define)
+;; (imp:require :input 'keyboard 'layout 'derive)
 
 
 ;;------------------------------------------------------------------------------
@@ -506,4 +506,4 @@ Keybinds
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'layout)
+;; (imp:provide :input 'keyboard 'layout 'layout)

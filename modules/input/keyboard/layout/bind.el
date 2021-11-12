@@ -10,10 +10,10 @@
 ;;                                 ──────────                                 ;;
 
 
-(imp:require :input 'keyboard 'output)
-(imp:require :input 'keyboard 'debug)
-(imp:require :input 'keyboard 'registrars)
-(imp:require :input 'keyboard 'vars)
+;; (imp:require :input 'keyboard 'output)
+;; (imp:require :input 'keyboard 'debug)
+;; (imp:require :input 'keyboard 'registrars)
+;; (imp:require :input 'keyboard 'vars)
 
 
 ;;------------------------------------------------------------------------------
@@ -587,4 +587,4 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'bind)
+;; (imp:provide :input 'keyboard 'layout 'bind)

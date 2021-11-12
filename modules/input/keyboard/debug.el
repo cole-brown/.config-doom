@@ -7,9 +7,9 @@
 ;; ...it was simple enough at one point. Probably before all the tagging stuff.
 
 
-(imp:require :input 'keyboard 'utils)
-(imp:require :input 'keyboard 'output)
-(imp:require :input 'keyboard 'alist)
+;; (imp:require :input 'keyboard 'utils)
+;; (imp:require :input 'keyboard 'output)
+;; (imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -426,4 +426,4 @@ VALUE is optional and should be:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:require :input 'keyboard 'debug)
+;; (imp:require :input 'keyboard 'debug)

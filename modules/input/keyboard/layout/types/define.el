@@ -10,9 +10,9 @@
 ;;                                 ──────────                                 ;;
 
 
-(imp:require :input 'keyboard 'vars)
-(imp:require :input 'keyboard 'output)
-(imp:require :input 'keyboard 'debug)
+;; (imp:require :input 'keyboard 'vars)
+;; (imp:require :input 'keyboard 'output)
+;; (imp:require :input 'keyboard 'debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -286,4 +286,4 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout 'types 'define)
+;; (imp:provide :input 'keyboard 'layout 'types 'define)

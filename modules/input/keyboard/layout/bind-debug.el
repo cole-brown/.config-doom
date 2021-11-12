@@ -11,10 +11,10 @@
 ;;                                 ──────────                                 ;;
 
 
-(imp:require :input 'keyboard 'utils)
-(imp:require :input 'keyboard 'vars)
-(imp:require :input 'keyboard 'registrars)
-(imp:require :input 'keyboard 'layout 'bind)
+;; (imp:require :input 'keyboard 'utils)
+;; (imp:require :input 'keyboard 'vars)
+;; (imp:require :input 'keyboard 'registrars)
+;; (imp:require :input 'keyboard 'layout 'bind)
 
 
 ;;------------------------------------------------------------------------------
@@ -359,4 +359,4 @@ add back in all keybinds you want."
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'bind-debug)
+;; (imp:provide :input 'keyboard 'bind-debug)

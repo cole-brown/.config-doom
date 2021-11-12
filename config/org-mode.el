@@ -333,9 +333,9 @@
   (setf (alist-get 'file org-link-frame-setup) #'find-file-other-window))
 
 
-;;---------------------
+;;------------------------------
 ;; TODO: Do these work well with Evil?
-;;---------------------
+;;------------------------------
 
 ;;----------
 ;; Speed Keys
@@ -465,15 +465,20 @@ Then runs COMMAND interactively with ARGS."
   )
 
 
-
-
 ;;------------------------------------------------------------------------------
 ;; Org-Mode's Legion of Minions
 ;;------------------------------------------------------------------------------
 
-;;---------------------
+;;------------------------------
+;; Org Exporter: GitHub-Flavored Markdown
+;;------------------------------
+(use-package! ox-gfm
+  :after org)
+
+
+;;------------------------------
 ;; Org-Roam Funcs
-;;---------------------
+;;------------------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
 (defun sss:org-roam/file-name/timestamp-title (title)
@@ -553,9 +558,9 @@ It uses TITLE and the current timestamp to form a unique title.
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(
-;; ;;---------------------
+;; ;;------------------------------
 ;; ;; Org-Mode Headline Bullets: (Making Org-Mode Pretty)
-;; ;;---------------------
+;; ;;------------------------------
 ;;
 ;; ;; Display the titles with nice unicode bullets instead of the text ones.
 ;; (use-package org-bullets
@@ -577,9 +582,9 @@ It uses TITLE and the current timestamp to form a unique title.
 
 ;; TODO: Get org-contacts actually working like it never really was on vanilla?
 ;;
-;; ;;---------------------
+;; ;;------------------------------
 ;; ;; Org Contacts
-;; ;;---------------------
+;; ;;------------------------------
 ;; (use-package org-contacts
 ;;   :disabled ;; is this making things slow?
 ;;   :ensure nil

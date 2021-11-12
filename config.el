@@ -139,6 +139,7 @@
 
 (spy:config 'taskspace)
 (spy:config 'org-mode)
+(spy:config 'markdown)
 
 
 ;;------------------------------------------------------------------------------

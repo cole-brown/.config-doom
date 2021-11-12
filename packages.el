@@ -63,19 +63,33 @@
 ;; let's try it Doom's way.
 
 
+;;---
 ;; Buffer management.
+;;---
 ;; (package! bufler)
 
 
-;; Asynchronous Helpers. AKA 'emacs-deferred'.
-(package! deferred)
+;;---
+;; Org-Mode packages.
+;;---
+(package! ox-gfm) ;; Org-mode exporter for GitHub-Flavored Markdown.
 
 
+;;---
+;; Asynchronous Helpers.
+;;---
+(package! deferred) ;; AKA 'emacs-deferred'.
+
+
+;;---
 ;; Spotify management.
+;;---
 (package! smudge)
 
 
+;;---
 ;; Ripgrep searching.
+;;---
 (package! deadgrep)
 
 

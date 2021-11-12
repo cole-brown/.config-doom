@@ -176,11 +176,18 @@ Returns non-nil for valid KEYWORD."
 `nil' is valid - it is used for unbinding already-bound keys."
   (or (null func)
       (and (symbolp func)
+           (not (eq func t)) ;; `t' is not a valid function.
            (not (keywordp func))
            ;; Could get something that is not defined yet? In which case this
            ;; causes us to say it's invalid:
            ;; (functionp func)
            )))
+
+
+(defun int<keyboard>:layout/types:define/func (input)
+  "Turn value of INPUT into a quoted function (e.g. #'ignore) for putting
+into the keybind definitions."
+  `(function ,(doom-unquote input)))
 
 
 ;;------------------------------------------------------------------------------
@@ -205,8 +212,8 @@ REST: Repeating list of: '(keyword function keyword function ...)"
   ;;------------------------------
   (while rest
     (let* ((keyword (pop rest))
-           (value (pop rest))
-           (func (doom-unquote value))
+           (value (doom-unquote (pop rest)))
+           (func (int<keyboard>:layout/types:define/func value))
            ;; Get TYPE's alist from `int<keyboard>:layout/types:keywords'.
            (alist (int<keyboard>:alist:get/value type int<keyboard>:layout/types:keywords)))
 
@@ -225,16 +232,16 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                                    type
                                    keyword))
 
-            ((not (symbolp func))
+            ((not (symbolp value))
              (int<keyboard>:output :error
                                    "input:keyboard/layout/types:define/keywords"
                                    "Expected a symbol, got: %S"
-                                   func))
-            ((not (int<keyboard>:layout/types:valid/function? func))
+                                   value))
+            ((not (int<keyboard>:layout/types:valid/function? value))
              (int<keyboard>:output :error
                                    "input:keyboard/layout/types:define/keywords"
                                    "Expected a valid keyboard layout function, got: %S"
-                                   func))
+                                   value))
 
             ((not (int<keyboard>:layout:type/valid? type))
              (int<keyboard>:output :error
@@ -249,7 +256,6 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;;------------------------------
       ;; Add this keyword entry to alist.
       ;;------------------------------
-      ;; Use `int<keyboard>:alist:update' so we overwrite a pre-existing.
       (when int<keyboard>:debugging
         (let* ((kw-str (format "%S" keyword))
                (pad-str (int<keyboard>:debug:fill (- 45    ; Enlarge as needed.
@@ -260,14 +266,14 @@ REST: Repeating list of: '(keyword function keyword function ...)"
             "%s %s -> %-S"
             kw-str
             pad-str
-            value)))
+            func)))
 
       ;; Update full alist.
       (int<keyboard>:alist:update
        type
        ;; Update TYPE's alist.
        (int<keyboard>:alist:update keyword
-                                   value
+                                   func
                                    alist)
        int<keyboard>:layout/types:keywords))))
 ;; int<keyboard>:layout/types:keywords

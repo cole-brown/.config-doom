@@ -86,18 +86,18 @@
 
    ;; Create some keyword->func pairs...
    ;; Some for real functions, some for funcs that don't exist (yet).
-   (setq int<keyboard>:layout/types:keywords '((:common . ((:dne-0    . does-not-exist-yet)
-                                                           (:dne-1    . hello-there)
-                                                           (:exists-0 . ignore)
-                                                           (:exists-1 . identity)))))
+   (setq int<keyboard>:layout/types:keywords '((:common . ((:dne-0    . #'does-not-exist-yet)
+                                                           (:dne-1    . #'hello-there)
+                                                           (:exists-0 . #'ignore)
+                                                           (:exists-1 . #'identity)))))
    ;; We should get back the values from what exists.
-   (should (equal 'does-not-exist-yet
+   (should (equal (quote #'does-not-exist-yet)
                   (int<keyboard>:layout/types:normalize->func :dne-0)))
-   (should (equal 'hello-there
+   (should (equal (quote #'hello-there)
                   (int<keyboard>:layout/types:normalize->func :dne-1)))
-   (should (equal 'ignore
+   (should (equal (quote #'ignore)
                   (int<keyboard>:layout/types:normalize->func :exists-0)))
-   (should (equal 'identity
+   (should (equal (quote #'identity)
                   (int<keyboard>:layout/types:normalize->func :exists-1)))
 
    ;; Make sure that trying to normalize an unknown keyword is an error.
@@ -233,7 +233,7 @@
     ;; Evil: Define some keywords.
     ;;------------------------------
 
-    (input:keyboard/layout/types:define/keywords-2
+    (input:keyboard/layout/types:define/keywords
         :evil
       "Eeeevil keywords..."
       :layout:evil:line-prev #'evil-previous-line
@@ -244,8 +244,9 @@
 
     (test<keyboard>:assert:alists-equivalent
      test-name
-     '((:evil . ((:layout:evil:line-prev . evil-previous-line)
-                 (:layout:evil:line-next . evil-next-line)
-                 (:layout:evil:char-prev . evil-backward-char)
-                 (:layout:evil:char-next . evil-forward-char))))
+     '((:evil . ((:layout:evil:line-prev . #'evil-previous-line)
+                 (:layout:evil:line-next . #'evil-next-line)
+                 (:layout:evil:char-prev . #'evil-backward-char)
+                 (:layout:evil:char-next . #'evil-forward-char))))
      int<keyboard>:layout/types:keywords)))
+

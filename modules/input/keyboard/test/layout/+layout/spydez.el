@@ -201,7 +201,7 @@
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard>::layout/+spydez:config"
+      "test<keyboard>::layout/+spydez:apply"
       ;; Clear out keybinds before test.
       #'test<keyboard/layout/+layout/spydez>:setup
       #'test<keyboard/layout/+layout/spydez>:teardown

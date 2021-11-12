@@ -384,11 +384,11 @@ SHOULD-BE can be:
   ;;   - `int<keyboard>:debugging'
   ;;   - `int<keyboard>:debug:tags'
   (test<keyboard>:debug "" ;; Don't put test name in here; use it below.
-    '("\n"
+    '("\n\n\n"
       "╔═════════════════════════════════════╗\n"
       "╠══╣             SET-UP            ╠══╣\n"
       "╚═╤═══════════════════════════════════╝\n"
-      "  └──┤ %s")
+      "  └──┤ %s\n\n")
     test-name))
 
 

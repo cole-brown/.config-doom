@@ -421,10 +421,10 @@ or `int<keyboard>:layout:map/process' output if NO-EVAL is non-nil."
       ;; Prep return value?
       (unless no-eval
         (setq results (seq-reduce (lambda (x y)
-                                    "Returns t/nil for (and x y)."
-                                    (not (null (and x y))))
+                                    "Returns t if /some/ keybinds were applied."
+                                    (not (null (or x y))))
                                   results
-                                  t)))
+                                  nil)))
 
       ;; If we have a non-nil return we're `:active'.
       ;;
@@ -540,7 +540,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
       (int<keyboard>:debug
           "int<keyboard>:activate/type"
           debug/tags
-        (concat "Cannot activate keybinds for %S.\n"
+        (concat "No keybinds to activate for %S.\n"
                 "  valid?    %S\n"
                 "  keybinds: %S")
         type (not (null valid)) keybinds)

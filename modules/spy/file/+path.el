@@ -91,7 +91,7 @@ For `:windows' -> `:wsl':
   - Translates '\\' to '/'.
 "
   (let ((trans dir))
-          ;; Translate: :windows -> :wsl
+    ;; Translate: :windows -> :wsl
     (cond ((and (eq from :windows)
                 (eq to   :wsl))
            (let ((drive nil)
@@ -100,20 +100,22 @@ For `:windows' -> `:wsl':
              ;;   1) Find <drive> letter.
              ;;   2) Ignore ':'.
              ;;   3) Find <path>.
-             (string-match (rx string-start
-                               ;; Get drive letter as a capture group.
-                               (group (= 1 (any "a-z" "A-Z")))
-                               ":"
-                               (group (zero-or-more anything))
-                               string-end)
-                           dir)
-             (setq drive (downcase (match-string 1 dir))
-                   path (match-string 2 dir))
-             (setq trans (concat "/mnt/"
-                                 drive
-                                 (replace-regexp-in-string (rx "\\")
-                                                           "/"
-                                                           path)))))
+             (if (not (string-match (rx string-start
+                                        ;; Get drive letter as a capture group.
+                                        (group (= 1 (any "a-z" "A-Z")))
+                                        ":"
+                                        (group (zero-or-more anything))
+                                        string-end)
+                                    dir))
+                 ;; No match - no translation.
+                 (setq trans "")
+               (setq drive (downcase (match-string 1 dir))
+                     path (match-string 2 dir))
+               (setq trans (concat "/mnt/"
+                                   drive
+                                   (replace-regexp-in-string (rx "\\")
+                                                             "/"
+                                                             path))))))
 
           ;; Translate: :windows -> :wsl
           ((and (eq from :wsl)
@@ -125,24 +127,27 @@ For `:windows' -> `:wsl':
              ;;   1) Trim off leading "/mnt/".
              ;;   2) Find <drive> letter.
              ;;   3) Find <path>.
-             (string-match (rx string-start
-                               "/mnt/"
-                               ;; Get drive letter as a capture group.
-                               (group (= 1 (any "a-z" "A-Z")))
-                               (group (or (and (not (any "a-z" "A-Z"))
-                                               (zero-or-more anything))
-                                          string-end)))
-                           dir)
-             ;; Get drive and path from regex matching, then build
-             ;; translation.
-             (setq drive (upcase (match-string 1 dir))
-                   path (match-string 2 dir)
-                   trans (concat drive
-                                 ":"
-                                 (if (and (not (null path))
-                                          (not (string= "" path)))
-                                     path
-                                   "/")))))
+             (if (not (string-match (rx string-start
+                                        "/mnt/"
+                                        ;; Get drive letter as a capture group.
+                                        (group (= 1 (any "a-z" "A-Z")))
+                                        (group (or (and (not (any "a-z" "A-Z"))
+                                                        (zero-or-more anything))
+                                                   string-end)))
+                                    dir))
+                 ;; No match - no translation.
+                 (setq trans "")
+
+               ;; Get drive and path from regex matching, then build
+               ;; translation.
+               (setq drive (upcase (match-string 1 dir))
+                     path (match-string 2 dir)
+                     trans (concat drive
+                                   ":"
+                                   (if (and (not (null path))
+                                            (not (string= "" path)))
+                                       path
+                                     "/"))))))
 
           ;; Fallthrough -> error out.
           (t
@@ -154,6 +159,8 @@ For `:windows' -> `:wsl':
 ;; (spy:path/translate :windows :wsl "D:/path/to/somewhere.txt")
 ;; (spy:path/translate :windows :wsl "D:/path/to/somewhere.txt")
 ;; (spy:path/translate :wsl :windows "/mnt/d/path/to/somewhere.txt")
+;; Should not be able to translate so should return "".
+;; (spy:path/translate :windows :wsl "~/path/to/somewhere.txt")
 
 
 (defun sss:path/type (path)

@@ -156,6 +156,8 @@
 (spy:config 'code 'config)
 (spy:config 'docker)
 (spy:config 'treemacs)
+(spy:config 'terminal) ;; vterm and friends
+
 
 ;;------------------------------------------------------------------------------
 ;; Music & Entertainment

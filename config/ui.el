@@ -58,3 +58,39 @@
 
 
 ;; Zenburn customizations:
+
+
+;;------------------------------------------------------------------------------
+;; Indentation Guide
+;;------------------------------------------------------------------------------
+
+(use-package! highlight-indent-guides
+  ;;--------------------
+  :config
+  ;;--------------------
+
+  ;;--------------------
+  ;; customization: org-mode
+  ;;--------------------
+
+  ;; How the indent guides look.
+  ;; https://github.com/DarthFennec/highlight-indent-guides/tree/cf352c85cd15dd18aa096ba9d9ab9b7ab493e8f6#screenshots
+  ;; Doom used `character'; `bitmap' looks neater.
+  ;; ...but `fill' might be best for avoiding the buggy looking indents that `character' gets into.
+  (customize-set-variable 'highlight-indent-guides-method 'fill) ;; 'bitmap)
+
+  (customize-set-variable 'highlight-indent-guides-auto-even-face-perc      4) ;; default: 10
+  (customize-set-variable 'highlight-indent-guides-auto-odd-face-perc       2) ;; default:  5
+  (customize-set-variable 'highlight-indent-guides-auto-character-face-perc 5) ;; default: 10
+
+  ;;--------------------
+  ;; configuration: org-mode
+  ;;--------------------
+
+
+  )
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------

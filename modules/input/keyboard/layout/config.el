@@ -14,7 +14,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Find our active keyboard layout and load its config if it has one.
-(keyboard:load:active "config")
+(keyboard:load:active "config" :init)
 
 
 ;;------------------------------------------------------------------------------
@@ -23,8 +23,7 @@
 
 ;; Don't mess with any of the hooks unless we're being evaluated during
 ;; start-up.
-(when (and (not int<keyboard>:testing:disable-start-up-init)
-           (int<keyboard>:load:loading?))
+(when (int<keyboard>:load:allowed? :init)
   ;;------------------------------
   ;; Evil Itself
   ;;------------------------------

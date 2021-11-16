@@ -51,7 +51,7 @@ See `int<keyboard>:layout:types for the alist of valid types."
 ;;------------------------------
 
 ;; TODO: Set back to nil when I figure out whatever's fucked up and fix it.
-(defvar int<keyboard>:testing:disable-start-up-init t ;; nil
+(defvar int<keyboard>:testing:disable-start-up-init nil
   "If non-nil, does not run anything during startup.
 Just loads files to get all functions and such defined.")
 

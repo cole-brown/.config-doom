@@ -7,6 +7,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Get all the keyboard files we know all tests want.
+(load! "../command.el")
 (load! "../output.el")
 (load! "../debug.el")
 (load! "../utils.el")
@@ -81,58 +82,59 @@ Does not affect `int<keyboard>:debugging' in any way.")
 With prefix arg, will also toggle ':input/keyboard' debugging to same on/off
 value as tests' debugging toggle."
   (interactive "P")
-  (let* ((name/var.test "test<keyboard>:debugging")
-         (name/var.code "int<keyboard>:debugging")
-         (state/enabled "[ENABLED]")
-         (state/disabled "[-------]")
-         (fmt/name (concat "%"
-                           (number-to-string (max (length name/var.test)
-                                                  (length name/var.code)))
-                           "s"))
-         (fmt/toggle (concat fmt/name "%s%s%s"))
-         (also-normal-debug (not (null prefix))))
-    ;; Toggle debug flag(s).
-    (setq test<keyboard>:debugging (not test<keyboard>:debugging))
-    (when also-normal-debug
-      (setq int<keyboard>:debugging test<keyboard>:debugging))
+  (int<keyboard>:cmd:run
+   (let* ((name/var.test "test<keyboard>:debugging")
+          (name/var.code "int<keyboard>:debugging")
+          (state/enabled "[ENABLED]")
+          (state/disabled "[-------]")
+          (fmt/name (concat "%"
+                            (number-to-string (max (length name/var.test)
+                                                   (length name/var.code)))
+                            "s"))
+          (fmt/toggle (concat fmt/name "%s%s%s"))
+          (also-normal-debug (not (null prefix))))
+     ;; Toggle debug flag(s).
+     (setq test<keyboard>:debugging (not test<keyboard>:debugging))
+     (when also-normal-debug
+       (setq int<keyboard>:debugging test<keyboard>:debugging))
 
-    ;; Notify user what state they're in.
-    (message fmt/toggle
-             name/var.test
-             ;; "transitioned"
-             " -> "
+     ;; Notify user what state they're in.
+     (message fmt/toggle
+              name/var.test
+              ;; "transitioned"
+              " -> "
 
-             ;; State of test's debugging.
-             (if test<keyboard>:debugging
-                 state/enabled
-               state/disabled)
+              ;; State of test's debugging.
+              (if test<keyboard>:debugging
+                  state/enabled
+                state/disabled)
 
-             ;; And the state of the normal debugging?
-             (concat "\n"
-                     (if also-normal-debug
-                         (format fmt/toggle
-                                 name/var.code
-                                 ;; "transitioned"
-                                 " -> "
-                                 ;; State of normal debugging.
-                                 (if int<keyboard>:debugging
-                                     state/enabled
-                                   state/disabled)
-                                 ;; Normal debugging tags.
-                                 (if int<keyboard>:debugging
-                                     (if (not int<keyboard>:debug:tags)
-                                         " (all debug output)"
-                                       (format " with tags: %S" int<keyboard>:debug:tags))
-                                   ""))
-                       ;; Else only say if normal debugging is enabled?
-                       (format fmt/toggle
-                               name/var.code
-                               ;; "did not change"
-                               " == "
-                               (if int<keyboard>:debugging
-                                   state/enabled
-                                 state/disabled)
-                               ""))))))
+              ;; And the state of the normal debugging?
+              (concat "\n"
+                      (if also-normal-debug
+                          (format fmt/toggle
+                                  name/var.code
+                                  ;; "transitioned"
+                                  " -> "
+                                  ;; State of normal debugging.
+                                  (if int<keyboard>:debugging
+                                      state/enabled
+                                    state/disabled)
+                                  ;; Normal debugging tags.
+                                  (if int<keyboard>:debugging
+                                      (if (not int<keyboard>:debug:tags)
+                                          " (all debug output)"
+                                        (format " with tags: %S" int<keyboard>:debug:tags))
+                                    ""))
+                        ;; Else only say if normal debugging is enabled?
+                        (format fmt/toggle
+                                name/var.code
+                                ;; "did not change"
+                                " == "
+                                (if int<keyboard>:debugging
+                                    state/enabled
+                                  state/disabled)
+                                "")))))))
 ;; (test<keyboard>:debug/toggle nil)
 ;; (test<keyboard>:debug/toggle '(4))
 

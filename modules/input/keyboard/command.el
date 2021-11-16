@@ -1,36 +1,37 @@
-;;; input/keyboard/layout/init.el -*- lexical-binding: t; -*-
-
+;;; input/keyboard/command.el -*- lexical-binding: t; -*-
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
-;; ║                Build & Initialize the Keyboard Layout.                 ║ ;;
+;; ║                            Loading Files...                            ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                   ──────                                   ;;
-;;                        Only for the desired layout.                        ;;
+;;                               PC LOAD LETTER                               ;;
 ;;                                 ──────────                                 ;;
 
-
 ;;------------------------------------------------------------------------------
-;; Layout Building Functions
+;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(load! "derive")
-(load! "types/init")
-(load! "layout")
-(load! "bind")
-(load! "bind-debug")
+(defvar int<keyboard>:cmd:interactive? nil
+  "`t' if a command is currently running interactively.")
 
 
 ;;------------------------------------------------------------------------------
-;; Layout Inits
+;; Keyboard Command Helper
 ;;------------------------------------------------------------------------------
 
-;; Find our active keyboard layout and load its init if it has one.
-(when (int<keyboard>:load:allowed? :init)
-  (keyboard:load:active "init" :init))
+(defun int<keyboard>:cmd:running? ()
+  "Call this in command functions."
+  int<keyboard>:cmd:interactive?)
+
+
+(defmacro int<keyboard>:cmd:run (&rest body)
+  "Call this in command functions."
+  `(let ((int<keyboard>:cmd:interactive? (called-interactively-p)))
+     ,@body))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout)
+;; (imp:provide :input 'keyboard 'command)

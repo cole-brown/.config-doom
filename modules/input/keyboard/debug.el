@@ -93,13 +93,14 @@ to toggle.")
 (defun input:keyboard/layout:debug/status ()
   "Get message with status of debugging toggle, active debug tags."
   (interactive)
-  (message ":input/keyboard/layout module: %s\n  tags: %s"
-           (if int<keyboard>:debugging
-               "[DEBUGGING]"
-             "[disabled]")
-           (if (null int<keyboard>:debug:tags)
-               "()"
-             int<keyboard>:debug:tags)))
+  (int<keyboard>:cmd:run
+   (message ":input/keyboard/layout module: %s\n  tags: %s"
+            (if int<keyboard>:debugging
+                "[DEBUGGING]"
+              "[disabled]")
+            (if (null int<keyboard>:debug:tags)
+                "()"
+              int<keyboard>:debug:tags))))
 
 
 ;;------------------------------------------------------------------------------
@@ -109,16 +110,17 @@ to toggle.")
 (defun input:keyboard/layout:debug/toggle ()
   "Toggle debugging for ':input/keyboard/layout' module."
   (interactive)
-  (setq int<keyboard>:debugging (not int<keyboard>:debugging))
-  (message "int<keyboard>:debugging: %s%s"
-           (if int<keyboard>:debugging
-               "[ENABLED]"
-             "[disabled]")
-           (if int<keyboard>:debugging
-               (if (not int<keyboard>:debug:tags)
-                   " (all debug output)"
-                 (format " with tags: %S" int<keyboard>:debug:tags))
-             "")))
+  (int<keyboard>:cmd:run
+   (setq int<keyboard>:debugging (not int<keyboard>:debugging))
+   (message "int<keyboard>:debugging: %s%s"
+            (if int<keyboard>:debugging
+                "[ENABLED]"
+              "[disabled]")
+            (if int<keyboard>:debugging
+                (if (not int<keyboard>:debug:tags)
+                    " (all debug output)"
+                  (format " with tags: %S" int<keyboard>:debug:tags))
+              ""))))
 
 
 ;;------------------------------------------------------------------------------
@@ -131,26 +133,28 @@ to toggle.")
                                       int<keyboard>:debug:tags/common
                                       nil
                                       'confirm)))
-  ;; Convert to keyword.
-  (let ((keyword (int<keyboard>:normalize->keyword tag)))
-    ;; Toggle in/out of the active tags.
-    (if (memq keyword int<keyboard>:debug:tags)
-        (prog1
-            (setq int<keyboard>:debug:tags (remove keyword int<keyboard>:debug:tags))
-          (message "':input/keyboard/layout' removed debug tag: %S\n  tags: %S"
-                   keyword int<keyboard>:debug:tags))
-      (prog1
-          (push keyword int<keyboard>:debug:tags)
-        (message "':input/keyboard/layout' added debug tag: %S\n  tags: %S"
-                 keyword int<keyboard>:debug:tags)))))
+  (int<keyboard>:cmd:run
+   ;; Convert to keyword.
+   (let ((keyword (int<keyboard>:normalize->keyword tag)))
+     ;; Toggle in/out of the active tags.
+     (if (memq keyword int<keyboard>:debug:tags)
+         (prog1
+             (setq int<keyboard>:debug:tags (remove keyword int<keyboard>:debug:tags))
+           (message "':input/keyboard/layout' removed debug tag: %S\n  tags: %S"
+                    keyword int<keyboard>:debug:tags))
+       (prog1
+           (push keyword int<keyboard>:debug:tags)
+         (message "':input/keyboard/layout' added debug tag: %S\n  tags: %S"
+                  keyword int<keyboard>:debug:tags))))))
 
 
 (defun input:keyboard/layout:debug/tag:clear ()
   "Reset debugging tags to nil."
   (interactive)
-  (setq int<keyboard>:debug:tags nil)
-  (message "':input/keyboard/layout' cleared debug tags.\n  tags: %S"
-           int<keyboard>:debug:tags))
+  (int<keyboard>:cmd:run
+   (setq int<keyboard>:debug:tags nil)
+   (message "':input/keyboard/layout' cleared debug tags.\n  tags: %S"
+            int<keyboard>:debug:tags)))
 
 
 ;;------------------------------------------------------------------------------
@@ -312,6 +316,7 @@ VALUE is optional and should be:
   - If START-OR-END is `:end/list':
     + A alist of: '((key . value) ...)
       - This will be displayed similar to `:start' alist."
+  (declare (indent 2))
   (let ((func/name/this "int<keyboard>:debug:func")
         value/formatted)
 
@@ -411,7 +416,7 @@ VALUE is optional and should be:
                "<--[END]-------\n"
                "  <--[RETURN]--\n"
                "%s")
-             value))
+             value/formatted))
 
           ;;------------------------------
           ;; Error: Bad START-OR-END

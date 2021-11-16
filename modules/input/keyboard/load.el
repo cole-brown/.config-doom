@@ -29,27 +29,190 @@ the layout directories.")
   "Layout dirs must start with a '+'.")
 
 
+(defvar int<keyboard>:load:deny nil
+  "Variable to disallow loading until unset.")
+
+
+(defvar int<keyboard>:load:deny/valids '(:init :cmd :test)
+  "Valid keyword flags for `int<keyboard>:load:deny'.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Debugging Helper
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:load:loading? ()
-  "Use this to hide code you only want to run during Doom/Emacs start-up or to
-do some debugging vs actual stuff.
+(defun int<keyboard>:load:allowed? (&rest args)
+  "Conditionally allow a load based on keywords in ARGS.
 
-For best, most consistent results: do not use this at all.
+ARGS can contain:
+  - `:init' - Allow if we are initializing (e.g. loading files during start-up).
+  - `:cmd'  - Allow if we are being called interactively.
+  - `:test' - We are testing; allow.
 
-Returns non-nil if `doom-init-p' is nil."
-  ;; This var is set to `t' after Doom has been initialized.
-  ;; ...it's already set by the time this runs.
-  ;;(not doom-init-p)
+For `:cmd', caller should use macro `int<keyboard>:cmd:run' so that the flag
+this function checks is set correctly."
 
-  ;; Maybe this one is more accurate.
-  ;; Nope. This gives us 'not loading' when this file is loaded...
-  ;; (not doom-init-modules-p)
+  (let ((func/name "int<keyboard>:load:allowed?")
+        (debug/tags '(:load))
+        deny?
+        denied-by)
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :start
+      (list (cons 'args args)))
 
-  ;; I give up? If `load-file-name' is set, some file is being loaded right now.
-  load-file-name)
+    ;;------------------------------
+    ;; Globally Denied?
+    ;;------------------------------
+    ;; `t' == always deny
+    (when (or (eq t int<keyboard>:load:deny)
+              (memq t int<keyboard>:load:deny))
+      (push t denied-by))
+
+    ;; Any arg match to a keyword in `int<keyboard>:load:deny'?
+    (when-let ((matches (seq-intersection args int<keyboard>:load:deny)))
+      (setq denied-by (append denied-by matches)))
+
+    ;;------------------------------
+    ;; Initializing
+    ;;------------------------------
+    (when (memq :init args)
+      (setq deny? (not (and
+                        ;;---
+                        ;; Check if we're "starting up"...
+                        ;;---
+                        ;; I give up? If `load-file-name' is set, some file is being loaded right now.
+                        load-file-name
+
+                        ;;---
+                        ;; Are we allowed to load during start-up?
+                        ;;---
+                        (not int<keyboard>:testing:disable-start-up-init))))
+      (when deny?
+        (push :init denied-by))
+      (int<keyboard>:debug
+          func/name
+          debug/tags
+        '("`:init' == \n"
+          "  loading? %S\n"
+          "  init not disabled? %S\n"
+          "  ==> %S ==> deny? %S\n"
+          "==> denied-by = %S")
+        load-file-name
+        (not int<keyboard>:testing:disable-start-up-init)
+        (and
+         load-file-name
+         (not int<keyboard>:testing:disable-start-up-init))
+        deny?
+        denied-by))
+
+    ;;------------------------------
+    ;; Command
+    ;;------------------------------
+    (when (memq :cmd args)
+      ;; Allow if we're inside an interactive call.
+      (setq deny? (not (int<keyboard>:cmd:running?)))
+      (int<keyboard>:debug
+          func/name
+          debug/tags
+        '("`:cmd' == \n"
+          "  cmd running? %S\n"
+          "  ==> deny? %S\n"
+          "==> denied-by %S")
+        (not deny?)
+        deny?
+        denied-by)
+      (when deny?
+        (push :cmd denied-by)))
+
+    ;;------------------------------
+    ;; Testing
+    ;;------------------------------
+    ;; Must be last so we can force allow if `:test' supplied.
+    (when (memq :test args)
+      (int<keyboard>:debug
+          func/name
+          debug/tags
+        '("`:test' == always allowed\n"
+          "  `denied-by' was: %S\n"
+          "Cleared out by `:test' flag.")
+        denied-by)
+      ;; Clear so no longer denied by anything.
+      (setq denied-by nil))
+
+    (when-let ((unknowns (seq-difference args int<keyboard>:load:deny/valids)))
+      (int<keyboard>:debug
+          func/name
+          debug/tags
+        "Unknown args: %S"
+        unknows))
+
+    (let ((return (null denied-by)))
+      (int<keyboard>:debug:func
+          func/name
+          debug/tags
+        :end/list
+        (list (cons 'denied-by denied-by)
+              (cons 'return return)))
+      return)))
+;; (int<keyboard>:load:allowed? :init)
+;; (int<keyboard>:load:allowed? :cmd)
+;; (int<keyboard>:load:allowed? :test)
+
+
+(defmacro int<keyboard>:load:if-allowed (load-flags &rest body)
+  "Run BODY if load-flags allow it."
+  (declare (indent 1))
+  `(condition-case err
+       ;; Set `load:deny' flag to correct value and run body?
+       (progn
+         (int<keyboard>:load:deny/set load-flags)
+         (unless int<keyboard>:load:deny
+           ,@body))
+     ;; Reset `load:deny' flag only if we found an error signal.
+     ;; Normally it will be reset by a call to `int<keyboard>:load:deny/clear' after loading is done.
+     (error
+      (int<keyboard>:load:deny/clear)
+      ;; Reraise the error signal.
+      (signal (car err) (cdr err)))))
+
+
+(defun int<keyboard>:load:deny/set (&rest load-flags)
+  "Set deny based on LOAD-FLAGS."
+  (let ((func/name "int<keyboard>:load:deny/set")
+        (debug/tags '(:load)))
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :start
+      (list (cons 'args args)))
+
+    (int<keyboard>:load:deny/clear)
+    (let* ((flags/invalid (seq-difference load-flags int<keyboard>:load:deny/valids)))
+      ;; Check for invalid flags.
+      (when flags/invalid
+        (int<keyboard>:output :error
+                              func/name
+                              "Unknown/invalid load-flags %S in input: %S"
+                              flags/invalid
+                              load-flags))
+
+      ;; Set to the valid flags.
+      (setq int<keyboard>:load:deny (seq-intersection int<keyboard>:load:deny/valids load-flags))
+      (int<keyboard>:debug:func
+          func/name
+          debug/tags
+        :end
+        int<keyboard>:load:deny)
+
+      int<keyboard>:load:deny)))
+
+
+(defun int<keyboard>:load:deny/clear ()
+  "Reset `int<keyboard>:load:deny' to nil."
+  (setq int<keyboard>:load:deny nil))
+
 
 
 ;;------------------------------------------------------------------------------
@@ -126,13 +289,13 @@ The extension '.el' is used to check for file existance.
 ERROR?, if non-nil, will signal an error if the file does not exist.
   - If nil, a debug message will (try to) be output instead."
   (let ((func/name "int<keyboard>:load:file")
-        (debug.tags '(:load))
+        (debug/tags '(:load))
         (load-name.ext (file-name-extension load-name))
         path.load
         path.file)
     (int<keyboard>:debug
         func/name
-        debug.tags
+        debug/tags
       '("args:\n"
         "  layout:        %S\n"
         "  load-name:     %S\n"
@@ -193,7 +356,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
       (setq root int<keyboard>:path:dir/root)
       (int<keyboard>:debug
           func/name
-          debug.tags
+          debug/tags
         '("No ROOT provided; using `int<keyboard>:path:dir/root'."
           "  root: %S")
         int<keyboard>:path:dir/root)))
@@ -203,7 +366,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
     ;;------------------------------
     (int<keyboard>:debug
         func/name
-        debug.tags
+        debug/tags
       '("Creating PATH from:\n"
         "  root: %S\n"
         "  children:\n"
@@ -228,7 +391,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
           path.file (concat path.load ".el"))
     (int<keyboard>:debug
         func/name
-        debug.tags
+        debug/tags
       '("Created path:\n"
         "  <-path.load: %S\n"
         "  <-path.file: %S")
@@ -241,7 +404,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
         (progn
           (int<keyboard>:debug
               func/name
-              debug.tags
+              debug/tags
             "Path exists; loading...")
           (load path.load))
 
@@ -254,7 +417,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
                                 path.load)
         (int<keyboard>:debug
             func/name
-            debug.tags
+            debug/tags
           '("Path does not exist!\n"
             "  path.load: %s")
           path.load)))))
@@ -265,7 +428,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 ;; Load Active Layout Functions
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:load:active? (layout load-name &optional root error?)
+(defun int<keyboard>:load:active? (layout load-name load-flags &optional root error?)
   "Load LAYOUT if it is the desired layout according to `int<keyboard>:load:layout?'
 and if its LOAD-NAME file exists on the filesystem.
   - And only if `int<keyboard>:testing:disable-start-up-init' is nil.
@@ -287,26 +450,24 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
       "int<keyboard>:load:active?"
       '(:load)
     '("Inputs:\n"
-      "  - layout:    %S\n"
-      "  - load-name: %S\n"
-      "  - root:      %S\n"
-      "  - error?:    %S")
-    layout load-name root error?)
+      "  - layout:     %S\n"
+      "  - load-name:  %S\n"
+      "  - load-flags: %S\n"
+      "  - root:       %S\n"
+      "  - error?:     %S")
+    layout load-name load-flags root error?)
 
   ;; Only allow load if we have start-up-init enabled /and/ we're loading during start-up.
-  (let* ((allow-load? (and (int<keyboard>:load:loading?)
-                           (not int<keyboard>:testing:disable-start-up-init))))
+  (let ((allow-load? (int<keyboard>:load:allowed? load-flags)))
     (int<keyboard>:debug
         "int<keyboard>:load:active?"
         '(:load)
       '("Load checks:\n"
-        "     loading?        %S\n"
-        "  && allow-init?     %S\n"
-        "  == allow load?:    %S\n"
+        "  ----> allow-init?  %S\n"
+        "     allow load?:    %S\n"
         "  && `load:layout?': %S\n"
         "  == load file? ---> %S")
       ;; Loading Allowed?
-      (int<keyboard>:load:loading?)
       (not int<keyboard>:testing:disable-start-up-init)
       allow-load?
       ;; Layout?
@@ -321,11 +482,11 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
                (int<keyboard>:load:layout? layout))
       ;; Yes and yes - load it.
       (int<keyboard>:load:file layout load-name root error?))))
-;; (int<keyboard>:load:active? :spydez "init")
-;; (int<keyboard>:load:active? :spydez "config")
+;; (int<keyboard>:load:active? :spydez "init" :cmd)
+;; (int<keyboard>:load:active? :spydez "config" :cmd)
 
 
-(defun keyboard:load:active (file &optional root error?)
+(defun keyboard:load:active (file load-flags &optional root error?)
   "Find/load active layout's FILE.
 
 FILE should /not/ have its extension so that the '.elc' can be used if it exists.
@@ -362,13 +523,14 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
         (when dir?
           ;; Our keyboard layout directories are named such that they can be
           ;; passed into `int<keyboard>:load:active?'.
-          (setq loaded-something (or (int<keyboard>:load:active? name file root error?)
+          ;; Set `loaded-something' to true if any file loads.
+          (setq loaded-something (or (int<keyboard>:load:active? name file load-flags root error?)
                                      loaded-something)))))
 
     ;; Return something that indicates if anything was loaded.
     loaded-something))
-;; (keyboard:load:active "config")
-;; (keyboard:load:active "config")
+;; (keyboard:load:active "config" :cmd)
+;; (keyboard:load:active "config" :cmd)
 
 
 ;;------------------------------------------------------------------------------

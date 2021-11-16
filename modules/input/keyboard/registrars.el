@@ -28,6 +28,10 @@
   "All valid values for `(int<keyboard>:registrar:get registrar :state)'.")
 
 
+(defconst int<keyboard>:registration:state/meta
+  '((:set-up . (nil :init :config)))
+  "Collections of states. Only used for debug messages currently.")
+
 (defconst int<keyboard>:registration:state/transitions
   ;;    '(state     . (list of valid states to transition from))
   (list '(nil       . (nil))
@@ -65,7 +69,7 @@ Returns nil if not valid."
   "Returns non-nil if transition of current registration state to new STATE/TO
 state is valid/allowed."
   (let ((func/name "int<keyboard>:registration:state/transition:valid?")
-        (debug.tags '(:registering))
+        (debug/tags '(:registering))
         (state/current (int<keyboard>:registrar:get registrar :state)))
 
     ;;------------------------------
@@ -75,7 +79,7 @@ state is valid/allowed."
                       int<keyboard>:registration:states))
            (int<keyboard>:debug
                func/name
-               debug.tags
+               debug/tags
              "Current state %S for registrar %S is not a valid state: %S"
              state/current
              registrar
@@ -94,7 +98,7 @@ state is valid/allowed."
           ((not (memq state/to int<keyboard>:registration:states))
            (int<keyboard>:debug
                func/name
-               debug.tags
+               debug/tags
              "Desired state %S for registrar %S is not a valid state: %S"
              state/to
              registrar
@@ -143,9 +147,11 @@ state is valid.
 If NO-SET is non-nil, skips setting current registration state.
 
 If NO-ERROR is non-nil, will return nil instead of signaling an error."
+  (message "[state(%S)]: %S -> %S?"
+           registrar
+           (int<keyboard>:registrar:get registrar :state)
+           state/to)
   ;; Check for errors.
-  (message "int<keyboard>:registration:state/transition:set: valid? %S"
-           (int<keyboard>:registration:state/transition:valid? registrar state/to no-error))
   (if (not (int<keyboard>:registration:state/transition:valid? registrar state/to no-error))
       ;; Invalid transition - that raised an error signal if `no-error' is /not/ set,
       ;; so the only other thing to do is return nil if `no-error' is set.

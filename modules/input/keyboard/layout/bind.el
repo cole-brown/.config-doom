@@ -62,10 +62,9 @@ Unbindings are applied before bindings."
 
     ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
     ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
-    ;; TODO: move finalized states to a var.
-    (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
-      ;; This will error out for us.
-      (int<keyboard>:registration:state/transition:set registrar :init))
+    ;;
+    ;; This will error out for us if we're currently in the wrong state to transition to `:init'.
+    (int<keyboard>:registration:state/transition:set registrar :init)
 
     ;; Ok - errors checked; set it.
     (setq int<keyboard>:layout:active layout)
@@ -148,10 +147,9 @@ earlier."
 
     ;; Set to `:init' state unless we're in some finalized state. If we're in a finalized state,
     ;; just let the keymap be updated for possibly an `keyboard:layout:apply' or something.
-    ;; TODO: move finalized states to a var.
-    (unless (memq (int<keyboard>:registrar:get registrar :state) '(:active :inactive))
-      ;; This will error out for us.
-      (int<keyboard>:registration:state/transition:set registrar :init))
+    ;;
+    ;; This will error out for us if we're currently in the wrong state to transition to `:init'.
+    (int<keyboard>:registration:state/transition:set registrar :init)
 
     ;; Ok - errors checked; set it.
     (setq int<keyboard>:layout:active layout)
@@ -306,7 +304,7 @@ REGISTERING should be a registering state (see `int<keyboard>:registration:state
                                bind/unbind))
 
         ((not (int<keyboard>:registration:state/transition:valid? registrar registering))
-         ;; set-if-valid? will signal error, so no need to do it again.
+         ;; valid? will signal error, so no need to do it again.
          (int<keyboard>:output :error
                                caller
                                '("Cannot transition registering state %S -> %S.")

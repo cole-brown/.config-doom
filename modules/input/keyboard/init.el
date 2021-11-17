@@ -52,7 +52,7 @@
 
 ;; Should not have more than one keyboard layout, but only check when loading.
 (int<keyboard>:load:if-allowed
-    :init
+    (:init)
   ;; We are loading, so check our module flags.
   (let ((flags (doom-module-get :input 'keyboard :flags))
         (layouts 0)

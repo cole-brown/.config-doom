@@ -33,7 +33,7 @@ the layout directories.")
   "Variable to disallow loading until unset.")
 
 
-(defvar int<keyboard>:load:deny/valids '(:init :cmd :test)
+(defvar int<keyboard>:load:deny/valids '(:always :init :cmd :test)
   "Valid keyword flags for `int<keyboard>:load:deny'.")
 
 
@@ -52,33 +52,31 @@ ARGS can contain:
 For `:cmd', caller should use macro `int<keyboard>:cmd:run' so that the flag
 this function checks is set correctly."
 
-  (let ((func/name "int<keyboard>:load:allowed?")
-        (debug/tags '(:load))
-        deny?
-        denied-by)
+  (let* ((func/name "int<keyboard>:load:allowed?")
+         (debug/tags '(:load))
+         (allow/valids (int<keyboard>:load:deny/validate func/name
+                                                         debug/tags
+                                                         args))
+         denied-by)
     (int<keyboard>:debug:func
         func/name
         debug/tags
       :start
-      (list (cons 'args args)))
+      (list (cons 'args args)
+            (cons 'args/valids allow/valids)))
 
     ;;------------------------------
     ;; Globally Denied?
     ;;------------------------------
-    ;; `t' == always deny
-    (when (or (eq t int<keyboard>:load:deny)
-              (memq t int<keyboard>:load:deny))
-      (push t denied-by))
-
-    ;; Any arg match to a keyword in `int<keyboard>:load:deny'?
-    (when-let ((matches (seq-intersection args int<keyboard>:load:deny)))
-      (setq denied-by (append denied-by matches)))
+    ;; `:always' == always deny
+    (when (memq :always int<keyboard>:load:deny)
+      (push :always denied-by))
 
     ;;------------------------------
-    ;; Initializing
+    ;; Initializing?
     ;;------------------------------
     (when (memq :init args)
-      (setq deny? (not (and
+      (when (not (and
                         ;;---
                         ;; Check if we're "starting up"...
                         ;;---
@@ -88,9 +86,10 @@ this function checks is set correctly."
                         ;;---
                         ;; Are we allowed to load during start-up?
                         ;;---
-                        (not int<keyboard>:testing:disable-start-up-init))))
-      (when deny?
+                        (not int<keyboard>:testing:disable-start-up-init)))
+        ;; Caller wants to init, but we're not in a state to allow that.
         (push :init denied-by))
+
       (int<keyboard>:debug
           func/name
           debug/tags
@@ -104,15 +103,18 @@ this function checks is set correctly."
         (and
          load-file-name
          (not int<keyboard>:testing:disable-start-up-init))
-        deny?
+        (memq :init denied-by)
         denied-by))
 
     ;;------------------------------
-    ;; Command
+    ;; Running Command?
     ;;------------------------------
     (when (memq :cmd args)
-      ;; Allow if we're inside an interactive call.
-      (setq deny? (not (int<keyboard>:cmd:running?)))
+      ;; Deny if we're not inside an interactive call.
+      (when (not (int<keyboard>:cmd:running?))
+        ;; Caller wants to run a command, but we're not in a state to allow that.
+        (push :cmd denied-by))
+
       (int<keyboard>:debug
           func/name
           debug/tags
@@ -120,11 +122,9 @@ this function checks is set correctly."
           "  cmd running? %S\n"
           "  ==> deny? %S\n"
           "==> denied-by %S")
-        (not deny?)
-        deny?
-        denied-by)
-      (when deny?
-        (push :cmd denied-by)))
+        (int<keyboard>:cmd:running?)
+        (memq :cmd denied-by)
+        denied-by))
 
     ;;------------------------------
     ;; Testing
@@ -141,34 +141,31 @@ this function checks is set correctly."
       ;; Clear so no longer denied by anything.
       (setq denied-by nil))
 
-    (when-let ((unknowns (seq-difference args int<keyboard>:load:deny/valids)))
-      (int<keyboard>:debug
-          func/name
-          debug/tags
-        "Unknown args: %S"
-        unknows))
-
-    (let ((return (null denied-by)))
+    ;;------------------------------
+    ;; Return: allowed or not
+    ;;------------------------------
+    (let ((allowed? (null denied-by)))
       (int<keyboard>:debug:func
           func/name
           debug/tags
         :end/list
         (list (cons 'denied-by denied-by)
-              (cons 'return return)))
-      return)))
+              (cons 'allowed? allowed?)))
+      allowed?)))
 ;; (int<keyboard>:load:allowed? :init)
 ;; (int<keyboard>:load:allowed? :cmd)
 ;; (int<keyboard>:load:allowed? :test)
+;; (int<keyboard>:load:allowed? nil)
 
 
 (defmacro int<keyboard>:load:if-allowed (load-flags &rest body)
-  "Run BODY if load-flags allow it."
+  "Run BODY if (list of keywords) LOAD-FLAGS allow it."
   (declare (indent 1))
   `(condition-case err
        ;; Set `load:deny' flag to correct value and run body?
        (progn
-         (int<keyboard>:load:deny/set load-flags)
-         (unless int<keyboard>:load:deny
+         (int<keyboard>:load:allow/set ,@load-flags)
+         (when (int<keyboard>:load:allowed? ,@load-flags)
            ,@body))
      ;; Reset `load:deny' flag only if we found an error signal.
      ;; Normally it will be reset by a call to `int<keyboard>:load:deny/clear' after loading is done.
@@ -178,35 +175,91 @@ this function checks is set correctly."
       (signal (car err) (cdr err)))))
 
 
-(defun int<keyboard>:load:deny/set (&rest load-flags)
-  "Set deny based on LOAD-FLAGS."
-  (let ((func/name "int<keyboard>:load:deny/set")
-        (debug/tags '(:load)))
+(defun int<keyboard>:load:deny/validate (caller debug/tags load-flags)
+  "Check that list of LOAD-FLAGS are all valid.
+
+CALLER should be a string of the calling function's name.
+
+DEBUG/TAGS should be a list of debugging tags that calling function uses."
+  (let ((func/name "int<keyboard>:load:deny/validate"))
     (int<keyboard>:debug:func
         func/name
         debug/tags
       :start
-      (list (cons 'args args)))
+      (list (cons 'load-flags load-flags)))
 
+    ;; Clear out current denies.
     (int<keyboard>:load:deny/clear)
-    (let* ((flags/invalid (seq-difference load-flags int<keyboard>:load:deny/valids)))
-      ;; Check for invalid flags.
+
+    ;; Check the LOAD-FLAGS for validity.
+    (let* ((flags/invalid (seq-difference load-flags int<keyboard>:load:deny/valids))
+           (flags/valid   (seq-difference load-flags flags/invalid)))
       (when flags/invalid
         (int<keyboard>:output :error
-                              func/name
+                              caller
                               "Unknown/invalid load-flags %S in input: %S"
                               flags/invalid
                               load-flags))
 
-      ;; Set to the valid flags.
-      (setq int<keyboard>:load:deny (seq-intersection int<keyboard>:load:deny/valids load-flags))
+      ;; Return the valid flags.
       (int<keyboard>:debug:func
           func/name
           debug/tags
-        :end
-        int<keyboard>:load:deny)
+        :end/list
+        (list (cons 'flags/input load-flags)
+              (cons 'flags/return  flags/valid)))
 
-      int<keyboard>:load:deny)))
+      flags/valid)))
+
+
+(defun int<keyboard>:load:deny/set (&rest load-flags)
+  "Set deny based on LOAD-FLAGS."
+  (let ((func/name "int<keyboard>:load:deny/set")
+        (debug/tags '(:load))
+        flags/valid)
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :start
+      (list (cons 'load-flags load-flags)))
+
+    ;; Clear current flags and get valid flags from inputs.
+    (setq flags/valid (int<keyboard>:load:deny/validate func/name debug/tags load-flags))
+
+    ;; Set to the valid flags.
+    (setq int<keyboard>:load:deny flags/valid)
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :end
+      int<keyboard>:load:deny)
+
+    int<keyboard>:load:deny))
+
+
+(defun int<keyboard>:load:allow/set (&rest load-flags)
+  "Set `int<keyboard>:load:deny' based on the inverse of LOAD-FLAGS."
+  (let ((func/name "int<keyboard>:load:allow/set")
+        (debug/tags '(:load))
+        flags/valid)
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :start
+      (list (cons 'load-flags load-flags)))
+
+    ;; Clear current flags and get valid flags from inputs.
+    (setq flags/valid (int<keyboard>:load:deny/validate func/name debug/tags load-flags))
+
+    ;; Set the valid flags to the inverse for 'allow' instead of 'deny'.
+    (setq int<keyboard>:load:deny (seq-difference int<keyboard>:load:deny/valids flags/valid))
+    (int<keyboard>:debug:func
+        func/name
+        debug/tags
+      :end
+      int<keyboard>:load:deny)
+
+    int<keyboard>:load:deny))
 
 
 (defun int<keyboard>:load:deny/clear ()

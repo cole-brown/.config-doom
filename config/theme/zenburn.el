@@ -106,6 +106,15 @@
     (list '+org-todo-project :foreground (doom-color 'blue-3)
           :background (doom-color 'bg-alt))
 
+    ;;---
+    ;; Org ~inline code~ and =inline verbatim=
+    ;;---
+    ;; Want these to be different enough from all the outline levels.
+    ;;   - `org-code' was exactly the same as `outline-1'.
+    ;;   - `org-verbatim' was similar to `outline-2' and to code comments (green).
+    ;; Change to inheriting from `org-cite', a teal affair, with some background color, maybe.
+    (list 'org-code :inherit 'org-cite :background (doom-lighten (doom-color 'bg-alt) 0.1))
+    (list 'org-verbatim :inherit 'org-cite :background (doom-color 'bg-alt))
 
     ;;---
     ;; "#+DOC_KEYWORD" - needs to be slightly lighter.

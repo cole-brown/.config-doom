@@ -28,7 +28,7 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(setq test<dlv>:const/path.root "~/dlv-test/")
+(setq test<dlv>:const/path.root "~/temp/emacs-dlv-test/")
 
 (setq test<dlv>:const/unique-paths? nil)
 
@@ -882,7 +882,6 @@ The second DLV class doesn't pass tests for its local value."
       ;;---
       (test<dlv>:assert:safe-local-variable assert.info/0
                                             (list symbol/0 #'test<dlv>:always-safe?))
-      ;; TODO: THIS IS FAILING!!! NULL dlv.class!!!
       (test<dlv>:assert:dlv.class assert.info/0
                                   (list class/0 mode/0 symbol/0 value.local/0))
       (test<dlv>:assert:dlv.dir assert.info/0
@@ -1067,6 +1066,6 @@ This /is/ expected to work, as opposed to `test<dlv>:same-dir/multi-dlvs::dlv:cr
 ;;------------------------------------------------------------------------------
 
 (defun test<dlv>:run ()
-  "Runn all 'test<dlv>:[...]' tests."
+  "Run all 'test<dlv>:[...]' tests."
   (interactive)
   (ert "test<dlv>:.*"))

@@ -591,7 +591,8 @@ Error otherwise."
 
 PAIR should be a certain format, which `int<dlv>:pair.create' returns.
 
-Returns the updated alist."
+Returns the updated alist.
+NOTE: Caller should save return value back to their alist variable!"
   (let ((func.name "int<dlv>:vars:pair.set"))
     (if (not (int<dlv>:validate:var.pair func.name pair :error))
         ;; Should have already errored, but just in case:
@@ -599,9 +600,11 @@ Returns the updated alist."
                func.name pair)
 
       ;; Valid - set/update the var in the alist.
-      (if (null (assoc (car pair) dlv.vars))
-          (push pair dlv.vars)
-        (setf (alist-get (car pair) dlv.vars) (cdr pair)))
+      (if (null (assoc (car pair) dlv.vars)) ;; empty alist?
+          (push pair dlv.vars) ;; Create alist w/ this pair.
+        (setq dlv.vars
+              (setf (alist-get (car pair) dlv.vars) (cdr pair)))) ;; Add-to/update-in alist.
+      ;; Return the updated alist.
       dlv.vars)))
 ;; (let ((an-alist '((baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
 ;; (let ((an-alist '((foo . foo) (baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
@@ -714,7 +717,8 @@ Returns the updated DLV alist."
 
           ;; Update it in the alist.
           (t
-           (setf (alist-get (car mode-entry) dlv) (cdr mode-entry)))))
+           (setq dlv
+                 (setf (alist-get (car mode-entry) dlv) (cdr mode-entry))))))
 
   dlv)
 ;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe))) '((nil . ((a . t) (b . "hello")))))
@@ -790,7 +794,7 @@ Returns a list of paths (which are DIRECTORY) that have a DLV class already."
 
 Does no error checking/validation."
   ;; Set the class of dlv variables and apply it to the directory.
-  (int<dlv>:debug caller "Setting class variables `%S': %s" dlv.class dlv.struct)
+  (int<dlv>:debug caller "Creating class variables `%S': %s" dlv.class dlv.struct)
   (dir-locals-set-class-variables dlv.class dlv.struct)
   (int<dlv>:debug caller "Setting dir class `%S': %s" dlv.class dlv.directory)
   (dir-locals-set-directory-class dlv.directory dlv.class)
@@ -806,7 +810,7 @@ Does no error checking/validation."
 
 Does no error checking/validation."
   ;; Only set the class -> dlv variables. Directory -> class should already exist.
-  (int<dlv>:debug caller "Setting class variables `%S': %s" dlv.class dlv.struct)
+  (int<dlv>:debug caller "Updating class variables `%S': %s" dlv.class dlv.struct)
   (dir-locals-set-class-variables dlv.class dlv.struct)
   (int<dlv>:debug caller "Getting dir class via `dir-locals-get-directory-class':\n  %S"
                   (dir-locals-get-class-variables dlv.class))
@@ -829,7 +833,9 @@ TUPLES should be an alist of '(symbol value safe) tuples.
     + If a function, store that predicate in the symbol's `safe-local-variable'
       slot for Emacs to use.
     + If `t' or `:safe', do nothing; symbol is assumed to be already marked safe
-      for Directory Local Value use."
+      for Directory Local Value use.
+
+Returns a list of DLV class symbol(s)."
   (let ((func.name "dlv:create"))
     (int<dlv>:debug func.name
                     (concat "Inputs:\n"
@@ -873,28 +879,30 @@ TUPLES should be an alist of '(symbol value safe) tuples.
       ;; Make the DLV(s).
       ;;------------------------------
 
-      (dolist (dir-and-class dirs-and-classes)
-        ;; Create the struct for the DLV.
-        (let* ((dlv.directory (car dir-and-class))
-               (dlv.class (cdr dir-and-class))
-               (dlv.vars (apply #'int<dlv>:vars:create tuples))
-               (dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
-               (dlv.struct (int<dlv>:struct:create dlv.mode)))
-          (int<dlv>:debug func.name
-                          (concat "DLV'd:\n"
-                                  "  dlv.class:     %S\n"
-                                  "  dlv.directory: %S\n"
-                                  "  dlv.struct:    %S\n"
-                                  "   <- dlv.mode:    %S\n"
-                                  "      <- dlv.vars: %S\n")
-                          dlv.class
-                          dlv.directory
-                          dlv.struct
-                          dlv.mode
-                          dlv.vars)
+      (let (created/dlv.classes)
+        (dolist (dir-and-class dirs-and-classes)
+          ;; Create the struct for the DLV.
+          (let* ((dlv.directory (car dir-and-class))
+                 (dlv.class (cdr dir-and-class))
+                 (dlv.vars (apply #'int<dlv>:vars:create tuples))
+                 (dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+                 (dlv.struct (int<dlv>:struct:create dlv.mode)))
+            (int<dlv>:debug func.name
+                            (concat "DLV'd:\n"
+                                    "  dlv.class:     %S\n"
+                                    "  dlv.directory: %S\n"
+                                    "  dlv.struct:    %S\n"
+                                    "   <- dlv.mode:    %S\n"
+                                    "      <- dlv.vars: %S\n")
+                            dlv.class
+                            dlv.directory
+                            dlv.struct
+                            dlv.mode
+                            dlv.vars)
 
-          ;; Set the class of dlv variables and apply it to the directory.
-          (int<dlv>:directory-class.create func.name dlv.class dlv.directory dlv.struct))))))
+            ;; Set the class of dlv variables and apply it to the directory.
+            (push (int<dlv>:directory-class.create func.name dlv.class dlv.directory dlv.struct) created/dlv.classes)))
+        created/dlv.classes))))
 
 
 (defun dlv:update (directory mode &rest tuples)
@@ -969,36 +977,50 @@ TUPLES should be an alist of '(symbol value safe) tuples.
       ;; Update the DLV.
       ;;------------------------------
 
-      (dolist (dir-and-class dirs-and-classes)
-        ;; Break the existing DLV struct down, so that we can update the new pieces.
-        ;; Also create our DLV vars.
-        (let* (;; (dlv.directory (car dir-and-class)) ;; not used currently
-               (dlv.class (cdr dir-and-class))
-               (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
-               (existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
-               (dlv.vars (apply #'int<dlv>:vars:create tuples))
-               dlv.mode)
+      (let (updated/dlv.classes)
+        (dolist (dir-and-class dirs-and-classes)
+          ;; Break the existing DLV struct down, so that we can update the new pieces.
+          ;; Also create our DLV vars.
+          (let* (;; (dlv.directory (car dir-and-class)) ;; not used currently
+                 (dlv.class (cdr dir-and-class))
+                 (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
+                 (existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
+                 (dlv.vars (apply #'int<dlv>:vars:create tuples))
+                 dlv.mode)
 
-          (if existing/dlv.vars
-              ;; Add or update vars.
-              (progn
-                (dolist (kvp dlv.vars)
-                  (setq existing/dlv.vars
-                        (int<dlv>:vars:pair.set kvp existing/dlv.vars)))
-                (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+            (if existing/dlv.vars
+                ;; Add or update vars.
+                (progn
+                  (dolist (kvp dlv.vars)
+                    (setq existing/dlv.vars
+                          (int<dlv>:vars:pair.set kvp existing/dlv.vars))
+                    (int<dlv>:debug func.name
+                                    (concat "Updated `existing/dlv.vars':"
+                                            "  kvp:  %s\n"
+                                            "existing/dlv.vars: %S")
+                                    kvp
+                                    existing/dlv.vars))
+                  (setq dlv.mode (int<dlv>:mode:entry.create mode existing/dlv.vars))
+                  (int<dlv>:debug func.name
+                                  "Updated `dlv.mode':\n%S"
+                                  dlv.mode))
 
-            ;; No vars for the mode, so... Create the mode.
-            (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars)))
+              ;; No vars for the mode, so... Create the mode.
+              (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+              (int<dlv>:debug func.name
+                              "Created `dlv.mode':\n%S"
+                              dlv.mode))
 
-          ;; Now that `dlv.vars' is the updated vars, create a new dlv.mode entry for it.
-          (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
+            ;; Set the new/updated mode entry into the dlv struct.
+            (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
+            (int<dlv>:debug func.name
+                            "Up-to-date `dlv.struct':\n%S"
+                            existing/dlv.struct)
 
-          ;; Set the new/updated mode entry into the dlv struct.
-          (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
+            ;; And now we can replace the DLV struct in Emacs.
+            (push (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct) updated/dlv.classes)))
 
-          ;; And now we can replace the DLV struct in Emacs.
-          (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct))))))
-
+        updated/dlv.classes))))
 
 (defun dlv:set (directory mode &rest tuples)
   "Create or update a Directory-Local-Variable (DLV) class.

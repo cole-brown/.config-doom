@@ -107,12 +107,30 @@ appropriate for Emacs' `provide'."
 ;; Public API: Provide
 ;;------------------------------------------------------------------------------
 
+;; TODO: platform-smart way of figuring out if file-names equal.
+;;   - Windows is case-insensitive; forget if macOS is - don't think so.
+
+
 (defalias 'imp:feature? 'imp:provided?
   "Checks for FEATURE in `imp:features'.")
 (defalias 'imp:featurep 'imp:provided?
   "Checks for FEATURE in `imp:features'.")
 (defalias 'imp:providedp 'imp:provided?
   "Checks for FEATURE in `imp:features'.")
+
+
+(defun imp:provide:loading? (&optional file-name)
+  "Returns true if loading file.
+
+If FILE-NAME is nil, returns true if loading any file.
+If FILE-NAME is a string, returns true if loading that exact
+(full path to) file name."
+  (if file-name
+      ;; Exactly that file loading?
+      (and load-in-progress
+           (string= load-file-name file-name))
+   ;; Just anything loading?
+    load-in-progress))
 
 
 (defun imp:provided? (&rest feature)

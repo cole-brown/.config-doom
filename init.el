@@ -78,7 +78,7 @@
        vc                ; version-control and Emacs, sitting in a tree
 
        imp               ; require/provide with more than one symbol
-       dlv               ; Directory Local Variables
+       (dlv +debug)               ; Directory Local Variables
        str               ; Strings and Things
 
        :term
@@ -198,9 +198,6 @@
        mis0                 ; mis v0:     Actually more like v6, but eh.
        ; mis                  ; mis:        The Final Mis For Sure™.
 
-       :taskspace
-       taskspace
-
        :spy
        ;; Functions and Helpers
        zero                ; spy:zero:     Must be first. Funcs needed to start with in init/config...
@@ -214,7 +211,7 @@
        collections         ; spy:collections: alists, hash-tables, and... oh my!
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
-       jerky               ; spy:jerky:   For key/value tree.
+       jerky               ; spy:jerky:   For key/value tree (requires `emacs/dlv' unless `-dlv' flag present).
        ;; Has to Be After jerky:
        datetime            ; spy:datetime: For dates, times, datetimes, timedates...
 
@@ -222,4 +219,9 @@
        system              ; spy:system:  For one-to-many config-to-computers setup.
        io                  ; spy:io:      Input and output stuff (e.g. inserting signatures).
        secret              ; spy:secret:  For per-system things, secret keys, etc.
+
+       ;; Run init/config after `:spy' modules.
+       :taskspace
+       taskspace           ; Note files templates and structured note-data folders (requires `emacs/dlv' unless `-dlv' flag present).
+
        )

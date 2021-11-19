@@ -26,6 +26,15 @@
 ;;   `test<dlv>:' - Emacs ERT functions, variables, etc
 ;; ------------------------------
 ;;
+;; TODO: describe flags
+;; Flags:
+;;   - +debug
+;;   - -enabled
+;;   - +enabled/safe
+;;   - +enabled/all
+;;   - +enabled/flag
+;;   - -display
+;;
 ;;; Code:
 
 
@@ -45,15 +54,56 @@
 ;; Load Files.
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Debugging
+;;------------------------------
+
 (load! "debug")
+
+;;------------------------------
+;; Actual Functions
+;;------------------------------
+
 (load! "path")
 (load! "class") ;; requires path
 
 (load! "dlv") ;; requires path, class,
 
+;;------------------------------
+;; Optional Files
+;;------------------------------
+
 ;; Always load unless specifically removed.
 (unless (featurep! -display)
   (load! "+display"))
+
+
+;;------------------------------------------------------------------------------
+;; Optional Functionality
+;;------------------------------------------------------------------------------
+
+;; Only run the optional functionality checks/enables when loading.
+(when (imp:provide:loading?)
+  ;;------------------------------
+  ;; Enable debugging now (if feature flagged for it).
+  ;;------------------------------
+  (int<dlv>:debug:init-if-flagged)
+
+  ;;------------------------------
+  ;; Enable/disable DLVs?
+  ;;------------------------------
+  ;; If we're loading, check for a feature flag for how to enable DLVs.
+  (cond ((featurep! -enabled) ;; Not enabled == disabled.
+         (dlv:enable :disable))
+        ((featurep! +enabled/safe) ;; Only safe DLVs allowed!
+         (dlv:enable :safe))
+        ((featurep! +enabled/all) ;; Always allow anything - potentially dangerous!
+         (dlv:enable :all))
+        ((featurep! 'dlv :emacs +enabled/prompt) ;; Always ask the user.
+         (dlv:enable :prompt))
+        ;; Default: Always enable DLVs unless specifically told not to.
+        (t
+         (dlv:enable :enable))))
 
 
 ;;------------------------------------------------------------------------------

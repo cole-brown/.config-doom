@@ -256,7 +256,7 @@ KVP, if not nil, should be 2-tuples (cons) of field-name and field-value strings
                  "║"
                  (format format.width.title
                          (concat "<"
-                                 (if start? "" "/")
+                                 (if (memq start? '(nil :end)) "/" "")
                                  title
                                  ">"))
                  "║")

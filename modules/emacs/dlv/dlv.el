@@ -25,9 +25,9 @@
 Directory Local Variables.
 
 Valid values for ENABLE are:
-  - t
+  - :enable, t
     + DLVs are used if safe; user is queried if some are unsafe.
-  - nil
+  - :disable, nil
     + DLVs are never used.
   - :safe
     + Safe DLVs are used; unsafe DLVs are ignored.
@@ -37,7 +37,15 @@ Valid values for ENABLE are:
     + Always asks user.
 
 See `enable-local-variables' for an in-depth explanation."
-  (setq enable-local-variables enable))
+  ;; Reduce our two enables and two disables down to the correct value for `enable-local-variables'.
+  (cond ((memq enable '(:enable t))
+         (setq enable-local-variables t))
+        ((memq enable '(:disable nil))
+         (setq enable-local-variables nil))
+
+        ;; The rest are 1:1 mappings of input value->`enable-local-variables' value.
+        (t
+         (setq enable-local-variables enable))))
 
 
 ;;------------------------------------------------------------------------------
@@ -1029,7 +1037,7 @@ DIRECTORY should be the absolute path to the desired directory.
 
 MODE should be the mode the DLV applies to, or `nil' for global mode.
 
-TUPLES should be an alist of '(symbol value safe) tuples.
+Each TUPLES parameter should be a list of '(symbol value safe) tuples.
   - symbol - the symbol to set as a DLV
   - value  - the symbol's directory local value
   - safe   - a predicate function or `t'/`:safe'

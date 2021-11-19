@@ -27,6 +27,14 @@
 ;; (int<dlv>:debug "test")
 
 
+(defun int<dlv>:debug:init-if-flagged ()
+  "Initialize DLV Debug Mode based on module flags."
+  (when (featurep! +debug)
+    (setq int<dlv>:debug/enabled? t)
+    (int<dlv>:debug "int<dlv>:debug:flagged?"
+                    "[DEBUG]: ENABLED")))
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

@@ -166,6 +166,7 @@ valid for a DLV variable."
           ;; Don't error - just fail value of nil.
           (setq valid nil)
           valid)
+
       ;; Walk the list and return `valid' when done checking.
       (dolist (pair dlv.vars valid)
         (if (not (int<dlv>:validate:var.pair caller pair signal-error))
@@ -173,8 +174,10 @@ valid for a DLV variable."
                 ;; Should have already errored, but just in case:
                 (error "%s: `pair' failed validation! %S"
                        caller pair)
+
               ;; Don't error - just set our success/failure value.
               (setq valid nil)))))
+
     ;; Return our validation summary.
     valid))
 
@@ -247,7 +250,8 @@ Must be a cons with a valid mode and valid vars."
   "Checks that PATH is valid for a DLV directory.
 
 Must be a cons with a valid mode and valid vars."
-  (cond ((null path)
+  (cond ((or (null path)
+             (not (stringp path)))
          (if (not (null signal-error))
              (error "%s: `nil' is an invalid directory: %S"
                     caller path)
@@ -317,9 +321,14 @@ Must be a cons with a valid path and valid mode entries."
 ;;------------------------------
 
 (defun int<dlv>:validate:dlv (caller dlv &optional signal-error)
-  "Checks that DLV is a valid DLV structure (dirs and/or modes)."
+  "Checks that DLV is a valid DLV structure (dirs and/or modes).
+
+If SIGNAL-ERROR is non-nil, signals error. Else returns nil on error."
   (let ((valid t))
     (if (not (listp dlv))
+        ;;------------------------------
+        ;; Not even valid enough to validate? Error.
+        ;;------------------------------
         (if (not (null signal-error))
             ;; Probably wasn't a cons, since the rest should've errored in their funcs.
             (error "%s: `dir.entry' is not valid! Must be a cons with valid members. %S"
@@ -327,13 +336,18 @@ Must be a cons with a valid path and valid mode entries."
                    mode)
           (setq valid nil))
 
-      ;; Have a list - figure out if all the things in it are valid.
+      ;;------------------------------
+      ;; Validate the DLV structure.
+      ;;------------------------------
       (setq valid
             (-all? (lambda (dir-or-mode.entry)
                      (or (int<dlv>:validate:dir.entry caller dir-or-mode.entry signal-error)
                          (int<dlv>:validate:mode.entry caller dir-or-mode.entry signal-error)))
                    dlv)))
+
+    ;;------------------------------
     ;; Return the summary.
+    ;;------------------------------
     valid))
 
 
@@ -341,22 +355,208 @@ Must be a cons with a valid path and valid mode entries."
 ;; Emacs Dir Locals
 ;;------------------------------
 
-(defun int<dlv>:validate:emacs.dlv:dir.path (caller path &optional signal-error)
-  "Checks that PATH is not an emacs DLV path yet."
-  (let ((path (expand-file-name path)))
-    ;; NOTE: Do not use `dir-locals-find-file' - it will give you a dir's parents' DLVs and that's a false positive (probably?).
-    (if (assoc path dir-locals-directory-cache)
-        ;; Already exists in dir-locals - so we can't create another one here.
-        (if (not (null signal-error))
-            (error "%s(%S): `path' is already in Emacs dir-locals! %S"
-                   caller
-                   signal-error
-                   path)
-          ;; Don't want an error, so just return false.
-          nil)
+(defun int<dlv>:validate:emacs.dlv:dir.path (caller path signal-error &rest args)
+  "Checks that PATH is not an emacs DLV path yet.
 
-      ;; Return something truthy. We expanded the path, so maybe that?
-      path)))
+ARGS can be:
+  - `:dir/exists' - PATH must exist on the filesystem.
+  - `:dlv/exists' - PATH must exist in `dir-locals-directory-cache'.
+  - `:dlv/dne'    - PATH must /not/ exist in `dir-locals-directory-cache'."
+  (let ((path (expand-file-name path))
+        (valid/args '(:dir/exists :dlv/exists :dlv/dne))
+        (valid t))
+
+    ;;------------------------------
+    ;; Sanity Check: Must have a valid value in ARGS.
+    ;;------------------------------
+    (unless (and args
+                 (seq-intersection valid/args args))
+      ;; Ignore `signal-error' and always error - programmer fucked up.
+      (error "%s: Must have a valid value in args! Valid: %S, Args: %S"
+             caller valid/args args))
+
+    ;;------------------------------
+    ;; Filesystem: Dir must exist.
+    ;;------------------------------
+    (when (and (memq :dir/exists args)
+               (not (file-directory-p path)))
+      (if (not (null signal-error))
+          (error "%s: `path' is not an existing directory! %S"
+                 caller path)
+        ;; Don't want an error, so just return false.
+        (setq valid nil)))
+
+    ;;------------------------------
+    ;; Emacs DLV: Dir must (not) exist.
+    ;;------------------------------
+    ;; NOTE: Do not use `dir-locals-find-file' - it will give you a dir's parents' DLVs and that's a false positive (probably?).
+
+    ;; Caller wants the DLV dir/class to already exist.
+    (when (and (memq :dlv/exists args)
+               (not (assoc path dir-locals-directory-cache)))
+      (if (not (null signal-error))
+          (error "%s: `path' is not in Emacs dir-locals! %S"
+                 caller path)
+        ;; Don't want an error, so just return false.
+        (setq valid nil)))
+
+    ;; Caller wants the DLV dir/class to _NOT_ exist.
+    (when (and (memq :dlv/dne args)
+               (assoc path dir-locals-directory-cache))
+      (if (not (null signal-error))
+          (error "%s: `path' is already in Emacs dir-locals! %S"
+                 caller path)
+        ;; Don't want an error, so just return false.
+        (setq valid nil)))
+
+    (if valid
+        ;; Return something truthy. We expanded the path, so maybe that?
+        path
+      nil)))
+
+
+;;------------------------------------------------------------------------------
+;; Clean
+;;------------------------------------------------------------------------------
+
+(defun int<dlv>:clean:dlv (directory &optional signal-error)
+  "Remove any invalid entries in a Directory-Local-Variable (DLV) class.
+
+DIRECTORY should be the absolute path to the desired directory.
+
+Had a bug in `dlv:set' that would wind up with invalid DLV structs like:
+  ;; Valid.
+  ((nil . (variable/00 . value/00))
+   ;; Invalid - missing mode.
+   (variable/01 . value/01)
+   ;; Invalid - missing mode.
+   (variable/00 . value/00))
+
+This will set that DLV struct to:
+  ((nil . (variable/00 . value/00)))"
+  (let ((func.name "int<dlv>:clean:dlv")
+        (valid t))
+    (int<dlv>:debug func.name
+                    (concat "[INPUTS]:\n"
+                            "  directory: %S\n"
+                            "  error?:    %S")
+                    directory
+                    signal-error)
+
+    ;;------------------------------
+    ;; Validate inputs.
+    ;;------------------------------
+    (if (not (int<dlv>:validate:dir.path func.name directory signal-error))
+      (if (not (null signal-error))
+          (error "%s: DIRECTORY must be valid! Got: %S"
+                 func.name directory)
+        (setq valid nil))
+
+      ;;------------------------------
+      ;; Get DLV dirs/classes list.
+      ;;------------------------------
+      (let ((dirs-and-classes (int<dlv>:class:get directory)))
+        (int<dlv>:debug func.name
+                        (concat "[GET] Dirs & Classes:\n"
+                                "%s\n")
+                        (pp-to-string dirs-and-classes))
+
+        ;;------------------------------
+        ;; Get each existing DLV struct to clean.
+        ;;------------------------------
+        (dolist (dir-and-class dirs-and-classes)
+          (let* ((dlv.directory (car dir-and-class))
+                 (dlv.class (cdr dir-and-class))
+                 (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
+                 cleaned/dlv.struct)
+
+            ;; We got the dirs/classes from emacs, so we are expecting to have a valid dir path.
+            (if (not (int<dlv>:validate:emacs.dlv:dir.path func.name dlv.directory signal-error :dir/exists :dlv/exists))
+                (if (not (null signal-error))
+                    (error "%s: Cannot clean DLVs for directory; existing Emacs DLV was not found for it. directory: '%s'"
+                           func.name
+                           dlv.directory)
+                  (setq valid nil))
+
+              ;; Is there anything to clean? We got the dirs/classes from Emacs so there should be.
+              ;; So... error if there isn't one.
+              (if (null existing/dlv.struct)
+                  (if (not (null signal-error))
+                      (error (concat "%s: Cannot clean DLVs for directory; "
+                                     "an existing Emacs DLV class was not found for it.\n"
+                                     "  expected class symbol: %S\n"
+                                     "  directory:             %s\n"
+                                     "  existing/dlv.struct:   %S"
+                                     func.name
+                                     dlv.class
+                                     dlv.directory
+                                     existing/dlv.struct))
+                    (setq valid nil))
+
+                ;;------------------------------
+                ;; Passed the error checking; clean the DLV.
+                ;;------------------------------
+                (int<dlv>:debug func.name
+                                (concat "[CLEANING] Clean DLV...\n"
+                                        "  DLV dir:    %s\n"
+                                        "  DLV class:  %S\n"
+                                        "  DLV struct: %S")
+                                dlv.directory
+                                dlv.class
+                                existing/dlv.struct)
+
+                ;;------------------------------
+                ;; Clean each DLV mode.
+                ;;------------------------------
+                (dolist (kvp existing/dlv.struct)
+                  ;; Is this a valid dlv mode->vars (or dir->(mode->vars, ...)) tuple?
+                  (if (or (int<dlv>:validate:dir.entry func.name kvp nil)
+                          (int<dlv>:validate:mode.entry func.name kvp nil))
+                      ;; Valid, so we keep it. Push to `cleaned/dlv.struct'.
+                      (progn
+                        (int<dlv>:debug func.name
+                                        (concat "[CLEAN:keep] Valid dir or class entry:\n"
+                                                "%s\n")
+                                        (pp-to-string kvp))
+                        (push kvp cleaned/dlv.struct))
+
+                    ;; Invalid, so do not keep it. Debug message it and continue.
+                    ;; It won't be in `cleaned/dlv.struct' so it will get lost when we set.
+                    (int<dlv>:debug func.name
+                                        (concat "[CLEAN:DROP] Invalid dir or class entry:\n"
+                                                "%s\n")
+                                        (pp-to-string kvp))))
+
+                ;;------------------------------
+                ;; Set the cleaned DLV back.
+                ;;------------------------------
+                ;; Did we update `cleaned/dlv.struct' in the cond?
+                (if (or (null cleaned/dlv.struct)
+                        (equal existing/dlv.struct cleaned/dlv.struct))
+                    (progn
+                      (int<dlv>:debug func.name
+                                  "[CLEAN:no-op] Nothing changed for DLV class: %S"
+                                  dlv.class)
+                      ;; Return something to indicate this state.
+                      (setq valid :no-op))
+
+                  ;; Set it to approximately the order it used to be.
+                  (setq cleaned/dlv.struct (nreverse cleaned/dlv.struct))
+                  (int<dlv>:directory-class.update func.name
+                                                   dlv.class
+                                                   cleaned/dlv.struct)
+                  (int<dlv>:debug func.name
+                                  (concat "[CLEAN:UPDATE] Cleaned invalids out of DLV class:\n"
+                                          "  class:        %S\n"
+                                          "  clean struct:\n"
+                                          "%s\n")
+                                  dlv.class
+                                  (pp-to-string cleaned/dlv.struct))
+                  ;; Return something to indicate this state.
+                  (setq valid :cleaned))))))))
+
+    ;; Return valid/invalid state.
+    valid))
 
 
 ;;------------------------------------------------------------------------------
@@ -876,7 +1076,7 @@ Returns a list of DLV class symbol(s)."
           (error "%s: `dlv.class' must be valid! Got: %S for directory '%s'"
                  func.name (cdr dir-and-class) (car dir-and-class)))
         ;; Creating, so don't allow if one already exists for the dir.
-        (unless (int<dlv>:validate:emacs.dlv:dir.path "int<dlv>:dir:entry.create" (car dir-and-class) :error)
+        (unless (int<dlv>:validate:emacs.dlv:dir.path func.name (car dir-and-class) :error :dir/exists :dlv/dne)
           (error "%s: Cannot create entry for directory; Emacs DLV already exists for it. DIRECTORY: '%s'"
                  func.name
                  (car dir-and-class))))
@@ -930,10 +1130,10 @@ TUPLES should be an alist of '(symbol value safe) tuples.
       for Directory Local Value use."
   (let ((func.name "dlv:update"))
     (int<dlv>:debug func.name
-                    (concat "Inputs:\n"
+                    (concat "[INPUTS]:\n"
                             "  directory: %S\n"
                             "  mode:      %S\n"
-                            "  tuples:     %S")
+                            "  tuples:    %S")
                     directory
                     mode
                     tuples)
@@ -949,26 +1149,50 @@ TUPLES should be an alist of '(symbol value safe) tuples.
 
     (let ((dirs-and-classes (int<dlv>:class:get directory)))
       (int<dlv>:debug func.name
-                      (concat "Dirs & Classes:\n"
+                      (concat "[GET] Dirs & Classes:\n"
                               "  %S")
                       dirs-and-classes)
 
       ;;---
       ;; Class should already exist.
       ;;---
+      (int<dlv>:debug func.name
+                      (concat "[VERIFY] DLV dir/class must pre-exist:\n"
+                              "  dir:                %S\n"
+                              "  dlv dirs & classes: %S")
+                      directory
+                      dirs-and-classes)
+
+      ;; Before we get and update them, clean up the existing DLVs.
+      (let ((cleaned (int<dlv>:clean:dlv directory :error)))
+        (int<dlv>:debug func.name
+                        "[CLEAN] DLV dir/class clean returned: %S"
+                        cleaned))
+
       ;; Might as well run through path validation... And don't let the validation function
       ;; error, since we want this to 'fail' (return 'already a class for that dir').
       (dolist (dir-and-class dirs-and-classes)
         (let* ((dir (car dir-and-class))
                (class (cdr dir-and-class))
                (existing/dlv.struct (dir-locals-get-class-variables class)))
-          (when (int<dlv>:validate:emacs.dlv:dir.path func.name dir nil)
-            (error "%s: Cannot update entry for directory; existing Emacs DLV was not found exists for it. directory: '%s'"
+          (unless (int<dlv>:validate:emacs.dlv:dir.path func.name dir :error :dir/exists :dlv/exists)
+            (error "%s: Cannot update entry for directory; directory failed validation. directory: '%s'"
                    func.name
                    dir))
 
           ;; Updating, so don't allow if one /does not/ exists for the dir.
-          (unless existing/dlv.struct
+          (if existing/dlv.struct
+              ;; Allowed - found existing.
+              (int<dlv>:debug func.name
+                              (concat "[VERIFY:OK] DLV dir/class exists!\n"
+                                      "  dir:      %S\n"
+                                      "  class:    %S\n"
+                                      "  existing: %S")
+                              dir
+                              class
+                              existing/dlv.struct)
+
+            ;; Not found; not allowed - error out.
             (error (concat "%s: Cannot update entry for directory; "
                            "an existing Emacs DLV class was not found for it. "
                            "expected class symbol: %S, "
@@ -985,50 +1209,139 @@ TUPLES should be an alist of '(symbol value safe) tuples.
       ;; Update the DLV.
       ;;------------------------------
 
+      (int<dlv>:debug func.name
+                      "[UPDATE] Apply updates to DLV classes...")
+
       (let (updated/dlv.classes)
         (dolist (dir-and-class dirs-and-classes)
           ;; Break the existing DLV struct down, so that we can update the new pieces.
           ;; Also create our DLV vars.
-          (let* (;; (dlv.directory (car dir-and-class)) ;; not used currently
+          (let* ((dlv.directory (car dir-and-class))
                  (dlv.class (cdr dir-and-class))
                  (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
                  (existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
                  (dlv.vars (apply #'int<dlv>:vars:create tuples))
                  dlv.mode)
+            (int<dlv>:debug func.name
+                            (concat "[UPDATE] Apply update to:\n"
+                                    "  DLV dir:    %S\n"
+                                    "  DLV class:  %S\n"
+                                    "  DLV struct: %S\n"
+                                    "  DLV vars:   \n"
+                                    "    Existing: %S\n"
+                                    "    New:      %S")
+                            dlv.directory
+                            dlv.class
+                            existing/dlv.struct
+                            existing/dlv.vars
+                            dlv.vars)
 
+            ;;------------------------------
+            ;; Add/Update DLV mode vars.
+            ;;------------------------------
             (if existing/dlv.vars
-                ;; Add or update vars.
+                ;;---
+                ;; Add/update vars in existing mode.
+                ;;---
                 (progn
+                  (int<dlv>:debug func.name
+                                  (concat "[UPDATE] Add/update vars to existing mode vars:\n"
+                                          "  DLV dir:   %S\n"
+                                          "  DLV class: %S\n"
+                                          "  DLV mode:  %S\n"
+                                          "  DLV vars:   \n"
+                                          "    Existing: %S\n"
+                                          "    New:      %S")
+                                  dlv.directory
+                                  dlv.class
+                                  mode
+                                  existing/dlv.vars
+                                  dlv.vars)
+
+                  ;; Update each var in inputs.
                   (dolist (kvp dlv.vars)
                     (setq existing/dlv.vars
                           (int<dlv>:vars:pair.set kvp existing/dlv.vars))
                     (int<dlv>:debug func.name
-                                    (concat "Updated `existing/dlv.vars':"
-                                            "  kvp:  %s\n"
-                                            "existing/dlv.vars: %S")
+                                    (concat "[UPDATE] Updated `existing/dlv.vars':\n"
+                                            "  mode:         %S\n"
+                                            "  var:          %S\n"
+                                            "  updated vars: %S")
+                                    mode
                                     kvp
                                     existing/dlv.vars))
+
+                  ;; Set mode's updated vars.
                   (setq dlv.mode (int<dlv>:mode:entry.create mode existing/dlv.vars))
                   (int<dlv>:debug func.name
-                                  "Updated `dlv.mode':\n%S"
+                                  (concat "[UPDATE] Updated `dlv.mode':\n"
+                                          "  mode: %S")
                                   dlv.mode))
 
-              ;; No vars for the mode, so... Create the mode.
+              ;;---
+              ;; Create mode for vars.
+              ;;---
+              ;; No existing vars for the mode, so... Create the mode.
+              (int<dlv>:debug func.name
+                              (concat "[UPDATE] Create new mode:\n"
+                                      "  DLV dir:   %S\n"
+                                      "  DLV class: %S\n"
+                                      "  DLV mode:  %S")
+                              dlv.directory
+                              dlv.class
+                              mode)
               (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
               (int<dlv>:debug func.name
-                              "Created `dlv.mode':\n%S"
+                              (concat "[UPDATE] Created `dlv.mode':\n"
+                                      "  mode: %S")
                               dlv.mode))
 
+            ;;------------------------------
+            ;; Finalize
+            ;;------------------------------
             ;; Set the new/updated mode entry into the dlv struct.
+            (int<dlv>:debug func.name
+                            (concat "[UPDATE] Setting new `dlv.mode' in existing DLV:\n"
+                                    "  mode:     %S\n"
+                                    "  existing:\n"
+                                    "%s\n")
+                            dlv.mode
+                            (pp-to-string existing/dlv.struct))
             (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
             (int<dlv>:debug func.name
-                            "Up-to-date `dlv.struct':\n%S"
-                            existing/dlv.struct)
+                            (concat "[UPDATE] Set new `dlv.mode'.\n"
+                                    "  dlv.struct:\n"
+                                    "%s\n")
+                            (pp-to-string existing/dlv.struct))
 
             ;; And now we can replace the DLV struct in Emacs.
-            (push (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct) updated/dlv.classes)))
+            (push (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct) updated/dlv.classes)
+            (int<dlv>:debug func.name
+                            (concat "[UPDATE] Updated DLV classes for directory:\n"
+                                    "  dir:   %S\n"
+                                    "  class: %S\n"
+                                    "  vars (ours):\n"
+                                    "%s\n"
+                                    "  vars (get):\n"
+                                    "%s\n")
+                            directory
+                            dlv.class
+                            (pp-to-string updated/dlv.classes)
+                            (pp-to-string (dir-locals-get-class-variables dlv.class)))))
+
+        ;;------------------------------
+        ;; Return
+        ;;------------------------------
+        (int<dlv>:debug func.name
+                        (concat "[UPDATE] Updated:\n"
+                                "  dir:  %S\n"
+                                "  vars:\n"
+                                "%s\n")
+                        directory
+                        (pp-to-string updated/dlv.classes))
 
         updated/dlv.classes))))
+
 
 (defun dlv:set (directory mode &rest tuples)
   "Create or update a Directory-Local-Variable (DLV) class.

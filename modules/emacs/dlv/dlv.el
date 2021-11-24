@@ -156,7 +156,7 @@ valid for a DLV variable."
 
 
 (defun int<dlv>:validate:dlv.vars (caller dlv.vars &optional signal-error)
-  "Check that DLV.VARS and each element in it are valid."
+  "Check that each element of DLV.VARS is a valid DLV vars list."
   (let ((valid t))
     (if (or (not dlv.vars)
             (not (listp dlv.vars)))
@@ -447,10 +447,10 @@ This will set that DLV struct to:
     ;; Validate inputs.
     ;;------------------------------
     (if (not (int<dlv>:validate:dir.path func.name directory signal-error))
-      (if (not (null signal-error))
-          (error "%s: DIRECTORY must be valid! Got: %S"
-                 func.name directory)
-        (setq valid nil))
+        (if (not (null signal-error))
+            (error "%s: DIRECTORY must be valid! Got: %S"
+                   func.name directory)
+          (setq valid nil))
 
       ;;------------------------------
       ;; Get DLV dirs/classes list.
@@ -458,7 +458,7 @@ This will set that DLV struct to:
       (let ((dirs-and-classes (int<dlv>:class:get directory)))
         (int<dlv>:debug func.name
                         (concat "[GET] Dirs & Classes:\n"
-                                "%s\n")
+                                "%s")
                         (pp-to-string dirs-and-classes))
 
         ;;------------------------------
@@ -497,10 +497,11 @@ This will set that DLV struct to:
                 ;; Passed the error checking; clean the DLV.
                 ;;------------------------------
                 (int<dlv>:debug func.name
-                                (concat "[CLEANING] Clean DLV...\n"
+                                (concat "[CLEANING] Clean DLV class `%S'...\n"
                                         "  DLV dir:    %s\n"
                                         "  DLV class:  %S\n"
                                         "  DLV struct: %S")
+                                dlv.class
                                 dlv.directory
                                 dlv.class
                                 existing/dlv.struct)
@@ -516,16 +517,16 @@ This will set that DLV struct to:
                       (progn
                         (int<dlv>:debug func.name
                                         (concat "[CLEAN:keep] Valid dir or class entry:\n"
-                                                "%s\n")
+                                                "%s")
                                         (pp-to-string kvp))
                         (push kvp cleaned/dlv.struct))
 
                     ;; Invalid, so do not keep it. Debug message it and continue.
                     ;; It won't be in `cleaned/dlv.struct' so it will get lost when we set.
                     (int<dlv>:debug func.name
-                                        (concat "[CLEAN:DROP] Invalid dir or class entry:\n"
-                                                "%s\n")
-                                        (pp-to-string kvp))))
+                                    (concat "[CLEAN:DROP] Invalid dir or class entry:\n"
+                                            "%s")
+                                    (pp-to-string kvp))))
 
                 ;;------------------------------
                 ;; Set the cleaned DLV back.
@@ -535,8 +536,8 @@ This will set that DLV struct to:
                         (equal existing/dlv.struct cleaned/dlv.struct))
                     (progn
                       (int<dlv>:debug func.name
-                                  "[CLEAN:no-op] Nothing changed for DLV class: %S"
-                                  dlv.class)
+                                      "[CLEAN:no-op] Nothing changed for DLV class: %S"
+                                      dlv.class)
                       ;; Return something to indicate this state.
                       (setq valid :no-op))
 
@@ -549,7 +550,7 @@ This will set that DLV struct to:
                                   (concat "[CLEAN:UPDATE] Cleaned invalids out of DLV class:\n"
                                           "  class:        %S\n"
                                           "  clean struct:\n"
-                                          "%s\n")
+                                          "%s")
                                   dlv.class
                                   (pp-to-string cleaned/dlv.struct))
                   ;; Return something to indicate this state.
@@ -802,6 +803,17 @@ PAIR should be a certain format, which `int<dlv>:pair.create' returns.
 Returns the updated alist.
 NOTE: Caller should save return value back to their alist variable!"
   (let ((func.name "int<dlv>:vars:pair.set"))
+    (int<dlv>:debug func.name
+                    (concat "Set pair into DLV vars:\n"
+                            "  pair:       %S\n"
+                            "    -> var:   %S\n"
+                            "    -> value: %S\n"
+                            "  vars:       %S")
+                    pair
+                    (if (listp pair) (car pair) "<invalid?>")
+                    (if (listp pair) (cdr pair) "<invalid?>")
+                    dlv.vars)
+
     (if (not (int<dlv>:validate:var.pair func.name pair :error))
         ;; Should have already errored, but just in case:
         (error "%s: `pair' failed validation! %S"
@@ -809,10 +821,31 @@ NOTE: Caller should save return value back to their alist variable!"
 
       ;; Valid - set/update the var in the alist.
       (if (null (assoc (car pair) dlv.vars)) ;; empty alist?
-          (push pair dlv.vars) ;; Create alist w/ this pair.
-        (setq dlv.vars
-              (setf (alist-get (car pair) dlv.vars) (cdr pair)))) ;; Add-to/update-in alist.
+          ;; Create alist w/ this pair.
+          (progn
+            (push pair dlv.vars)
+            (int<dlv>:debug func.name
+                            (concat "Create `dlv.vars':\n"
+                                    "  pair: %S\n"
+                                    "  vars: %S")
+                            pair
+                            dlv.vars))
+
+        ;; Add-to/update-in alist.
+        (setf (alist-get (car pair) dlv.vars)
+              (cdr pair))
+        (int<dlv>:debug func.name
+                        (concat "Add-to/update `dlv.vars':\n"
+                                "  pair: %S\n"
+                                "  vars: %S")
+                        pair
+                        dlv.vars))
+
       ;; Return the updated alist.
+      (int<dlv>:debug func.name
+                      (concat "Returning `dlv.vars':\n"
+                              "%s")
+                      (pp-to-string dlv.vars))
       dlv.vars)))
 ;; (let ((an-alist '((baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
 ;; (let ((an-alist '((foo . foo) (baz . qux)))) (int<dlv>:vars:pair.set '(foo . bar) an-alist))
@@ -905,11 +938,12 @@ MODE should be an Emacs mode symbol or nil for global mode (all modes)."
 ;;
 ;; (int<dlv>:mode:vars.get 'c-mode (int<dlv>:struct:create (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe)))))
 
-
 (defun int<dlv>:mode:set (mode-entry dlv)
   "Set the MODE-ENTRY's entry into the DLV.
 
 The DLV alist should be a certain format, which `int<dlv>:struct:create' returns.
+
+NOTE: May or may not change the input list!
 
 Returns the updated DLV alist."
   (let ((func.name "int<dlv>:mode:set"))
@@ -925,8 +959,7 @@ Returns the updated DLV alist."
 
           ;; Update it in the alist.
           (t
-           (setq dlv
-                 (setf (alist-get (car mode-entry) dlv) (cdr mode-entry))))))
+           (setf (alist-get (car mode-entry) dlv) (cdr mode-entry)))))
 
   dlv)
 ;; (int<dlv>:mode:set (int<dlv>:mode:entry.create 'c-mode (int<dlv>:vars:create '(jeff/var 42 :safe))) '((nil . ((a . t) (b . "hello")))))
@@ -1221,6 +1254,7 @@ TUPLES should be an alist of '(symbol value safe) tuples.
                  (existing/dlv.struct (dir-locals-get-class-variables dlv.class))
                  (existing/dlv.vars (int<dlv>:mode:vars.get mode existing/dlv.struct))
                  (dlv.vars (apply #'int<dlv>:vars:create tuples))
+                 ;; This is the DLV cons of (<mode> . <vars/alist>).
                  dlv.mode)
             (int<dlv>:debug func.name
                             (concat "[UPDATE] Apply update to:\n"
@@ -1248,7 +1282,7 @@ TUPLES should be an alist of '(symbol value safe) tuples.
                                   (concat "[UPDATE] Add/update vars to existing mode vars:\n"
                                           "  DLV dir:   %S\n"
                                           "  DLV class: %S\n"
-                                          "  DLV mode:  %S\n"
+                                          "  mode:      %S\n"
                                           "  DLV vars:   \n"
                                           "    Existing: %S\n"
                                           "    New:      %S")
@@ -1275,7 +1309,7 @@ TUPLES should be an alist of '(symbol value safe) tuples.
                   (setq dlv.mode (int<dlv>:mode:entry.create mode existing/dlv.vars))
                   (int<dlv>:debug func.name
                                   (concat "[UPDATE] Updated `dlv.mode':\n"
-                                          "  mode: %S")
+                                          "  dlv.mode: %S")
                                   dlv.mode))
 
               ;;---
@@ -1284,16 +1318,20 @@ TUPLES should be an alist of '(symbol value safe) tuples.
               ;; No existing vars for the mode, so... Create the mode.
               (int<dlv>:debug func.name
                               (concat "[UPDATE] Create new mode:\n"
-                                      "  DLV dir:   %S\n"
+                                      "  dir:       %S\n"
+                                      "  mode:      %S"
                                       "  DLV class: %S\n"
                                       "  DLV mode:  %S")
                               dlv.directory
+                              mode
                               dlv.class
-                              mode)
+                              dlv.mode)
               (setq dlv.mode (int<dlv>:mode:entry.create mode dlv.vars))
               (int<dlv>:debug func.name
                               (concat "[UPDATE] Created `dlv.mode':\n"
-                                      "  mode: %S")
+                                      "  mode:     %S\n"
+                                      "  dlv.mode: %S")
+                              mode
                               dlv.mode))
 
             ;;------------------------------
@@ -1302,41 +1340,52 @@ TUPLES should be an alist of '(symbol value safe) tuples.
             ;; Set the new/updated mode entry into the dlv struct.
             (int<dlv>:debug func.name
                             (concat "[UPDATE] Setting new `dlv.mode' in existing DLV:\n"
-                                    "  mode:     %S\n"
-                                    "  existing:\n"
-                                    "%s\n")
-                            dlv.mode
+                                    "  mode: %S\n"
+                                    "  DLV mode, UPDATED:\n"
+                                    "%s"
+                                    "  DLV struct, existing:\n"
+                                    "%s")
+                            mode
+                            (pp-to-string dlv.mode)
                             (pp-to-string existing/dlv.struct))
+            ;; NOTE: `int<dlv>:mode:set' may or may not update `existing/dlv.struct', so:
+            ;;   a) Always set its output back to `existing/dlv.struct'.
+            ;;   b) No point in setting it to e.g. `updated/dlv.struct' since `existing/dlv.struct' may be changed too.
             (setq existing/dlv.struct (int<dlv>:mode:set dlv.mode existing/dlv.struct))
             (int<dlv>:debug func.name
                             (concat "[UPDATE] Set new `dlv.mode'.\n"
-                                    "  dlv.struct:\n"
-                                    "%s\n")
+                                    "  mode: %S\n"
+                                    "  DLV struct (UPDATED):\n"
+                                    "%s")
+                            mode
                             (pp-to-string existing/dlv.struct))
 
             ;; And now we can replace the DLV struct in Emacs.
-            (push (int<dlv>:directory-class.update func.name dlv.class existing/dlv.struct) updated/dlv.classes)
-            (int<dlv>:debug func.name
-                            (concat "[UPDATE] Updated DLV classes for directory:\n"
-                                    "  dir:   %S\n"
-                                    "  class: %S\n"
-                                    "  vars (ours):\n"
-                                    "%s\n"
-                                    "  vars (get):\n"
-                                    "%s\n")
-                            directory
-                            dlv.class
-                            (pp-to-string updated/dlv.classes)
-                            (pp-to-string (dir-locals-get-class-variables dlv.class)))))
+            (let ((updated/dlv.class (int<dlv>:directory-class.update func.name
+                                                                      dlv.class
+                                                                      existing/dlv.struct)))
+              (push updated/dlv.class updated/dlv.classes)
+              (int<dlv>:debug func.name
+                              (concat "[UPDATE] Updated DLV classes for directory:\n"
+                                      "  dir:   %S\n"
+                                      "  class: %S\n"
+                                      "  dlv.class (ours; updated):\n"
+                                      "%s"
+                                      "  dlv.class (emacs; fresh get):\n"
+                                      "%s")
+                              directory
+                              dlv.class
+                              (pp-to-string updated/dlv.class)
+                              (pp-to-string (dir-locals-get-class-variables dlv.class))))))
 
         ;;------------------------------
         ;; Return
         ;;------------------------------
         (int<dlv>:debug func.name
                         (concat "[UPDATE] Updated:\n"
-                                "  dir:  %S\n"
-                                "  vars:\n"
-                                "%s\n")
+                                "  dir: %S\n"
+                                "  class->vars:\n"
+                                "%s")
                         directory
                         (pp-to-string updated/dlv.classes))
 

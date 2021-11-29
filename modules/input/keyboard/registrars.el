@@ -20,8 +20,6 @@
 ;; General Consts/Vars
 ;;------------------------------
 
-;; TODO: Are these in correct order?
-;; TODO: Should we have a :finished state? Is one of these already a finished state?
 (defconst int<keyboard>:registration:states
   '(nil
     :init
@@ -29,7 +27,9 @@
     :active
     :inactive
     :apply)
-  "All valid values for `(int<keyboard>:registrar:get registrar :state)'.")
+  "All valid values for `(int<keyboard>:registrar:get registrar :state)'.
+
+NOTE: `:active' and `:inactive' are the 'finished' states.")
 
 
 (defconst int<keyboard>:registration:state/meta

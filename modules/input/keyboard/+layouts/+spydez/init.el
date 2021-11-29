@@ -10,7 +10,10 @@
 ;;             Non-standard Evil Layout: Cuz I'm weird that way.              ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard)
+
+;; Should be done with all the 'init' of ':input/keyboard'.
+(imp:require :input 'keyboard 'init)
+
 
 ;;------------------------------------------------------------------------------
 ;; Common
@@ -649,3 +652,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard '+layouts '+spydez 'init)

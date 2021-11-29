@@ -24,7 +24,7 @@
   "Absolute path to `:input/keyboard' root directory.")
 
 
-(defconst int<keyboard>:path:dir/layouts "layout"
+(defconst int<keyboard>:path:dir/layouts "+layouts"
   "Relative path from `int<keyboard>:path:dir/root' to the directory with all
 the layout directories.")
 
@@ -301,7 +301,7 @@ If relative, will prepend `int<keyboard>:path:dir/root'."
       (int<keyboard>:path:append int<keyboard>:path:dir/root path))))
 ;; (int<keyboard>:path:join nil "bar")
 ;; (int<keyboard>:path:join "foo" "bar")
-;; (int<keyboard>:path:join "layout" "+spydez" "init.el")
+;; (int<keyboard>:path:join "+layouts" "+spydez" "init.el")
 ;; (int<keyboard>:path:join "c:/" "foo" "bar")
 
 
@@ -309,7 +309,7 @@ If relative, will prepend `int<keyboard>:path:dir/root'."
   "Returns non-nil if PATH exists.
 If relative, `int<keyboard>:path:dir/root' will be used as the path's root."
   (file-exists-p (apply #'int<keyboard>:path:join path)))
-;; (int<keyboard>:path:file/exists? "layout/+spydez/init.el")
+;; (int<keyboard>:path:file/exists? "+layouts/+spydez/init.el")
 
 
 ;;------------------------------------------------------------------------------

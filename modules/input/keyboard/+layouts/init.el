@@ -1,38 +1,24 @@
-;;; input/keyboard/config.el -*- lexical-binding: t; -*-
-
+;;; input/keyboard/+layouts/init.el -*- lexical-binding: t; -*-
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
-;; ║                            Keyboard Layouts                            ║ ;;
+;; ║                Build & Initialize the Keyboard Layout.                 ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                   ──────                                   ;;
-;;                           Configure the Layouts.                           ;;
+;;                        Only for the desired layout.                        ;;
 ;;                                 ──────────                                 ;;
 
 
 ;;------------------------------------------------------------------------------
-;; Configure Keyboard Layouts
+;; Active Layout Init!
 ;;------------------------------------------------------------------------------
 
-;;------------------------------
-;; Layout Builder
-;;------------------------------
-;; Nothing to do for 'config' step in code - just need to config the actual layout.
-
-
-;;------------------------------
-;; Config done; ready for layouts.
-;;------------------------------
-(imp:provide :input 'keyboard 'config)
-
-
-;;------------------------------
-;; Configure a Specific Layout?
-;;------------------------------
-(load! "+layouts/config")
+;; Find our active keyboard layout and load its init if it has one.
+(when (int<keyboard>:load:allowed? :init)
+  (keyboard:load:active "init" :init))
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard)
+(imp:provide :input 'keyboard '+layouts 'init)

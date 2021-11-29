@@ -10,6 +10,9 @@
 ;;             Non-standard Evil Layout: Cuz I'm weird that way.              ;;
 ;;                                 ──────────                                 ;;
 
+;; Should be done with all the 'config' of ':input/keyboard'.
+(imp:require :input 'keyboard 'config)
+
 
 ;;------------------------------------------------------------------------------
 ;; Configuration
@@ -21,3 +24,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard '+layouts '+spydez 'config)

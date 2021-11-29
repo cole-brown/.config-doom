@@ -9,6 +9,10 @@
 ;;       Typewriters needed to be slow, so let's just stick with that.        ;;
 ;;                                 ──────────                                 ;;
 
+;; Should be done with all the 'init' of ':input/keyboard'.
+(imp:require :input 'keyboard 'init)
+
+
 ;;------------------------------------------------------------------------------
 ;; Common
 ;;------------------------------------------------------------------------------
@@ -561,3 +565,9 @@
 ;;     )
 ;;   "Keymap -> Keyword -> function alists for the active/desired keyboard
 ;; layout.")
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard '+layouts '+qwerty 'init)

@@ -9,8 +9,10 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (imp:require :input 'keyboard 'vars)
-;; (imp:require :input 'keyboard 'layout 'types 'define)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -861,4 +863,4 @@ CASE should be:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'derive)
+(imp:provide :input 'keyboard 'layout 'derive)

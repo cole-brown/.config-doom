@@ -15,6 +15,8 @@
 
 (require 'seq)
 
+(imp:require :input 'keyboard 'output)
+
 
 ;;------------------------------------------------------------------------------
 ;; A-list functions that are sane.
@@ -276,4 +278,4 @@ Returns ALIST."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'alist)
+(imp:provide :input 'keyboard 'alist)

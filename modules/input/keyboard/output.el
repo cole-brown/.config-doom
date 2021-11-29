@@ -44,7 +44,7 @@
   '((:error . "[ERROR] ':input/keyboard': ")
     (:warn  . "[WARN ] ':input/keyboard': ")
     ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
-    (:debug . "<<<debug>>> "))
+    (:debug . "<[debug]> "))
   "Prefixes for output messages per verbosity level.")
 
 
@@ -295,4 +295,4 @@ signaled."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'output)
+(imp:provide :input 'keyboard 'output)

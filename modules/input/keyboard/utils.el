@@ -8,7 +8,7 @@
 ;;             Not everyone uses Qwerty - there are dozens of us!             ;;
 ;;                                 ──────────                                 ;;
 
-;; (imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'output)
 
 
 ;;------------------------------------------------------------------------------
@@ -108,4 +108,4 @@ For example, (list 'normal 'visual 'insert) will map to `:nvi'. See
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;;  (imp:provide :input 'keyboard 'utils)
+(imp:provide :input 'keyboard 'utils)

@@ -14,7 +14,10 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-(doom! :input
+(doom! :emacs            ; Load this first!
+       imp               ; require/provide with more than one symbol
+
+       :input
        ;;chinese
        ;;japanese
        ;;layout            ; auie,ctsrnm is the superior home row
@@ -77,7 +80,6 @@
 
        vc                ; version-control and Emacs, sitting in a tree
 
-       imp               ; require/provide with more than one symbol
        (dlv +debug)               ; Directory Local Variables
        str               ; Strings and Things
 

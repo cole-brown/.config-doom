@@ -8,7 +8,7 @@
 ;;                       Evil/Emacs-Agnostic Keybinds.                        ;;
 ;;                                 ──────────                                 ;;
 
-;; (imp:require :input 'keyboard 'layout 'types 'define)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(input:keyboard/layout/types:define/keywords :common
+(keyboard:layout/types:define/keywords :common
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Commands                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -27,7 +27,7 @@
   :layout:common:undefined    nil)
 
   ;; TODO: common keyword/functions
-;; (input:keyboard/layout/types:define/keywords :common
+;; (keyboard:layout/types:define/keywords :common
 ;;   "┌─────────────────────────────────────────────────────────────────────────┐
 ;;    │ GROUP-TITLE                                                             │
 ;;    └─────────────────────────────────────────────────────────────────────────┘"
@@ -42,4 +42,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'types 'common)
+(imp:provide :input 'keyboard 'layout 'types 'common)

@@ -9,14 +9,14 @@
 ;;         Modal keyboard input isn't exactly Lawful Good, I guess...         ;;
 ;;                                 ──────────                                 ;;
 
-;; (imp:require :input 'keyboard 'layout 'types 'define)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
 ;; Create Keywords
 ;;------------------------------------------------------------------------------
 
-(input:keyboard/layout/types:define/keywords :evil
+(keyboard:layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Movement                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -124,7 +124,7 @@
   :layout:evil:mark-goto                     #'evil-goto-mark)
 
 
-(input:keyboard/layout/types:define/keywords :evil
+(keyboard:layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Repeating                                                               │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -146,7 +146,7 @@
   )
 
 
-(input:keyboard/layout/types:define/keywords :evil
+(keyboard:layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Text Manipulation                                                       │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -210,7 +210,7 @@
   :layout:evil:edit-repeat                   #'evil-repeat)
 
 
-(input:keyboard/layout/types:define/keywords :evil
+(keyboard:layout/types:define/keywords :evil
   "┌─────────────────────────────────────────────────────────────────────────┐
    │ Commands                                                                │
    └─────────────────────────────────────────────────────────────────────────┘"
@@ -267,4 +267,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'types 'evil)
+(imp:provide :input 'keyboard 'layout 'types 'evil)

@@ -30,14 +30,14 @@
 
   ;; Allows us to have a list of functions to run under evil's
   ;; `evil-collection-setup-hook'.
-  ;; (fset 'input:keyboard/layout:evil-collection-setup-hook
+  ;; (fset 'keyboard:layout:evil-collection-setup-hook
   ;;       (
   ;;        ;; Currently no functions, but if we did, they'd just be in the list like:
   ;;        ;; input//kl:evil/setup:foo
   ;;        ;; input//kl:evil/setup:bar
   ;;       ))
   ;; (add-hook 'evil-collection-setup-hook
-  ;;           #'input:keyboard/layout:evil-collection-setup-hook)
+  ;;           #'keyboard:layout:evil-collection-setup-hook)
 
 
   ;;------------------------------

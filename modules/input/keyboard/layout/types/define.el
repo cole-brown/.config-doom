@@ -10,9 +10,10 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (imp:require :input 'keyboard 'vars)
-;; (imp:require :input 'keyboard 'output)
-;; (imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -34,9 +35,9 @@ be parsed properly.")
 
 (defvar int<keyboard>:layout/types:keywords nil
 "Definition of the keywords->functions created by calling
-`input:keyboard/layout/types:define/keywords'.
+`keyboard:layout/types:define/keywords'.
 
-Multiple calls to `input:keyboard/layout/types:define/keywords' accumulate the
+Multiple calls to `keyboard:layout/types:define/keywords' accumulate the
 result here.
 
 Format:
@@ -194,7 +195,7 @@ into the keybind definitions."
 ;; API: Create Layout Keywords
 ;;------------------------------------------------------------------------------
 
-(defun input:keyboard/layout/types:define/keywords (type _docstr &rest rest)
+(defun keyboard:layout/types:define/keywords (type _docstr &rest rest)
   "Define TYPE's layout keywords and their default functions in REST.
 
 TYPE should be one of:
@@ -206,6 +207,9 @@ _DOCSTR: For you to document if desired - not preserved.
 
 REST: Repeating list of: '(keyword function keyword function ...)"
   (declare (indent 1) (doc-string 2))
+
+  (let ((func/name "keyboard:layout/types:define/keywords")
+        (debug/tags '(:layout :define)))
 
   ;;------------------------------
   ;; Parse all the keywords.
@@ -222,30 +226,30 @@ REST: Repeating list of: '(keyword function keyword function ...)"
       ;;------------------------------
       (cond ((not (keywordp keyword))
              (int<keyboard>:output :error
-                                   "input:keyboard/layout/types:define/keywords"
+                                   func/name
                                    "Expected a keyword, got: %S"
                                    keyword))
             ((not (int<keyboard>:layout/types:valid/keyword? type keyword))
              (int<keyboard>:output :error
-                                   "input:keyboard/layout/types:define/keywords"
+                                   func/name
                                    "Expected a valid keyboard layout keyword for '%S', got: %S"
                                    type
                                    keyword))
 
             ((not (symbolp value))
              (int<keyboard>:output :error
-                                   "input:keyboard/layout/types:define/keywords"
+                                   func/name
                                    "Expected a symbol, got: %S"
                                    value))
             ((not (int<keyboard>:layout/types:valid/function? value))
              (int<keyboard>:output :error
-                                   "input:keyboard/layout/types:define/keywords"
+                                   func/name
                                    "Expected a valid keyboard layout function, got: %S"
                                    value))
 
             ((not (int<keyboard>:layout:type/valid? type))
              (int<keyboard>:output :error
-                                   "input:keyboard/layout/types:define/keywords"
+                                   func/name
                                    '("Type '%S' is not a valid type. "
                                      "Must be one of: %S")
                                    type int<keyboard>:layout:types))
@@ -261,8 +265,9 @@ REST: Repeating list of: '(keyword function keyword function ...)"
                (pad-str (int<keyboard>:debug:fill (- 45    ; Enlarge as needed.
                                                      (length kw-str)
                                                      2)))) ; Preexisting pad spaces in msg.
-          (int<keyboard>:debug "input:keyboard/layout/types:define/keywords"
-              '(:layout :define)
+          (int<keyboard>:debug
+              func/name
+              debug/tags
             "%s %s -> %-S"
             kw-str
             pad-str
@@ -275,10 +280,10 @@ REST: Repeating list of: '(keyword function keyword function ...)"
        (int<keyboard>:alist:update keyword
                                    func
                                    alist)
-       int<keyboard>:layout/types:keywords))))
+       int<keyboard>:layout/types:keywords)))))
 ;; int<keyboard>:layout/types:keywords
 ;; (setq int<keyboard>:layout/types:keywords nil)
-;; (input:keyboard/layout/types:define/keywords :evil "docstring here" :layout:evil:test-keyword #'ignore)
+;; (keyboard:layout/types:define/keywords :evil "docstring here" :layout:evil:test-keyword #'ignore)
 ;; (alist-get :evil int<keyboard>:layout/types:keywords)
 ;; (alist-get :layout:evil:test-keyword (alist-get :evil int<keyboard>:layout/types:keywords))
 
@@ -286,4 +291,4 @@ REST: Repeating list of: '(keyword function keyword function ...)"
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'types 'define)
+(imp:provide :input 'keyboard 'layout 'types 'define)

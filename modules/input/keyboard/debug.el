@@ -7,9 +7,9 @@
 ;; ...it was simple enough at one point. Probably before all the tagging stuff.
 
 
-;; (imp:require :input 'keyboard 'utils)
-;; (imp:require :input 'keyboard 'output)
-;; (imp:require :input 'keyboard 'alist)
+(imp:require :input 'keyboard 'utils)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ will be printed.")
 the list will be printed out when debugging is active.
 
 Any keyword can be used regardless of this list - these will be provided to
-`input:keyboard/layout:debug/toggle-tag' as potential candidates
+`keyboard:layout:debug/toggle-tag' as potential candidates
 to toggle.")
 
 
@@ -90,7 +90,7 @@ to toggle.")
 ;; Commands: Debugging Status
 ;;------------------------------------------------------------------------------
 
-(defun input:keyboard/layout:debug/status ()
+(defun keyboard:layout:debug/status ()
   "Get message with status of debugging toggle, active debug tags."
   (interactive)
   (int<keyboard>:cmd:run
@@ -107,7 +107,7 @@ to toggle.")
 ;; Commands: Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defun input:keyboard/layout:debug/toggle ()
+(defun keyboard:layout:debug/toggle ()
   "Toggle debugging for ':input/keyboard/layout' module."
   (interactive)
   (int<keyboard>:cmd:run
@@ -127,7 +127,7 @@ to toggle.")
 ;; Commands: Debugging Tags
 ;;------------------------------------------------------------------------------
 
-(defun input:keyboard/layout:debug/tag:toggle (tag)
+(defun keyboard:layout:debug/tag:toggle (tag)
   "Toggle a debugging keyword tag for ':input/keyboard/layout' module."
   (interactive (list (completing-read "Toggle Debug Tag: "
                                       int<keyboard>:debug:tags/common
@@ -148,7 +148,7 @@ to toggle.")
                   keyword int<keyboard>:debug:tags))))))
 
 
-(defun input:keyboard/layout:debug/tag:clear ()
+(defun keyboard:layout:debug/tag:clear ()
   "Reset debugging tags to nil."
   (interactive)
   (int<keyboard>:cmd:run
@@ -431,4 +431,4 @@ VALUE is optional and should be:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'debug)

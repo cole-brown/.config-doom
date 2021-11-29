@@ -8,7 +8,7 @@
 ;;             Not everyone uses Qwerty - there are dozens of us!             ;;
 ;;                                 ──────────                                 ;;
 
-;; (imp:require :input 'keyboard 'alist)
+(imp:require :input 'keyboard 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 
 'active' vs 'desired':
   - Desired is set from Doom module flags and comes from user.
-  - Active is set in `input:keyboard/layout:set' when called by desired layout.
+  - Active is set in `keyboard:layout:bind' when called by desired layout.
   - Both are set during 'init' file phase.")
 
 
@@ -76,7 +76,7 @@ e.g. flag `+layout/dvorak' -> keyword `:dvorak'
 
 'active' vs 'desired':
   - Desired is set from Doom module flags and comes from user.
-  - Active is set in `input:keyboard/layout:set' when called by desired layout
+  - Active is set in `keyboard:layout:bind' when called by desired layout
   - Both are set during 'init' file phase.")
 
 
@@ -101,4 +101,4 @@ LAYOUT must fulfill these criteria:
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'vars)
+(imp:provide :input 'keyboard 'vars)

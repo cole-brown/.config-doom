@@ -8,7 +8,7 @@
 ;;              Evil or Chaotic-Neutral Keyboard Users Go Away!               ;;
 ;;                                 ──────────                                 ;;
 
-;; (imp:require :input 'keyboard 'layout 'types 'define)
+(imp:require :input 'keyboard 'layout 'types 'define)
 
 
 ;;------------------------------------------------------------------------------
@@ -16,7 +16,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; TODO: emacs keyword/functions
-;; (input:keyboard/layout/types:define/keywords :emacs
+;; (keyboard:layout/types:define/keywords :emacs
 ;;   "┌─────────────────────────────────────────────────────────────────────────┐
 ;;    │ GROUP-TITLE                                                             │
 ;;    └─────────────────────────────────────────────────────────────────────────┘"
@@ -31,4 +31,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'types 'emacs)
+(imp:provide :input 'keyboard 'layout 'types 'emacs)

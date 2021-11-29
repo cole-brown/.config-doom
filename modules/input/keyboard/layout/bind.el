@@ -10,10 +10,10 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (imp:require :input 'keyboard 'output)
-;; (imp:require :input 'keyboard 'debug)
-;; (imp:require :input 'keyboard 'registrars)
-;; (imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'registrars)
+(imp:require :input 'keyboard 'vars)
 
 
 ;;------------------------------------------------------------------------------
@@ -48,14 +48,14 @@ Unbindings are applied before bindings."
 
     (when (not (int<keyboard>:layout:valid? layout))
       (int<keyboard>:output :error
-                            "input:keyboard/layout:unbind"
+                            func/name
                             '("`layout' must be a keyword. "
                               "Got: %S")
                             layout))
 
     (when (not (int<keyboard>:layout:type/valid? type))
       (int<keyboard>:output :error
-                            "input:keyboard/layout:unbind"
+                            func/name
                             '("Type '%S' is not a valid type. "
                               "Must be one of: %S")
                             type int<keyboard>:layout:types))
@@ -133,14 +133,14 @@ earlier."
 
     (when (not (int<keyboard>:layout:valid? layout))
       (int<keyboard>:output :error
-                            "input:keyboard/layout:set"
+                            func/name
                             '("`layout' must be a keyword. "
                               "Got: %S")
                             layout))
 
     (when (not (int<keyboard>:layout:type/valid? type))
       (int<keyboard>:output :error
-                            "input:keyboard/layout:set"
+                            func/name
                             '("Type '%S' is not a valid type. "
                               "Must be one of: %S")
                             type int<keyboard>:layout:types))
@@ -233,7 +233,7 @@ LAYOUT should be a valid keyboard layout keyword."
     ;;------------------------------
     ;; Nothing to do, currently.
     ;;
-    ;; Only steps that need to happen after `input:keyboard/layout:set' is the
+    ;; Only steps that need to happen after `keyboard:layout:bind' is the
     ;; `int<keyboard>:layout:activate', which happens in Finalization.
     ;;
     ;; NOTE: If we get something to do: obey `bind/unbind'!
@@ -328,7 +328,7 @@ REGISTERING should be a registering state (see `int<keyboard>:registration:state
                                caller
                                '("Active layout has not set its keybinds; "
                                  "cannot configure keyboard layout! "
-                                 "Expected %S to have called `input:keyboard/layout:set'."
+                                 "Expected %S to have called `keyboard:layout:bind'."
                                  "Keybinds are: %S")
                                int<keyboard>:layout:active
                                (int<keyboard>:registrar:get registrar :keybinds)))
@@ -486,7 +486,7 @@ If NO-EVAL is non-nil, instead of mapping will return the code it would have use
     (if-let ((valid (int<keyboard>:activate/validate "int<keyboard>:activate/type"
                                                      registrar bind/unbind type :active))
              ;; Could be this keybind has nothing for type, and that's fine...
-             ;; It will error if there is nothing at all (e.g. layout never called `input:keyboard/layout:set'.
+             ;; It will error if there is nothing at all (e.g. layout never called `keyboard:layout:bind'.
              (keybinds (int<keyboard>:alist:get/value
                         type
                         (cond ((eq bind/unbind :bind)
@@ -585,4 +585,4 @@ evil-mode keybinds. NOTE: ONLY CALL IF USING EVIL!"
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'bind)
+(imp:provide :input 'keyboard 'layout 'bind)

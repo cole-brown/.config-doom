@@ -208,16 +208,16 @@
 
 
 ;;------------------------------
-;; input:keyboard/layout/types:define/keywords
+;; keyboard:layout/types:define/keywords
 ;;------------------------------
 
-(ert-deftest test<keyboard>::input:keyboard/layout/types:define/keywords ()
-  "Test that `input:keyboard/layout/types:define/keywords' behaves appropriately."
+(ert-deftest test<keyboard>::keyboard:layout/types:define/keywords ()
+  "Test that `keyboard:layout/types:define/keywords' behaves appropriately."
   (test<keyboard>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<keyboard/alist>::input:keyboard/layout/types:define/keywords"
+      "test<keyboard/alist>::keyboard:layout/types:define/keywords"
       #'test<keyboard/layout/define>:setup
       #'test<keyboard/layout/define>:teardown
 
@@ -233,7 +233,7 @@
     ;; Evil: Define some keywords.
     ;;------------------------------
 
-    (input:keyboard/layout/types:define/keywords
+    (keyboard:layout/types:define/keywords
         :evil
       "Eeeevil keywords..."
       :layout:evil:line-prev #'evil-previous-line

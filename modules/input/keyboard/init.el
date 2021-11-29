@@ -34,9 +34,9 @@
 ;; NOTE: Order could matter - take care if modifying.
 (load! "command")
 (load! "output")
-(load! "debug")
 (load! "utils")
 (load! "alist")
+(load! "debug")
 (load! "vars")
 (load! "load")
 (load! "registrars")
@@ -96,4 +96,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard)
+(imp:provide :input 'keyboard)

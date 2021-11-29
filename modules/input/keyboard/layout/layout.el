@@ -9,9 +9,12 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (imp:require :input 'keyboard 'vars)
-;; (imp:provide :input 'keyboard 'layout 'define)
-;; (imp:require :input 'keyboard 'layout 'derive)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'registrars)
+(imp:provide :input 'keyboard 'layout 'types 'define)
+(imp:require :input 'keyboard 'layout 'derive)
 
 
 ;;------------------------------------------------------------------------------
@@ -123,8 +126,7 @@ Used for side-effects; just returns non-nil (`t')."
                                              (cdr keybind)
                                              doom--map-batch-forms
                                              (int<keyboard>:registrar:get registrar :keybinds)
-                                             int<keyboard>:layout/types:keywords
-                                             ))
+                                             int<keyboard>:layout/types:keywords))
           (int<keyboard>:debug
               func/name
               debug/tags
@@ -339,8 +341,7 @@ input keywords and such."
                       (int<keyboard>:debug
                           func/name
                           debug/tags
-                        "---pcase->:prefix: rest w/ desc -> %S" rest)
-                      )))
+                        "---pcase->:prefix: rest w/ desc -> %S" rest))))
                  ;;---
                  ;; Text Object Inner/Outer Keybind Pairing.
                  ;;---
@@ -506,4 +507,4 @@ Keybinds
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'layout 'layout)
+(imp:provide :input 'keyboard 'layout 'layout)

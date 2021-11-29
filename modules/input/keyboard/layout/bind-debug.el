@@ -11,10 +11,13 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (imp:require :input 'keyboard 'utils)
-;; (imp:require :input 'keyboard 'vars)
-;; (imp:require :input 'keyboard 'registrars)
-;; (imp:require :input 'keyboard 'layout 'bind)
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+(imp:require :input 'keyboard 'alist)
+(imp:require :input 'keyboard 'utils)
+(imp:require :input 'keyboard 'vars)
+(imp:require :input 'keyboard 'registrars)
+(imp:require :input 'keyboard 'layout 'bind)
 
 
 ;;------------------------------------------------------------------------------
@@ -36,7 +39,7 @@
 
 
 (defun debug<keyboard>:layout:bind (eval/sexpr layout type keybind-map)
-  "Allows changing an `input:keyboard/layout:set' to
+  "Allows changing an `keyboard:layout:bind' to
 `debug<keyboard>:layout:bind', running, and testing its keybinds.
 
 EVAL/RETURN should be:
@@ -54,8 +57,8 @@ Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.
 
 Calls:
-  - `input:keyboard/layout:unbind'
-  - `input:keyboard/layout:set'
+  - `keyboard:layout:unbind'
+  - `keyboard:layout:bind'
   - `keyboard:layout:config'
   - `int<keyboard>:layout:activate'
 
@@ -155,7 +158,7 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
 
 (defun debug<keyboard>:layout:unbind (eval/sexpr layout type keybind-map)
-  "Allows changing an `input:keyboard/layout:set' to
+  "Allows changing an `keyboard:layout:bind' to
 `debug<keyboard>:layout:bind', running, and testing its keybinds.
 
 EVAL/RETURN should be:
@@ -173,8 +176,8 @@ Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.
 
 Calls:
-  - `input:keyboard/layout:unbind'
-  - `input:keyboard/layout:set'
+  - `keyboard:layout:unbind'
+  - `keyboard:layout:bind'
   - `keyboard:layout:config'
   - `int<keyboard>:layout:activate'
 
@@ -441,4 +444,4 @@ add back in all keybinds you want."
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'bind-debug)
+(imp:provide :input 'keyboard 'bind-debug)

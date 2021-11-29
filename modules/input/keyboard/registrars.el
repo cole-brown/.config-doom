@@ -1,5 +1,9 @@
 ;;; input/keyboard/registrars.el -*- lexical-binding: t; -*-
 
+(imp:require :input 'keyboard 'output)
+(imp:require :input 'keyboard 'debug)
+
+
 ;;------------------------------------------------------------------------------
 ;; Registrars for Keybinds
 ;;------------------------------------------------------------------------------
@@ -175,7 +179,7 @@ If NO-ERROR is non-nil, will return nil instead of signaling an error."
 (defvar int<keyboard>:registrar<actual>:keybinds nil
   "The keybinds for the actual/active layout.
 
-Saved in `input:keyboard/layout:set' during module config; set/activated in
+Saved in `keyboard:layout:bind' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
 
 This is an alist with 3 expected entries:
@@ -191,7 +195,7 @@ Each alist key's value should be a list of args for
 (defvar int<keyboard>:registrar<actual>:unbinds nil
   "The unbindings for the actual/active layout.
 
-Saved in `input:keyboard/layout:set' during module config; set/activated in
+Saved in `keyboard:layout:bind' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
 
 This is an alist with 3 expected entries:
@@ -223,7 +227,7 @@ and `int<keyboard>:registration:valid'):
 (defvar int<keyboard>:registrar<debug>:keybinds nil
   "The keybinds for the debug layout.
 
-Saved in `input:keyboard/layout:set' during module config; set/activated in
+Saved in `keyboard:layout:bind' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
 
 This is an alist with 3 expected entries:
@@ -239,7 +243,7 @@ Each alist key's value should be a list of args for
 (defvar int<keyboard>:registrar<debug>:unbinds nil
   "The unbindings for the debug layout.
 
-Saved in `input:keyboard/layout:set' during module config; set/activated in
+Saved in `keyboard:layout:bind' during module config; set/activated in
 `int<keyboard>:layout:activate' during module finalization.
 
 This is an alist with 3 expected entries:
@@ -402,4 +406,4 @@ NOTE: Does not validate/error check VALUE."
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-;; (imp:provide :input 'keyboard 'registrars)
+(imp:provide :input 'keyboard 'registrars)

@@ -58,6 +58,10 @@
 ;; Buffer Names
 ;;------------------------------------------------------------------------------
 
+(defvar sss:emacs:uniquify-buffer-name-style 'post-forward
+  "Set uniquify names to e.g. 'file.txt|to/path'")
+
+
 ;;------------------------------
 ;; Modeline - Doom Modeline
 ;;------------------------------
@@ -88,7 +92,7 @@
   ;; Buffer Names
   ;;---
   ;; Set uniquify buffer/path separator to e.g. "file.txt:path/to"
-  (customize-set-variable 'uniquify-buffer-name-style 'post-forward
+  (customize-set-variable 'uniquify-buffer-name-style sss:emacs:uniquify-buffer-name-style
                           "Set uniquify names to e.g. file.txt|to/path")
   (customize-set-variable 'uniquify-separator ":"
                           "I think ':' is better than '|' for `post-forward' style.")
@@ -107,3 +111,20 @@
   ;; Ignored for uniquifying.
   (customize-set-variable 'uniquify-ignore-buffers-re spy:buffer/regexp/specials
                           "Don't muck with my or Emacs' special buffers."))
+
+;; [2021-11-29] `uniquify-buffer-name-style' is getting overwritten?
+;;   - I think this broke it?
+;;     > :hook (doom-init-ui . persp-mode)
+;;     >> https://github.com/hlissner/doom-emacs/blame/develop/modules/ui/workspaces/config.el
+;;     >> https://github.com/hlissner/doom-emacs/commit/e431dbc13860afb5b700c5f409716b28d3c2b4c0
+;;   - May have to use something other that `persp-mode' if I can't get it and uniquify to behave together?
+;;     + Or maybe see if I can fix `persp-mode' and do a pull request?
+
+(spy:hook/defun-and-hooker persp-mode-hook
+  '(:name "hack-fix/uniquify-buffer-name-style"
+    :file ".doom.d/config/emacs.el"
+    :docstr "`uniquify-buffer-name-style' is getting overwritten due to `persp-mode', maybe? Try this to fix..."
+    :quiet t)
+
+  ;; Set `uniquify-buffer-name-style' back to desired style.
+  (setq uniquify-buffer-name-style sss:emacs:uniquify-buffer-name-style))

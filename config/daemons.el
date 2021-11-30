@@ -33,7 +33,7 @@
 
 (defun spy:emacs/server:path ()
   "Path to server file."
-  (spy:path/join (if (and server-use-tcp
+  (spy:path:join (if (and server-use-tcp
                           server-socket-dir)
                      server-socket-dir
                    server-auth-dir)

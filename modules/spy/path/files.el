@@ -1,4 +1,4 @@
-;;; spy/file/+file.el -*- lexical-binding: t; -*-
+;;; -*- lexical-binding: t; -*-
 
 ;;-------------------------------------spy--------------------------------------
 ;;--                             File Functions                               --
@@ -24,11 +24,6 @@ IGNORE can be:
   - :dir - Also ignore a trailing directory separator character.
   - :children - Like `:dir', and also ignore all of its children."
   (let* ((dir-sep '(or "/" "\\"))
-         ;; Dir is optional. If present: some print chars for dir name and then a directory separator character.
-         (directory (list 'zero-or-more
-                          (list 'and
-                                '(one-or-more printing)
-                                dir-sep)))
          ;; Root of file system can be a few things, depending...
          (root (list 'or
                      (list 'and 'alphabetic ":") ;; Windows drive.

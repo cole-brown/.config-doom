@@ -46,7 +46,7 @@ This will load file: \"config/jeff/jill.el(c)\"
     `(let* ((,path-input (str:normalize:name->list ,@path))
             ;; Non-inputs:
             (root        (jerky/get sss:config.jerky.key))
-            (final-name  (apply #'spy:path/join root ,path-input))
+            (final-name  (apply #'spy:path:join root ,path-input))
             (config-name (apply #'str:join "/"
                                 (apply #'str:normalize:value->list ,path-input))))
 

@@ -1,4 +1,4 @@
-;;;; init.el --- Init for :spy/file doom module. -*- lexical-binding: t; -*-
+;;;; init.el --- Init for :spy/path doom module. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2020 Cole Brown
 ;;
@@ -15,7 +15,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Initialize the spy/files module.
+;; Initialize the spy/path module.
 ;;
 ;;; Code:
 
@@ -24,15 +24,13 @@
 ;; Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -path)
-  (load! "+path"))
-(unless (featurep! -files)
-  (load! "+files"))
+;; Always load.
+(load! "path")
+(load! "files")
 
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'file)
+(imp:provide :modules 'spy 'path)

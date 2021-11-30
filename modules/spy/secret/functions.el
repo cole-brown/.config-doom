@@ -61,7 +61,7 @@ Returns nil if no secrets ID for this system."
          (hash (spy:secret/hash))
          (id   (spy:secret/id))
          (dir  (sss:secret/path/system))
-         (path (spy:path/to-file dir file)) ; No ".el"; want compiled too.
+         (path (spy:path:file-path dir file)) ; No ".el"; want compiled too.
          (name (concat path ".el")))
 
     ;; Check for validity.

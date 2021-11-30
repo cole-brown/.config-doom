@@ -40,7 +40,7 @@ sss:taskspace/generate' and see what file it's defined in."
                   "\n\n")
           "header" ;; yasnippet
           taskpath
-          (spy:path/translate :windows :wsl taskpath)
+          (spy:path:translate :windows :wsl taskpath)
           taskname
           (format "mkdir ~/00-cole-temp/%s" taskname)
           "     ┌┬┬┬──────────────────────────────────────────────────────────────┬┬┬┐"
@@ -81,7 +81,7 @@ sss:taskspace/generate' and see what file it's defined in."
       ;; Add taskspace paths to jerky for info.
       (jerky/set 'path 'taskspace 'notes
                  :namespace group
-                 :value (spy:path/to-dir
+                 :value (spy:path:dir-path
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
                          (str:normalize:symbol->string group))
@@ -133,7 +133,7 @@ sss:taskspace/generate' and see what file it's defined in."
       ;; Add taskspace paths to jerky for info.
       (jerky/set 'path 'taskspace 'notes
                  :namespace group
-                 :value (spy:path/to-dir
+                 :value (spy:path:dir-path
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
                          (str:normalize:symbol->string group))

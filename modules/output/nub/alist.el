@@ -42,6 +42,14 @@ If ITEM is nil, returns `t', because:
          nil)))
 
 
+(defun int<nub>:alist:copy/shallow (alist)
+  "Returns a shallow copy of ALIST.
+
+Copies the ALIST so that the returned alist does not share structure with
+the input. Does not copy the keys/values (not a deep copy)."
+  (copy-alist alist))
+
+
 (defun int<nub>:alist:get/value (key alist)
   "Get cdr of KEY's entry in ALIST."
   (alist-get key alist))

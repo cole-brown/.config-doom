@@ -13,40 +13,46 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Keyboard keybind -> "C-x M-c M-butterfly"
+;; Constants
 ;;------------------------------------------------------------------------------
 
-(defun int<nub>:output:normalize/key (key)
-  "Normalizes KEY to a human-friendly string for a debug message."
-  (if (stringp key)
-      ;; String is ok as-is.
-      key
-    ;; Convert any error into a warning since we're probably trying to do an error message ourselves.
-    (condition-case signal-raised
-        (key-description key)
-      ;; That raised some sort of signal, so... backup plan:
-      (t
-       ;; 1) warn
-       (warn "int<nub>:output:normalize/key: Not a valid key string/keybind! %S -> %S"
-             key signal-raised)
-       ;; 2) any string will do
-       (format "%S" key)))))
-;; (int<nub>:output:normalize/key "C-x C-c")
-;; (int<nub>:output:normalize/key '[RET])
-;; (int<nub>:output:normalize/key '(invalid . thing))
+(defconst int<nub>:user:fallback :fallback
+  "Fallback user - used when actual user not found so that output
+can still happen.")
+
+
+(defconst nub:output:levels  '(:error :warn :debug)
+  "All of nub's output levels.")
+
+
+;;------------------------------------------------------------------------------
+;; Get from Alist for User at Level
+;;------------------------------------------------------------------------------
+
+(defun int<nub>:output:for-user-at-level (user level alist)
+  "Get value from ALIST for USER at output LEVEL."
+  (if (not (int<nub>:alist:alist? alist))
+      (error "ALIST must be an alist! Got: %S" alist)
+    (int<nub>:alist:get/value level
+                              (int<nub>:alist:get/value user alist))))
 
 
 ;;------------------------------------------------------------------------------
 ;; Output Message Prefixes
 ;;------------------------------------------------------------------------------
 
-;; TODO: A const for defaults, a var for actuals.
-(defconst int<nub>:output:message/prefix
-  '((:error . "[ERROR] ':nub': ")
-    (:warn  . "[WARN ] ':nub': ")
-    ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
-    (:debug . "<[debug]> ':nub': "))
-  "Prefixes for output messages per verbosity level.")
+(defvar int<nub>:output:message/prefix
+  (list (cons int<nub>:user:fallback '((:error . "[ERROR   ]: ")
+                                       (:warn  . "[WARN    ]: ")
+                                       ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
+                                       (:debug . "[   debug]: "))))
+  "Alist of USER keyword to alist of verbosity level to prefixes for output messages.")
+
+
+(defun int<nub>:output:message/prefix (user level)
+  "Get message prefix for USER at output LEVEL."
+  (int<nub>:output:for-user-at-level user level int<nub>:output:message/prefix))
+;; (int<nub>:output:message/prefix :fallback :debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -55,11 +61,11 @@
 ;; This allows our tests to take over output easier.
 ;;------------------------------
 
-(defconst int<nub>:output:verbose//default-value
-  '((:error . t)
-    (:warn  . t)
-    (:debug . t))
-  "Alist of user keyword to verbosity of various log levels for the user.
+(defvar int<nub>:backup:enabled?
+  (list (cons int<nub>:user:fallback '((:error . t)
+                                       (:warn  . t)
+                                       (:debug . t))))
+  "Alist of USER keyword to verbosity of various log levels for the user.
 
 Valid values:
   t   - output normally
@@ -68,8 +74,34 @@ Valid values:
     - Used by unit testing.")
 
 
-(defvar int<nub>:output:verbose
-  (copy-alist int<nub>:output:verbose//default-value)
+(defun int<nub>:init:enabled? (user alist)
+  "Set 'enabled?' ALIST for USER.
+
+ALIST should have all output levels in it.
+
+Sets both current and backup values (backups generally only used for tests)."
+  ;; Set in the backup variable.
+  ;; Use a copy so it doesn't get changed out from under us.
+  (let ((alist/copy (int<nub>:alist:copy/shallow alist)))
+    (int<keyboard>:alist:update
+     user
+     (int<keyboard>:alist:update level
+                                 value
+                                 alist/copy)
+     int<nub>:output:enabled?))
+
+  ;; Set in the actual variable.
+  (int<keyboard>:alist:update
+   user
+   (int<keyboard>:alist:update level
+                               value
+                               alist)
+   int<nub>:output:enabled?))
+;; TODO: test?
+
+
+(defvar int<nub>:output:enabled?
+  (copy-alist int<nub>:backup:enabled?)
   "Verbosity of various log levels for the ':keyboard' module.
 
 Valid values:
@@ -77,14 +109,36 @@ Valid values:
   nil - do not output
   <function> - Use <function> to output instead.
     - Used by unit testing.")
-;; (alist-get :error int<nub>:output:verbose)
 
 
-(defconst int<nub>:output:default//default-value
-  '((:error . error)
-    (:warn  . warn)
-    (:debug . message))
-  "Alist of user keyword to verbosity of various log levels.
+(defun int<nub>:output:enabled? (user level)
+  "Get message prefix for USER at output LEVEL."
+  (int<nub>:output:for-user-at-level user level int<nub>:output:enabled?))
+;; TODO: test?
+
+
+(defun int<nub>:output:enabled?:set (user level value)
+  "Set message prefix for USER at output LEVEL."
+  (let ((alist (int<nub>:alist:get/value user alist)))
+    (int<keyboard>:alist:update
+     user
+     (int<keyboard>:alist:update level
+                                 value
+                                 alist)
+     int<nub>:output:enabled?)))
+;; TODO: test?
+
+
+;; TODO:
+;; TODO: Left off here...
+;; TODO:
+
+
+(defconst int<nub>:backup:sink
+  (list (cons int<nub>:user:fallback '((:error . error)
+                                       (:warn  . warn)
+                                       (:debug . message))))
+  "Alist of USER keyword to an alist of output level keyword to sink value.
 
 Valid values:
   t   - output normally
@@ -93,9 +147,9 @@ Valid values:
     - Used by unit testing.")
 
 
-(defvar int<nub>:output:default
-  (copy-alist int<nub>:output:default//default-value)
-  "Default alist of user keywords to verbosity of various log levels.
+(defvar int<nub>:output:sink
+  (copy-alist int<nub>:backup:sink)
+  "Default alist of user keyword to an alist of output level keyword to sink value.
 
 Valid values:
   t   - output normally
@@ -106,17 +160,17 @@ Valid values:
 
 (defun int<nub>:output:vars/reset ()
   "Reset output vars to their default values."
-  (setq int<nub>:output:verbose (copy-alist int<nub>:output:verbose//default-value)
-        int<nub>:output:default (copy-alist int<nub>:output:default//default-value)))
-;; (setq int<nub>:output:verbose nil)
+  (setq int<nub>:output:enabled? (copy-alist int<nub>:backup:enabled?)
+        int<nub>:output:sink (copy-alist int<nub>:backup:sink)))
+;; (setq int<nub>:output:enabled? nil)
 ;; (int<nub>:output:vars/reset)
 
 
 (defun int<nub>:output/message (level msg args)
-  "Decides how to output LEVEL keyword (`int<nub>:output:verbose') MSG and
+  "Decides how to output LEVEL keyword (`int<nub>:output:enabled?') MSG and
 ARGS based on current verbosity for the level."
-  (let ((func/default (alist-get level int<nub>:output:default :does-not-exist))
-        (verbosity    (alist-get level int<nub>:output:verbose :does-not-exist)))
+  (let ((func/default (alist-get level int<nub>:output:sink :does-not-exist))
+        (verbosity    (alist-get level int<nub>:output:enabled? :does-not-exist)))
     ;; Should complain about no default.
     (when (eq func/default :does-not-exist)
       (error (concat "int<nub>:output:output: "
@@ -124,7 +178,7 @@ ARGS based on current verbosity for the level."
                      "Output Message:\n%s")
              level
              unknown-value
-             'int<nub>:output:default
+             'int<nub>:output:sink
              (apply #'format msg args)))
 
     ;; Output message depending on LEVEL's current verbosity.
@@ -149,11 +203,11 @@ ARGS based on current verbosity for the level."
       ;; Use several specified function.
       ((and (pred listp)
             (pred (lambda (verbosity) (seq-reduce (lambda (reduction element)
-                                                    "Allow either functions to call or `t' for 'call the default thing too'."
-                                                    (and reduction
-                                                         (or (functionp element) (eq element t))))
-                                                  verbosity
-                                                  #'identity))))
+                                               "Allow either functions to call or `t' for 'call the default thing too'."
+                                               (and reduction
+                                                    (or (functionp element) (eq element t))))
+                                             verbosity
+                                             #'identity))))
        (dolist (func verbosity)
          (if (eq func t)
              ;; Do the default thing.
@@ -169,7 +223,7 @@ ARGS based on current verbosity for the level."
       ;; Errors/Invalids
       ;;------------------------------
       (:does-not-exist
-       ;; Didn't find LEVEL in `int<nub>:output:verbose'.
+       ;; Didn't find LEVEL in `int<nub>:output:enabled?'.
        (error (concat "int<nub>:output:output: "
                       "Ouput function for verbosity level doesn't exist; don't know how to output message.\n"
                       "  verbosity level:    %S\n"
@@ -180,8 +234,8 @@ ARGS based on current verbosity for the level."
               level
               level
               verbosity
-              int<nub>:output:verbose
-              int<nub>:output:default
+              int<nub>:output:enabled?
+              int<nub>:output:sink
               (apply #'format msg args)))
 
       (unknown-value
@@ -232,7 +286,7 @@ Alternative/direct use:
 the message with FORMATTING and ARGS to the correct place according to LEVEL's
 current verbosity (e.g. #'error for `:error' verbosity normally).
 
-For valid LEVELs, see `int<nub>:output:verbose' keywords.
+For valid LEVELs, see `int<nub>:output:enabled?' keywords.
 
 Uses FORMATTING string/list-of-strings with `int<nub>:output:format' to create
 the message format, then applies that format plus any ARGS to the `error'
@@ -267,13 +321,13 @@ signaled."
    ;;---
    ((listp formatting)
     (int<nub>:output/message level
-                                  (apply #'int<nub>:output:format level caller formatting)
-                                  args))
+                             (apply #'int<nub>:output:format level caller formatting)
+                             args))
 
    ((stringp formatting)
     (int<nub>:output/message level
-                                  (int<nub>:output:format level caller formatting)
-                                  args))
+                             (int<nub>:output:format level caller formatting)
+                             args))
 
    ;;---
    ;; Invalid formatting.

@@ -33,11 +33,11 @@
 
 (defun spy:emacs/server:path ()
   "Path to server file."
-  (spy:path:join (if (and server-use-tcp
-                          server-socket-dir)
-                     server-socket-dir
-                   server-auth-dir)
-                 server-name))
+  (path:join (if (and server-use-tcp
+                      server-socket-dir)
+                 server-socket-dir
+               server-auth-dir)
+             server-name))
 
 
 (defun spy:emacs/server:file? ()
@@ -55,15 +55,15 @@
 ;;     -> http://lists.gnu.org/archive/html/bug-gnu-emacs/2018-06/msg00723.html
 ;; (unless (server-running-p) (server-start))
 (defun spy:emacs/server:process? ()
-    "Return non-nil if this Emacs has a server process."
-    (bound-and-true-p server-process))
+  "Return non-nil if this Emacs has a server process."
+  (bound-and-true-p server-process))
 ;; (spy:emacs/server:process?)
 
 
 (defun spy:emacs/server:running? ()
-    "Return non-nil if this Emacs has a server process and a server file."
-    (and (spy:emacs/server:process?)
-         (spy:emacs/server:file?)))
+  "Return non-nil if this Emacs has a server process and a server file."
+  (and (spy:emacs/server:process?)
+       (spy:emacs/server:file?)))
 ;; (spy:emacs/server:running?)
 
 

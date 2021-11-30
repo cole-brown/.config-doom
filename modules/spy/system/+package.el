@@ -1,7 +1,7 @@
 ;;; spy/system/+package.el -*- lexical-binding: t; -*-
 
 (imp:require :modules 'spy 'strings)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :path)
 (imp:require :jerky)
 
 
@@ -45,7 +45,7 @@ This will load file: \"package/jeff/jill.el(c)\"
     `(let* ((,path-input (str:normalize:name->list ,@path))
             ;; Non-inputs:
             (root        (jerky/get sss:package.jerky.key))
-            (final-name  (apply #'spy:path:join root ,path-input))
+            (final-name  (apply #'path:join root ,path-input))
             (package-name (apply #'str:join "/"
                                  (apply #'str:normalize:value->list ,path-input))))
 

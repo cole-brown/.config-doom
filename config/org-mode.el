@@ -9,10 +9,10 @@
 ;;------------------------------------------------------------------------------
 
 (imp:require :jerky)
+(imp:require :path)
 (imp:require :modules 'spy 'hook 'def)
 (imp:require :modules 'spy 'buffer 'search)
 (imp:require :modules 'spy 'buffer 'name)
-(imp:require :modules 'spy 'file 'path)
 (imp:require :modules 'spy 'datetime 'format)
 
 
@@ -90,7 +90,7 @@
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
-  ;; (org-default-notes-file (spy:path:file-path org-directory "notes.org"))
+  ;; (org-default-notes-file (path:file-path org-directory "notes.org"))
   ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
@@ -592,7 +592,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;   :demand t
 ;;
 ;;   :custom
-;;   (org-contacts-files (spy:path:file-path
+;;   (org-contacts-files (path:file-path
 ;;                        (spy:dirky/path :secrets :secrets/org)
 ;;                        "contacts.org"))
 ;;

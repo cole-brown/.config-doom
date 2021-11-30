@@ -3,7 +3,7 @@
 ;; todo: spy-fan
 
 (imp:require :jerky)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :path)
 
 (require 'mis0/message)
 
@@ -61,7 +61,7 @@ Returns nil if no secrets ID for this system."
          (hash (spy:secret/hash))
          (id   (spy:secret/id))
          (dir  (sss:secret/path/system))
-         (path (spy:path:file-path dir file)) ; No ".el"; want compiled too.
+         (path (path:file-path dir file)) ; No ".el"; want compiled too.
          (name (concat path ".el")))
 
     ;; Check for validity.

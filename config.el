@@ -96,7 +96,7 @@
     directory-doom))
 ;; (spy:doom/find-user-root)
 
-(spy:config.root/set (spy:path:join (spy:doom/find-user-root) "config"))
+(spy:config.root/set (path:join (spy:doom/find-user-root) "config"))
 
 
 ;;------------------------------------------------------------------------------

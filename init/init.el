@@ -23,8 +23,8 @@
 
 ;; Modules needed for .doom.d/config.el.
 ;; These /should/ all be loaded already via Doom's module init.
+(imp:require :path)
 (imp:require :jerky)
-(imp:require :modules 'spy 'file 'path)
 (imp:require :modules 'spy 'system 'config)
 (imp:require :modules 'spy 'system 'package)
 (imp:require :modules 'spy 'secret)

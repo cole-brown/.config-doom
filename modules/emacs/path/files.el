@@ -4,7 +4,6 @@
 ;;--                             File Functions                               --
 ;;----------------------------/mnt/hello/there.txt------------------------------
 
-(imp:require :modules 'spy 'strings 'normalize)
 (imp:require :path 'path)
 
 
@@ -12,7 +11,7 @@
 ;; Filters / Ignore Regexes
 ;;------------------------------------------------------------------------------
 
-(defun spy:files:ignore/regex (rx/path/partial &optional ignore)
+(defun files:ignore/regex (rx/path/partial &optional ignore)
   "Create a regex for ignoring RX/PATH/PARTIAL.
 
 RX/PATH/PARTIAL should be a regex string. It can be either absolute or relative.
@@ -61,11 +60,11 @@ IGNORE can be:
                     (t
                      ""))
              string-end)))))
-;; (spy:files:ignore/regex ".git" :children)
-;; (spy:files:ignore/regex "init.el")
+;; (files:ignore/regex ".git" :children)
+;; (files:ignore/regex "init.el")
 
 
-(defun spy:files:ignore/string (string/path/partial &optional ignore)
+(defun files:ignore/string (string/path/partial &optional ignore)
   "Create a regex for ignoring STRING/PATH/PARTIAL.
 
 STRING/PATH/PARTIAL should NOT be a regex string. It can be either absolute or relative.
@@ -76,11 +75,11 @@ IGNORE can be:
   - nil - No extra options.
   - :dir - Also ignore a trailing directory separator character.
   - :children - Like `:dir', and also ignore all of its children."
-  (spy:files:ignore/regex (regexp-quote string/path/partial) ignore))
-;; (spy:files:ignore/string ".git" :children)
+  (files:ignore/regex (regexp-quote string/path/partial) ignore))
+;; (files:ignore/string ".git" :children)
 
 
-(defun spy:files:ignore? (path ignores)
+(defun files:ignore? (path ignores)
   "Return non-nil if PATH should be ignored based on IGNORES (list of regex strings)."
   (declare (pure t) (side-effect-free t))
 
@@ -96,14 +95,14 @@ IGNORE can be:
 
     ;; Return whether to ignore or not.
     path/rx/ignore))
-;; (spy:files:ignore? "~/mnt/d/somewhere/.git" (list (spy:files:ignore/string ".git" :children)))
+;; (files:ignore? "~/mnt/d/somewhere/.git" (list (files:ignore/string ".git" :children)))
 ;; Doesn't care about "." or "..":
-;; (spy:files:ignore? "~/mnt/d/somewhere/." (list (spy:files:ignore/string ".git" :children)))
+;; (files:ignore? "~/mnt/d/somewhere/." (list (files:ignore/string ".git" :children)))
 ;; Not a regex, but still works:
-;; (spy:files:ignore? "d:/home/work/.doom.d/modules/spy/buffer/init.el" (list "init.el"))
+;; (files:ignore? "d:/home/work/.doom.d/modules/spy/buffer/init.el" (list "init.el"))
 ;; "Regex" version of above:
-;; (spy:files:ignore? "d:/home/work/.doom.d/modules/spy/buffer/init.el" (list (spy:files:ignore/string "init.el")))
-;; (spy:files:ignore? "~/mnt/d/somewhere/init.el" (list (spy:files:ignore/string "init.el")))
+;; (files:ignore? "d:/home/work/.doom.d/modules/spy/buffer/init.el" (list (files:ignore/string "init.el")))
+;; (files:ignore? "~/mnt/d/somewhere/init.el" (list (files:ignore/string "init.el")))
 
 
 
@@ -111,7 +110,7 @@ IGNORE can be:
 ;; Files in directory
 ;;------------------------------------------------------------------------------
 
-(defun spy:files:in-directory (dir &optional recursive types ignores)
+(defun files:in-directory (dir &optional recursive types ignores)
   "Get all files in directory DIR (never returns \".\" or \"..\").
 
 If RECURSIVE is non-nil, looks in DIR and all children directories.
@@ -148,7 +147,7 @@ path matching any of the filters will not be included in return values."
 
                 ;; Ignore anything that matches one of our ignore regex.
                 ((and ignores
-                      (spy:files:ignore? path ignores))
+                      (files:ignore? path ignores))
                  nil)
 
                 ;; A directory?
@@ -177,17 +176,17 @@ path matching any of the filters will not be included in return values."
 
                 ;; Default case - ehm... dunno how you got here.
                 (t
-                 (error "spy:files:in-directory: Unsupported file-attribute-type ('%S') for path: %s"
+                 (error "files:in-directory: Unsupported file-attribute-type ('%S') for path: %s"
                         (file-attribute-type attrs)
                         path))))))
 
     ;; Return the collected paths.
     paths/return))
-;; (spy:files:in-directory "..")
-;; (spy:files:in-directory ".." t)
-;; (spy:files:in-directory ".." t '(:dir))
-;; (spy:files:in-directory ".." t '(:dir :file))
-;; (spy:files:in-directory ".." t nil (list (spy:files:ignore/string "init.el")))
+;; (files:in-directory "..")
+;; (files:in-directory ".." t)
+;; (files:in-directory ".." t '(:dir))
+;; (files:in-directory ".." t '(:dir :file))
+;; (files:in-directory ".." t nil (list (files:ignore/string "init.el")))
 
 
 ;;------------------------------------------------------------------------------

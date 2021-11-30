@@ -1,7 +1,7 @@
 ;;; spy/system/+init.el -*- lexical-binding: t; -*-
 
 (imp:require :modules 'spy 'strings 'normalize)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :path)
 (imp:require :jerky)
 
 
@@ -46,7 +46,7 @@ This will load file: \"init/jeff/jill.el(c)\"
     `(let* ((,path-input (str:normalize:name->list ,@path))
             ;; Non-inputs:
             (root       (jerky/get sss:init.jerky.key))
-            (final-name (apply #'spy:path:join root ,path-input))
+            (final-name (apply #'path:join root ,path-input))
             (init-name  (apply #'str:join "/"
                                 (apply #'str:normalize:value->list ,path-input))))
 

@@ -15,7 +15,7 @@
        (id   (concat "work/2013/desk::" hash))
        (path/root "c:/home/cole/.secret.d/")
        (path/doom.rel "emacs/doom")
-       (path/doom.abs (spy:path:dir-path path/root path/doom.rel)))
+       (path/doom.abs (path:dir-path path/root path/doom.rel)))
 
   (spy:system/set :hash hash
                   :keys (list 'path 'secret 'root)

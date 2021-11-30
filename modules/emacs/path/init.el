@@ -1,11 +1,11 @@
-;;;; init.el --- Init for :spy/path doom module. -*- lexical-binding: t; -*-
+;;;; init.el --- Init for :emacs/path doom module. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2020 Cole Brown
 ;;
 ;; Author: Cole Brown <http://github/cole-brown>
 ;; Maintainer: Cole Brown <code@brown.dev>
 ;; Created: October 22, 2020
-;; Modified: October 22, 2020
+;; Modified: November 30, 2021
 ;; Version: 0.0.1
 ;; Keywords:
 ;; Homepage: https://github.com/cole-brown/.config-doom
@@ -21,7 +21,19 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Load The Rest
+;; Set imp Root
+;;------------------------------------------------------------------------------
+
+(imp:path:root :path
+               (imp:path:paths->path doom-private-dir
+                                     "modules"
+                                     "emacs"
+                                     "path")
+               "init.el")
+
+
+;;------------------------------------------------------------------------------
+;; Load Files
 ;;------------------------------------------------------------------------------
 
 ;; Always load.
@@ -29,8 +41,7 @@
 (load! "files")
 
 
-
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'path)
+(imp:provide :path)

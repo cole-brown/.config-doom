@@ -5,7 +5,7 @@
 ;;----------------------------/mnt/hello/there.txt------------------------------
 
 (imp:require :modules 'spy 'strings 'normalize)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :path 'path)
 
 
 ;;------------------------------------------------------------------------------
@@ -193,4 +193,4 @@ path matching any of the filters will not be included in return values."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'file 'files)
+(imp:provide :path 'files)

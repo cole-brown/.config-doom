@@ -2,13 +2,14 @@
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
-;; ║                            Keyboard Layouts                            ║ ;;
+;; ║               Nub: /noun/ A small lump or protuberance.                ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                   ──────                                   ;;
-;;             Not everyone uses Qwerty - there are dozens of us!             ;;
+;;                Well... At least I didn't name it 'jeff.el'.                ;;
 ;;                                 ──────────                                 ;;
 
-(imp:require :input 'keyboard 'output)
+
+(imp:require :nub 'alist)
 
 
 ;;------------------------------------------------------------------------------
@@ -20,7 +21,7 @@
 ;; Normalization
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:normalize->string (input)
+(defun int<nub>:normalize->string (input)
   "Normalize INPUT to a layout string.
 
 If INPUT is:
@@ -49,58 +50,32 @@ E.g.
    (if (stringp input)
        input
      (symbol-name input))))
-;; (int<keyboard>:normalize->string '+layout/spydez)
-;; (int<keyboard>:normalize->string :spydez)
-;; (int<keyboard>:normalize->string "spydez")
-;; (int<keyboard>:normalize->string "+spydez")
+;; (int<nub>:normalize->string '+layout/spydez)
+;; (int<nub>:normalize->string :spydez)
+;; (int<nub>:normalize->string "spydez")
+;; (int<nub>:normalize->string "+spydez")
 
 
-(defun int<keyboard>:normalize->keyword (input)
+(defun int<nub>:normalize->keyword (input)
   "Convert INPUT to a keyboard layout keyword.
 
 If INPUT is `nil', `nil' will be returned (allows for default args).
 
 Otherwise INPUT is normalized to a string and then converted to a keyword.
-  - Uses `int<keyboard>:normalize->string'.
+  - Uses `int<nub>:normalize->string'.
 
 E.g. `+layout/dvorak' -> `:dvorak'."
   (if (null input)
       nil
     (intern (concat ":"
-                    (int<keyboard>:normalize->string input)))))
-;; (int<keyboard>:normalize->keyword '+layout/spydez)
-;; (int<keyboard>:normalize->keyword :spydez)
-;; (int<keyboard>:normalize->keyword "spydez")
-;; (int<keyboard>:normalize->keyword nil)
-
-
-;;------------------------------------------------------------------------------
-;; Predicates
-;;------------------------------------------------------------------------------
-
-(defun int<keyboard>:alist:alist? (item)
-  "Returns non-nil if ITEM is an alist.
-
-If ITEM is nil, returns `t', because:
-  1. We cannot be sure it's /NOT/ an alist.
-  2. `nil' is a valid list, and an empty list is a valid alist."
-  ;; We'll consider `nil' a valid alist.
-  (cond (nil
-         t)
-
-        ;; An alist has to be a list.
-        ((not (listp item))
-         nil)
-
-        ;; An alist has to have only lists (or cons, which are lists).
-        ;; If this is truthy, we'll just return its truthiness.
-        ((seq-every-p #'listp item))
-
-        (t
-         nil)))
+                    (int<nub>:normalize->string input)))))
+;; (int<nub>:normalize->keyword '+layout/spydez)
+;; (int<nub>:normalize->keyword :spydez)
+;; (int<nub>:normalize->keyword "spydez")
+;; (int<nub>:normalize->keyword nil)
 
 
 ;;------------------------------------------------------------------------------
 ;; The End
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'utils)
+(imp:provide :nub 'utils)

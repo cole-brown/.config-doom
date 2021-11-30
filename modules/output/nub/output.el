@@ -9,13 +9,14 @@
 ;;                                 ──────────                                 ;;
 
 (require 'seq)
+(imp:require :nub 'alist)
 
 
 ;;------------------------------------------------------------------------------
 ;; Keyboard keybind -> "C-x M-c M-butterfly"
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:output:normalize/key (key)
+(defun int<nub>:output:normalize/key (key)
   "Normalizes KEY to a human-friendly string for a debug message."
   (if (stringp key)
       ;; String is ok as-is.
@@ -26,24 +27,25 @@
       ;; That raised some sort of signal, so... backup plan:
       (t
        ;; 1) warn
-       (warn "int<keyboard>:output:normalize/key: Not a valid key string/keybind! %S -> %S"
+       (warn "int<nub>:output:normalize/key: Not a valid key string/keybind! %S -> %S"
              key signal-raised)
        ;; 2) any string will do
        (format "%S" key)))))
-;; (int<keyboard>:output:normalize/key "C-x C-c")
-;; (int<keyboard>:output:normalize/key '[RET])
-;; (int<keyboard>:output:normalize/key '(invalid . thing))
+;; (int<nub>:output:normalize/key "C-x C-c")
+;; (int<nub>:output:normalize/key '[RET])
+;; (int<nub>:output:normalize/key '(invalid . thing))
 
 
 ;;------------------------------------------------------------------------------
 ;; Output Message Prefixes
 ;;------------------------------------------------------------------------------
 
-(defconst int<keyboard>:output:message/prefix
-  '((:error . "[ERROR] ':input/keyboard': ")
-    (:warn  . "[WARN ] ':input/keyboard': ")
+;; TODO: A const for defaults, a var for actuals.
+(defconst int<nub>:output:message/prefix
+  '((:error . "[ERROR] ':nub': ")
+    (:warn  . "[WARN ] ':nub': ")
     ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
-    (:debug . "<[debug]> "))
+    (:debug . "<[debug]> ':nub': "))
   "Prefixes for output messages per verbosity level.")
 
 
@@ -53,11 +55,11 @@
 ;; This allows our tests to take over output easier.
 ;;------------------------------
 
-(defconst int<keyboard>:output:verbose//default-value
+(defconst int<nub>:output:verbose//default-value
   '((:error . t)
     (:warn  . t)
     (:debug . t))
-  "Verbosity of various log levels for the ':keyboard' module.
+  "Alist of user keyword to verbosity of various log levels for the user.
 
 Valid values:
   t   - output normally
@@ -66,8 +68,8 @@ Valid values:
     - Used by unit testing.")
 
 
-(defvar int<keyboard>:output:verbose
-  (copy-alist int<keyboard>:output:verbose//default-value)
+(defvar int<nub>:output:verbose
+  (copy-alist int<nub>:output:verbose//default-value)
   "Verbosity of various log levels for the ':keyboard' module.
 
 Valid values:
@@ -75,14 +77,14 @@ Valid values:
   nil - do not output
   <function> - Use <function> to output instead.
     - Used by unit testing.")
-;; (alist-get :error int<keyboard>:output:verbose)
+;; (alist-get :error int<nub>:output:verbose)
 
 
-(defconst int<keyboard>:output:default//default-value
+(defconst int<nub>:output:default//default-value
   '((:error . error)
     (:warn  . warn)
     (:debug . message))
-  "Verbosity of various log levels for the ':keyboard' module.
+  "Alist of user keyword to verbosity of various log levels.
 
 Valid values:
   t   - output normally
@@ -91,9 +93,9 @@ Valid values:
     - Used by unit testing.")
 
 
-(defvar int<keyboard>:output:default
-  (copy-alist int<keyboard>:output:default//default-value)
-  "Verbosity of various log levels for the ':keyboard' module.
+(defvar int<nub>:output:default
+  (copy-alist int<nub>:output:default//default-value)
+  "Default alist of user keywords to verbosity of various log levels.
 
 Valid values:
   t   - output normally
@@ -102,27 +104,27 @@ Valid values:
     - Used by unit testing.")
 
 
-(defun int<keyboard>:output:vars/reset ()
+(defun int<nub>:output:vars/reset ()
   "Reset output vars to their default values."
-  (setq int<keyboard>:output:verbose (copy-alist int<keyboard>:output:verbose//default-value)
-        int<keyboard>:output:default (copy-alist int<keyboard>:output:default//default-value)))
-;; (setq int<keyboard>:output:verbose nil)
-;; (int<keyboard>:output:vars/reset)
+  (setq int<nub>:output:verbose (copy-alist int<nub>:output:verbose//default-value)
+        int<nub>:output:default (copy-alist int<nub>:output:default//default-value)))
+;; (setq int<nub>:output:verbose nil)
+;; (int<nub>:output:vars/reset)
 
 
-(defun int<keyboard>:output/message (level msg args)
-  "Decides how to output LEVEL keyword (`int<keyboard>:output:verbose') MSG and
+(defun int<nub>:output/message (level msg args)
+  "Decides how to output LEVEL keyword (`int<nub>:output:verbose') MSG and
 ARGS based on current verbosity for the level."
-  (let ((func/default (alist-get level int<keyboard>:output:default :does-not-exist))
-        (verbosity    (alist-get level int<keyboard>:output:verbose :does-not-exist)))
+  (let ((func/default (alist-get level int<nub>:output:default :does-not-exist))
+        (verbosity    (alist-get level int<nub>:output:verbose :does-not-exist)))
     ;; Should complain about no default.
     (when (eq func/default :does-not-exist)
-      (error (concat "int<keyboard>:output:output: "
+      (error (concat "int<nub>:output:output: "
                      "Verbosity for '%S' is '%S', and we don't have a default output function in %S for that. "
                      "Output Message:\n%s")
              level
              unknown-value
-             'int<keyboard>:output:default
+             'int<nub>:output:default
              (apply #'format msg args)))
 
     ;; Output message depending on LEVEL's current verbosity.
@@ -167,8 +169,8 @@ ARGS based on current verbosity for the level."
       ;; Errors/Invalids
       ;;------------------------------
       (:does-not-exist
-       ;; Didn't find LEVEL in `int<keyboard>:output:verbose'.
-       (error (concat "int<keyboard>:output:output: "
+       ;; Didn't find LEVEL in `int<nub>:output:verbose'.
+       (error (concat "int<nub>:output:output: "
                       "Ouput function for verbosity level doesn't exist; don't know how to output message.\n"
                       "  verbosity level:    %S\n"
                       "  '%S' func:      %S\n"
@@ -178,13 +180,13 @@ ARGS based on current verbosity for the level."
               level
               level
               verbosity
-              int<keyboard>:output:verbose
-              int<keyboard>:output:default
+              int<nub>:output:verbose
+              int<nub>:output:default
               (apply #'format msg args)))
 
       (unknown-value
        ;; Found LEVEL, but don't know what to do with its value.
-       (error (concat "int<keyboard>:output:output: "
+       (error (concat "int<nub>:output:output: "
                       "Verbosity for '%S' is '%S', and we don't know what to do with that. "
                       "Output Message:\n%s")
               level
@@ -196,43 +198,43 @@ ARGS based on current verbosity for the level."
 ;; Output API - Errors, Warnings, etc
 ;;------------------------------------------------------------------------------
 
-(defun int<keyboard>:output:format (level caller &rest message-format)
+(defun int<nub>:output:format (level caller &rest message-format)
   "Combines CALLER and error MESSAGE-FORMAT into one string for sending to
 `error' with MESSAGE-FORMAT's args.
 
 NOTE: Is just for the formatting /message/. Args should be passed to `error', `warn',
-etc. Or, best: use `int<keyboard>:output'.
+etc. Or, best: use `int<nub>:output'.
 
 Proper use:
-  (int<keyboard>:output :error
-                        \"int<keyboard>:example-function\"
-                        '(\"Imagine this '%s' is a long \"
-                          \"error string: %S %d\")
-                        some-string something some-integer)
-    -> \"[ERROR] ':input/keyboard/layout': int<keyboard>:example-function: <...>\"
+  (int<nub>:output :error
+                   \"example-function\"
+                   '(\"Imagine this '%s' is a long \"
+                     \"error string: %S %d\")
+                   some-string something some-integer)
+    -> \"[ERROR] 'examples error prefix here': example-function: <...>\"
 
 Alternative/direct use:
-  (error (int<keyboard>:output:format
-          \"int<keyboard>:example-function\"
+  (error (int<nub>:output:format
+          \"example-function\"
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
           some-string something some-integer)
-    -> \"[ERROR] ':input/keyboard/layout': int<keyboard>:example-function: <...>\""
+    -> \"[ERROR] 'examples error prefix here': example-function: <...>\""
   (apply #'concat
-         (alist-get level int<keyboard>:output:message/prefix)
+         (alist-get level int<nub>:output:message/prefix)
          caller
          ": "
          message-format))
 
 
-(defun int<keyboard>:output (level caller formatting &rest args)
-  "Format to standard ':keyboard' message output with CALLER info, then output
+(defun int<nub>:output (level caller formatting &rest args)
+  "Format to standard message output for the USER with CALLER info, then output
 the message with FORMATTING and ARGS to the correct place according to LEVEL's
 current verbosity (e.g. #'error for `:error' verbosity normally).
 
-For valid LEVELs, see `int<keyboard>:output:verbose' keywords.
+For valid LEVELs, see `int<nub>:output:verbose' keywords.
 
-Uses FORMATTING string/list-of-strings with `int<keyboard>:output:format' to create
+Uses FORMATTING string/list-of-strings with `int<nub>:output:format' to create
 the message format, then applies that format plus any ARGS to the `error'
 signaled."
   ;; Try to be real forgiving about what params are since we're erroring...
@@ -242,16 +244,16 @@ signaled."
   ;; Validate Inputs
   ;;------------------------------
   (unless (stringp caller)
-    (int<keyboard>:output/message
+    (int<nub>:output/message
      :warn
-     "int<keyboard>:output: invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
+     "int<nub>:output: invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
      (list (type-of caller)
            caller
            (stringp caller))))
   (unless (or (stringp formatting) (listp formatting))
-    (int<keyboard>:output/message
+    (int<nub>:output/message
      :warn
-     "int<keyboard>:output: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
+     "int<nub>:output: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
      (list (type-of formatting)
            formatting
            (or (stringp formatting) (listp formatting)))))
@@ -264,13 +266,13 @@ signaled."
    ;; Valid formatting.
    ;;---
    ((listp formatting)
-    (int<keyboard>:output/message level
-                                  (apply #'int<keyboard>:output:format level caller formatting)
+    (int<nub>:output/message level
+                                  (apply #'int<nub>:output:format level caller formatting)
                                   args))
 
    ((stringp formatting)
-    (int<keyboard>:output/message level
-                                  (int<keyboard>:output:format level caller formatting)
+    (int<nub>:output/message level
+                                  (int<nub>:output:format level caller formatting)
                                   args))
 
    ;;---
@@ -278,15 +280,15 @@ signaled."
    ;;---
    ;; Do your best to get something.
    (t
-    (int<keyboard>:output/message
+    (int<nub>:output/message
      :error
-     (int<keyboard>:output:format
+     (int<nub>:output:format
       level
       caller
       (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
               formatting args)))
 
-    ;; Don't return `int<keyboard>:output/message' output.
+    ;; Don't return `int<nub>:output/message' output.
     ;; Unit tests will disable error signaling sometimes so it's best if this returns nil.
     nil)))
 
@@ -294,4 +296,4 @@ signaled."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'output)
+(imp:provide :nub 'output)

@@ -50,9 +50,9 @@ the input. Does not copy the keys/values (not a deep copy)."
   (copy-alist alist))
 
 
-(defun int<nub>:alist:get/value (key alist)
+(defun int<nub>:alist:get/value (key alist &optional default)
   "Get cdr of KEY's entry in ALIST."
-  (alist-get key alist))
+  (alist-get key alist default))
 
 
 (defun int<nub>:alist:get/pair (key alist)

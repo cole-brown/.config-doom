@@ -9,7 +9,7 @@
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
-;; ║               Nub: /noun/ A small lump or protuberance.                ║ ;;
+;; ║              Oh, you /don't/ want any bugs. Right; ok...               ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                   ──────                                   ;;
 ;;                    How to Hide Bugs 101: Look for them.                    ;;
@@ -18,6 +18,7 @@
 
 (imp:require :nub 'alist)
 (imp:require :nub 'utils)
+(imp:require :nub 'variables)
 (imp:require :nub 'output)
 
 
@@ -29,35 +30,15 @@
 ;; Future Funcionality?
 ;;------------------------------
 ;;
-;; Indentation levels?
-;;   - Automatic based on call stack?
-;;   - Manually based on an `int<nub>:debug' parameter?
+;; TODO: Indentation levels?
+;;   - [ ] Automatic based on call stack?
+;;   - [ ] Manually based on an `int<nub>:debug' parameter?
+;;   - [X] Manually based off of calls to `int<nub>:debug:func'.
 
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
-
-(defvar int<nub>:debugging nil
-  "Alist of nub-user-keyword to boolean debug flag. Non-nil means debugging is active.")
-
-
-(defvar int<nub>:debug:tags nil
-  "Alist of nub-user-keyword to list of active debugging keyword tags. Any
-keyword matched in the list will be printed out when debugging is active.
-
-If there are no tags in the list, or the list is nil, everything
-will be printed.")
-
-
-(defvar int<nub>:debug:tags/common nil
-  "List of active debugging keyword tags. Any keyword matched in
-the list will be printed out when debugging is active.
-
-Any keyword can be used regardless of this list - these will be provided to
-`nub:debug/toggle-tag' as potential candidates
-to toggle.")
-
 
 (defconst int<nub>:debug:fills
   '("  "

@@ -59,7 +59,7 @@ can still happen.")
 Returns DEFAULT if not found."
   (int<nub>:user:exists? "int<nub>:var:user-at-level" user :error)
   (if (not (int<nub>:alist:alist? alist))
-      (error "ALIST must be an alist! Got: %S" alist)
+      (error "int<nub>:var:user-at-level: ALIST must be an alist! Got: %S" alist)
     (int<nub>:alist:get/value level
                               (int<nub>:alist:get/value user alist)
                               default)))
@@ -274,11 +274,156 @@ Returns DEFAULT if not found."
 
 
 ;;------------------------------------------------------------------------------
+;; Debugging
+;;------------------------------------------------------------------------------
+
+(defvar int<nub>:var:debugging nil
+  "Alist of USER keyword to boolean debug flag. Non-nil means debugging is active.")
+
+
+(defun int<nub>:var:debugging (user &optional default)
+  "Get debugging flag for USER.
+
+Returns DEFAULT if not found."
+  (int<nub>:user:exists? "int<nub>:var:debugging" user :error)
+
+  (int<nub>:alist:get/value user
+                            int<nub>:var:debugging
+                            default))
+;; (int<nub>:var:debugging :test)
+
+
+(defun int<nub>:var:debugging:set (user value)
+  "Set debugging flag for USER (or togggles the flag).
+
+If VALUE is `:toggle', this will toggle the flag. Otherwise it will set/unset
+the flag based on truthiness of VALUE."
+  (int<nub>:user:exists? "int<nub>:var:debugging" user :error)
+
+  (let* ((debugging? (int<nub>:var:debugging user))
+         (debug-flag (cond ((eq :toggle value)
+                            (not debugging?))
+                           (value
+                            t)
+                           (t
+                            nil))))
+
+    (int<nub>:alist:update user
+                           debug-flag
+                           int<nub>:var:debugging)))
+;; (int<nub>:var:debugging :test)
+
+
+(defvar int<nub>:var:debug:tags nil
+  "Alist of USER keyword to list of active debugging keyword tags. Any
+keyword matched in the list will be printed out when debugging is active.
+
+If there are no tags in the list, or the list is nil, everything
+will be printed.")
+
+
+(defun int<nub>:var:debug:tags (user &optional default)
+  "Get current debug tags flag for USER.
+
+Returns DEFAULT if not found."
+  (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
+
+  (int<nub>:alist:get/value user
+                            int<nub>:var:debug:tags
+                            default))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defun int<nub>:var:debug:tag:active? (user tag)
+  "Returns whether TAG is active for USER."
+  (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
+
+  (not (null (memq tag (int<nub>:var:debug:tags user)))))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defun int<nub>:var:debug:tag:set (user tag value)
+  "Sets USER's debug TAG to VALUE (or togggles the tag).
+
+If VALUE is `:toggle', this will toggle TAG. Otherwise it will set/unset
+TAG based on truthiness of VALUE."
+  (int<nub>:user:exists? "int<nub>:var:debug:tag:set" user :error)
+
+  (let ((action (if value
+                    :add
+                  :delete)))
+
+    ;; Did they ask us to toggle it?
+    (when (eq value :toggle)
+      ;; Toggling, so get the value first.
+      (let ((current (int<nub>:var:debug:tag:active? user tag)))
+        ;; Update `value' so we can pretend they asked for the 'correct' value to do a toggle.
+        ;;   - If it's currently set, delete it & vice versa.
+        (setq action (if current
+                         :delete
+                       :add))))
+
+    ;; Now we can just set to what `action' says.
+    ;;   - If truthy, that means ensure tag is in list.
+    ;;   - If falsy, that means delete tag from list.
+    (cond ((eq action :add)
+           (let ((tags (int<nub>:alist:get/value user
+                                                 int<nub>:var:debug:tags)))
+             (push tag tags)
+             (int<nub>:alist:update user
+                                    tags
+                                    int<nub>:var:debug:tags)))
+
+          ((eq action :delete)
+           (let* ((tags (int<nub>:alist:get/value user
+                                                  int<nub>:var:debug:tags))
+                  (tags:updated (remove tag tags)))
+             (int<nub>:alist:update user
+                                    tags:updated
+                                    int<nub>:var:debug:tags)))
+
+          (t
+           (error "int<nub>:var:debug:tag:set: Don't know what to do? Action is: %S"
+                  action)))))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defvar int<nub>:var:debug:tags/common nil
+  "Alist of USER keyword to list of common debugging keyword tags.
+
+Used to prompt end-user in interactive commands.
+
+Any keyword can be used regardless of this list - these will be provided to
+`nub:debug/toggle-tag' as potential candidates to toggle.")
+
+
+(defun int<nub>:var:debug:tags/common (user &optional default)
+  "Get common debug tags flag for USER.
+
+Returns DEFAULT if not found."
+  (int<nub>:user:exists? "int<nub>:var:debug:tags/common" user :error)
+
+  (int<nub>:alist:get/value user
+                            int<nub>:var:debug:tags/common
+                            default))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defun int<nub>:var:debug:tags/common:set (user tags)
+  "Sets USER's list of common debug TAGS."
+  (int<nub>:user:exists? "int<nub>:var:debug:tag:set" user :error)
+  (int<nub>:alist:update user
+                         tags
+                         int<nub>:var:debug:tags/common))
+;; (int<nub>:var:debug:tags/common:set :test '(:hello :there))
+
+
+;;------------------------------------------------------------------------------
 ;; Init/Reset all user's vars.
 ;;------------------------------------------------------------------------------
 
 ;; TODO: public init - just change this to `nub:init'?
-(defun int<nub>:var:init (user &optional alist:enabled? alist:sinks alist:prefixes)
+(defun int<nub>:var:init (user &optional alist:enabled? alist:sinks alist:prefixes list:debug:tags/common)
   "Registers USER and sets their default settings for output levels.
 
 ALIST:ENABLED? should be an alist of verbosity level to t/nil.
@@ -291,14 +436,23 @@ Alists should have all output levels in them; for valid levels, see
 `nub:output:levels'.
 If an alist is nil, the default/fallback will be used instead.
 
+LIST:DEBUG:TAGS/COMMON should be a list of debugging keyword tags.
+It is used for prompting end-users for debug tags to toggle.
+
 Sets both current and backup values (backups generally only used for tests)."
-  (int<nub>:init:user     user)
+  (int<nub>:init:user user)
+
   (when alist:enabled?
     (int<nub>:init:enabled? user alist:enabled?))
+
   (when alist:sinks
-    (int<nub>:init:sink     user alist:sinks))
+    (int<nub>:init:sink user alist:sinks))
+
   (when alist:prefixes
-    (int<nub>:init:prefix   user alist:prefixes)))
+    (int<nub>:init:prefix user alist:prefixes))
+
+  (when list:debug:tags/common
+    (int<nub>:var:debug:tags/common:set user list:debug:tags/common)))
 
 
 (defun int<nub>:var:reset (user)

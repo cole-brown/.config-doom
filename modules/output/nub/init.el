@@ -44,8 +44,9 @@
 ;; Load Files
 ;;------------------------------------------------------------------------------
 
-;; Always load.
+(load! "alist")
 (load! "utils")
+(load! "variables")
 (load! "output")
 (load! "debug")
 

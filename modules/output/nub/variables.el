@@ -442,8 +442,7 @@ Returns DEFAULT if not found."
 ;; Init/Reset all user's vars.
 ;;------------------------------------------------------------------------------
 
-;; TODO: public init - just change this to `nub:init'?
-(defun int<nub>:var:init (user &optional alist:enabled? alist:sinks alist:prefixes list:debug:tags/common)
+(defun nub:vars:init (user &optional alist:enabled? alist:sinks alist:prefixes list:debug:tags/common)
   "Registers USER and sets their default settings for output levels.
 
 ALIST:ENABLED? should be an alist of verbosity level to t/nil.
@@ -475,7 +474,7 @@ Sets both current and backup values (backups generally only used for tests)."
     (int<nub>:var:debug:tags/common:set user list:debug:tags/common)))
 
 
-(defun int<nub>:var:reset (user)
+(defun nub:vars:reset (user)
   "Reset output vars for USER to their initialized/backup values."
   (int<nub>:user:exists? "int<nub>:var:reset" user :error)
 
@@ -505,7 +504,7 @@ Sets both current and backup values (backups generally only used for tests)."
 
   nil))
 ;; (setq int<nub>:var:enabled? nil)
-;; (int<nub>:output:vars/reset :test)
+;; (nub:vars:reset :test)
 
 
 ;;------------------------------------------------------------------------------

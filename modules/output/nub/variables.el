@@ -16,12 +16,12 @@
 ;; Constants
 ;;------------------------------------------------------------------------------
 
-(defconst int<nub>:var:user:fallback :fallback
+(defconst int<nub>:var:user:fallback :default
   "Fallback user - used when actual user not found so that output
 can still happen.")
 
 
-(defconst nub:output:levels  '(:error :warn :debug)
+(defconst nub:output:levels  '(:error :warn :info :debug)
   "All of nub's output levels.")
 
 
@@ -78,9 +78,10 @@ Returns DEFAULT if not found."
 
 (defvar int<nub>:var:prefix:backup
   (list (cons int<nub>:var:user:fallback '((:error . "[ERROR   ]: ")
-                                       (:warn  . "[WARN    ]: ")
-                                       ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
-                                       (:debug . "[   debug]: "))))
+                                           (:warn  . "[WARN    ]: ")
+                                           (:info  . "[INFO    ]: ")
+                                           ;; Noticibly different so when debugging any error/warning messages stand out if all sent to the same buffer?
+                                           (:debug . "[   debug]: "))))
   "Alist of USER keyword to alist of verbosity level to prefixes for output messages.")
 
 
@@ -125,15 +126,15 @@ Sets both current and backup values (backups generally only used for tests)."
 
 (defvar int<nub>:var:enabled?:backup
   (list (cons int<nub>:var:user:fallback '((:error . t)
-                                       (:warn  . t)
-                                       (:debug . t))))
+                                           (:warn  . t)
+                                           (:info  . t)
+                                           (:debug . t))))
   "Alist of USER keyword to verbosity of various log levels for the user.
 
 Valid values:
-  t   - output normally
-  nil - do not output
-  <function> - Use <function> to output instead.
-    - Used by unit testing.")
+  non-nil     - output normally
+  nil         - do not output
+  <predicate> - Call <predicate> to get nil/non-nil value.")
 
 
 (defvar int<nub>:var:enabled?
@@ -172,12 +173,24 @@ Sets both current and backup values (backups generally only used for tests)."
 
 
 (defun int<nub>:var:enabled? (user level &optional default)
-  "Get message prefix for USER at output LEVEL.
+  "Returns non-nil if output is enabled for USER at output LEVEL.
 
-Returns DEFAULT if not found."
+Returns DEFAULT if USER has no setting for LEVEL.
+  - If DEFAULt is `:default', returns the standard/default/fallback for LEVEL."
   (int<nub>:user:exists? "int<nub>:var:enabled?" user :error)
 
-  (int<nub>:var:user-at-level user level int<nub>:var:enabled? default))
+  (let ((enabled? (int<nub>:var:user-at-level user
+                                              level
+                                              int<nub>:var:enabled?
+                                              default)))
+    (if (and (eq default int<nub>:var:user:fallback)
+             (eq enabled? default))
+        ;; Didn't find it - get the fallback.
+        (int<nub>:var:user-at-level int<nub>:var:user:fallback
+                                    level
+                                    int<nub>:var:enabled?
+                                    default)
+      enabled?)))
 ;; (int<nub>:var:enabled? :test :error)
 
 
@@ -202,15 +215,10 @@ Returns DEFAULT if not found."
 
 (defconst int<nub>:var:sink:backup
   (list (cons int<nub>:var:user:fallback '((:error . error)
-                                       (:warn  . warn)
-                                       (:debug . message))))
-  "Alist of USER keyword to an alist of output level keyword to sink value.
-
-Valid values:
-  t   - output normally
-  nil - do not output
-  <function> - Use <function> to output instead.
-    - Used by unit testing.")
+                                           (:warn  . warn)
+                                           (:info  . message)
+                                           (:debug . message))))
+  "Alist of USER keyword to an alist of output level keyword to sink function.")
 
 
 (defvar int<nub>:var:sink
@@ -249,12 +257,26 @@ Sets both current and backup values (backups generally only used for tests)."
 
 
 (defun int<nub>:var:sink (user level &optional default)
-  "Get message prefix for USER at output LEVEL.
+  "Returns non-nil if output is enabled for USER at output LEVEL.
 
-Returns DEFAULT if not found."
+Returns DEFAULT if USER has no setting for LEVEL.
+  - If DEFAULt is `:default', returns the standard/default/fallback for LEVEL."
   (int<nub>:user:exists? "int<nub>:var:sink" user :error)
 
-  (int<nub>:var:user-at-level user level int<nub>:var:sink default))
+
+
+  (let ((sink (int<nub>:var:user-at-level user
+                                              level
+                                              int<nub>:var:sink
+                                              default)))
+    (if (and (eq default int<nub>:var:user:fallback)
+             (eq sink default))
+        ;; Didn't find it - get the fallback.
+        (int<nub>:var:user-at-level int<nub>:var:user:fallback
+                                    level
+                                    int<nub>:var:sink
+                                    default)
+      sink)))
 ;; (int<nub>:var:sink :test :error)
 
 
@@ -347,7 +369,7 @@ Returns DEFAULT if not found."
     (int<nub>:alist:update user
                            tags
                            int<nub>:var:debug:tags)))
-  ;; (int<nub>:var:debug:tags :test)
+;; (int<nub>:var:debug:tags :test)
 
 
 (defun int<nub>:var:debug:tag:active? (user tag)
@@ -442,21 +464,21 @@ Returns DEFAULT if not found."
 ;; Init/Reset all user's vars.
 ;;------------------------------------------------------------------------------
 
-(defun nub:vars:init (user &optional alist:enabled? alist:sinks alist:prefixes list:debug:tags/common)
+(defun nub:vars:init (user &optional list:debug:tags/common alist:prefixes alist:enabled? alist:sinks)
   "Registers USER and sets their default settings for output levels.
+
+LIST:DEBUG:TAGS/COMMON should be a list of debugging keyword tags.
+It is used for prompting end-users for debug tags to toggle.
+
+ALIST:PREFIXES should be an alist of verbosity level to strings.
 
 ALIST:ENABLED? should be an alist of verbosity level to t/nil.
 
 ALIST:SINKS should be an alist of verbosity level to t/nil/function/list-of-functions.
 
-ALIST:PREFIXES should be an alist of verbosity level to strings.
-
 Alists should have all output levels in them; for valid levels, see
 `nub:output:levels'.
 If an alist is nil, the default/fallback will be used instead.
-
-LIST:DEBUG:TAGS/COMMON should be a list of debugging keyword tags.
-It is used for prompting end-users for debug tags to toggle.
 
 Sets both current and backup values (backups generally only used for tests)."
   (int<nub>:init:user user)
@@ -502,7 +524,7 @@ Sets both current and backup values (backups generally only used for tests)."
       (int<nub>:alist:delete user
                              int<nub>:var:prefix))
 
-  nil))
+    nil))
 ;; (setq int<nub>:var:enabled? nil)
 ;; (nub:vars:reset :test)
 

@@ -334,6 +334,22 @@ Returns DEFAULT if not found."
 ;; (int<nub>:var:debug:tags :test)
 
 
+(defun int<nub>:var:debug:tags:set (user tags)
+  "Set list of all active TAGS for USER"
+  (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
+  (unless (listp tags)
+    (error "int<nub>:var:debug:tags: Tags must be a list or nil; got: %S"
+           tags))
+
+  (if (null tags)
+      (int<nub>:alist:delete user
+                             int<nub>:var:debug:tags)
+    (int<nub>:alist:update user
+                           tags
+                           int<nub>:var:debug:tags)))
+  ;; (int<nub>:var:debug:tags :test)
+
+
 (defun int<nub>:var:debug:tag:active? (user tag)
   "Returns whether TAG is active for USER."
   (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
@@ -372,7 +388,9 @@ TAG based on truthiness of VALUE."
              (push tag tags)
              (int<nub>:alist:update user
                                     tags
-                                    int<nub>:var:debug:tags)))
+                                    int<nub>:var:debug:tags))
+           ;; Return truthy to indicate it was turned on.
+           t)
 
           ((eq action :delete)
            (let* ((tags (int<nub>:alist:get/value user
@@ -380,7 +398,9 @@ TAG based on truthiness of VALUE."
                   (tags:updated (remove tag tags)))
              (int<nub>:alist:update user
                                     tags:updated
-                                    int<nub>:var:debug:tags)))
+                                    int<nub>:var:debug:tags))
+           ;; Return falsy to indicate it was turned off.
+           nil)
 
           (t
            (error "int<nub>:var:debug:tag:set: Don't know what to do? Action is: %S"

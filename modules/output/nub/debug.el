@@ -54,71 +54,106 @@
 ;; Commands: Debugging Status
 ;;------------------------------------------------------------------------------
 
-(defun nub:debug/status ()
+(defun int<nub>:debug:status/message (user)
+  "Output debugging status and current debugging tags for USER."
+  (let ((debugging (int<nub>:var:debugging user))
+        (tags      (int<nub>:var:debug:tags user)))
+    (message (concat "%s\n"
+                     "  user: %s\n"
+                     "  tags: %s")
+             (if debugging
+                 "[DEBUGGING]"
+               "[disabled]")
+
+             user
+
+             ;; What to display for tags depends on if debugging (for `nil' case).
+             (if debugging
+                 (if (null tags)
+                     ;; `nil' here means 'debug everything'.
+                     "nil -> (all debug output)"
+                   (cl-sort tags
+                            #'string-lessp
+                            :key (lambda (element) (downcase (symbol-name element)))))
+               ;; `nil' here doesn't mean much since debugging isn't active...
+               ""))))
+
+
+(defun nub:debug/status (user)
   "Get message with status of debugging toggle, active debug tags."
   (interactive)
-  (int<nub>:cmd:run
-   (message "TODO USER HERE: %s\n  tags: %s"
-            (if int<nub>:debugging
-                "[DEBUGGING]"
-              "[disabled]")
-            (if (null int<nub>:debug:tags)
-                "()"
-              int<nub>:debug:tags))))
+  (int<nub>:debug:status/message user))
 
 
 ;;------------------------------------------------------------------------------
 ;; Commands: Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defun nub:debug/toggle ()
+(defvar int<nub>:history:debug:toggle nil
+  "History variable for the `nub:debug/toggle' command.")
+
+(defun nub:debug/toggle (user)
   "Toggle debugging for the USER."
-  (interactive)
-  (int<nub>:cmd:run
-   (setq int<nub>:debugging (not int<nub>:debugging))
-   (message "int<nub>:debugging: %s%s"
-            (if int<nub>:debugging
-                "[ENABLED]"
-              "[disabled]")
-            (if int<nub>:debugging
-                (if (not int<nub>:debug:tags)
-                    " (all debug output)"
-                  (format " with tags: %S" int<nub>:debug:tags))
-              ""))))
+  (interactive
+   (list (completing-read "Toggle Debug for User: "
+                          int<nub>:var:users
+                          nil
+                          'confirm
+                          nil
+                          int<nub>:history:debug:toggle)))
+  ;; Toggle debug flag and display status after toggle.
+  (int<nub>:var:debugging:set user :toggle)
+  (int<nub>:debug:status/message user))
 
 
 ;;------------------------------------------------------------------------------
 ;; Commands: Debugging Tags
 ;;------------------------------------------------------------------------------
 
-(defun nub:debug/tag:toggle (tag)
+(defvar int<nub>:history:debug:tag nil
+  "History variable for the `nub:debug/toggle' command.")
+
+
+(defun nub:debug:tag (user tag)
   "Toggle a debugging keyword TAG for the USER."
-  (interactive (list (completing-read "Toggle Debug Tag: "
-                                      int<nub>:debug:tags/common
-                                      nil
-                                      'confirm)))
-  (int<nub>:cmd:run
+  (interactive
+   (list (completing-read "Debug User: "
+                          int<nub>:var:users
+                          nil
+                          'confirm
+                          nil
+                          int<nub>:history:debug:toggle)
+         (completing-read "Toggle Debug Tag: "
+                          (int<nub>:var:debug:tags/common user)
+                          nil
+                          'confirm
+                          nil
+                          int<nub>:history:debug:tag)))
+
    ;; Convert to keyword.
-   (let ((keyword (int<nub>:normalize->keyword tag)))
+  (let ((keyword (int<nub>:normalize->keyword tag)))
      ;; Toggle in/out of the active tags.
-     (if (memq keyword int<nub>:debug:tags)
-         (prog1
-             (setq int<nub>:debug:tags (remove keyword int<nub>:debug:tags))
-           (message "'TODO USER' removed debug tag: %S\n  tags: %S"
-                    keyword int<nub>:debug:tags))
-       (prog1
-           (push keyword int<nub>:debug:tags)
-         (message "'TODO USER' added debug tag: %S\n  tags: %S"
-                  keyword int<nub>:debug:tags))))))
+    (if (int<nub>:var:debug:tag:set keyword :toggle)
+        ;; Toggled it on.
+        (message "User '%s' added debug tag: %S\n  tags: %S"
+                 user
+                 keyword
+                 (int<nub>:var:debug:tags user))
+
+      ;; Toggled it off.
+      (message "User '%s' removed debug tag: %S\n  tags: %S"
+               user
+               keyword
+               (int<nub>:var:debug:tags user)))))
 
 
-(defun nub:debug/tag:clear ()
-  "Reset debugging tags to nil."
+(defun nub:debug/tag:clear (user)
+  "Reset USER's debugging tags to nil."
   (interactive)
-  (int<nub>:cmd:run
-   (setq int<nub>:debug:tags nil)
-   (message "'TODO USER' cleared debug tags.\n  tags: %S"
-            int<nub>:debug:tags)))
+  (int<nub>:var:debug:tags user nil)
+  (message "User '%s' cleared all debug tags: %S"
+           user
+           (int<nub>:var:debug:tags user)))
 
 
 ;;------------------------------------------------------------------------------
@@ -161,30 +196,34 @@
 ;; Debugging Functions
 ;;------------------------------------------------------------------------------
 
-(defun int<nub>:debugging? (tags)
-  "Returns non-nil if debugging for the list of TAGS.
+(defun int<nub>:var:debugging? (user caller tags)
+  "Returns non-nil if USER is debugging for anything in the list of TAGS.
 
-Never debugging when `int<nub>:debugging' is nil.
-
-Debugging when `int<nub>:debugging' is non-nil and one of these is true:
-  - `int<nub>:debug:tags' is nil
+Debugging when `int<nub>:var:debugging' is non-nil for USER and one of these
+is true:
+  - `int<nub>:debug:tags' for the user is nil
     + No specific debugging tags desired == all tags active.
-  - `int<nub>:debug:tags' is non-nil AND matches one or more of the tags
-     in TAGS.
-    + Looking for a specific tag and found it.
-  - one of the keywords in TAGS list is an active debugging tag."
+  - `int<nub>:debug:tags' for the user is non-nil AND matches one or more
+     of the tags in TAGS.
+    + Looking for a specific debug tag and found it."
   (cond
    ;;------------------------------
    ;; [ERROR] Forgot to tag your debugging call!
    ;;------------------------------
    ((not tags)
-    (error "debug message has not been tagged!"))
+    (int<nub>:output user
+                     :error
+                     caller
+                     "Debug message has not been tagged! tags: %S"
+                     caller
+                     user
+                     tags))
 
    ;;------------------------------
    ;; Not Debugging -> Never.
    ;;------------------------------
    ;; Debugging disabled is always a "no".
-   ((not int<nub>:debugging)
+   ((not (int<nub>:var:debugging user))
     nil)
 
    ;;------------------------------
@@ -192,24 +231,61 @@ Debugging when `int<nub>:debugging' is non-nil and one of these is true:
    ;;------------------------------
 
    ;; If there are no `int<nub>:debug:tags', then it is automatically a yes.
-   ((not int<nub>:debug:tags)
+   ((not (int<nub>:debug:tags user))
     t)
 
    ;; The intersection of the sets `tags' and `int<nub>:debug:tags' will be
    ;; non-nil if any TAGS are active.
    (t
-    (seq-intersection tags int<nub>:debug:tags))))
+    (seq-intersection tags (int<nub>:debug:tags user)))))
 
 
-(defmacro int<nub>:debug/message? (caller tags message? msg &rest args)
+(defmacro int<nub>:debug/message? (user caller tags message? msg &rest args)
   "Print out a debug message or `message'.
 
 Will only evaluate CALLER, MSG, and ARGS when if MESSAGE? is non-nil or
 if debugging.
 
 If MESSAGE? is non-nil, always prints message. Otherwise only
-prints if debugging (`int<nub>:debugging') and if any tag in
-TAGS matches active debugging tags (`int<nub>:debug:tags').
+prints if debugging (`int<nub>:var:debugging') and if any tag in
+TAGS matches USER's active debugging tags (`int<nub>:debug:tags').
+
+CALLER should be the calling function's name (string).
+
+MSG should be the `message' formatting string.
+
+ARGS should be the `message' arguments."
+  (declare (indent 4))
+  `(let ((int<nub>:macro:user ,user)
+         (int<nub>:macro:tags ,tags))
+     ;; Check with `int<nub>:var:debugging?' first so that missing debug tags always error.
+     (cond
+      ;; Only message (at debug level) if passed checks.
+      ((int<nub>:var:debugging? int<nub>:macro:user int<nub>:macro:tags)
+       (int<nub>:output user :debug ,caller ,msg ,@args))
+
+      ;; Always message (at debug level) - regardless of debugging toggle/flags.
+      (,message?
+       (int<nub>:output user :debug ,caller ,msg ,@args))
+
+      ;; Not debugging and not allowing message through otherwise.
+      (t
+       nil))))
+;; int<nub>:var:debugging
+;; int<nub>:debug:tags
+;; (setq int<nub>:var:debugging nil int<nub>:debug:tags nil)
+;; (int<nub>:var:debugging? '(:jeff))
+;; (int<nub>:debug/message? "test-func" '(:jeff) nil (message "test"))
+;; (int<nub>:debug/message? "test-func" '(:jeff) :always-message (message "test"))
+
+
+(defmacro int<nub>:debug (user caller tags msg &rest args)
+  "Print out a debug message.
+
+Will only evaluate MSG, and ARGS when debugging.
+
+Only prints if debugging (`int<nub>:var:debugging') and if any tag in TAGS
+matches USER's active debugging tags (`int<nub>:debug:tags').
 
 CALLER should be the calling function's name (string).
 
@@ -217,45 +293,19 @@ MSG should be the `message' formatting string.
 
 ARGS should be the `message' arguments."
   (declare (indent 3))
-  ;; Check with `int<nub>:debugging?' first so that missing debug tags always error.
-  `(cond
-    ;; Only message (at debug level) if passed checks.
-    ((int<nub>:debugging? ,tags)
-     (int<nub>:output :debug ,caller ,msg ,@args))
 
-    ;; Always message (at debug level) - regardless of debugging toggle/flags.
-    (,message?
-     (int<nub>:output :debug ,caller ,msg ,@args))
+  `(let ((int<nub>:macro:user   ,user)
+         (int<nub>:macro:caller ,caller))
 
-    ;; Not debugging and not allowing message through otherwise.
-    (t
-     nil)))
-;; int<nub>:debugging
-;; int<nub>:debug:tags
-;; (setq int<nub>:debugging nil int<nub>:debug:tags nil)
-;; (int<nub>:debugging? '(:jeff))
-;; (int<nub>:debug/message? "test-func" '(:jeff) nil (message "test"))
-;; (int<nub>:debug/message? "test-func" '(:jeff) :always-message (message "test"))
-
-
-(defmacro int<nub>:debug (caller tags msg &rest args)
-  "Print out a debug message.
-
-Will only evaluate CALLER, MSG, and ARGS when debugging.
-
-Only prints if debugging (`int<nub>:debugging') and if any tag in TAGS
-matches active debugging tags (`int<nub>:debug:tags').
-
-CALLER should be the calling function's name (string).
-
-MSG should be the `message' formatting string.
-
-ARGS should be the `message' arguments."
-  (declare (indent 2))
-
-  `(when (int<nub>:debugging? ,tags)
+     (when (int<nub>:var:debugging? int<nub>:macro:user
+                                     int<nub>:macro:caller
+                                     ,tags)
      ;; (ignore caller msg args)))
-     (int<nub>:output :debug ,caller ,msg ,@args)))
+        (int<nub>:output int<nub>:macro:user
+                         :debug
+                         int<nub>:macro:caller
+                         ,msg
+                         ,@args))))
 ;; Make sure it only evals args when debugging:
 ;; (int<nub>:debug "test-func" nil (message "test"))
 ;; (int<nub>:debug "test-func" '(:derive) (message "test"))
@@ -266,64 +316,78 @@ ARGS should be the `message' arguments."
 ;;   (int<nub>:debug caller tags msg))
 
 
-(defun int<nub>:debug:func (debug/name debug/tags start-or-end &optional value)
+(defun int<nub>:debug:func (user debug/name debug/tags start-or-end &rest value)
   "Print out start/end function message, with optional VALUE.
 
 Prints start message when START-OR-END is `:start'.
 Prints end message w/ optional return value when START-OR-END is `:end'.
 
-VALUE is optional and should be:
-  - If START-OR-END is `:start':
-    + An alist of: '((input-symbol-name . input-symbol-value) ...)
-  - If START-OR-END is `:end':
-    + The return value.
-  - If START-OR-END is `:end/list':
-    + A alist of: '((key . value) ...)
-      - This will be displayed similar to `:start' alist."
-  (declare (indent 2))
-  (let ((func/name/this "int<nub>:debug:func")
+VALUEs are optional and should be:
+  - nil
+  - `cons' pairs of: '(name . value)"
+  (declare (indent 3))
+  (let ((func/name "int<nub>:debug:func")
         value/formatted)
 
     ;;------------------------------
-    ;; Format output?
+    ;; Error checks.
     ;;------------------------------
-    (when (memq start-or-end '(:start :end/list))
-      ;; No value alist - no output string.
-      (cond ((not value)
-             (setq value/formatted ""))
+    (unless (memq start-or-end '(:start :end))
+      (int<nub>:output user
+                       :error
+                       func/name
+                       '("START-OR-END must be one of: %S; got: %S.\n"
+                         "  user:       %S\n"
+                         "  debug/name: %S\n"
+                         "  debug/tags: %S\n"
+                         "  value:      %S")
+                       '(:start :end)
+                       start-or-end
+                       user
+                       debug/name
+                       debug/tags
+                       value))
 
-            ;; Invalid value alist - error out.
-            ((not (int<nub>:alist:alist? value))
-             (int<nub>:output :error
-                                   func/name/this
-                                   "VALUE is invalid for `%S'! Must be an alist. Got: %S"
-                                   start-or-end
-                                   value))
+    ;;------------------------------
+    ;; Format output.
+    ;;------------------------------
+    ;; No value alist - no output string.
+    (cond ((not value)
+           (setq value/formatted ""))
 
-            ;; Format nicely into columns.
-            (t
-             (let ((width/name 0)
-                   values/print
-                   fmt)
-               ;; Convert names to strings, figure out print formatting.
-               (dolist (input value)
-                 (let ((key (car input))
-                       (value (cdr input)))
-                   (if (eq :title key)
-                       ;; Just push the title string.
-                       (push (cons value "") values/print)
-                     ;; Push formatted (to-string'd) key and value.
-                     (let ((key/formatted (format "    %s:" key)))
-                       (push (cons key/formatted value) values/print)
-                       (setq width/name (max (length key/formatted)
-                                             width/name))))))
-               ;; ":" separator already provided above.
-               (setq fmt (concat "%-" (number-to-string width/name) "s %S\n"))
+          ;; Invalid value alist - error out.
+          ((not (int<nub>:alist:alist? value))
+           (int<nub>:output user
+                            :error
+                            func/name
+                            "VALUE is invalid for `%S'! Expecting `&rest VALUE' to be an alist. Got: %S"
+                            start-or-end
+                            value))
 
-               ;; Convert alist of strings to a single string.
-               (dolist (input (nreverse values/print))
-                 (setq value/formatted (concat value/formatted
-                                               (format fmt (car input) (cdr input)))))))))
+          ;; Format nicely into columns.
+          (t
+           (let ((width/name 0)
+                 values/print
+                 fmt)
+             ;; Convert names to strings, figure out print formatting.
+             (dolist (input value)
+               (let ((key (car input))
+                     (value (cdr input)))
+                 (if (eq :title key)
+                     ;; Just push the title string.
+                     (push (cons value "") values/print)
+                   ;; Push formatted (to-string'd) key and value.
+                   (let ((key/formatted (format "    %s:" key)))
+                     (push (cons key/formatted value) values/print)
+                     (setq width/name (max (length key/formatted)
+                                           width/name))))))
+             ;; ":" separator already provided above.
+             (setq fmt (concat "%-" (number-to-string width/name) "s %S\n"))
+
+             ;; Convert alist of strings to a single string.
+             (dolist (input (nreverse values/print))
+               (setq value/formatted (concat value/formatted
+                                             (format fmt (car input) (cdr input))))))))
 
     ;;------------------------------
     ;; Start-of-function messages.
@@ -331,6 +395,7 @@ VALUE is optional and should be:
     (cond ((and (null value/formatted)
                 (eq :start start-or-end))
            (int<nub>:debug
+               user
                debug/name
                debug/tags
              '("\n"
@@ -340,6 +405,7 @@ VALUE is optional and should be:
           ((eq :start start-or-end)
            ;; Print start w/ input vars.
            (int<nub>:debug
+               user
                debug/name
                debug/tags
              '("\n"
@@ -351,45 +417,49 @@ VALUE is optional and should be:
           ;;------------------------------
           ;; End-of-function messages.
           ;;------------------------------
-          ;; `:end' + VALUE; print end w/ return VALUE.
-          ((and (eq :end start-or-end)
-                value)
-           (int<nub>:debug
-               debug/name
-               debug/tags
-             '("\n"
-               "<--[END]-------\n"
-               "  <--[RETURN]-- %S")
-             value))
-
           ;; No value provided; just print end.
-          ((eq :end start-or-end)
+          ((and (null value/formatted)
+                (eq :end start-or-end))
            (int<nub>:debug
+               user
                debug/name
                debug/tags
              '("\n"
                "<--[END]-------\n")))
 
-
-          ;; `:end/list' + VALUE; print end w/ formatted VALUE.
-          ((eq :end/list start-or-end)
+          ;; `:end' + VALUE; print end w/ return VALUE.
+          ((eq :end start-or-end)
            (int<nub>:debug
+               user
                debug/name
                debug/tags
-             '("\n"
-               "<--[END]-------\n"
-               "  <--[RETURN]--\n"
-               "%s")
+               '("\n"
+                 "<--[END]-------\n"
+                 "  <--[RETURN]--\n"
+                 "%s")
              value/formatted))
 
           ;;------------------------------
           ;; Error: Bad START-OR-END
           ;;------------------------------
           (t
-           (int<nub>:output :error
-                                 func/name/this
-                                 "Invalid start/end tag! Must be `:start' or `:end'; got: %S"
-                                 start-or-end)))))
+           (int<nub>:output user
+                            :error
+                            func/name
+                            '("Invalid start/end tag! Must be one of: %S; got: %S.\n"
+                              "  user:       %S\n"
+                              "  debug/name: %S\n"
+                              "  debug/tags: %S\n"
+                              "  value:      %S\n"
+                              "  value/formatted:\n"
+                              "%S")
+                            '(:start :end)
+                            start-or-end
+                            user
+                            debug/name
+                            debug/tags
+                            value
+                            value/formatted)))))
 
 
 ;;------------------------------------------------------------------------------

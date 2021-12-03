@@ -18,13 +18,12 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defun test<nub>:user:make (name)
-  "Create a user based on test name."
-  (intern (concat ":" name)))
-
-
 (defvar test<nub>:user nil
   "User that the set-up/tear-down/etc will use.")
+
+
+(defvar test<nub>:user:history nil
+  "A list of all the users we have run tests using.")
 
 
 (defvar test<nub>:output:error nil
@@ -148,7 +147,42 @@ Search for \"[MARK-\[0-9\]+]:\"."
 ;; Test Helpers: Users
 ;;------------------------------------------------------------------------------
 
-;; TODO: User helper funcs here.
+(defun test<nub>:user:make (name)
+  "Create a user based on test name."
+  (intern (concat ":" name)))
+
+
+(defun test<nub>:user:clear ()
+  "Remove the previous test's user from nub.
+
+This should be done at the start of a test so nub user, vars, state, etc can
+be manually inspected after a test is run."
+  (when test<nub>:user
+    (nub:vars:terminate test<nub>:user)))
+
+
+(defun test<nub>:user:set (user)
+  "Set `test<nub>:user' and update `test<nub>:user:history'."
+  (setq test<nub>:user user)
+  (push user test<nub>:user:history))
+
+
+(defun test<nub>:assert:users ()
+  "Assert that only the current test user exists in `nub'."
+  (should test<nub>:user)
+  (should (memq test<nub>:user test<nub>:user:history))
+
+  ;; None of the previous users should be in nub.
+  (dolist (prev-user test<nub>:user:history)
+    (unless (eq prev-user test<nub>:user)
+      (should-not (int<nub>:user:exists? "test<nub>:assert:users"
+                                         prev-user
+                                         nil))))
+
+  ;; Current user should exist, though.
+  (should (int<nub>:user:exists? "test<nub>:assert:users"
+                                 test<nub>:user
+                                 nil)))
 
 
 ;------------------------------------------------------------------------------
@@ -334,8 +368,11 @@ FUNC/SETUP and FUNC/TEARDOWN should take args:
 
 FUNC/SETUP will run as last step in set-up.
 FUNC/TEARDOWN will run as first step in tear-down."
-  (setq test<nub>:user                user
-        test<nub>:suite:func/setup    func/setup
+  ;; Reset nub user for new test.
+  (test<nub>:user:clear)
+  (test<nub>:user:set user)
+
+  (setq test<nub>:suite:func/setup    func/setup
         test<nub>:suite:func/teardown func/teardown))
 
 
@@ -416,7 +453,7 @@ run no matter what happens in BODY. Binds NAME to symbol `test-name'.
 If TEST-TEARDOWN-FN is non-nil, it is /always/ called after the test is run
 (even if it errors out/fails/etc). TEST-TEARDOWN-FN should take one parameter:
 NAME."
-  (declare (indent 3))
+  (declare (indent 4))
   `(let ((test-name ,name))
      ;; `unwind-protect' lets us run teardown even if errors, etc.
      (unwind-protect

@@ -27,7 +27,7 @@
   "Test that `int<nub>:normalize->string' behaves."
 
   (test<nub>:fixture
-      ;; Test name, setup func, teardown func.
+      ;; Test name, nub user, setup func, teardown func.
       "test<nub/utils>::int<nub>:normalize->string"
       :user/auto
       nil
@@ -71,7 +71,7 @@
   "Test that `int<nub>:normalize->keyword' behaves."
 
   (test<nub>:fixture
-      ;; Test name, setup func, teardown func.
+      ;; Test name, nub user, setup func, teardown func.
       "test<nub/utils>::int<nub>:normalize->keyword"
       :user/auto
       nil

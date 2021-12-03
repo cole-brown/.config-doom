@@ -25,6 +25,18 @@ can still happen.")
   "All of nub's output levels.")
 
 
+(defun int<nub>:level:exists? (caller level &optional error?)
+  "Returns non-nil if level is a valid `nub' output level."
+  (if (memq level nub:output:levels)
+      level
+
+    (if error?
+        (error "%s: Level %S is not a valid `nub' output level!"
+               caller
+               level)
+      nil)))
+
+
 ;;------------------------------------------------------------------------------
 ;; Users
 ;;------------------------------------------------------------------------------
@@ -35,8 +47,10 @@ can still happen.")
 
 (defun int<nub>:user:exists? (caller user &optional error?)
   "Returns non-nil if USER is a registered `nub' user."
-  (if (memq user int<nub>:var:users)
+  (if (or (eq user int<nub>:var:user:fallback)
+          (memq user int<nub>:var:users))
       t
+
     (if error?
         (error "%s: User %S is not a register `nub' user!"
                caller
@@ -49,20 +63,53 @@ can still happen.")
   (push user int<nub>:var:users))
 
 
+(defun int<nub>:terminate:user (user)
+  "Adds USER as a registered `nub' user."
+  (setq int<nub>:var:users (remove user int<nub>:var:users)))
+
+
 ;;------------------------------------------------------------------------------
 ;; Get from Alist for User at Level
 ;;------------------------------------------------------------------------------
 
+(defun int<nub>:var:assert-user-level (caller user level error?)
+  "Assert that USER is registered and LEVEL is a valid `nub' output level.
+
+If ERROR? is non-nil, signals an error if things are not ok.
+Else returns nil if things are not ok."
+  (and (int<nub>:user:exists?  caller user  error?)
+       (int<nub>:level:exists? caller level error?)))
+
+
 (defun int<nub>:var:user-at-level (user level alist &optional default)
   "Get value from ALIST for USER at output LEVEL.
 
-Returns DEFAULT if not found."
-  (int<nub>:user:exists? "int<nub>:var:user-at-level" user :error)
+Returns DEFAULT if not found.
+  - If DEFAULT is `int<nub>:var:user:fallback', returns the value for that
+    user at LEVEL from ALIST."
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:user-at-level" user level :error)
+
+  ;; Assert ALIST.
   (if (not (int<nub>:alist:alist? alist))
       (error "int<nub>:var:user-at-level: ALIST must be an alist! Got: %S" alist)
-    (int<nub>:alist:get/value level
-                              (int<nub>:alist:get/value user alist)
-                              default)))
+    ;; Try to get the value for USER at LEVEL - we'll fall back if they've requested it.
+    (let ((value (int<nub>:alist:get/value level
+                                           (int<nub>:alist:get/value user alist)
+                                           default)))
+      ;; Do we need to get the fallback/default value?
+      (when (and (eq default int<nub>:var:user:fallback)
+                 (eq value default))
+        (setq value (int<nub>:alist:get/value level
+                                              (int<nub>:alist:get/value int<nub>:var:user:fallback alist)
+                                              :does-not-exist))
+        ;; If it's still not found then we should error on the level, probably?
+        (when (eq value :does-not-exist)
+          (error "int<nub>:var:user-at-level: User %S at level %S had no value and no fallback/default. Invalid level?"
+                 user level)))
+
+      ;; Done; return the value.
+      value)))
 ;; (int<nub>:var:user-at-level :jeff :dne nil :does-not-exist)
 
 
@@ -92,8 +139,10 @@ Returns DEFAULT if not found."
 
 (defun int<nub>:var:prefix (user level)
   "Get message prefix for USER at output LEVEL."
-  (int<nub>:user:exists? "int<nub>:var:prefix" user :error)
-  (int<nub>:var:user-at-level user level int<nub>:var:prefix))
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:prefix" user level :error)
+
+  (int<nub>:var:user-at-level user level int<nub>:var:prefix int<nub>:var:user:fallback))
 ;; (int<nub>:var:prefix :fallback :debug)
 
 
@@ -103,7 +152,9 @@ Returns DEFAULT if not found."
 ALIST should have all output levels in it.
 
 Sets both current and backup values (backups generally only used for tests)."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:init:prefix" user :error)
+
   ;; Set in the backup variable.
   ;; Use a copy so it doesn't get changed out from under us.
   (let ((alist/copy (int<nub>:alist:copy/shallow alist)))
@@ -154,6 +205,7 @@ Valid values:
 ALIST should have all output levels in it.
 
 Sets both current and backup values (backups generally only used for tests)."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:init:enabled?" user :error)
 
   ;; Set in the backup variable.
@@ -177,7 +229,8 @@ Sets both current and backup values (backups generally only used for tests)."
 
 Returns DEFAULT if USER has no setting for LEVEL.
   - If DEFAULt is `:default', returns the standard/default/fallback for LEVEL."
-  (int<nub>:user:exists? "int<nub>:var:enabled?" user :error)
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:enabled?" user level :error)
 
   (let ((enabled? (int<nub>:var:user-at-level user
                                               level
@@ -196,7 +249,8 @@ Returns DEFAULT if USER has no setting for LEVEL.
 
 (defun int<nub>:var:enabled?:set (user level value)
   "Set message prefix for USER at output LEVEL."
-  (int<nub>:user:exists? "int<nub>:var:enabled?:set" user :error)
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:enabled?:set" user level :error)
 
   (let* ((alist/user (int<nub>:alist:get/value user int<nub>:var:enabled?))
          (alist/updated (int<nub>:alist:update level
@@ -213,7 +267,7 @@ Returns DEFAULT if USER has no setting for LEVEL.
 ;; Message Sinks (Per-Level)
 ;;------------------------------
 
-(defconst int<nub>:var:sink:backup
+(defvar int<nub>:var:sink:backup
   (list (cons int<nub>:var:user:fallback '((:error . error)
                                            (:warn  . warn)
                                            (:info  . message)
@@ -238,6 +292,7 @@ Valid values:
 ALIST should have all output levels in it.
 
 Sets both current and backup values (backups generally only used for tests)."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:init:sink" user :error)
 
   ;; Set in the backup variable.
@@ -261,9 +316,8 @@ Sets both current and backup values (backups generally only used for tests)."
 
 Returns DEFAULT if USER has no setting for LEVEL.
   - If DEFAULt is `:default', returns the standard/default/fallback for LEVEL."
-  (int<nub>:user:exists? "int<nub>:var:sink" user :error)
-
-
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:sink" user level :error)
 
   (let ((sink (int<nub>:var:user-at-level user
                                               level
@@ -282,7 +336,8 @@ Returns DEFAULT if USER has no setting for LEVEL.
 
 (defun int<nub>:var:sink:set (user level value)
   "Set message prefix for USER at output LEVEL."
-  (int<nub>:user:exists? "int<nub>:var:sink:set" user :error)
+  ;; Ensure USER and LEVEL are ok.
+  (int<nub>:var:assert-user-level "int<nub>:var:sink:set" user level :error)
 
   (let* ((alist/user (int<nub>:alist:get/value user int<nub>:var:sink))
          (alist/updated (int<nub>:alist:update level
@@ -307,6 +362,7 @@ Returns DEFAULT if USER has no setting for LEVEL.
   "Get debugging flag for USER.
 
 Returns DEFAULT if not found."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:var:debugging" user :error)
 
   (int<nub>:alist:get/value user
@@ -320,7 +376,8 @@ Returns DEFAULT if not found."
 
 If VALUE is `:toggle', this will toggle the flag. Otherwise it will set/unset
 the flag based on truthiness of VALUE."
-  (int<nub>:user:exists? "int<nub>:var:debugging" user :error)
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debugging:set" user :error)
 
   (let* ((debugging? (int<nub>:var:debugging user))
          (debug-flag (cond ((eq :toggle value)
@@ -348,6 +405,7 @@ will be printed.")
   "Get current debug tags flag for USER.
 
 Returns DEFAULT if not found."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
 
   (int<nub>:alist:get/value user
@@ -358,7 +416,9 @@ Returns DEFAULT if not found."
 
 (defun int<nub>:var:debug:tags:set (user tags)
   "Set list of all active TAGS for USER"
-  (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:tags:set" user :error)
+
   (unless (listp tags)
     (error "int<nub>:var:debug:tags: Tags must be a list or nil; got: %S"
            tags))
@@ -374,7 +434,8 @@ Returns DEFAULT if not found."
 
 (defun int<nub>:var:debug:tag:active? (user tag)
   "Returns whether TAG is active for USER."
-  (int<nub>:user:exists? "int<nub>:var:debug:tags" user :error)
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:tag:active?" user :error)
 
   (not (null (memq tag (int<nub>:var:debug:tags user)))))
 ;; (int<nub>:var:debug:tags :test)
@@ -385,6 +446,7 @@ Returns DEFAULT if not found."
 
 If VALUE is `:toggle', this will toggle TAG. Otherwise it will set/unset
 TAG based on truthiness of VALUE."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:var:debug:tag:set" user :error)
 
   (let ((action (if value
@@ -443,6 +505,7 @@ Any keyword can be used regardless of this list - these will be provided to
   "Get common debug tags flag for USER.
 
 Returns DEFAULT if not found."
+  ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:var:debug:tags/common" user :error)
 
   (int<nub>:alist:get/value user
@@ -453,7 +516,9 @@ Returns DEFAULT if not found."
 
 (defun int<nub>:var:debug:tags/common:set (user tags)
   "Sets USER's list of common debug TAGS."
-  (int<nub>:user:exists? "int<nub>:var:debug:tag:set" user :error)
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:tags/common:set" user :error)
+
   (int<nub>:alist:update user
                          tags
                          int<nub>:var:debug:tags/common))
@@ -527,6 +592,148 @@ Sets both current and backup values (backups generally only used for tests)."
     nil))
 ;; (setq int<nub>:var:enabled? nil)
 ;; (nub:vars:reset :test)
+
+
+(defun nub:vars:terminate (user)
+  "Remove USER and their settings from nub (initialized/backup values too)."
+  ;;---
+  ;; Allow multiple calls or calls for non-existant users.
+  ;;---
+  ;; (int<nub>:user:exists? "int<nub>:var:reset" user :error)
+
+  ;;---
+  ;; Delete user's output settings.
+  ;;---
+  (int<nub>:alist:delete user
+                         int<nub>:var:enabled?)
+  (int<nub>:alist:delete user
+                         int<nub>:var:enabled?:backup)
+
+  (int<nub>:alist:delete user
+                         int<nub>:var:sink)
+  (int<nub>:alist:delete user
+                         int<nub>:var:sink:backup)
+
+  (int<nub>:alist:delete user
+                         int<nub>:var:prefix)
+  (int<nub>:alist:delete user
+                         int<nub>:var:prefix:backup)
+
+  ;;---
+  ;; Delete user's debug settings.
+  ;;---
+  (int<nub>:alist:delete user
+                         int<nub>:var:debugging)
+
+  (int<nub>:alist:delete user
+                         int<nub>:var:debug:tags)
+
+  (int<nub>:alist:delete user
+                         int<nub>:var:debug:tags/common)
+
+  ;;---
+  ;; Final step: Delete the actual user.
+  ;;---
+  (int<nub>:terminate:user user)
+
+  nil)
+
+
+(defun int<nub>:vars:nuke/tactical ()
+  "Delete all of everything (except `int<nub>:var:user:fallback'; they're cool)."
+  ;; Delete all users except `int<nub>:var:user:fallback'.
+
+  (message "\nNuking `nub' variables...")
+
+  ;;---
+  ;; Delete output settings.
+  ;;---
+  (message "  `int<nub>:var:enabled?'")
+  (dolist (user-assoc int<nub>:var:enabled?)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:enabled?))))
+
+  (message "  `int<nub>:var:enabled?:backup'")
+  (dolist (user-assoc int<nub>:var:enabled?:backup)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:enabled?:backup))))
+
+  (message "  `int<nub>:var:sink'")
+  (dolist (user-assoc int<nub>:var:sink)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                         int<nub>:var:sink))))
+
+  (message "  `int<nub>:var:sink:backup'")
+  (dolist (user-assoc int<nub>:var:sink:backup)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:sink:backup))))
+
+  (message "  `int<nub>:var:prefix'")
+  (dolist (user-assoc int<nub>:var:prefix)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:prefix))))
+
+  (message "  `int<nub>:var:prefix:backup'")
+  (dolist (user-assoc int<nub>:var:prefix:backup)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:prefix:backup))))
+
+  ;;---
+  ;; Delete debug settings.
+  ;;---
+  (message "  `int<nub>:var:debugging'")
+  (dolist (user-assoc int<nub>:var:debugging)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:debugging))))
+
+  (message "  `int<nub>:var:debug:tags'")
+  (dolist (user-assoc int<nub>:var:debug:tags)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:debug:tags))))
+
+  (message "  `int<nub>:var:debug:tags/common'")
+  (dolist (user-assoc int<nub>:var:debug:tags/common)
+    (let ((user (car user-assoc)))
+      (unless (eq user int<nub>:var:user:fallback)
+        (message "    - %S" user)
+        (int<nub>:alist:delete user
+                               int<nub>:var:debug:tags/common))))
+
+  ;;---
+  ;; Final step: Delete the actual users.
+  ;;---
+  (message "  `int<nub>:var:users'")
+  (dolist (user int<nub>:var:users)
+    (message "    - %S" user))
+  (setq int<nub>:var:users nil)
+
+  (message "\nDone.")
+  nil)
+;; (int<nub>:vars:nuke/tactical)
 
 
 ;;------------------------------------------------------------------------------

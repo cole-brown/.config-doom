@@ -31,12 +31,12 @@
 ;; int<keyboard>:normalize->string
 ;;------------------------------
 
-(ert-deftest test<keyboard/output>::int<keyboard>:normalize->string ()
+(ert-deftest test<keyboard/utils>::int<keyboard>:normalize->string ()
   "Test that `int<keyboard>:normalize->string' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
-      "test<keyboard/output>::int<keyboard>:normalize->string"
+      "test<keyboard/utils>::int<keyboard>:normalize->string"
       nil
       nil
 
@@ -75,12 +75,12 @@
 ;; int<keyboard>:normalize->keyword
 ;;------------------------------
 
-(ert-deftest test<keyboard/output>::int<keyboard>:normalize->keyword ()
+(ert-deftest test<keyboard/utils>::int<keyboard>:normalize->keyword ()
   "Test that `int<keyboard>:normalize->keyword' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
-      "test<keyboard/output>::int<keyboard>:normalize->keyword"
+      "test<keyboard/utils>::int<keyboard>:normalize->keyword"
       nil
       nil
 
@@ -118,12 +118,12 @@
 ;; int<keyboard>:states->keyword
 ;;------------------------------
 
-(ert-deftest test<keyboard/output>::int<keyboard>:states->keyword ()
+(ert-deftest test<keyboard/utils>::int<keyboard>:states->keyword ()
   "Test that `int<keyboard>:states->keyword' behaves."
 
   (test<keyboard>:fixture
       ;; Test name, setup func, teardown func.
-      "test<keyboard/output>::int<keyboard>:states->keyword"
+      "test<keyboard/utils>::int<keyboard>:states->keyword"
       nil
       nil
 

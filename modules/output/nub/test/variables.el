@@ -430,7 +430,79 @@
     (int<nub>:var:debugging:set test<nub>:user :toggle)
     (should (int<nub>:var:debugging test<nub>:user))))
 
+
+;;------------------------------
+;; int<nub>:var:debug:tags
+;;------------------------------
+
+(ert-deftest test<nub/utils>::int<nub>:var:debug:tags ()
+  "Test that `int<nub>:var:debug:tags' functions for init, get, and set work correctly."
+
+  (test<nub>:fixture
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/utils>::int<nub>:var:debug:tags"
+      :user/auto
+      nil
+      nil
+
+    ;;------------------------------
+    ;; Shouldn't have any tags to start with.
+    ;;------------------------------
+    (should-not (int<nub>:var:debug:tags test<nub>:user))
+
+    ;;------------------------------
+    ;; Set some tags & check active.
+    ;;------------------------------
+    (let ((tags '(:foo :bar :baz)))
+      (int<nub>:var:debug:tags:set test<nub>:user tags)
+      (should (equal tags
+                     (int<nub>:var:debug:tags test<nub>:user))))
+
+    ;; Are the set tags active?
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :foo))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :bar))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :baz))
+    ;; Are other tags not active?
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :qux))
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :quux))
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :quuux))
+
+    ;;------------------------------
+    ;; Toggle tags.
+    ;;------------------------------
+
+    ;; Disable foo
+    (int<nub>:var:debug:tag:set test<nub>:user :foo nil)
+    ;; Are the active states correct?
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :foo))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :bar))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :baz))
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :qux))
+
+    ;; Toggle foo on.
+    (int<nub>:var:debug:tag:set test<nub>:user :foo :toggle)
+    ;; Are the active states correct?
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :foo))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :bar))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :baz))
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :qux))
+
+    ;; Toggle foo off.
+    (int<nub>:var:debug:tag:set test<nub>:user :foo :toggle)
+    ;; Are the active states correct?
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :foo))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :bar))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :baz))
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :qux))
+
+    ;; Toggle a new tag on.
+    (int<nub>:var:debug:tag:set test<nub>:user :qux :toggle)
+    ;; Are the active states correct?
+    (should-not (int<nub>:var:debug:tag:active? test<nub>:user :foo))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :bar))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :baz))
+    (should (int<nub>:var:debug:tag:active? test<nub>:user :qux))))
+
+
 ;; TODO: tests for funcs for:
-;;   - int<nub>:var:debugging
-;;   - int<nub>:var:debug:tags
 ;;   - int<nub>:var:debug:tags/common

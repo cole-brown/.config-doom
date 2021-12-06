@@ -504,5 +504,29 @@
     (should (int<nub>:var:debug:tag:active? test<nub>:user :qux))))
 
 
-;; TODO: tests for funcs for:
-;;   - int<nub>:var:debug:tags/common
+;;------------------------------
+;; int<nub>:var:debug:tags/common
+;;------------------------------
+
+(ert-deftest test<nub/utils>::int<nub>:var:debug:tags/common ()
+  "Test that `int<nub>:var:debug:tags/common' functions for init, get, and set work correctly."
+
+  (test<nub>:fixture
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/utils>::int<nub>:var:debug:tags/common"
+      :user/auto
+      nil
+      nil
+
+    ;;------------------------------
+    ;; Shouldn't have any common tags to start with.
+    ;;------------------------------
+    (should-not (int<nub>:var:debug:tags/common test<nub>:user))
+
+    ;;------------------------------
+    ;; Set some common tags.
+    ;;------------------------------
+    (let ((tags '(:foo :bar :baz)))
+      (int<nub>:var:debug:tags/common:set test<nub>:user tags)
+      (should (equal tags
+                     (int<nub>:var:debug:tags/common test<nub>:user))))))

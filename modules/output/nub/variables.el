@@ -514,16 +514,15 @@ Any keyword can be used regardless of this list - these will be provided to
 `nub:debug/toggle-tag' as potential candidates to toggle.")
 
 
-(defun int<nub>:var:debug:tags/common (user &optional default)
+(defun int<nub>:var:debug:tags/common (user)
   "Get common debug tags flag for USER.
 
-Returns DEFAULT if not found."
+Returns `nil' if not found."
   ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:var:debug:tags/common" user :error)
 
   (int<nub>:alist:get/value user
-                            int<nub>:var:debug:tags/common
-                            default))
+                            int<nub>:var:debug:tags/common))
 ;; (int<nub>:var:debug:tags :test)
 
 

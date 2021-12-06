@@ -125,6 +125,9 @@
       nil
       nil
 
+    ;;------------------------------
+    ;; Test getting something.
+    ;;------------------------------
     ;; Make sure we have a few levels.
     (should nub:output:levels)
     (should (listp nub:output:levels))
@@ -149,7 +152,47 @@
                     (int<nub>:var:user-at-level test<nub>:user
                                                 level
                                                 alist/user
-                                                :does-not-exist)))))))
+                                                :does-not-exist)))))
+
+    ;;------------------------------
+    ;; Test getting nil.
+    ;;------------------------------
+    (let* ((alist/user '((:error . nil)
+                         (:warn  . nil)
+                         (:info  . t)
+                         (:debug . t)))
+           (alist/default '((:error . :test:default)
+                            (:warn  . :test:default)
+                            (:info  . :test:default)
+                            (:debug . :test:default)))
+           (alist (list (cons test<nub>:user             alist/user)
+                        (cons int<nub>:var:user:fallback alist/default))))
+      ;; Want `nil' for `:error' & `:warn'.
+      (should (eq nil
+                  (int<nub>:var:user-at-level test<nub>:user
+                                              :error
+                                              alist
+                                              ;; No default.
+                                              )))
+      (should (eq nil
+                  (int<nub>:var:user-at-level test<nub>:user
+                                              :warn
+                                              alist
+                                              ;; No default.
+                                              )))
+      ;; Double-check `nil' isn't some fluke or something...
+      (should (eq t
+                  (int<nub>:var:user-at-level test<nub>:user
+                                              :info
+                                              alist
+                                              ;; No default.
+                                              )))
+      (should (eq t
+                  (int<nub>:var:user-at-level test<nub>:user
+                                              :debug
+                                              alist
+                                              ;; No default.
+                                              ))))))
 
 
 ;;------------------------------
@@ -227,9 +270,82 @@
                       (int<nub>:var:prefix test<nub>:user :debug))))))
 
 
+;;------------------------------------------------------------------------------
+;; Test: Variable Getters/Setters
+;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; int<nub>:var:enabled?
+;;------------------------------
+
+(ert-deftest test<nub/utils>::int<nub>:var:enabled? ()
+  "Test that `int<nub>:var:enabled?' functions for init, get, and set work correctly."
+
+  (test<nub>:fixture
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/utils>::int<nub>:var:enabled?"
+      :user/auto
+      nil
+      nil
+
+    (let* ((enabled-locally? :local) ;; truthy value to check for
+           (enabled-fn (lambda (level default)
+                         "Just return `enabled-locally?'."
+                         enabled-locally?))
+           (enabled? (list '(:error . :error) ;; truthy value to check for
+                           '(:warn . nil)     ;; nil value to check for
+                           ;; no :info - use default (should be `t').
+                           (cons :debug enabled-fn)))) ;; Use predicate.
+
+           ;;------------------------------
+           ;; Init with the `enabled?' alist.
+           ;;------------------------------
+
+           (should (int<nub>:init:enabled? test<nub>:user enabled?))
+
+           ;;------------------------------
+           ;; Get
+           ;;------------------------------
+           ;; (pp int<nub>:var:enabled?)
+
+           ;; `:error' Level: Should have enabled? set to `:error'.
+           (should (eq :error
+                       (int<nub>:var:enabled? test<nub>:user :error :default)))
+
+           ;; `:warn' Level: Should have enabled? set to `nil'.
+           (should (eq nil
+                       (int<nub>:var:enabled? test<nub>:user :warn :default)))
+
+           ;; `:info' Level: Should get fallback of `t'.
+           (should (eq t
+                       (int<nub>:var:enabled? test<nub>:user :info :default)))
+           ;; `:info' Level: Should get our default vaule.
+           (should (eq :does-not-exist
+                       (int<nub>:var:enabled? test<nub>:user :info :does-not-exist)))
+
+           ;; `:debug' Level: Should get whatever `enabled-fn' returns, which is whatever `enabled-locally?' is.
+           (should (eq :local
+                       (int<nub>:var:enabled? test<nub>:user :debug :default)))
+           (should (eq enabled-locally?
+                       (int<nub>:var:enabled? test<nub>:user :debug :default)))
+           ;; Now set to something else and check again.
+           (setq enabled-locally? nil)
+           (should (eq enabled-locally?
+                       (int<nub>:var:enabled? test<nub>:user :debug :default)))
+           ;;------------------------------
+           ;; Set
+           ;;------------------------------
+           (int<nub>:var:enabled?:set test<nub>:user :error :error-too)
+           (should (eq :error-too
+                       (int<nub>:var:enabled? test<nub>:user :error :default)))
+
+           (int<nub>:var:enabled?:set test<nub>:user :info :info-now-set-for-user)
+           (should (eq :info-now-set-for-user
+                       (int<nub>:var:enabled? test<nub>:user :info :default))))))
+
+
 
 ;; TODO: tests for funcs for:
-;;   - int<nub>:var:enabled?
 ;;   - int<nub>:var:sink
 ;;   - int<nub>:var:debugging
 ;;   - int<nub>:var:debug:tags

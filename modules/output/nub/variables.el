@@ -185,7 +185,11 @@ Sets both current and backup values (backups generally only used for tests)."
 Valid values:
   non-nil     - output normally
   nil         - do not output
-  <predicate> - Call <predicate> to get nil/non-nil value.")
+  <predicate> - Call <predicate> (w/ LEVEL & DEFAULT) to get nil/non-nil value.
+
+Predicate's signature should be:
+  (defun enabled-predicate-for-my-user (level &optional default) ...)
+    - It should return nil/non-nil.")
 
 
 (defvar int<nub>:var:enabled?
@@ -221,7 +225,6 @@ Sets both current and backup values (backups generally only used for tests)."
    user
    alist
    int<nub>:var:enabled?))
-;; (int<nub>:init:enabled? :test '((:error . t)))
 
 
 (defun int<nub>:var:enabled? (user level &optional default)
@@ -236,15 +239,25 @@ Returns DEFAULT if USER has no setting for LEVEL.
                                               level
                                               int<nub>:var:enabled?
                                               default)))
-    (if (and (eq default int<nub>:var:user:fallback)
-             (eq enabled? default))
-        ;; Didn't find it - get the fallback.
-        (int<nub>:var:user-at-level int<nub>:var:user:fallback
-                                    level
-                                    int<nub>:var:enabled?
-                                    default)
-      enabled?)))
-;; (int<nub>:var:enabled? :test :error)
+
+    ;; User not found in `int<nub>:var:enabled?'? Use fallback.
+    (cond ((and (eq default int<nub>:var:user:fallback)
+                (eq enabled? default))
+           ;; Didn't find it - get the fallback.
+           (int<nub>:var:user-at-level int<nub>:var:user:fallback
+                                       level
+                                       int<nub>:var:enabled?
+                                       default))
+
+          ;; Found a function - call w/ level to get enabled value.
+          ((functionp enabled?)
+           (funcall enabled? level default))
+
+          ;; Default: Found nil or non-nil - return that.
+          (t
+           enabled?))))
+;; (int<nub>:var:enabled? :default :error)
+;; (int<nub>:var:enabled? :test<nub/utils>::int<nub>:var:enabled? :info :default)
 
 
 (defun int<nub>:var:enabled?:set (user level value)

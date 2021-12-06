@@ -254,7 +254,7 @@ Can also allow the normal output based on `test<nub>:redirect/output:type'"
 
 (defun test<nub>:redirect/output:teardown ()
   "Removes our output override."
-  (int<nub>:output:vars/reset test<nub>:user))
+  (nub:vars:reset test<nub>:user))
 
 
 (defun test<nub>:assert:output (level caller should-be)

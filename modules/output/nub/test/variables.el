@@ -332,6 +332,7 @@
            (setq enabled-locally? nil)
            (should (eq enabled-locally?
                        (int<nub>:var:enabled? test<nub>:user :debug :default)))
+
            ;;------------------------------
            ;; Set
            ;;------------------------------
@@ -344,9 +345,66 @@
                        (int<nub>:var:enabled? test<nub>:user :info :default))))))
 
 
+;;------------------------------
+;; int<nub>:var:sink
+;;------------------------------
+
+(ert-deftest test<nub/utils>::int<nub>:var:sink ()
+  "Test that `int<nub>:var:sink' functions for init, get, and set work correctly."
+
+  (test<nub>:fixture
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/utils>::int<nub>:var:sink"
+      :user/auto
+      nil
+      nil
+
+    (let* ((sink:info nil)
+           (sink:info:fn (lambda (msg &rest args)
+                           "Output sink for `:info' level."
+                           (push (format msg args) sink:info)))
+           (sinks (list (cons :error t) ;; `t'   == Use default.
+                        '(:warn . nil)  ;; `nil' == Do nothing.
+                        (cons :info (list sink:info:fn t))))) ;; Can also have a list of things.
+
+           ;;------------------------------
+           ;; Init with the `sink' alist.
+           ;;------------------------------
+
+           (should (int<nub>:init:sink test<nub>:user sinks))
+
+           ;;------------------------------
+           ;; Get
+           ;;------------------------------
+           ;; (pp int<nub>:var:sink)
+
+           (should (eq t
+                       (int<nub>:var:sink test<nub>:user :error :default)))
+
+           (should (eq nil
+                       (int<nub>:var:sink test<nub>:user :warn :default)))
+
+           (should (equal (list sink:info:fn t)
+                          (int<nub>:var:sink test<nub>:user :info :default)))
+
+           ;; Default for `:debug' is the `message' function.
+           (should (eq 'message
+                       (int<nub>:var:sink test<nub>:user :debug :default)))
+
+           ;;------------------------------
+           ;; Set
+           ;;------------------------------
+           (int<nub>:var:sink:set test<nub>:user :error 'some-new-error-func)
+           (should (eq 'some-new-error-func
+                       (int<nub>:var:sink test<nub>:user :error :default)))
+
+           (int<nub>:var:sink:set test<nub>:user :debug t)
+           (should (eq t
+                       (int<nub>:var:sink test<nub>:user :debug :default))))))
+
+
 
 ;; TODO: tests for funcs for:
-;;   - int<nub>:var:sink
 ;;   - int<nub>:var:debugging
 ;;   - int<nub>:var:debug:tags
 ;;   - int<nub>:var:debug:tags/common

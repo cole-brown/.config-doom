@@ -403,6 +403,32 @@
                        (int<nub>:var:sink test<nub>:user :debug :default))))))
 
 
+;;------------------------------
+;; int<nub>:var:debugging
+;;------------------------------
+
+(ert-deftest test<nub/utils>::int<nub>:var:debugging ()
+  "Test that `int<nub>:var:debugging' functions for init, get, and set work correctly."
+
+  (test<nub>:fixture
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/utils>::int<nub>:var:debugging"
+      :user/auto
+      nil
+      nil
+
+    ;; Shouldn't be debugging yet.
+    (should-not (int<nub>:var:debugging test<nub>:user))
+
+    ;; Set to debugging.
+    (int<nub>:var:debugging:set test<nub>:user t)
+    (should (int<nub>:var:debugging test<nub>:user))
+
+    ;; Toggle off and back on again.
+    (int<nub>:var:debugging:set test<nub>:user :toggle)
+    (should-not (int<nub>:var:debugging test<nub>:user))
+    (int<nub>:var:debugging:set test<nub>:user :toggle)
+    (should (int<nub>:var:debugging test<nub>:user))))
 
 ;; TODO: tests for funcs for:
 ;;   - int<nub>:var:debugging

@@ -72,10 +72,10 @@ Returns a new alist, which isn't ALIST."
   ;;---
   (when (stringp key)
     (int<nub>:output :error
-                          "int<nub>:alist:update"
-                          '("String key '%s' won't work... "
-                            "Use `int<nub>:alist/string:update' for string keys.")
-                          key))
+                     "int<nub>:alist:update"
+                     '("String key '%s' won't work... "
+                       "Use `int<nub>:alist/string:update' for string keys.")
+                     key))
 
   (if (null alist)
       ;; Create a new alist and return it.
@@ -111,9 +111,9 @@ Returns ALIST."
 
       (t
        (int<nub>:output :error
-                             "int<nub>:alist:update"
-                             "Unable to update alist with type %S: %S"
-                             (typeof mmm:alist) mmm:alist)))))
+                        "int<nub>:alist:update"
+                        "Unable to update alist with type %S: %S"
+                        (typeof mmm:alist) mmm:alist)))))
 ;; A global variable:
 ;;   (setq test-alist nil)
 ;;   (int<nub>:alist:update :k :v test-alist)
@@ -134,7 +134,7 @@ Returns ALIST."
 ;; (setq test<nub/alist>:alist/nil nil)
 ;; test<nub/alist>:alist/nil
 ;; (int<nub>:alist:update :k :v
-;;                             (test<nub/alist>:alist:get :global/nil))
+;;                        (test<nub/alist>:alist:get :global/nil))
 ;; test<nub/alist>:alist/nil
 
 
@@ -147,11 +147,11 @@ Returns alist without the key."
   ;;---
   (when (stringp key)
     (int<nub>:output :error
-                          "int<nub>:alist:delete"
-                          '("String key '%s' won't work... "
-                            "Use `int<nub>:alist/string:delete' "
-                            "for string keys.")
-                          key))
+                     "int<nub>:alist:delete"
+                     '("String key '%s' won't work... "
+                       "Use `int<nub>:alist/string:delete' "
+                       "for string keys.")
+                     key))
   ;; If it's null, no need to do anything.
   (unless (null alist)
     (setf (alist-get key alist nil 'remove) nil))
@@ -175,9 +175,9 @@ Returns ALIST."
 
       (t
        (int<nub>:output :error
-                             "int<nub>:alist:delete"
-                             "Unable to delete key from alist with type %S: %S"
-                             (typeof mmm:alist) mmm:alist)))))
+                        "int<nub>:alist:delete"
+                        "Unable to delete key from alist with type %S: %S"
+                        (typeof mmm:alist) mmm:alist)))))
 ;; (setq test-alist nil)
 ;; (int<nub>:alist:delete :k test-alist)
 ;; (int<nub>:alist:update :k :v test-alist)

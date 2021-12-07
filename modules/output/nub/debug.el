@@ -196,6 +196,7 @@
 ;; Debugging Functions
 ;;------------------------------------------------------------------------------
 
+;; TODO: this has wrong name.
 (defun int<nub>:var:debugging? (user caller tags)
   "Returns non-nil if USER is debugging for anything in the list of TAGS.
 
@@ -211,13 +212,15 @@ is true:
    ;; [ERROR] Forgot to tag your debugging call!
    ;;------------------------------
    ((not tags)
-    (int<nub>:output user
-                     :error
-                     caller
-                     "Debug message has not been tagged! tags: %S"
+    (int<nub>:error "int<nub>:var:debugging?"
+                    '(:newlines .
+                      ("This debug message has not been tagged!"
+                       "  user:   %S"
+                       "  caller: %S"
+                       "  tags:   %S"
                      caller
                      user
-                     tags))
+                     tags))))
 
    ;;------------------------------
    ;; Not Debugging -> Never.
@@ -333,20 +336,21 @@ VALUEs are optional and should be:
     ;; Error checks.
     ;;------------------------------
     (unless (memq start-or-end '(:start :end))
-      (int<nub>:output user
-                       :error
-                       func/name
-                       '("START-OR-END must be one of: %S; got: %S.\n"
-                         "  user:       %S\n"
-                         "  debug/name: %S\n"
-                         "  debug/tags: %S\n"
-                         "  value:      %S")
-                       '(:start :end)
-                       start-or-end
-                       user
-                       debug/name
-                       debug/tags
-                       value))
+      (int<nub>:error func/name
+                      '(:newlines .
+                        ("START-OR-END must be one of: %S; got: %S."
+                         "  user:         %S"
+                         "  debug/name:   %S"
+                         "  debug/tags:   %S"
+                         "  start-or-end: %S"
+                         "  value:        %S"))
+                      '(:start :end)
+                      start-or-end
+                      user
+                      debug/name
+                      debug/tags
+                      start-or-end
+                      value))
 
     ;;------------------------------
     ;; Format output.
@@ -357,12 +361,21 @@ VALUEs are optional and should be:
 
           ;; Invalid value alist - error out.
           ((not (int<nub>:alist:alist? value))
-           (int<nub>:output user
-                            :error
-                            func/name
-                            "VALUE is invalid for `%S'! Expecting `&rest VALUE' to be an alist. Got: %S"
-                            start-or-end
-                            value))
+           (int<nub>:error func/name
+                           '(:newlines .
+                             ("VALUE is invalid for `%S'! Expecting `&rest VALUE' to be an alist. Got: %S"
+                              "  user:         %S"
+                              "  debug/name:   %S"
+                              "  debug/tags:   %S"
+                              "  start-or-end: %S"
+                              "  value:        %S"))
+                           start-or-end
+                           value
+                           user
+                           debug/name
+                           debug/tags
+                           start-or-end
+                           value))
 
           ;; Format nicely into columns.
           (t
@@ -443,16 +456,15 @@ VALUEs are optional and should be:
           ;; Error: Bad START-OR-END
           ;;------------------------------
           (t
-           (int<nub>:output user
-                            :error
-                            func/name
-                            '("Invalid start/end tag! Must be one of: %S; got: %S.\n"
-                              "  user:       %S\n"
-                              "  debug/name: %S\n"
-                              "  debug/tags: %S\n"
-                              "  value:      %S\n"
-                              "  value/formatted:\n"
-                              "%S")
+           (int<nub>:error func/name
+                           '(:newlines .
+                             ("Invalid start/end tag! Must be one of: %S; got: %S."
+                              "  user:       %S"
+                              "  debug/name: %S"
+                              "  debug/tags: %S"
+                              "  value:      %S"
+                              "  value/formatted:"
+                              "%S"))
                             '(:start :end)
                             start-or-end
                             user

@@ -44,6 +44,7 @@
 ;; Load Files
 ;;------------------------------------------------------------------------------
 
+(load! "internal")
 (load! "alist")
 (load! "utils")
 (load! "variables")

@@ -71,11 +71,10 @@ Returns a new alist, which isn't ALIST."
   ;; Error Checking
   ;;---
   (when (stringp key)
-    (int<nub>:output :error
-                     "int<nub>:alist:update"
-                     '("String key '%s' won't work... "
-                       "Use `int<nub>:alist/string:update' for string keys.")
-                     key))
+    (int<nub>:error "int<nub>:alist:update"
+                    '("String key '%s' won't work... "
+                      "Use `int<nub>:alist/string:update' for string keys.")
+                    key))
 
   (if (null alist)
       ;; Create a new alist and return it.
@@ -110,10 +109,9 @@ Returns ALIST."
             (int<nub>:alist:update/helper ,key ,value (eval mmm:alist))))
 
       (t
-       (int<nub>:output :error
-                        "int<nub>:alist:update"
-                        "Unable to update alist with type %S: %S"
-                        (typeof mmm:alist) mmm:alist)))))
+       (int<nub>:error "int<nub>:alist:update"
+                       "Unable to update alist with type %S: %S"
+                       (typeof mmm:alist) mmm:alist)))))
 ;; A global variable:
 ;;   (setq test-alist nil)
 ;;   (int<nub>:alist:update :k :v test-alist)
@@ -146,8 +144,7 @@ Returns alist without the key."
   ;; Error Checking
   ;;---
   (when (stringp key)
-    (int<nub>:output :error
-                     "int<nub>:alist:delete"
+    (int<nub>:output "int<nub>:alist:delete"
                      '("String key '%s' won't work... "
                        "Use `int<nub>:alist/string:delete' "
                        "for string keys.")
@@ -174,10 +171,9 @@ Returns ALIST."
             (int<nub>:alist:delete/helper ,key (eval mmm:alist))))
 
       (t
-       (int<nub>:output :error
-                        "int<nub>:alist:delete"
-                        "Unable to delete key from alist with type %S: %S"
-                        (typeof mmm:alist) mmm:alist)))))
+       (int<nub>:error "int<nub>:alist:delete"
+                       "Unable to delete key from alist with type %S: %S"
+                       (typeof mmm:alist) mmm:alist)))))
 ;; (setq test-alist nil)
 ;; (int<nub>:alist:delete :k test-alist)
 ;; (int<nub>:alist:update :k :v test-alist)

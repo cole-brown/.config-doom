@@ -31,9 +31,9 @@ can still happen.")
       level
 
     (if error?
-        (error "%s: Level %S is not a valid `nub' output level!"
-               caller
-               level)
+        (int<nub>:error caller
+                        "Level %S is not a valid `nub' output level!"
+                        level)
       nil)))
 
 
@@ -52,9 +52,9 @@ can still happen.")
       t
 
     (if error?
-        (error "%s: User %S is not a register `nub' user!"
-               caller
-               user)
+        (int<nub>:error caller
+                        "User %S is not a register `nub' user!"
+                        user)
       nil)))
 
 
@@ -92,7 +92,9 @@ Returns DEFAULT if not found.
 
   ;; Assert ALIST.
   (if (not (int<nub>:alist:alist? alist))
-      (error "int<nub>:var:user-at-level: ALIST must be an alist! Got: %S" alist)
+      (int<nub>:error "int<nub>:var:user-at-level"
+                      "ALIST must be an alist! Got: %S"
+                      alist)
     ;; Try to get the value for USER at LEVEL - we'll fall back if they've requested it.
     (let ((value (int<nub>:alist:get/value level
                                            (int<nub>:alist:get/value user alist)
@@ -105,8 +107,9 @@ Returns DEFAULT if not found.
                                               :does-not-exist))
         ;; If it's still not found then we should error on the level, probably?
         (when (eq value :does-not-exist)
-          (error "int<nub>:var:user-at-level: User %S at level %S had no value and no fallback/default. Invalid level?"
-                 user level)))
+          (int<nub>:error "int<nub>:var:user-at-level"
+                          "User %S at level %S had no value and no fallback/default. Invalid level?"
+                          user level)))
 
       ;; Done; return the value.
       value)))
@@ -433,8 +436,9 @@ Returns DEFAULT if not found."
   (int<nub>:user:exists? "int<nub>:var:debug:tags:set" user :error)
 
   (unless (listp tags)
-    (error "int<nub>:var:debug:tags: Tags must be a list or nil; got: %S"
-           tags))
+    (int<nub>:error "int<nub>:var:debug:tags"
+                    "Tags must be a list or nil; got: %S"
+                    tags))
 
   (if (null tags)
       (int<nub>:alist:delete user
@@ -500,8 +504,9 @@ TAG based on truthiness of VALUE."
            nil)
 
           (t
-           (error "int<nub>:var:debug:tag:set: Don't know what to do? Action is: %S"
-                  action)))))
+           (int<nub>:error "int<nub>:var:debug:tag:set"
+                           "Don't know what to do? Action is: %S"
+                           action)))))
 ;; (int<nub>:var:debug:tags :test)
 
 

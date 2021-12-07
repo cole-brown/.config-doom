@@ -46,10 +46,10 @@
                        (:warn  . "Warn Output")
                        (:debug . "DEBUG OUTPUT"))))
       (dolist (data test-data)
-        (int<nub>:output test<nub>:user
-                         (car data)
-                         test-name
-                         (cdr data))
+        (nub:output test<nub>:user
+                    (car data)
+                    test-name
+                    (cdr data))
         (test<nub>:assert:output (car data)
                                  test-name
                                  (list (list (cdr data))))))))
@@ -176,18 +176,18 @@
 
 
 ;;------------------------------
-;; int<nub>:output
+;; nub:output
 ;;------------------------------
 
-(ert-deftest test<nub/output>::int<nub>:output ()
-  "Test that `int<nub>:output' behaves."
+(ert-deftest test<nub/output>::nub:output ()
+  "Test that `nub:output' behaves."
 
   ;; Squelch the actual output; still save to the test's output lists.
   (setq test<nub>:redirect/output:type nil)
 
   (test<nub>:fixture
       ;; Test name, nub user, setup func, teardown func.
-      "test<nub/output>::int<nub>:output"
+      "test<nub/output>::nub:output"
       :user/auto
       nil
       nil
@@ -195,11 +195,11 @@
     ;;------------------------------
     ;; Test Error Level
     ;;------------------------------
-    (int<nub>:output test<nub>:user
-                     :error
-                     test-name
-                     '("Hello " "%s... You have a minor case of severe erroring.")
-                     "there")
+    (nub:output test<nub>:user
+                :error
+                test-name
+                '("Hello " "%s... You have a minor case of severe erroring.")
+                "there")
 
     (test<nub>:assert:output :error
                              test-name
@@ -211,12 +211,12 @@
     ;;------------------------------
     ;; Test Warn Level
     ;;------------------------------
-    (int<nub>:output test<nub>:user
-                     :warn
-                     test-name
-                     "Hello %s; %s."
-                     "there"
-                     "this is your final warning")
+    (nub:output test<nub>:user
+                :warn
+                test-name
+                "Hello %s; %s."
+                "there"
+                "this is your final warning")
 
     (test<nub>:assert:output :warn
                              test-name
@@ -228,11 +228,11 @@
     ;;------------------------------
     ;; Test Debug Level
     ;;------------------------------
-    (int<nub>:output test<nub>:user
-                     :debug
-                     test-name
-                     "I'm afraid I'm infested with bugs, %s..."
-                     "Dave")
+    (nub:output test<nub>:user
+                :debug
+                test-name
+                "I'm afraid I'm infested with bugs, %s..."
+                "Dave")
 
     (test<nub>:assert:output :debug
                              test-name

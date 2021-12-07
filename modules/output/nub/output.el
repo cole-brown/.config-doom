@@ -25,14 +25,15 @@ ARGS based on current verbosity for the level."
         (verbosity:level (int<nub>:var:enabled? user level int<nub>:var:user:fallback)))
     ;; Should complain about no default output function.
     (when (not (functionp sink:function))
-      (error (concat "int<nub>:output:message: "
-                     "No output function for user %S at level %S! "
-                     "Output Message:\n"
-                     "───────────────\n"
-                     "%s")
-             user
-             level
-             (apply #'format msg args)))
+      (int<nub>:error "int<nub>:output:message"
+                      '(:newlines .
+                        ("No output function for user %S at level %S!"
+                         "Output Message:"
+                         "───────────────"
+                         "%s"))
+                      user
+                      level
+                      (apply #'format msg args)))
 
     ;; Output message depending on LEVEL's current verbosity.
     (pcase verbosity:level
@@ -80,13 +81,16 @@ ARGS based on current verbosity for the level."
       ;;------------------------------
       (unknown-value
        ;; Found LEVEL, but don't know what to do with its value.
-       (error (concat "int<nub>:var:output: "
-                      "Verbosity for user '%S' at level '%S' is '%S', and we don't know what to do with that. "
-                      "Output Message:\n%s")
-              user
-              level
-              unknown-value
-              (apply #'format msg args))))))
+       (int<nub>:error "int<nub>:var:output"
+                       '("Verbosity for user '%S' at level '%S' is '%S', "
+                         "and we don't know what to do with that.\n"
+                         "Output Message:\n"
+                         "───────────────\n"
+                         "%s")
+                       user
+                       level
+                       unknown-value
+                       (apply #'format msg args))))))
 
 
 (defun int<nub>:output:format (user level caller &rest message-format)
@@ -125,7 +129,7 @@ Alternative/direct use:
 ;; Output API - Errors, Warnings, etc
 ;;------------------------------------------------------------------------------
 
-(defun int<nub>:output (user level caller formatting &rest args)
+(defun nub:output (user level caller formatting &rest args)
   "Format to standard message output for the USER with CALLER info, then output
 the message with FORMATTING and ARGS to the correct place according to LEVEL's
 current verbosity (e.g. #'error for `:error' verbosity normally).

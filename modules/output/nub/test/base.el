@@ -59,7 +59,7 @@ debugging messages.")
 
 
 (defvar test<nub>:redirect/output:type:default t
-"Default for how to redirect output when testing.
+  "Default for how to redirect output when testing.
 
 nil     - Squelch outputs/error signals.
         - Save all outputs to lists.
@@ -185,7 +185,7 @@ be manually inspected after a test is run."
                                  nil)))
 
 
-;------------------------------------------------------------------------------
+;;------------------------------------------------------------------------------
 ;; Test Helpers: Output
 ;;------------------------------------------------------------------------------
 
@@ -271,7 +271,8 @@ SHOULD-BE can be:
     + The LEVEL message must match SHOULD-BE.
     + USING
   - a list of lists of strings
-    + Each list of strings should be expected substrings in the LEVEL output message.
+    + A list-of-strings is a list of expected substrings in a LEVEL output message.
+    + List-of-strings #1 should be for message #1, list-of-strings #2 for message #2, etc.
   - nil/falsy
     + LEVEL should have no output messages."
   (let* ((outputs (pcase level
@@ -287,7 +288,7 @@ SHOULD-BE can be:
                              (should (listp outputs)))))
     ;; See what level is when debugging.
     (test<nub>:should:marker caller
-                                  (format "level: %S, should-be: %S" level should-be))
+                             (format "level: %S, should-be: %S" level should-be))
 
     (cond
      ;;---
@@ -332,7 +333,7 @@ SHOULD-BE can be:
       (should (-all? (lambda (sublist) (-all? #'stringp sublist))
                      should-be))
 
-      ;; Outputs should be valid, match expected in length.
+      ;; Outputs should be valid and should match expected substring lists in length.
       (funcall func/assert-list)
       (should (= (length should-be)
                  (length outputs)))

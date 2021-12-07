@@ -16,18 +16,20 @@
 ;; Output Message Helpers
 ;;------------------------------------------------------------------------------
 
-(defun int<nub>:output/message (user level msg args)
+(defun int<nub>:output:message (user level msg args)
   "Decides how to output LEVEL keyword (`int<nub>:output:enabled?') MSG and
 ARGS based on current verbosity for the level."
-  (int<nub>:user:exists? "int<nub>:output/message" user :error)
+  (int<nub>:user:exists? "int<nub>:output:message" user :error)
 
-  (let ((sink:function   (int<nub>:var:sink     user level :does-not-exist))
-        (verbosity:level (int<nub>:var:enabled? user level :does-not-exist)))
-    ;; Should complain about no default.
-    (when (eq sink:function :does-not-exist)
-      (error (concat "int<nub>:output/message: "
+  (let ((sink:function   (int<nub>:var:sink     user level int<nub>:var:user:fallback))
+        (verbosity:level (int<nub>:var:enabled? user level int<nub>:var:user:fallback)))
+    ;; Should complain about no default output function.
+    (when (not (functionp sink:function))
+      (error (concat "int<nub>:output:message: "
                      "No output function for user %S at level %S! "
-                     "Output Message:\n%s")
+                     "Output Message:\n"
+                     "───────────────\n"
+                     "%s")
              user
              level
              (apply #'format msg args)))
@@ -76,23 +78,6 @@ ARGS based on current verbosity for the level."
       ;;------------------------------
       ;; Errors/Invalids
       ;;------------------------------
-      (:does-not-exist
-       ;; Didn't find LEVEL in `int<nub>:var:enabled?'.
-       (error (concat "int<nub>:var:output: "
-                      "Ouput function for verbosity level doesn't exist; don't know how to output message.\n"
-                      "  user:               %S\n"
-                      "  verbosity level:    %S\n"
-                      "  '%S' func:      %S\n"
-                      "  existing 'verbose': %S\n"
-                      "  existing 'default': %S\n"
-                      "  message: %s")
-              user
-              level
-              level verbosity:level
-              int<nub>:var:enabled?
-              int<nub>:var:sink
-              (apply #'format msg args)))
-
       (unknown-value
        ;; Found LEVEL, but don't know what to do with its value.
        (error (concat "int<nub>:var:output: "
@@ -121,6 +106,7 @@ Proper use:
 
 Alternative/direct use:
   (error (int<nub>:output:format
+          :example-user
           \"example-function\"
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
@@ -158,7 +144,7 @@ signaled."
   (int<nub>:user:exists? "int<nub>:output" user :error)
 
   (unless (stringp caller)
-    (int<nub>:output/message
+    (int<nub>:output:message
      user
      :warn
      "int<nub>:output: invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
@@ -167,7 +153,7 @@ signaled."
            (stringp caller))))
 
   (unless (or (stringp formatting) (listp formatting))
-    (int<nub>:output/message
+    (int<nub>:output:message
      user
      :warn
      "int<nub>:output: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
@@ -183,15 +169,15 @@ signaled."
    ;; Valid formatting.
    ;;---
    ((listp formatting)
-    (int<nub>:output/message user
+    (int<nub>:output:message user
                              level
-                             (apply #'int<nub>:output:format level caller formatting)
+                             (apply #'int<nub>:output:format user level caller formatting)
                              args))
 
    ((stringp formatting)
-    (int<nub>:output/message user
+    (int<nub>:output:message user
                              level
-                             (int<nub>:output:format level caller formatting)
+                             (int<nub>:output:format user level caller formatting)
                              args))
 
    ;;---
@@ -199,7 +185,7 @@ signaled."
    ;;---
    ;; Do your best to get something.
    (t
-    (int<nub>:output/message
+    (int<nub>:output:message
      user
      :error
      (int<nub>:output:format
@@ -209,7 +195,7 @@ signaled."
       (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
               formatting args)))
 
-    ;; Don't return `int<nub>:output/message' output.
+    ;; Don't return `int<nub>:output:message' output.
     ;; Unit tests will disable error signaling sometimes so it's best if this returns nil.
     nil)))
 

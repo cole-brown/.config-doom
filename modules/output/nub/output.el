@@ -9,7 +9,9 @@
 ;;                                 ──────────                                 ;;
 
 (require 'seq)
+(imp:require :nub 'internal)
 (imp:require :nub 'alist)
+(imp:require :nub 'variables)
 
 
 ;;------------------------------------------------------------------------------

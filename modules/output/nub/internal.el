@@ -72,3 +72,9 @@ ARGS will be passed to `format' with the finalized message string."
 ;; (int<nub>:error "test-function-name" "hello there")
 ;; (int<nub>:error "test-function-name" '("hello, " "there"))
 ;; (int<nub>:error "test-function-name" '(:newlines . ("Hi." "  -> Line 2")))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :nub 'internal)

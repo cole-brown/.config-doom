@@ -16,6 +16,7 @@
 ;;                                 ──────────                                 ;;
 
 
+(imp:require :nub 'internal)
 (imp:require :nub 'alist)
 (imp:require :nub 'utils)
 (imp:require :nub 'variables)

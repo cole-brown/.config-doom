@@ -159,7 +159,7 @@
     (let* ((fmt.args '("Hello, " "%S.")) ;; Some args for creating a formatting string.
            (expected.substrs (list "Hello, %S." ;; Expected formatting string still w/ '%S'.
                                    test-name))  ;; Expected caller name string.
-           (formatted (apply #'int<nub>:output:format :error test-name fmt.args)))
+           (formatted (apply #'int<nub>:output:format test<nub>:user :error test-name fmt.args)))
       ;; Should have got back some sort of string.
       (should formatted)
       (should (stringp formatted))
@@ -171,8 +171,8 @@
     ;;------------------------------
     ;; Test different prefixes.
     ;;------------------------------
-    (should-not (string= (int<nub>:output:format :error test-name "Hello, %s.")
-                         (int<nub>:output:format :debug test-name "Hello, %s.")))))
+    (should-not (string= (int<nub>:output:format test<nub>:user :error test-name "Hello, %s.")
+                         (int<nub>:output:format test<nub>:user :debug test-name "Hello, %s.")))))
 
 
 ;;------------------------------

@@ -179,7 +179,6 @@
 ;; int<nub>:output
 ;;------------------------------
 
-;; TODO: from here
 (ert-deftest test<nub/output>::int<nub>:output ()
   "Test that `int<nub>:output' behaves."
 
@@ -196,9 +195,10 @@
     ;;------------------------------
     ;; Test Error Level
     ;;------------------------------
-    (int<nub>:output :error
+    (int<nub>:output test<nub>:user
+                     :error
                      test-name
-                     '("Hello " "%s... there is a minor case of severe erroring.")
+                     '("Hello " "%s... You have a minor case of severe erroring.")
                      "there")
 
     (test<nub>:assert:output :error
@@ -206,12 +206,13 @@
                              ;; Expect one error message with:
                              ;;   - test-name
                              ;;   - formatted output message
-                             (list (list test-name "Hello there... there is a minor case of severe erroring.")))
+                             (list (list test-name "Hello there... You have a minor case of severe erroring.")))
 
     ;;------------------------------
     ;; Test Warn Level
     ;;------------------------------
-    (int<nub>:output :warn
+    (int<nub>:output test<nub>:user
+                     :warn
                      test-name
                      "Hello %s; %s."
                      "there"
@@ -227,7 +228,8 @@
     ;;------------------------------
     ;; Test Debug Level
     ;;------------------------------
-    (int<nub>:output :debug
+    (int<nub>:output test<nub>:user
+                     :debug
                      test-name
                      "I'm afraid I'm infested with bugs, %s..."
                      "Dave")

@@ -66,15 +66,24 @@
 (ert-deftest test<nub/output>::int<nub>:output:message ()
   "Test that `int<nub>:output:message' sends output to the correct place based on verbosity."
 
-
   ;; Squelch the actual output; still save to the test's output lists.
   (setq test<nub>:redirect/output:type nil)
 
   ;;------------------------------
   ;; Test Actual Error signals error
   ;;------------------------------
-  ;; Non-testing error output should signal an error.
-  (should-error (int<nub>:output:message :error "hello there" nil))
+  ;; Not using a registerd user should signal an error.
+  (should-error (int<nub>:output:message :test-unregistered-user
+                                         :error
+                                         "hello there"
+                                         nil))
+
+  ;; Valid user at error output level should signal an error right now since
+  ;; we haven't set up for unit testing yet.
+  (should-error (int<nub>:output:message int<nub>:var:user:fallback
+                                         :error
+                                         "hello there"
+                                         nil))
 
   ;;------------------------------
   ;; Test w/ Unit-Testing hooks in-place.
@@ -87,18 +96,20 @@
       nil
 
     ;; Each verbosity level should go to its separate list of intercepted messages.
-    (let ((msg.error "[ERROR] Hello there.")
-          (msg.warn  "[WARN]  Hello there.")
-          (msg.debug "[DEBUG] Hello there."))
+    (let ((msg.error "[ERROR   ]: Hello there.")
+          (msg.warn  "[WARN    ]: Hello there.")
+          (msg.debug "[   debug]: Hello there."))
 
       ;;------------------------------
       ;; Test Error
       ;;------------------------------
       ;; This should /not/ error this time.
-      (should (int<nub>:output:message :error msg.error nil))
+      ;; We've squelched the normal output functions.
+      (should (int<nub>:output:message test<nub>:user :error msg.error nil))
 
-      ;; Error should have its message.
+      ;; Testing error messages sink should have its message.
       (test<nub>:assert:output :error test-name msg.error)
+
       ;; Warn and debug should have nothing so far.
       (test<nub>:assert:output :warn  test-name nil)
       (test<nub>:assert:output :debug test-name nil)
@@ -106,7 +117,7 @@
       ;;------------------------------
       ;; Test Warning
       ;;------------------------------
-      (should (int<nub>:output:message :warn msg.warn nil))
+      (should (int<nub>:output:message test<nub>:user :warn msg.warn nil))
 
       ;; Error & Warn should have their messages now.
       (test<nub>:assert:output :error test-name msg.error)
@@ -117,7 +128,7 @@
       ;;------------------------------
       ;; Test Debug
       ;;------------------------------
-      (should (int<nub>:output:message :debug msg.debug nil))
+      (should (int<nub>:output:message test<nub>:user :debug msg.debug nil))
 
       ;; All three should have their messages.
       (test<nub>:assert:output :error test-name msg.error)

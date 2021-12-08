@@ -25,8 +25,8 @@
 ;; be debugging and want them that way.
 ;;
 ;; 'base.el' has `test<keyboard>:debug:setup' and
-;; `test<keyboard>:debug:teardown' specifically to make not of this fact (they
-;; are empty stubs as of [2021-10-13]).
+;; `test<keyboard>:debug:teardown' specifically to make note of this fact (they
+;; are empty stubs as of [2021-12-08]).
 ;;
 ;; So we have these for the tests where we /do/ want to mess up the debugging data.
 ;;---

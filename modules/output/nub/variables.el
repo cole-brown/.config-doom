@@ -544,6 +544,96 @@ Returns `nil' if not found."
 
 
 ;;------------------------------------------------------------------------------
+;; Debug Message Helpers
+;;------------------------------------------------------------------------------
+
+(defconst int<nub>:var:debug:fills
+  (list (cons int<nub>:var:user:fallback '("  "
+                                           "- ")))
+  "Alist of users to list of strings to use for alternating fill/padding strings.")
+
+
+(defun int<nub>:var:debug:fills (user &optional default)
+  "Get debug fill/padding strings for USER.
+
+Returns DEFAULT if USER has no fill/padding strings.
+  - If DEFAULt is `:default', returns the standard/default/fallback strings."
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:fills" user :error)
+
+  (let ((fills (int<nub>:alist:get/value user
+                                         int<nub>:var:debug:fills)))
+    (if (and (eq default int<nub>:var:user:fallback)
+             (eq fills default))
+        ;; Didn't find it - get the fallback.
+        (int<nub>:alist:get/value int<nub>:var:user:fallback
+                                  int<nub>:var:debug:fills)
+      ;; Found it.
+      fills)))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defun int<nub>:var:debug:fills:set (user fill-strings)
+  "Sets USER's list of fill/padding strings."
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:fills:set" user :error)
+
+  (int<nub>:alist:update user
+                         fill-strings
+                         int<nub>:var:debug:fills))
+;; (int<nub>:var:debug:fills:set :test '("-.-" "^.^"))
+
+
+(defvar int<nub>:var:debug:fills/index
+  (list (cons int<nub>:var:user:fallback 0))
+  "Alist of users to next fill/padding (index) to use from user's
+`int<nub>:var:debug:fills' alist entry.")
+
+
+(defun int<nub>:var:debug:fills/index (user &optional default)
+  "Get current index into debug fill/padding strings for USER.
+
+Returns DEFAULT if USER has no index.
+  - If DEFAULt is `:default', returns the (shared)
+    standard/default/fallback index."
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:fills/index" user :error)
+
+  (let ((fills/index (int<nub>:alist:get/value user
+                                               int<nub>:var:debug:fills/index)))
+    (if (and (eq default int<nub>:var:user:fallback)
+             (eq fills/index default))
+        ;; Didn't find it - get the fallback.
+        (int<nub>:alist:get/value int<nub>:var:user:fallback
+                                  int<nub>:var:debug:fills/index)
+      ;; Found it.
+      fills/index)))
+;; (int<nub>:var:debug:tags :test)
+
+
+(defun int<nub>:var:debug:fills/index:set (user index &optional create)
+  "Sets USER's index into the list of fill/padding strings.
+
+If CREATE is nil and USER doesn't exist in index alist, sets the
+default user instead."
+  ;; Ensure USER is ok.
+  (int<nub>:user:exists? "int<nub>:var:debug:fills/index:set" user :error)
+
+  (if (and (null create)
+           (not (int<nub>:alist:get/pair user int<nub>:var:debug:fills/index)))
+      ;; Updated default index instead.
+      (int<nub>:alist:update int<nub>:var:user:fallback
+                             index
+                             int<nub>:var:debug:fills/index)
+
+    ;; Set/create user's index.
+    (int<nub>:alist:update user
+                           index
+                           int<nub>:var:debug:fills/index)))
+;; (int<nub>:var:debug:fills/index:set :test 42)
+
+
+;;------------------------------------------------------------------------------
 ;; Init/Reset all user's vars.
 ;;------------------------------------------------------------------------------
 

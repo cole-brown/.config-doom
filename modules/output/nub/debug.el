@@ -401,23 +401,30 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
                        "(no active tags -> all tag queries match)"
                      tags/matched)
                  ;; `nil' here doesn't mean much since debugging isn't active...
-                 "none")))))
+                 "none"))
+
+      ;; Return matched debug tags, t if global debugging, or nil if not debugging.
+      debugging:tags/input)))
 
 
 ;;------------------------------------------------------------------------------
 ;; COMMANDS: Debugging Status
 ;;------------------------------------------------------------------------------
 
-(defun nub:debug/status (user)
+(defun nub:debug:status (user)
   "Get message with status of debugging toggle, active debug tags."
-  (interactive (int<nub>:prompt:user "nub:debug/status"
+  (interactive (int<nub>:prompt:user "nub:debug:status"
                                      "Debug Status for User"
                                      :list))
   ;; Valid user?
   (if user
+      ;; This also returns active tags, t, or nil.
       (int<nub>:debug:status/message (format "Nub Debug Status: %S" user)
                                      user)
-    (message "nub:debug/status: Unknown user: %S" user)))
+
+    (message "nub:debug:status: Unknown user: %S" user)
+    ;; Let's just say 'not debugging' for unknown user.
+    nil))
 
 
 ;;------------------------------------------------------------------------------
@@ -446,20 +453,26 @@ The answer depends on TAGS:
                                              user)))
 
     (if user
+        ;; This also returns active tags, t, or nil.
         (int<nub>:debug:status/message (format "Nub Debugging?: %S" user)
                                        user tags)
-      (message "%s: Unknown user: %S" func.name user))))
+      (message "%s: Unknown user: %S" func.name user)
+      ;; Let's just say 'not debugging' for unknown user.
+      nil)))
 
 
 
 (defun nub:debug:clear (user)
   "Turns off debugging for USER and clears all of USER's current debug tags."
-  (interactive (int<nub>:prompt:user "nub:debug/clear"
+  (interactive (int<nub>:prompt:user "nub:debug:clear"
                                      "Toggle Debug for User"
                                      :list))
   (let ((func.name "nub:debug:clear"))
     (if (not user)
-        (message "%s: Unknown user: %S" func.name user)
+        (progn
+          (message "%s: Unknown user: %S" func.name user)
+          ;; Let's just say 'not debugging' for unknown user.
+          nil)
 
       ;; Turn off debugging flag.
       (int<nub>:var:debugging:set user nil)
@@ -469,6 +482,7 @@ The answer depends on TAGS:
 
       ;; Display status.
       (message "Nub: Cleared debug flags: %S" user)
+      ;; This also returns active tags, t, or nil.
       (int<nub>:debug:status/message (format "Debug Status: %S" user)
                                      user))))
 
@@ -477,17 +491,21 @@ The answer depends on TAGS:
 ;; COMMANDS: Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defun nub:debug/toggle (user)
+(defun nub:debug:toggle (user)
   "Toggle debugging for the USER."
-  (interactive (int<nub>:prompt:user "nub:debug/toggle"
+  (interactive (int<nub>:prompt:user "nub:debug:toggle"
                                      "Toggle Debug for User"
                                      :list))
   (if (not user)
-      (message "%s: Unknown user: %S" func.name user)
+      (progn
+        (message "%s: Unknown user: %S" func.name user)
+        ;; Let's just say 'not debugging' for unknown user.
+        nil)
 
     ;; Toggle debug flag and display status after toggle.
     (int<nub>:var:debugging:set user :toggle)
 
+    ;; This also returns active tags, t, or nil.
     (int<nub>:debug:status/message (format "Nub: Toggled Debugging: %S" user)
                                    user)))
 
@@ -497,7 +515,7 @@ The answer depends on TAGS:
 ;;------------------------------------------------------------------------------
 
 (defvar int<nub>:history:debug:tag nil
-  "History variable for the debug tags of the `nub:debug/toggle' command.")
+  "History variable for the debug tags of the `nub:debug:tag' command.")
 
 
 (defun nub:debug:tag (user &optional tag)
@@ -518,11 +536,13 @@ The answer depends on TAGS:
 
     (if (or (not user)
             (not tag))
-        (message (int<nub>:format :newlines
-                                  "Cannot toggle tag without user and tag."
-                                  "  user: %S"
-                                  "  tag:  %S")
-                 user tag)
+        (progn
+          (message (int<nub>:format :newlines
+                                    "Cannot toggle tag without user and tag."
+                                    "  user: %S"
+                                    "  tag:  %S")
+                   user tag)
+          nil)
 
       ;; Toggle in/out of the active tags.
       (if (int<nub>:var:debug:tag:set user tag :toggle)
@@ -534,19 +554,23 @@ The answer depends on TAGS:
         (setq status.prefix (format "nub: Removed debug tag: %S"
                                     tag)))
 
+      ;; This also returns active tags, t, or nil.
       (int<nub>:debug:status/message status.prefix
                                      user))))
 
 
-(defun nub:debug/tag:clear (user)
+(defun nub:debug:tag/clear (user)
   "Reset USER's debugging tags to nil."
-  (interactive (int<nub>:prompt:user "nub:debug/tag:clear"
+  (interactive (int<nub>:prompt:user "nub:debug:tag/clear"
                                      "Debug User to Clear"
                                      :list))
   (if (not user)
-      (message "%s: Unknown user: %S" func.name user)
+      (progn
+        (message "%s: Unknown user: %S" func.name user)
+        nil)
 
     (int<nub>:var:debug:tags user nil)
+    ;; This also returns active tags, t, or nil.
     (int<nub>:debug:status/message (format "nub: Cleared all debug tags: %S" user)
                                    user)))
 
@@ -554,41 +578,6 @@ The answer depends on TAGS:
 ;;------------------------------------------------------------------------------
 ;; Debug Output
 ;;------------------------------------------------------------------------------
-
-(defmacro int<nub>:debug/message? (user caller tags message? msg &rest args)
-  "Print out a debug message or `message'.
-
-Will only evaluate CALLER, MSG, and ARGS when if MESSAGE? is non-nil or
-if debugging.
-
-If MESSAGE? is non-nil, always prints message. Otherwise only
-prints if debugging (`int<nub>:var:debugging') and if any tag in
-TAGS matches USER's active debugging tags (`int<nub>:debug:tags').
-
-CALLER should be the calling function's name (string).
-
-MSG should be the `message' formatting string.
-
-ARGS should be the `message' arguments."
-  (declare (indent 4))
-  `(let ((int<nub>:macro:user ,user)
-         (int<nub>:macro:tags ,tags))
-     (int<nub>:user:exists? "int<nub>:debug/message?" int<nub>:macro:user :error)
-
-     ;; Check with `int<nub>:debug:active?' first so that missing debug tags always error.
-     (cond
-      ;; Only message (at debug level) if passed checks.
-      ((int<nub>:debug:active? int<nub>:macro:user int<nub>:macro:tags)
-       (int<nub>:output user :debug ,caller ,msg ,@args))
-
-      ;; Always message (at debug level) - regardless of debugging toggle/flags.
-      (,message?
-       (int<nub>:output user :debug ,caller ,msg ,@args))
-
-      ;; Not debugging and not allowing message through otherwise.
-      (t
-       nil))))
-
 
 (defun int<nub>:debug:func (caller user func/name func/tags start-or-end value)
   "Print out start/end function message, with optional VALUE.
@@ -789,6 +778,41 @@ ARGS should be the `message' arguments."
 ;;       (tags '(:derive))
 ;;       (msg "test message"))
 ;;   (nub:debug caller tags msg))
+
+
+(defmacro nub:debug-or-message (user caller tags message? msg &rest args)
+  "Print out a debug message or just a `message'.
+
+Will only evaluate CALLER, MSG, and ARGS when if MESSAGE? is non-nil or
+if debugging.
+
+If MESSAGE? is non-nil, always prints message. Otherwise only
+prints if USER is debugging and if any tag in TAGS matches USER's active
+debugging tags.
+
+CALLER should be the calling function's name (string).
+
+MSG should be the `message' formatting string.
+
+ARGS should be the `message' arguments."
+  (declare (indent 4))
+  `(let ((int<nub>:macro:user ,user)
+         (int<nub>:macro:tags ,tags))
+     (int<nub>:user:exists? "int<nub>:debug-or-message?" int<nub>:macro:user :error)
+
+     ;; Check with `int<nub>:debug:active?' first so that missing debug tags always error.
+     (cond
+      ;; Only message (at debug level) if passed checks.
+      ((int<nub>:debug:active? int<nub>:macro:user int<nub>:macro:tags)
+       (int<nub>:output user :debug ,caller ,msg ,@args))
+
+      ;; Always message (at debug level) - regardless of debugging toggle/flags.
+      (,message?
+       (int<nub>:output user :debug ,caller ,msg ,@args))
+
+      ;; Not debugging and not allowing message through otherwise.
+      (t
+       nil))))
 
 
 (defun nub:debug:func/start (user func/name func/tags &rest value)

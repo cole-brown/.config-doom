@@ -250,8 +250,67 @@ nil/empty input only."
 ;; Debugging for Tags?
 ;;------------------------------------------------------------------------------
 
-;; This is used by `int<nub>:debug'
-(defun int<nub>:debug:active? (user caller tags &optional nil-as-wildcard)
+(defun int<nub>:debug:tags:verify (caller user tags &optional error?)
+  "Returns non-nil if TAGS are 'correct'.
+
+Correct, currently, means that TAGS is:
+  - a list containing only keywords
+
+Returns TAGS if TAGS are valid.
+If tags are not valid:
+  If ERROR? is non-nil, signals an error.
+  Else returns nil."
+  (let ((func.name (int<nub>:format:callers "int<nub>:debug:tags:verify"
+                                            caller)))
+    (int<nub>:user:exists? func.name user :error)
+
+    (cond ((null tags)
+           (if error?
+               (int<nub>:error func.name
+                               '(:newlines .
+                                 ("This debug message has not been tagged!"
+                                  "  user:   %S"
+                                  "  caller: %S"
+                                  "  tags:   %S"))
+                               caller
+                               user
+                               tags)
+             nil))
+
+          ((not (listp tags))
+           (if error?
+               (int<nub>:error func.name
+                               '(:newlines .
+                                 ("Debug message's tags are not a list?"
+                                  "  user:   %S"
+                                  "  caller: %S"
+                                  "  tags:   %S"))
+                               caller
+                               user
+                               tags)
+             nil))
+
+          ((not (seq-every-p #'keywordp tags))
+           (if error?
+               (int<nub>:error func.name
+                               '(:newlines .
+                                 ("Debug message's tags must all be keywords!"
+                                  "  user:   %S"
+                                  "  caller: %S"
+                                  "  tags:   %S"))
+                               caller
+                               user
+                               tags)
+             nil))
+
+          ;;------------------------------
+          ;; Success: Ran out of error checks.
+          ;;------------------------------
+          (t
+           tags))))
+
+
+(defun int<nub>:debug:active? (caller user tags)
   "Returns non-nil if USER is currently debugging for anything in the
 list of TAGS.
 
@@ -259,36 +318,21 @@ CALLER should be calling function's string name.
 
 Debugging when `int<nub>:var:debugging' is non-nil for USER and one of these
 is true:
-  - `int<nub>:debug:tags' for the user is nil
+  - `int<nub>:var:debug:tags' for the user is nil
     + No specific debugging tags desired == all tags active.
-  - `int<nub>:debug:tags' for the user is non-nil AND matches one or more
+(progn
+
+  - `int<nub>:var:debug:tags' for the user is non-nil AND matches one or more
      of the tags in TAGS.
-    + Looking for a specific debug tag and found it.
-
-If NIL-AS-WILDCARD is non-nil, `nil' for TAGS will be considered as
-'is any debugging active?'.
-
-If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
-  (let ((func.name (int<nub>:format:callers "int<nub>:debug:active?"
-                                            caller)))
+    + Looking for a specific debug tag and found it."
+  (let* ((func.name (int<nub>:format:callers "int<nub>:debug:active?"
+                                             caller))
+         (tags/input tags)
+         (tags/active (int<nub>:var:debug:tags user))
+         (tags/matched (seq-intersection tags/input tags/active)))
     (int<nub>:user:exists? func.name user :error)
 
     (cond
-     ;;------------------------------
-     ;; [ERROR] Forgot to tag your debugging call!
-     ;;------------------------------
-     ((and (not nil-as-wildcard)
-           (not tags))
-      (int<nub>:error func.name
-                      '(:newlines .
-                        ("This debug message has not been tagged!"
-                         "  user:   %S"
-                         "  caller: %S"
-                         "  tags:   %S"))
-                      caller
-                      user
-                      tags))
-
      ;;------------------------------
      ;; Not Debugging -> Never.
      ;;------------------------------
@@ -303,16 +347,17 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
      ((not (int<nub>:var:debug:tags user))
       t)
 
-     ;; If this is a general inquiry, then any tags for user is a yes at this point.
-     ;; We've already checked that they are debugging in general.
-     (nil-as-wildcard
-      t)
+     ;; If use is debugging for specific tags, but TAGS is nil, it is also a yes.
+     ;; Return something other than `t' in case this case should be checked?
+     ((null tags/input)
+      ;; Try returning active tags? If that's not good, return `:tags/other' or something.
+      tags/active)
 
-     ;; The intersection of the sets `tags' and `int<nub>:debug:tags' will be
+     ;; The intersection of the sets `tags' and `int<nub>:var:debug:tags' will be
      ;; non-nil if any TAGS are active.
      (t
-      (seq-intersection tags (int<nub>:var:debug:tags user))))))
-;; (int<nub>:debug:active? :test<nub/output>::int<nub>:output "test" t)
+      tags/matched))))
+;; (int<nub>:debug:active? "test" test<nub>:user '(:testing))
 
 
 ;;------------------------------------------------------------------------------
@@ -331,19 +376,16 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
   (let ((func.name "int<nub>:debug:status/message"))
     (int<nub>:user:exists? func.name user :error)
 
-    (let* ((tags/active          (int<nub>:debug:tags:sorted (int<nub>:var:debug:tags user)))
-           (tags/input           (int<nub>:debug:tags:sorted tags))
-           (tags/matched         (cl-sort (seq-intersection tags/active tags/input)
-                                          #'string-lessp))
-           (debugging            (int<nub>:var:debugging user))
-           (debugging:tags/input (int<nub>:debug:active? user
-                                                         func.name
-                                                         tags
-                                                         :nil-as-wildcard)))
+    (let* ((tags/active      (int<nub>:debug:tags:sorted (int<nub>:var:debug:tags user)))
+           (debugging        (int<nub>:var:debugging user))
+           (debugging:active (int<nub>:debug:active? func.name
+                                                     user
+                                                     tags)))
       (message (int<nub>:format :newlines
                                 "%s  %s"
                                 "    user:         %s"
                                 "    debugging?:   %s"
+                                "    desired tags: %s"
                                 "    active tags:  %s"
                                 "    matched tags: %s")
                ;;---
@@ -356,9 +398,9 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
                ;;---
                ;; Debug Status summary:
                ;;---
-               (if debugging:tags/input
+               (if debugging:active
                    ;; Debugging for specific tags?
-                   (if (and tags/input tags/active)
+                   (if (listp debugging:active)
                        "[DEBUG:tags(match)]"
                      "[DEBUG:GLOBAL]")
                  ;; Not debugging for tags; debugging in general?
@@ -380,9 +422,14 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
                        ;; `nil' here means 'debug everything'.
                        "ACTIVE globally -> (all debug output)"
                      ;; Debugging for these tags
-                     (format "ACTIVE: %S -> (must match for debug output)" tags/active))
+                     (format "ACTIVE for: %S -> (must match for debug output)" tags/active))
                  ;; `nil' here doesn't mean much since debugging isn't active...
                  "inactive")
+
+               ;;---
+               ;; Tags: Desired/Requested
+               ;;---
+               tags
 
                ;;---
                ;; Tags: All Active
@@ -394,17 +441,20 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
                ;;---
                ;; Tags: Matches
                ;;---
-               (if (or debugging
-                       tags/matched)
-                   (if (null tags/matched)
-                       ;; Can have no matches here; it means 'debug everything'.
-                       "(no active tags -> all tag queries match)"
-                     tags/matched)
-                 ;; `nil' here doesn't mean much since debugging isn't active...
-                 "none"))
+               (cond ((listp debugging:active)
+                      ;; Show the matched tags.
+                      debugging:active)
+
+                     ;; Debugging but no matches == 'debug everything'.
+                     ((eq debugging:active t)
+                      "(no active tags -> all tag queries match)")
+
+                     ;; `debugging:active' == nil; not debugging.
+                     (t
+                      "none")))
 
       ;; Return matched debug tags, t if global debugging, or nil if not debugging.
-      debugging:tags/input)))
+      debugging:active)))
 
 
 ;;------------------------------------------------------------------------------
@@ -434,6 +484,8 @@ If NIL-AS-WILDCARD is nil, `nil' for TAGS will be considered an error."
 (defun nub:debug:debugging? (user &rest tags)
   "Get whether USER is currently debugging.
 
+TAGS will be flattened before being checked.
+
 The answer depends on TAGS:
   - nil:
     - Returns just the debugging flag for USER.
@@ -446,7 +498,7 @@ The answer depends on TAGS:
   (let ((func.name "nub:debug:debugging?"))
     (setq tags (if tags
                    ;; Passed in tags; make sure they're keywords.
-                   (seq-map #'int<nub>:normalize->keyword tags)
+                   (seq-map #'int<nub>:normalize->keyword (flatten-list tags))
                  ;; Else prompt for it.
                  (int<nub>:prompt:debug:tags func.name
                                              "Tags to Check"
@@ -588,10 +640,12 @@ Prints end message w/ optional return value when START-OR-END is `:end'.
 VALUEs are optional and should be:
   - nil
   - `cons' pairs of: '(name . value)"
-  (int<nub>:user:exists? caller user :error)
-
-  (let ((callers (int<nub>:format:callers "int<nub>:debug:func" caller))
+    (let ((callers (int<nub>:format:callers "int<nub>:debug:func" caller))
         value/formatted)
+      (int<nub>:user:exists? callers user :error)
+      (int<nub>:debug:tags:verify callers
+                                  func/tags
+                                  :error)
 
     ;;------------------------------
     ;; Error checks.
@@ -745,7 +799,7 @@ VALUEs are optional and should be:
 Will only evaluate MSG, and ARGS when debugging.
 
 Only prints if debugging (`int<nub>:var:debugging') and if any tag in TAGS
-matches USER's active debugging tags (`int<nub>:debug:tags').
+matches USER's active debugging tags (`int<nub>:var:debug:tags').
 
 CALLER should be the calling function's name (string).
 
@@ -755,16 +809,20 @@ ARGS should be the `message' arguments."
   (declare (indent 3))
 
   `(let* ((int<nub>:macro:user      ,user)
+          (int<nub>:macro:tags      ,tags)
           (int<nub>:macro:caller    ,caller)
           (int<nub>:macro:func.name (int<nub>:format:callers "nub:debug"
                                                              int<nub>:macro:caller)))
      (int<nub>:user:exists? int<nub>:macro:func.name
                             int<nub>:macro:user
                             :error)
+     (int<nub>:debug:tags:verify int<nub>:macro:func.name
+                                 int<nub>:macro:tags
+                                 :error)
 
-     (when (int<nub>:debug:active? int<nub>:macro:user
-                                   int<nub>:macro:func.name
-                                   ,tags)
+     (when (int<nub>:debug:active? int<nub>:macro:func.name
+                                   int<nub>:macro:user
+                                   int<nub>:macro:tags)
        (int<nub>:output int<nub>:macro:user
                         :debug
                         int<nub>:macro:caller
@@ -796,19 +854,37 @@ MSG should be the `message' formatting string.
 
 ARGS should be the `message' arguments."
   (declare (indent 4))
-  `(let ((int<nub>:macro:user ,user)
-         (int<nub>:macro:tags ,tags))
-     (int<nub>:user:exists? "int<nub>:debug-or-message?" int<nub>:macro:user :error)
+  `(let ((int<nub>:macro:user      ,user)
+         (int<nub>:macro:tags      ,tags)
+         (int<nub>:macro:caller    ,caller)
+         (int<nub>:macro:func.name (int<nub>:format:callers "nub:debug"
+                                                            int<nub>:macro:caller)))
+     (int<nub>:user:exists? int<nub>:macro:func.name
+                            int<nub>:macro:user
+                            :error)
+     (int<nub>:debug:tags:verify int<nub>:macro:func.name
+                                 int<nub>:macro:tags
+                                 :error)
 
      ;; Check with `int<nub>:debug:active?' first so that missing debug tags always error.
      (cond
       ;; Only message (at debug level) if passed checks.
-      ((int<nub>:debug:active? int<nub>:macro:user int<nub>:macro:tags)
-       (int<nub>:output user :debug ,caller ,msg ,@args))
+      ((int<nub>:debug:active? int<nub>:macro:func.name
+                               int<nub>:macro:user
+                               int<nub>:macro:tags)
+       (int<nub>:output user
+                        :debug
+                        int<nub>:macro:caller
+                        ,msg
+                        ,@args))
 
       ;; Always message (at debug level) - regardless of debugging toggle/flags.
       (,message?
-       (int<nub>:output user :debug ,caller ,msg ,@args))
+       (int<nub>:output user
+                        :debug
+                        int<nub>:macro:caller
+                        ,msg
+                        ,@args))
 
       ;; Not debugging and not allowing message through otherwise.
       (t

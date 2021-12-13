@@ -855,41 +855,42 @@ MSG should be the `message' formatting string.
 
 ARGS should be the `message' arguments."
   (declare (indent 4))
-  `(let ((int<nub>:macro:user      ,user)
-         (int<nub>:macro:tags      ,tags)
-         (int<nub>:macro:caller    ,caller)
-         (int<nub>:macro:func.name (int<nub>:format:callers "nub:debug"
-                                                            int<nub>:macro:caller)))
-     (int<nub>:user:exists? int<nub>:macro:func.name
-                            int<nub>:macro:user
-                            :error)
-     (int<nub>:debug:tags:verify int<nub>:macro:func.name
-                                 int<nub>:macro:tags
-                                 :error)
+  `(let* ((int<nub>:macro:user      ,user)
+          (int<nub>:macro:tags      ,tags)
+          (int<nub>:macro:caller    ,caller)
+          (int<nub>:macro:func.name (int<nub>:format:callers "nub:debug"
+                                                             int<nub>:macro:caller)))
+       (int<nub>:user:exists? int<nub>:macro:func.name
+                              int<nub>:macro:user
+                              :error)
+       (int<nub>:debug:tags:verify int<nub>:macro:func.name
+                                   int<nub>:macro:user
+                                   int<nub>:macro:tags
+                                   :error)
 
-     ;; Check with `int<nub>:debug:active?' first so that missing debug tags always error.
-     (cond
-      ;; Only message (at debug level) if passed checks.
-      ((int<nub>:debug:active? int<nub>:macro:func.name
-                               int<nub>:macro:user
-                               int<nub>:macro:tags)
-       (int<nub>:output user
-                        :debug
-                        int<nub>:macro:caller
-                        ,msg
-                        ,@args))
+       ;; Check with `int<nub>:debug:active?' first so that missing debug tags always error.
+       (cond
+        ;; Only message (at debug level) if passed checks.
+        ((int<nub>:debug:active? int<nub>:macro:func.name
+                                 int<nub>:macro:user
+                                 int<nub>:macro:tags)
+         (int<nub>:output int<nub>:macro:user
+                          :debug
+                          int<nub>:macro:caller
+                          ,msg
+                          ,@args))
 
-      ;; Always message (at debug level) - regardless of debugging toggle/flags.
-      (,message?
-       (int<nub>:output user
-                        :debug
-                        int<nub>:macro:caller
-                        ,msg
-                        ,@args))
+        ;; Always message (at debug level) - regardless of debugging toggle/flags.
+        (,message?
+         (int<nub>:output int<nub>:macro:user
+                          :debug
+                          int<nub>:macro:caller
+                          ,msg
+                          ,@args))
 
-      ;; Not debugging and not allowing message through otherwise.
-      (t
-       nil))))
+        ;; Not debugging and not allowing message through otherwise.
+        (t
+         nil))))
 
 
 (defun nub:debug:func/start (user func/name func/tags &rest value)

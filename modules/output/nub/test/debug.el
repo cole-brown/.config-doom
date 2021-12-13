@@ -441,7 +441,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should (= 1 (length debug:messages)))
         (test<nub>:assert:output :debug test-name debug:messages)
 
-        ;; Use our input tag - no debug message.
+        ;; Use our input tag - expect debug message.
         (funcall debug:call/number:fmt :expected)
         (nub:debug
             test<nub>:user
@@ -456,23 +456,17 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (test<nub>:assert:output :debug test-name debug:messages))))
 
 
-
-
-
-
-;; TODO: name changed
 ;;------------------------------
-;; int<nub>:debug/message?
+;; nub:debug-or-message
 ;;------------------------------
 
-(ert-deftest test<nub/debug>::int<nub>:debug/message? ()
-  "Test that `int<nub>:debug/message?' functions correctly w/ debug toggle & tags."
+(ert-deftest test<nub/debug>::nub:debug-or-message ()
+  "Test that `nub:debug-or-message' functions correctly w/ debug toggle & tags."
 
   (test<nub>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
+      ;; Test name, nub user, setup func, teardown func.
       "test<nub/debug>::int<nub>:debug"
+      :user/auto
       #'test<nub/debug>:setup
       #'test<nub/debug>:teardown
 
@@ -507,18 +501,20 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;;------------------------------
         ;; Not debugging - no output.
         ;;------------------------------
-        (should-not int<nub>:var:debugging)
-        (should-not int<nub>:var:debug:tags)
+        (should-not (int<nub>:var:debugging test<nub>:user))
+        (should-not (int<nub>:var:debug:tags test<nub>:user))
         (should-not test<nub/debug>:called?)
         (test<nub>:assert:output :debug test-name nil)
         (funcall debug:tags/assert nil)
 
         ;; We should not get any output right now as we're not debugging.
         (funcall debug:call/number:fmt nil)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/using
             debug:allow-messages?
-            debug:call/number:message)
+          debug:call/number:message)
         (setq debug:call/number (1+ debug:call/number))
 
         (should-not debug:messages)
@@ -527,7 +523,9 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;; We should always get an error when calling without any tags.
         (funcall debug:call/number:fmt nil)
         (should-error
-         (int<nub>:debug/message? test-name
+         (nub:debug-or-message
+             test<nub>:user
+             test-name
              nil
              debug:allow-messages?
              debug:call/number:message))
@@ -541,17 +539,19 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;;------------------------------
 
         ;; Enable debugging without filtering tags.
-        (setq int<nub>:var:debug:tags nil
-              int<nub>:var:debugging  t)
-        (should int<nub>:var:debugging)
-        (should-not int<nub>:var:debug:tags)
+        (int<nub>:var:debug:tags:set test<nub>:user nil)
+        (int<nub>:var:debugging:set  test<nub>:user t)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should-not (int<nub>:var:debug:tags test<nub>:user))
         (test<nub>:assert:output :debug test-name nil)
         ;; Can't check this yet - no tags filter so everything is a 'yes'.
         ;; (funcall debug:tags/assert nil)
 
         ;; No tag filter set so should always log the debug message.
         (funcall debug:call/number:fmt :expected)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/using
             debug:allow-messages?
             debug:call/number:message)
@@ -563,14 +563,17 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (test<nub>:assert:output :debug test-name debug:messages)
 
         ;; Add a filter and now it depends on input tags.
-        (setq int<nub>:var:debug:tags debug:tags/using)
-        (should int<nub>:var:debugging)
-        (should (equal int<nub>:var:debug:tags debug:tags/using))
+        (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should (equal (int<nub>:var:debug:tags test<nub>:user)
+                       debug:tags/using))
         (funcall debug:tags/assert :debugging-enabled)
 
         ;; Use a debug tag not in our filter - no debug message.
         (funcall debug:call/number:fmt nil)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/not-using
             debug:allow-messages?
             debug:call/number:message)
@@ -581,15 +584,16 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should (= debug:messages/expected (length debug:messages)))
         (test<nub>:assert:output :debug test-name debug:messages)
 
-        ;; Use our input tag - no debug message.
+        ;; Use our input tag - expect debug message.
         (funcall debug:call/number:fmt :expected)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/using
             debug:allow-messages?
             debug:call/number:message)
         (setq debug:call/number (1+ debug:call/number)
               debug:messages/expected (1+ debug:messages/expected))
-        ;; Same as before - no additional message output.
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
@@ -599,19 +603,21 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;; Secondly: Should output debug message regardless of debugging toggle/flags `message?' is non-nil.
         ;;------------------------------------------------------------------------
 
-        ;; Enable messaging output. Actual callers of `int<nub>:debug/message?' will use a conditional in the macro call,
+        ;; Enable messaging output. Actual callers of `nub:debug-or-message' will use a conditional in the macro call,
         ;; but we are just testing so: set to a constant.
         (setq debug:allow-messages? :message)
 
         ;; Enable debugging without filtering tags.
-        (setq int<nub>:var:debug:tags nil
-              int<nub>:var:debugging  t)
-        (should int<nub>:var:debugging)
-        (should-not int<nub>:var:debug:tags)
+        (int<nub>:var:debug:tags:set test<nub>:user nil)
+        (int<nub>:var:debugging:set  test<nub>:user t)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should-not (int<nub>:var:debug:tags test<nub>:user))
 
         ;; Always outputs.
         (funcall debug:call/number:fmt :expected)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/using
             debug:allow-messages?
             debug:call/number:message)
@@ -623,14 +629,17 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (test<nub>:assert:output :debug test-name debug:messages)
 
         ;; Add a filter and... it always outputs still.
-        (setq int<nub>:var:debug:tags debug:tags/using)
-        (should int<nub>:var:debugging)
-        (should (equal int<nub>:var:debug:tags debug:tags/using))
+        (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should (equal (int<nub>:var:debug:tags test<nub>:user)
+                       debug:tags/using))
         (funcall debug:tags/assert :debugging-enabled)
 
         ;; Always outputs.
         (funcall debug:call/number:fmt :expected)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/not-using
             debug:allow-messages?
             debug:call/number:message)
@@ -643,7 +652,9 @@ Allows testing whether or not a parameter in a debug call is evaluated."
 
         ;; Use our input tag and... it always outputs still.
         (funcall debug:call/number:fmt :expected)
-        (int<nub>:debug/message? test-name
+        (nub:debug-or-message
+            test<nub>:user
+            test-name
             debug:tags/using
             debug:allow-messages?
             debug:call/number:message)

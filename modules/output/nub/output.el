@@ -18,81 +18,102 @@
 ;; Output Message Helpers
 ;;------------------------------------------------------------------------------
 
+(defun int<nub>:output:sinks (level sinks msg args)
+  "Output MSG with ARGS to any/all SINKS."
+  ;; List of sinks to output to?
+  (if (and sinks
+           (listp sinks))
+      (dolist (sink sinks)
+        (int<nub>:output:sink level sink msg args))
+
+    ;; Just one sink.
+  (int<nub>:output:sink level sinks msg args)))
+
+
+(defun int<nub>:output:sink (level sink msg args)
+  "Output MSG with ARGS to the one SINK."
+  ;; If we should use the default/fallback sink, grab that first.
+  (when (or (eq sink int<nub>:var:user:fallback)
+            (eq sink t))
+    (setq sink (int<nub>:var:sink int<nub>:var:user:fallback level)))
+
+  ;;------------------------------
+  ;; Output to sink.
+  ;;------------------------------
+  ;; Do not output at all.
+  (cond ((eq sink nil)
+         nil)
+
+        ;; Output to the sink function.
+        ((functionp sink)
+         (apply sink msg args))
+
+        ;; Anything else is an error.
+        (t
+         (int<nub>:error "int<nub>:output:sink"
+                         '(:newlines
+                           "Unknown sink? %S"
+                           "Output Message:"
+                           "───────────────"
+                           "%s")
+                         sink
+                         (apply #'format msg args)))))
+
+
 (defun int<nub>:output:message (user level msg args)
   "Decides how to output LEVEL keyword (`int<nub>:output:enabled?') MSG and
 ARGS based on current verbosity for the level."
-  (int<nub>:user:exists? "int<nub>:output:message" user :error)
+  (let ((func.name "int<nub>:output:message"))
+    (int<nub>:user:exists? func.name user :error)
 
-  (let ((sink:function   (int<nub>:var:sink     user level int<nub>:var:user:fallback))
-        (verbosity:level (int<nub>:var:enabled? user level int<nub>:var:user:fallback)))
-    ;; Should complain about no default output function.
-    (when (not (functionp sink:function))
-      (int<nub>:error "int<nub>:output:message"
-                      '(:newlines .
-                        ("No output function for user %S at level %S!"
-                         "Output Message:"
-                         "───────────────"
-                         "%s"))
-                      user
-                      level
-                      (apply #'format msg args)))
+    (let ((sinks           (int<nub>:var:sink     user level int<nub>:var:user:fallback))
+          (verbosity:level (int<nub>:var:enabled? user level int<nub>:var:user:fallback)))
+      ;; Should complain about invalid sink function(s).
+      (int<nub>:var:sink:verify func.name
+                                sinks
+                                :error)
 
-    ;; Output message depending on LEVEL's current verbosity.
-    (pcase verbosity:level
-      ;;------------------------------
-      ;; Valid Values
-      ;;------------------------------
-      ;;---
-      ;; Normal on/off
-      ;;---
-      ('t
-       ;; Do the normal/default thing.
-       (apply sink:function msg args))
+      ;; Output message depending on LEVEL's current verbosity.
+      (cond
+       ;;------------------------------
+       ;; Valid Values
+       ;;------------------------------
+       ;;---
+       ;; Normal on/off
+       ;;---
+       ((eq verbosity:level t)
+        ;; Do the normal/default thing.
+        (int<nub>:output:sinks level sinks msg args))
 
-      ('nil
-       ;; Do nothing
-       nil)
+       ((eq verbosity:level nil)
+        ;; Do nothing
+        nil)
 
-      ;;---
-      ;; List (of Functions/t (for Debugging?))
-      ;;---
-      ;; Use several specified function.
-      ((and (pred listp)
-            (pred (lambda (verbose) (seq-reduce (lambda (reduction element)
-                                             "Allow either functions to call or `t' for 'call the default thing too'."
-                                             (and reduction
-                                                  (or (functionp element) (eq element t))))
-                                           verbose
-                                           #'identity))))
-       (dolist (func verbosity:level)
-         (if (eq func t)
-             ;; Do the default thing.
-             (apply sink:function msg args)
-           ;; Call the specified function.
-           (apply func msg args))))
+       ;;---
+       ;; Solo Function
+       ;;---
+       ;; Use the specified function.
+       ((functionp verbosity:level)
+        ;; Ask user if this level should be enabled (give default for level in case they want that).
+        (when (funcall verbosity:level level (int<nub>:var:enabled? int<nub>:var:user:fallback level))
+          ;; The user's predicate says the level is enabled; output.
+          (int<nub>:output:sinks level sinks msg args)))
 
-      ;;---
-      ;; Solo Function
-      ;;---
-      ;; Use the specified function.
-      ((pred functionp)
-       (apply verbosity:level msg args))
-
-      ;;------------------------------
-      ;; Errors/Invalids
-      ;;------------------------------
-      (unknown-value
-       ;; Found LEVEL, but don't know what to do with its value.
-       (int<nub>:error "int<nub>:var:output"
-                       '("Verbosity for user '%S' at level '%S' is '%S', "
-                         "and we don't know what to do with that.\n"
-                         "Output Message:\n"
-                         "───────────────\n"
-                         "%s")
-                       user
-                       level
-                       unknown-value
-                       (apply #'format msg args))))))
+       ;;------------------------------
+       ;; Errors/Invalids
+       ;;------------------------------
+       (t
+        ;; Don't know what to do with verbosity's value.
+        (int<nub>:error func.name
+                        '("Verbosity for user '%S' at level '%S' is '%S', "
+                          "and we don't know what to do with that.\n"
+                          "Output Message:\n"
+                          "───────────────\n"
+                          "%s")
+                        user
+                        level
+                        verbosity:level
+                        (apply #'format msg args)))))))
 
 
 (defun int<nub>:output:format (user level caller &rest message-format)
@@ -144,66 +165,69 @@ signaled."
   ;; Try to be real forgiving about what params are since we're erroring...
   ;; ...but also try to let them know they did something wrong so it can be fixed.
 
-  ;;------------------------------
-  ;; Validate Inputs
-  ;;------------------------------
-  (int<nub>:user:exists? "int<nub>:output" user :error)
+  (let ((func.name "nub:output"))
+    ;;------------------------------
+    ;; Validate Inputs
+    ;;------------------------------
+    (int<nub>:user:exists? func.name user :error)
 
-  (unless (stringp caller)
-    (int<nub>:output:message
-     user
-     :warn
-     "int<nub>:output: invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
-     (list (type-of caller)
-           caller
-           (stringp caller))))
+    (unless (stringp caller)
+      (int<nub>:output:message
+       user
+       :warn
+       "%s: Invalid CALLER parameter! Should be a string, got: type: %S, value: %S, stringp?: %S"
+       func.name
+       (list (type-of caller)
+             caller
+             (stringp caller))))
 
-  (unless (or (stringp formatting) (listp formatting))
-    (int<nub>:output:message
-     user
-     :warn
-     "int<nub>:output: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
-     (list (type-of formatting)
-           formatting
-           (or (stringp formatting) (listp formatting)))))
+    (unless (or (stringp formatting) (listp formatting))
+      (int<nub>:output:message
+       user
+       :warn
+       "%s: invalid FORMATTING parameter! Should be a list or a string, got: type: %S, value: %S, string/list?: %S"
+       func.name
+       (list (type-of formatting)
+             formatting
+             (or (stringp formatting) (listp formatting)))))
 
-  ;;------------------------------
-  ;; Output a Message
-  ;;------------------------------
-  (cond
-   ;;---
-   ;; Valid formatting.
-   ;;---
-   ((listp formatting)
-    (int<nub>:output:message user
-                             level
-                             (apply #'int<nub>:output:format user level caller formatting)
-                             args))
+    ;;------------------------------
+    ;; Output a Message
+    ;;------------------------------
+    (cond
+     ;;---
+     ;; Valid formatting.
+     ;;---
+     ((listp formatting)
+      (int<nub>:output:message user
+                               level
+                               (apply #'int<nub>:output:format user level caller formatting)
+                               args))
 
-   ((stringp formatting)
-    (int<nub>:output:message user
-                             level
-                             (int<nub>:output:format user level caller formatting)
-                             args))
+     ((stringp formatting)
+      (int<nub>:output:message user
+                               level
+                               (int<nub>:output:format user level caller formatting)
+                               args))
 
-   ;;---
-   ;; Invalid formatting.
-   ;;---
-   ;; Do your best to get something.
-   (t
-    (int<nub>:output:message
-     user
-     :error
-     (int<nub>:output:format
-      user
-      level
-      caller
-      (format "Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
-              formatting args)))
+     ;;---
+     ;; Invalid formatting.
+     ;;---
+     ;; Do your best to get something.
+     (t
+      (int<nub>:output:message
+       user
+       :error
+       (int<nub>:output:format
+        user
+        level
+        caller
+        (format "%s: Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
+                func.name formatting args)))
 
-    ;; Don't return `int<nub>:output:message' output.
-    ;; Unit tests will disable error signaling sometimes so it's best if this returns nil.
-    nil)))
+      ;; Don't return `int<nub>:output:message' output.
+      ;; Unit tests will disable error signaling sometimes so it's best if this returns nil.
+      nil))))
 
 
 ;;------------------------------------------------------------------------------

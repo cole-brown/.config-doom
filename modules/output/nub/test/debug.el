@@ -271,10 +271,8 @@ Allows testing whether or not a parameter in a debug call is evaluated."
   "Test that `int<nub>:debug:active?' returns the correct answer."
 
   (test<nub>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<nub/debug>::int<nub>:debug:active?"
+      ;; Test name, nub user, setup func, teardown func.
+     "test<nub/debug>::int<nub>:debug:active?"
       :user/auto
       #'test<nub/debug>:setup
       #'test<nub/debug>:teardown
@@ -325,27 +323,17 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should (int<nub>:debug:active? test-name test<nub>:user nil)))))
 
 
-
-
-
-
-
-
-
-
-
 ;;------------------------------
-;; int<nub>:debug
+;; nub:debug
 ;;------------------------------
 
-(ert-deftest test<nub/debug>::int<nub>:debug ()
-  "Test that `int<nub>:debug' functions correctly w/ debug toggle & tags."
+(ert-deftest test<nub/debug>::nub:debug ()
+  "Test that `nub:debug' functions correctly w/ debug toggle & tags."
 
   (test<nub>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<nub/debug>::int<nub>:debug"
+      ;; Test name, nub user, setup func, teardown func.
+      "test<nub/debug>::nub:debug"
+      :user/auto
       #'test<nub/debug>:setup
       #'test<nub/debug>:teardown
 
@@ -374,8 +362,8 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;;------------------------------
         ;; Not debugging - no output.
         ;;------------------------------
-        (should-not int<nub>:var:debugging)
-        (should-not int<nub>:var:debug:tags)
+        (should-not (int<nub>:var:debugging test<nub>:user))
+        (should-not (int<nub>:var:debug:tags test<nub>:user))
         (should-not test<nub/debug>:called?)
         (test<nub>:assert:output :debug test-name nil)
         (funcall debug:tags/assert nil)
@@ -410,10 +398,10 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         ;;------------------------------
 
         ;; Enable debugging without filtering tags.
-        (setq int<nub>:var:debug:tags nil
-              int<nub>:var:debugging  t)
-        (should int<nub>:var:debugging)
-        (should-not int<nub>:var:debug:tags)
+        (int<nub>:var:debug:tags:set test<nub>:user nil)
+        (int<nub>:var:debugging:set  test<nub>:user t)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should-not (int<nub>:var:debug:tags test<nub>:user))
         (test<nub>:assert:output :debug test-name nil)
         ;; Can't check this yet - no tags filter so everything is a 'yes'.
         ;; (funcall debug:tags/assert nil)
@@ -425,6 +413,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
             test-name
             debug:tags/using
             debug:call/number:message)
+
         (setq debug:call/number (1+ debug:call/number))
         (should debug:messages)
         (should (listp debug:messages))
@@ -432,9 +421,10 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (test<nub>:assert:output :debug test-name debug:messages)
 
         ;; Add a filter and now it depends on input tags.
-        (setq int<nub>:var:debug:tags debug:tags/using)
-        (should int<nub>:var:debugging)
-        (should (equal int<nub>:var:debug:tags debug:tags/using))
+        (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
+        (should (int<nub>:var:debugging test<nub>:user))
+        (should (equal (int<nub>:var:debug:tags test<nub>:user)
+                       debug:tags/using))
         (funcall debug:tags/assert :debugging-enabled)
 
         ;; Use a debug tag not in our filter - no debug message.
@@ -464,6 +454,10 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should (listp debug:messages))
         (should (= 2 (length debug:messages)))
         (test<nub>:assert:output :debug test-name debug:messages))))
+
+
+
+
 
 
 ;; TODO: name changed

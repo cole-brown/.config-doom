@@ -187,8 +187,8 @@ Sets both current and backup values (backups generally only used for tests)."
   "Alist of USER keyword to verbosity of various log levels for the user.
 
 Valid values:
-  non-nil     - output normally
-  nil         - do not output
+  non-nil     - output level enabled
+  nil         - output level disabled
   <predicate> - Call <predicate> (w/ LEVEL & DEFAULT) to get nil/non-nil value.
 
 Predicate's signature should be:
@@ -201,10 +201,12 @@ Predicate's signature should be:
   "Default alist of USER keyword to verbosity of various log levels for the user.
 
 Valid values:
-  t   - output normally
-  nil - do not output
-  <function> - Use <function> to output instead.
-    - Used by unit testing.")
+  t   - output level enabled
+  nil - output level disabled
+  <predicate> - Call <predicate> (w/ LEVEL & DEFAULT) to get nil/non-nil value.")
+
+
+;; TODO: verify function for `int<nub>:var:enabled?'?
 
 
 (defun int<nub>:init:enabled? (user alist)
@@ -296,11 +298,98 @@ Returns DEFAULT if USER has no setting for LEVEL.
   (int<nub>:alist:copy/shallow int<nub>:var:sink:backup)
   "Default alist of user keyword to an alist of output level keyword to sink value.
 
-Valid values:
-  t   - output normally
-  nil - do not output
-  <function> - Use <function> to output instead.
-    - Used by unit testing.")
+Valid sinks:
+  `int<nub>:var:user:fallback' (aka `:default')
+  `t' (alias for `int<nub>:var:user:fallback' / `:default')
+    - output normally (use default/fallback output sink)
+  `nil'
+    - do not output
+  <function>
+    - Use <function> to output instead.
+    - Used by unit testing.
+  <list>
+    - Use all sinks in the list of sinks.
+    - Valid list members are the values above.")
+
+
+(defun int<nub>:var:sink:verify (caller sink &optional error? context list-invalid?)
+  "Returns non-nil if SINK is valid.
+
+CALLER should be calling function's name.
+
+If ERROR? is non-nil, signals an error if SINK is invalid.
+Else, returns nil if SINK is invalid.
+
+If CONTEXT is non-nil, it will be added to error messages.
+
+If LIST-INVALID? is non-nil, a list is not valid. Used for recursion."
+  ;;------------------------------
+  ;; Always valid: `int<nub>:var:user:fallback', `t', `nil', functions.
+  ;;------------------------------
+  (cond ((eq sink int<nub>:var:user:fallback))
+
+        ;; Alias for `int<nub>:var:user:fallback'.
+        ((eq sink t))
+
+        ;; Must check for `nil' before any checks for lists since `nil' is a list
+        ;; but we do not want to treat `nil' as a list for validity's sake.
+        ((eq sink nil))
+
+        ((functionp sink))
+
+        ;;------------------------------
+        ;; Maybe valid, maybe not: list
+        ;;------------------------------
+        ;; Always invalid if LIST-INVALID? is non-nil.
+        ((and (listp sink)
+              list-invalid?)
+         (if error?
+             (int<nub>:error caller
+                             "Sink cannot be a list. %sGot: %S"
+                             (if context
+                                 (format "Context: %s " context)
+                               "")
+                             sink)
+           nil))
+
+        ;; LIST-INVALID? is nil once we get here, so check each member.
+        ((listp sink)
+         (let ((valid t))
+           ;; Check each list member for validity of entire list as a sink.
+           (dolist (entry sink)
+             (setq valid (and valid
+                              (int<nub>:var:sink:verify caller
+                                                        entry
+                                                        error?
+                                                        context
+                                                        ;; List is only valid at top level.
+                                                        t))))
+           ;; Return whether valid or not.
+           valid))
+
+        ;;------------------------------
+        ;; Always an error: Everything else.
+        ;;------------------------------
+        (t
+         (if error?
+             (int<nub>:error caller
+                             (if list-invalid?
+                                 "Sink must be `t', `nil', or a function. %sGot: %S"
+                               "Sink must be a list, `t', `nil', or a function. %sGot: %S")
+                             (if context
+                                 (format "Context: %s " context)
+                               "")
+                             sink)
+           nil))))
+;; Valid:
+;;   (int<nub>:var:sink:verify "test" t :error)
+;;   (int<nub>:var:sink:verify "test" nil :error)
+;;   (int<nub>:var:sink:verify "test" #'ignore :error)
+;;   (int<nub>:var:sink:verify "test" '(t nil ignore) :error)
+;; Invalid:
+;;   (int<nub>:var:sink:verify "test" "hello" :error)
+;;   (int<nub>:var:sink:verify "test" '("hello") :error)
+;;   (int<nub>:var:sink:verify "test" '(t nil (t nil)) :error "Invalid test for list-in-list.")
 
 
 (defun int<nub>:init:sink (user alist)
@@ -311,6 +400,17 @@ ALIST should have all output levels in it.
 Sets both current and backup values (backups generally only used for tests)."
   ;; Ensure USER is ok.
   (int<nub>:user:exists? "int<nub>:init:sink" user :error)
+  ;; Ensure the sinks are ok.
+  (if (int<nub>:alist:alist? alist)
+      (dolist (entry alist)
+        (int<nub>:var:sink:verify "int<nub>:init:sink"
+                                  (cdr entry)
+                                  :error
+                                  ;; Full entry for context in case of error.
+                                  entry))
+    (int<nub>:error "int<nub>:init:sink"
+                    "ALIST must be an alist. Got: %S"
+                    alist))
 
   ;; Set in the backup variable.
   ;; Use a copy so it doesn't get changed out from under us.
@@ -337,28 +437,34 @@ Returns DEFAULT if USER has no setting for LEVEL.
   (int<nub>:var:assert-user-level "int<nub>:var:sink" user level :error)
 
   (let ((sink (int<nub>:var:user-at-level user
-                                              level
-                                              int<nub>:var:sink
-                                              default)))
+                                          level
+                                          int<nub>:var:sink
+                                          default)))
     (if (and (eq default int<nub>:var:user:fallback)
              (eq sink default))
-        ;; Didn't find it - get the fallback.
+        ;; Either didn't find it, or the user has the default/fallback as an explicit sink.
+        ;; Get the fallback.
         (int<nub>:var:user-at-level int<nub>:var:user:fallback
                                     level
                                     int<nub>:var:sink
                                     default)
       sink)))
 ;; (int<nub>:var:sink :test :error)
+;; (int<nub>:var:sink :test<nub/debug>::nub:debug :debug :default)
 
 
-(defun int<nub>:var:sink:set (user level value)
-  "Set message prefix for USER at output LEVEL."
+(defun int<nub>:var:sink:set (user level sink)
+  "Set the SINK for USER at output LEVEL."
   ;; Ensure USER and LEVEL are ok.
   (int<nub>:var:assert-user-level "int<nub>:var:sink:set" user level :error)
+  ;; Ensure the sink is ok.
+  (int<nub>:var:sink:verify "int<nub>:init:sink"
+                            (cdr entry)
+                            :error)
 
-  (let* ((alist/user (int<nub>:alist:get/value user int<nub>:var:sink))
+  (let* ((alist/user (int<nub>:alist:get/sink user int<nub>:var:sink))
          (alist/updated (int<nub>:alist:update level
-                                               value
+                                               sink
                                                alist/user)))
     (int<nub>:alist:update user
                            alist/updated

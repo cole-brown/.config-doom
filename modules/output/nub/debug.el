@@ -817,6 +817,7 @@ ARGS should be the `message' arguments."
                             int<nub>:macro:user
                             :error)
      (int<nub>:debug:tags:verify int<nub>:macro:func.name
+                                 int<nub>:macro:user
                                  int<nub>:macro:tags
                                  :error)
 

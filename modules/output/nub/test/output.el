@@ -50,8 +50,8 @@
                     (car data)
                     test-name
                     (cdr data))
-        (test<nub>:assert:output (car data)
-                                 test-name
+        (test<nub>:assert:output test-name
+                                 (car data)
                                  (list (list (cdr data))))))))
 
 
@@ -108,11 +108,11 @@
       (should (int<nub>:output:message test<nub>:user :error msg.error nil))
 
       ;; Testing error messages sink should have its message.
-      (test<nub>:assert:output :error test-name msg.error)
+      (test<nub>:assert:output test-name :error msg.error)
 
       ;; Warn and debug should have nothing so far.
-      (test<nub>:assert:output :warn  test-name nil)
-      (test<nub>:assert:output :debug test-name nil)
+      (test<nub>:assert:output test-name :warn  nil)
+      (test<nub>:assert:output test-name :debug nil)
 
       ;;------------------------------
       ;; Test Warning
@@ -120,10 +120,10 @@
       (should (int<nub>:output:message test<nub>:user :warn msg.warn nil))
 
       ;; Error & Warn should have their messages now.
-      (test<nub>:assert:output :error test-name msg.error)
+      (test<nub>:assert:output test-name :error msg.error)
       ;; Debug should still have nothing.
-      (test<nub>:assert:output :warn  test-name msg.warn)
-      (test<nub>:assert:output :debug test-name nil)
+      (test<nub>:assert:output test-name :warn  msg.warn)
+      (test<nub>:assert:output test-name :debug nil)
 
       ;;------------------------------
       ;; Test Debug
@@ -131,9 +131,9 @@
       (should (int<nub>:output:message test<nub>:user :debug msg.debug nil))
 
       ;; All three should have their messages.
-      (test<nub>:assert:output :error test-name msg.error)
-      (test<nub>:assert:output :warn  test-name msg.warn)
-      (test<nub>:assert:output :debug test-name msg.debug))))
+      (test<nub>:assert:output test-name :error msg.error)
+      (test<nub>:assert:output test-name :warn  msg.warn)
+      (test<nub>:assert:output test-name :debug msg.debug))))
 
 
 ;;------------------------------
@@ -171,8 +171,8 @@
     ;;------------------------------
     ;; Test different prefixes.
     ;;------------------------------
-    (should-not (string= (int<nub>:output:format test<nub>:user :error test-name "Hello, %s.")
-                         (int<nub>:output:format test<nub>:user :debug test-name "Hello, %s.")))))
+    (should-not (string= (int<nub>:output:format test-name test<nub>:user :error "Hello, %s.")
+                         (int<nub>:output:format test-name test<nub>:user :debug "Hello, %s.")))))
 
 
 ;;------------------------------
@@ -201,8 +201,8 @@
                 '("Hello " "%s... You have a minor case of severe erroring.")
                 "there")
 
-    (test<nub>:assert:output :error
-                             test-name
+    (test<nub>:assert:output test-name
+                             :error
                              ;; Expect one error message with:
                              ;;   - test-name
                              ;;   - formatted output message
@@ -218,8 +218,8 @@
                 "there"
                 "this is your final warning")
 
-    (test<nub>:assert:output :warn
-                             test-name
+    (test<nub>:assert:output test-name
+                             :warn
                              ;; Expect one warn message with:
                              ;;   - test-name
                              ;;   - formatted output message
@@ -234,8 +234,8 @@
                 "I'm afraid I'm infested with bugs, %s..."
                 "Dave")
 
-    (test<nub>:assert:output :debug
-                             test-name
+    (test<nub>:assert:output test-name
+                             :debug
                              ;; Expect one debug message with:
                              ;;   - test-name
                              ;;   - formatted output message

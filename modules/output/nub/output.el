@@ -116,7 +116,7 @@ ARGS based on current verbosity for the level."
                         (apply #'format msg args)))))))
 
 
-(defun int<nub>:output:format (user level caller &rest message-format)
+(defun int<nub>:output:format (caller user level &rest message-format)
   "Combines CALLER and USER's MESSAGE-FORMAT into one string for sending to
 the user's output function(s) with MESSAGE-FORMAT's args.
 
@@ -133,8 +133,9 @@ Proper use:
 
 Alternative/direct use:
   (error (int<nub>:output:format
-          :example-user
           \"example-function\"
+          :example-user
+          :error
           \"Imagine this '%s' is a long \"
           \"error string: %S %d\")
           some-string something some-integer)
@@ -207,7 +208,7 @@ signaled."
      ((stringp formatting)
       (int<nub>:output:message user
                                level
-                               (int<nub>:output:format user level caller formatting)
+                               (int<nub>:output:format caller user level formatting)
                                args))
 
      ;;---
@@ -219,9 +220,9 @@ signaled."
        user
        :error
        (int<nub>:output:format
+        caller
         user
         level
-        caller
         (format "%s: Invalid FORMATTING - expected list or strig. formatting: '%S', args: '%S'"
                 func.name formatting args)))
 

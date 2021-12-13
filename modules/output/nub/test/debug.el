@@ -365,7 +365,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should-not (int<nub>:var:debugging test<nub>:user))
         (should-not (int<nub>:var:debug:tags test<nub>:user))
         (should-not test<nub/debug>:called?)
-        (test<nub>:assert:output :debug test-name nil)
+        (test<nub>:assert:output test-name :debug nil)
         (funcall debug:tags/assert nil)
 
         ;; We should not get any output right now as we're not debugging.
@@ -378,7 +378,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (setq debug:call/number (1+ debug:call/number))
 
         (should-not debug:messages)
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; We should always get an error when calling without any tags.
         (funcall debug:call/number:fmt nil)
@@ -391,7 +391,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (setq debug:call/number (1+ debug:call/number))
 
         (should-not debug:messages)
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;;------------------------------
         ;; Debugging - depends on tags.
@@ -402,7 +402,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (int<nub>:var:debugging:set  test<nub>:user t)
         (should (int<nub>:var:debugging test<nub>:user))
         (should-not (int<nub>:var:debug:tags test<nub>:user))
-        (test<nub>:assert:output :debug test-name nil)
+        (test<nub>:assert:output test-name :debug nil)
         ;; Can't check this yet - no tags filter so everything is a 'yes'.
         ;; (funcall debug:tags/assert nil)
 
@@ -418,7 +418,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= 1 (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Add a filter and now it depends on input tags.
         (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
@@ -439,7 +439,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= 1 (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Use our input tag - expect debug message.
         (funcall debug:call/number:fmt :expected)
@@ -453,7 +453,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= 2 (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages))))
+        (test<nub>:assert:output test-name :debug debug:messages))))
 
 
 ;;------------------------------
@@ -504,7 +504,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should-not (int<nub>:var:debugging test<nub>:user))
         (should-not (int<nub>:var:debug:tags test<nub>:user))
         (should-not test<nub/debug>:called?)
-        (test<nub>:assert:output :debug test-name nil)
+        (test<nub>:assert:output test-name :debug nil)
         (funcall debug:tags/assert nil)
 
         ;; We should not get any output right now as we're not debugging.
@@ -518,7 +518,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (setq debug:call/number (1+ debug:call/number))
 
         (should-not debug:messages)
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; We should always get an error when calling without any tags.
         (funcall debug:call/number:fmt nil)
@@ -532,7 +532,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (setq debug:call/number (1+ debug:call/number))
 
         (should-not debug:messages)
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;;------------------------------
         ;; Debugging - depends on tags.
@@ -543,7 +543,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (int<nub>:var:debugging:set  test<nub>:user t)
         (should (int<nub>:var:debugging test<nub>:user))
         (should-not (int<nub>:var:debug:tags test<nub>:user))
-        (test<nub>:assert:output :debug test-name nil)
+        (test<nub>:assert:output test-name :debug nil)
         ;; Can't check this yet - no tags filter so everything is a 'yes'.
         ;; (funcall debug:tags/assert nil)
 
@@ -560,7 +560,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Add a filter and now it depends on input tags.
         (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
@@ -582,7 +582,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Use our input tag - expect debug message.
         (funcall debug:call/number:fmt :expected)
@@ -597,7 +597,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;;------------------------------------------------------------------------
         ;; Secondly: Should output debug message regardless of debugging toggle/flags `message?' is non-nil.
@@ -626,7 +626,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Add a filter and... it always outputs still.
         (int<nub>:var:debug:tags:set test<nub>:user debug:tags/using)
@@ -648,7 +648,7 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages)
+        (test<nub>:assert:output test-name :debug debug:messages)
 
         ;; Use our input tag and... it always outputs still.
         (funcall debug:call/number:fmt :expected)
@@ -664,4 +664,4 @@ Allows testing whether or not a parameter in a debug call is evaluated."
         (should debug:messages)
         (should (listp debug:messages))
         (should (= debug:messages/expected (length debug:messages)))
-        (test<nub>:assert:output :debug test-name debug:messages))))
+        (test<nub>:assert:output test-name :debug debug:messages))))

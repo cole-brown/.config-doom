@@ -257,7 +257,7 @@ Can also allow the normal output based on `test<nub>:redirect/output:type'"
   (nub:vars:reset test<nub>:user))
 
 
-(defun test<nub>:assert:output (level caller should-be)
+(defun test<nub>:assert:output (caller level should-be)
   "Assert that LEVEL outputs were/were not issued during the test.
 
 LEVEL should be one of: (:error :warn :debug)
@@ -350,7 +350,7 @@ SHOULD-BE can be:
      ;;---
      (t
       (error "test<nub>:assert:output: Unknown SHOULD-BE: %S" should-be)))))
-;; (test<nub>:assert:output :warn "test" nil)
+;; (test<nub>:assert:output "test" :warn nil)
 
 
 ;;------------------------------------------------------------------------------

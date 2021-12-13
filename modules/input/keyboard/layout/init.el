@@ -10,28 +10,20 @@
 ;;                                 ──────────                                 ;;
 
 
-;; (+ivy/project-search nil "TODO" default-directory)
-
-
 ;;------------------------------------------------------------------------------
 ;; Layout Building Functions
 ;;------------------------------------------------------------------------------
 
-;; Functions for both evil and emacs.
+(load! "derive")
+(load! "types/init")
 (load! "layout")
-
+(load! "bind")
+(load! "bind-debug")
 
 ;;------------------------------------------------------------------------------
-;; Layout Keyword -> Functions
+;; The End.
 ;;------------------------------------------------------------------------------
-
-(load! "common")
-
-;; Include either evil or emacs keybinds, depending on if evil-mode is being
-;; used.
-(if (featurep! :editor evil)
-    (load! "evil")
-  (load! "emacs"))
+(imp:provide :input 'keyboard 'layout)
 
 
 ;;------------------------------------------------------------------------------
@@ -39,9 +31,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Find our active keyboard layout and load its init if it has one.
-(input:keyboard/layout:find-and-load-active "init")
+(when (int<keyboard>:load:allowed? :init)
+  (keyboard:load:active "init" :init))
 
 
-;;------------------------------------------------------------------------------
-;; The End.
-;;------------------------------------------------------------------------------

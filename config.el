@@ -96,7 +96,7 @@
     directory-doom))
 ;; (spy:doom/find-user-root)
 
-(spy:config.root/set (spy:path/join (spy:doom/find-user-root) "config"))
+(spy:config.root/set (path:join (spy:doom/find-user-root) "config"))
 
 
 ;;------------------------------------------------------------------------------
@@ -110,6 +110,8 @@
 
 ;; Get rid of some Doom annoying functionality with respect to parens...
 (spy:config 'parenthesis)
+
+(spy:config 'search)
 
 
 ;;------------------------------------------------------------------------------
@@ -132,8 +134,44 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Notes, Org-Mode and its Minions, etc.
+;;------------------------------------------------------------------------------
+
+(spy:config 'taskspace)
+(spy:config 'org-mode)
+(spy:config 'markdown)
+
+
+;;------------------------------------------------------------------------------
+;; yasnippet
+;;------------------------------------------------------------------------------
+
+(spy:config 'yasnippet)
+
+
+;;------------------------------------------------------------------------------
+;; Programming & Stuff
+;;------------------------------------------------------------------------------
+
+(spy:config 'code 'config)
+(spy:config 'docker)
+(spy:config 'treemacs)
+(spy:config 'terminal) ;; vterm and friends
+
+
+;;------------------------------------------------------------------------------
+;; Music & Entertainment
+;;------------------------------------------------------------------------------
+
+(spy:config 'spotify)
+
+
+;;------------------------------------------------------------------------------
 ;; Keybinds
 ;;------------------------------------------------------------------------------
+
+;; Last so stuff doesn't get overwritten?
+;; Not sure if that's actually a concern or not...
 
 ;;------------------------------
 ;; Input Method
@@ -156,36 +194,17 @@
 ;; Keybind Modifications
 ;;------------------------------
 
-;; Whatever isn't big enough or important enough to warrent its own file.
-(spy:config 'keybinds 'misc)
-
-;; Specific things:
-(spy:config 'keybinds 'org-mode)
-
 ;; My additions to the overabundance of keybindings:
 (spy:config 'keybinds 'spy-leader)
 
+;; Specific things:
+(spy:config 'keybinds 'org-mode)
+(spy:config 'keybinds 'search)
+(spy:config 'keybinds 'spotify)
+(spy:config 'keybinds 'treemacs)
 
-;;------------------------------------------------------------------------------
-;; Notes, Org-Mode and Legions, etc.
-;;------------------------------------------------------------------------------
-
-(spy:config 'taskspace)
-(spy:config 'org-mode)
-
-
-;;------------------------------------------------------------------------------
-;; yasnippet
-;;------------------------------------------------------------------------------
-
-(spy:config 'yasnippet)
-
-
-;;------------------------------------------------------------------------------
-;; Programming & Stuff
-;;------------------------------------------------------------------------------
-
-(spy:config 'code)
+;; Whatever isn't big enough or important enough to warrent its own file.
+(spy:config 'keybinds 'misc)
 
 
 ;;------------------------------------------------------------------------------

@@ -38,6 +38,10 @@
 (unless (featurep! -config)
   (load! "+config"))
 
+;; Always load `dlv' unless specifically removed.
+(unless (featurep! -dlv)
+  (load! "+dlv"))
+
 ;; Always load `package' unless specifically removed.
 (unless (featurep! -package)
   (load! "+package"))

@@ -14,14 +14,25 @@
 ;; Configure Keyboard Layouts
 ;;------------------------------------------------------------------------------
 
-;; Nothing at the 'keyboard' level of this module to do.
+;;------------------------------
+;; Layout Builder
+;;------------------------------
+;; Nothing to do for 'config' step in code - just need to config the actual layout.
+
 
 ;;------------------------------
-;; Layout Builder and Specific Layouts' Configs
+;; Config done; ready for layouts.
 ;;------------------------------
-(load! "layout/config")
+(imp:provide :input 'keyboard 'config)
+
+
+;;------------------------------
+;; Configure a Specific Layout?
+;;------------------------------
+(load! "+layouts/config")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
+(imp:provide :input 'keyboard)

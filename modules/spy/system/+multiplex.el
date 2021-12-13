@@ -8,9 +8,8 @@
 (require 'cl-lib) ;; cl-defun for '&keys'
 
 (imp:require :jerky)
-(imp:require :modules 'spy 'strings 'normalize)
-(imp:require :modules 'spy 'strings 'hash)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :str)
+(imp:require :path)
 
 
 ;;------------------------------------------------------------------------------
@@ -155,23 +154,23 @@ Else, generate a system hash from `system-name' and `system-type'."
   ;; me when adding a new system.
   ;; (message "system hash for system-name %S system-type %S: %S"
   ;;          (system-name) system-type
-  ;;          (spy:hash/pretty (list (system-name) system-type)))
+  ;;          (str:hash:pretty (list (system-name) system-type)))
   ;;
   ;; Band-aid solution: check if we've got a saved hash.
   (if-let ((saved-hash (spy:system/get nil)))
       saved-hash
-    (let ((hash (spy:hash/pretty (list (system-name) system-type))))
+    (let ((hash (str:hash:pretty (list (system-name) system-type))))
       (spy:system/set :hash hash :value hash)
       hash)))
 ;; (spy:system/hash)
-;; (spy:hash/pretty (list (system-name) system-type))
+;; (str:hash:pretty (list (system-name) system-type))
 
 
 (defun spy:system/unique-id (domain date name)
   "Generate a system UID from the specified DOMAIN, DATE and NAME, with
 `system-name' and `system-type' as additional information.
 "
-  (spy:hash (list domain date name)
+  (str:hash (list domain date name)
             (list (system-name) system-type)))
 ;; (spy:system/unique-id "jeff" "2020" "compy")
 
@@ -180,7 +179,7 @@ Else, generate a system hash from `system-name' and `system-type'."
   "Generate a path to where the secrets file should be, based
 on the UNIQUE-ID of the system and the ROOT path.
 "
-  (spy:path/to-dir root
+  (path:dir-path root
                    (replace-regexp-in-string "::" "_"
                                              (replace-regexp-in-string "/" "-"
                                                                        unique-id))))
@@ -215,7 +214,7 @@ DOMAIN, DATE, and TYPE are combined with forward slashes to create the
 human-readable part of the system's ID. The HASH is applied after these:
   id = \"<domain>/<date>/<type>::<hash>\"
     e.g. \"home/2021/desk::12345-abcdef\"
-  - See `spy:hash/recreate'
+  - See `str:hash:recreate'
 
 DESCRIPTION - A short string for the 'docstr' of the ID and the path.
 
@@ -302,8 +301,8 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
                                   "\n")))))
 
 
-  (let* ((id (spy:hash/recreate (list domain date type) hash))
-         (path/secret/init.abs (spy:path/to-dir path/secret/root path/secret/init)))
+  (let* ((id (str:hash:recreate (list domain date type) hash))
+         (path/secret/init.abs (path:dir-path path/secret/root path/secret/init)))
     ;;------------------------------
     ;; Debug?
     ;;------------------------------
@@ -388,7 +387,7 @@ If HASH is nil, displays all systems' infos."
            (id (spy:system/get hash 'id))
            ;; Split ID up into domain, date, and type.
            (prefixes (nth 0 (if id
-                                (spy:hash/split id)
+                                (str:hash:split id)
                               nil)))
            (domain   (nth 0 prefixes))
            (date     (nth 1 prefixes))

@@ -13,6 +13,9 @@
 (imp:require :modules 'spy 'lisp)
 (imp:require :jerky 'debug)
 
+;; Optional:
+;; (imp:optional :jerky '+dlv)
+
 ;; §-TODO-§ [2020-10-23]: Make this its own package.
 
 ;; TODO [2020-11-06]: Change get/set to take only one keys arg. list or str.
@@ -423,17 +426,33 @@ If QUIET is non-nil, don't output messages/warnings.
   "Looks for a namespace to use.
 
 Checks/returns first to be non-nil of:
-  - `jerky//dlv/namespace.local' if jerky DLV is in use.
+  - `jerky//dlv/namespace.local' for a Directory Local Variable value (if using jerky/+dlv).
   - Jerky key: 'namespace 'system
   - `jerky/custom.namespace/default'
 "
-  (if (and (featurep 'jerky/dlv)
-              (not (null jerky//dlv/namespace.local)))
-      jerky//dlv/namespace.local
+  (let ((namespace
+         (if (and (boundp 'jerky//dlv/namespace.local)
+                  (not (null jerky//dlv/namespace.local)))
+             jerky//dlv/namespace.local
 
-    (if-let ((system (jerky/get 'namespace 'system)))
-        system
-      jerky/custom.namespace/default)))
+           (if-let ((system (jerky/get 'namespace 'system)))
+               system
+             jerky/custom.namespace/default))))
+    (jerky//debug "jerky/namespace.get"
+                  (concat "jerky/namespace.get: \n"
+                          "  dlv enabled? %S\n"
+                          "  namespace.local: %S\n"
+                          "  system:          %S\n"
+                          "  default:         %S\n"
+                          "  result:          %S")
+                  (imp:provided? :jerky 'dlv)
+                  (if (boundp 'jerky//dlv/namespace.local)
+                      jerky//dlv/namespace.local
+                    "<jerky/+dlv not in use>")
+                  (jerky/get 'namespace 'system)
+                  jerky/custom.namespace/default
+                  namespace)
+    namespace))
 ;; (jerky/namespace.get)
 
 
@@ -441,7 +460,7 @@ Checks/returns first to be non-nil of:
 ;; Key Functions
 ;;------------------------------------------------------------------------------
 
-(defalias 'jerky//key/symbol->str 'spy:string/normalize.symbol
+(defalias 'jerky//key/symbol->str 'str:normalize:symbol->string
   "Convert a symbol to a string. Removes ':' from keywords.")
 
 
@@ -578,46 +597,6 @@ in order and return record from first namespace that has one.
   (nth 2 record))
 
 
-(defun jerky//record.dlv/get (record)
-  "Get the dlv sub-record of this record in jerky's repo.
-"
-  ;; dlv is at index 3 or does not exist
-  (nth 3 record))
-
-
-(defun jerky//record.dlv/is (record)
-  "Returns t if the record is a jDLV record, else nil.
-"
-  ;; dlv is at index 3 or does not exist
-  (not (null (nth 3 record))))
-;; (jerky//record.dlv/is '(:ns 42 "hello" ("c:/jeff/dir" 'klassy)))
-;; (jerky//record.dlv/is '(:ns 42 "hello"))
-
-
-(defun jerky//record.dlv.directory/get (record &optional quiet)
-  "Get the dlv directory, if this is a dlv RECORD, else error/nil based on QUIET."
-  (nth 0
-       (or (jerky//record.dlv/get record)
-           (if quiet
-               nil
-             (error "%s: Record is not a jDLV record; cannot get directory: %S"
-                    "jerky//record.dlv.directory/get"
-                    record)))))
-;; (jerky//record.dlv.directory/get '(:ns 42 "hello" ("c:/jeff/dir" 'klassy)))
-
-
-(defun jerky//record.dlv.class/get (record &optional quiet)
-  "Get the dlv class, if this is a dlv RECORD, else error/nil based on QUIET."
-  (nth 1
-       (or (jerky//record.dlv/get record)
-           (if quiet
-               nil
-             (error "%s: Record is not a jDLV record; cannot get directory: %S"
-                    "jerky//record.dlv.directory/get"
-                    record)))))
-;; (jerky//record.dlv.directory/get '(:ns 42 "hello" ("c:/jeff/dir" 'klassy)))
-
-
 (defun jerky/get (&rest keys-and-options)
   "Gets a record's value from `jerky//repo'.
 
@@ -631,7 +610,6 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
      - The namespace to look in, and what fallbacks to use.
   `:field'
      - Can be: `:namespace', `:value', `:docstr',
-       - and for jDLV also: `:dlv', `:directory', `:class'
      - Defaults to `:value' if not supplied.
 
 If nothing found at KEY, return will be nil.
@@ -649,7 +627,7 @@ If nothing found at KEY, return will be nil.
     (jerky//debug dbg.func "namespace: %s, key: %s" namespace key)
 
     ;; Check field... is it a known value?
-    (cond ((memq field '(:namespace :value :docstr :dlv :directory :class))
+    (cond ((memq field '(:namespace :value :docstr))
            ;; Known values are good. Leave them be.
            (ignore))
 
@@ -670,18 +648,7 @@ If nothing found at KEY, return will be nil.
            (setq getter #'jerky//record.value/get))
 
           ((eq field :docstr)
-           (setq getter #'jerky//record.docstr/get))
-
-          ;; Just return t/nil if asked for `:dlv' directly.
-          ((eq field :dlv)
-           (setq getter #'jerky//record.dlv/is))
-
-          ((eq field :directory)
-           (setq getter #'jerky//record.directory/get))
-
-          ((eq field :class)
-           (setq getter #'jerky//record.class/get)))
-
+           (setq getter #'jerky//record.docstr/get)))
 
     ;; Ok... Get namespaced... whatever they asked for.
     (when jerky//debugging
@@ -706,25 +673,18 @@ If nothing found at KEY, return will be nil.
 ;; Writing to Key-Value Store
 ;;------------------------------------------------------------------------------
 
-(defun jerky//repo.record.namespace/set (namespace value docstr record
-                                         &optional dlv directory class)
+(defun jerky//repo.record.namespace/set (namespace value docstr record)
   "Create/overwrite NAMESPACE's alist assoc in (a copy of) the record with the
 new VALUE and DOCSTR.
 
 If VALUE is `:jerky//action/delete', remove NAMESPACE's record instead.
-
-If DLV is `t', DIRECTORY and CLASS are also required for this jDLV repo KEY.
 
 Returns new, updated copy of record list that the old RECORD should be
 replaced with.
 "
   (if (null record)
       ;; No existing record. Create a new one.
-      (if (eq dlv t)
-          ;; jerky directory-local-variable record
-          (list (list namespace value docstr (list directory class)))
-        ;; Normal jerky record.
-        (list (list namespace value docstr)))
+      (list (list namespace value docstr))
 
     ;; Have the record! Delete or update it.
     (if (eq value :jerky//action/delete)
@@ -738,11 +698,7 @@ replaced with.
 
       ;; Overwrite record.
       (setf (alist-get namespace record)
-            (if (eq dlv t)
-                ;; jerky directory-local-variable record
-                (list value docstr (list directory class))
-              ;; normal record
-              (list value docstr)))
+            (list value docstr))
 
       ;; Return the updated record.
       record)))
@@ -792,13 +748,11 @@ If PLIST is `:jerky//action/delete', remove KEY from `jerky//repo' instead.
                 plist))))
 
 
-(defun jerky//repo/update (key namespace value docstr &optional dlv directory class)
+(defun jerky//repo/update (key namespace value docstr)
   "Create, delete, or update/overwrite a NAMESPACE'd VALUE with DOCSTR.
 File it under KEY in `jerky//repo'.
 
 To delete the NAMESPACE's value, pass `:jerky//action/delete' as the value.
-
-If DLV is `t', DIRECTORY and CLASS are also required for this jDLV repo KEY.
 "
   ;; Get existing plist value in our repo under key. Could be nil if it
   ;; doesn't exist; that's fine.
@@ -813,8 +767,7 @@ If DLV is `t', DIRECTORY and CLASS are also required for this jDLV repo KEY.
      key
      ;; Make the record w/ plist from making the key.
      (jerky//repo.record/set
-      (jerky//repo.record.namespace/set namespace value docstr record
-                                        dlv directory class)
+      (jerky//repo.record.namespace/set namespace value docstr record)
       ;; Make plist for the key.
       (jerky//repo.key/set key plist)))))
 
@@ -831,10 +784,6 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
   `:value'
   `:docstr'
   `:namespace'
-  Jerky Directory-Local-Variables (jDLV) Only!
-    `:dlv'
-    `:directory'
-    `:class'
 
 `:namespace'
   The argument after :namespace will be used as the namespace to set the
@@ -848,34 +797,19 @@ Keyword key/value pairs only exist after the KEYS. The keywords are:
 `:value'
   The argument after :value will be stored as the value.
 
-jDLV-Only:
-  `:dlv'
-    Must be `t'.
-
-  `:directory'
-    The directory that the jDLVs apply to.
-
-  `:class'
-    The class name provided to `dir-locals-set-class-variables' and
-    `dir-locals-set-directory-class'.
-
 If not provided, they will be nil.
 "
   ;; Some shenanigans to do to turn input into args/kwargs into a key
   ;; and values.
-  (-let* (((key kwargs) (jerky//parse keys-and-options t
-                                       :dlv :directory :class))
+  (-let* (((key kwargs) (jerky//parse keys-and-options t))
           ;; dash-let's plist match pattern to non-keys in ARGS.
-          ((&plist :docstr :value :namespace :dlv :directory :class) kwargs))
+          ((&plist :docstr :value :namespace) kwargs))
 
     ;; Get/update/create entries, set hash to key in repo.
     (jerky//repo/update key
                         (or namespace jerky/custom.namespace/default)
                         value
-                        docstr
-                        dlv
-                        directory
-                        class)))
+                        docstr)))
 ;; (jerky/set '(path to thing) :value "hello there")
 ;; (jerky/set '(:test :jeff) :value "jeffe" :docstr "I am a comment.")
 ;; (jerky/set :test "jeff" :value "jeffe overwrite" :docstr "I am not a comment.")

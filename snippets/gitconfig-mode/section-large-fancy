@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# contributor: Cole Brown <git@spydez.com>
+# name: section fancy: fancy prog-mode comment header section
+# key: sec/fancy
+# --
+
+${1:Will do its thing on exit.$(when yas/moving-away-p (if yas-text
+     (mis0/comment/wrap (-m//style/align yas-text (list (mis0/style/align :center) (mis0/style/padding "-")))
+                       (mis0/style/boxed t) (mis0/string/indent 'existing) (mis0/string/trim t))
+   (mis0/comment/line (mis0/string/indent 'existing) (mis0/string/trim t))))}
+${2:Title Here$(when yas/moving-away-p (mis0/comment/wrap (-m//style/align yas-text (list (mis0/style/align :center))) (mis0/style/boxed t)))}
+${3:-- Will do its thing on exit. --$(when yas/moving-away-p (if yas-text
+     (mis0/comment/wrap (-m//style/align yas-text (list (mis0/style/align :center) (mis0/style/padding "-")))
+                       (mis0/style/boxed t) (mis0/string/indent 'existing) (mis0/string/trim t))
+   (mis0/comment/line (mis0/string/indent 'existing) (mis0/string/trim t))))}

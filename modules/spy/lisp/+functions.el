@@ -16,6 +16,25 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Delete Function
+;;------------------------------------------------------------------------------
+
+(defun spy:lisp/func.delete (symbol)
+  "Delete a function by its SYMBOL by calling:
+1. `fmakunbound' - Removes the function definition.
+2. `makunbound'  - Removes the variable binding.
+3. `unintern'    - Removes the symbol name from the symbol table."
+  (fmakunbound symbol)
+  (makunbound symbol)
+  (unintern symbol))
+
+
+(defun spy:lisp/ert.delete-all (symbol)
+  "Delete all ERT tests by calling `ert-delete-all-tests'."
+  (ert-delete-all-tests))
+
+
+;;------------------------------------------------------------------------------
 ;; Functions for argument parsing.
 ;;------------------------------------------------------------------------------
 

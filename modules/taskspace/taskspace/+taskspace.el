@@ -173,7 +173,7 @@
 ;;                            ;; ready to go
 ;;                            ((-t//config :home :file/notes)
 ;;                             my/taskspace/generate/home))))
-;;     "Custom settings for my `:home' taskspace group.")
+;;     "Custom settings for my `:work' taskspace group.")
 ;;
 ;;   ;;------------------------------
 ;;   :custom
@@ -201,8 +201,7 @@
 (require 'f) ;; for nicer file api
 (require 'dash)
 (require 'imp)
-
-
+(imp:require :dlv)
 
 
 (defgroup taskspace nil
@@ -352,27 +351,6 @@ multiple taskspaces.
   :group 'taskspace
   ;; :type no idea so I'm leaving it out... sexp?
   )
-
-
-;;------------------------------------------------------------------------------
-;; Variables
-;;------------------------------------------------------------------------------
-
-(defvar taskspace//dlv/group nil
-  "This should always be nil unless used via directory-local-variables.
-
-It should only be set via `taskspace/group/dlv'")
-
-
-;;------------------------------------------------------------------------------
-;; Helper for seeing if jerky is available
-;;------------------------------------------------------------------------------
-
-(defun -t//jerky-p ()
-  "Returns t if `jerky' and `jerky/dlv' are present as provided features."
-  (and (imp:provided? :jerky)
-       (imp:provided? :jerky 'dlv)))
-;; (-t//jerky-p)
 
 
 ;;------------------------------------------------------------------------------
@@ -719,20 +697,23 @@ Returns nil or a string in TASKSPACES.
 (defun taskspace/group/dlv (group directory)
   "Create a directory-local-variable for GROUP and DIRECTORY.
 This sets the automatic group for that dir (and sub-dirs) to GROUP."
-  (if (-t//jerky-p)
-      (jerky/dlv/set nil        ; let it auto-create
-                     directory
-                     nil        ; Set for global mode.
-                     'taskspace//dlv/group
-                     :namespace jerky/custom.namespace/default ; default namespace
-                     :value group
-                     :docstr "Taskspace's Auto-Group for this directory."
-                     :dlv 'full
-                     :safe t)
-    (error (concat "%s: Requires `jerky' and `jerky/dlv' features/packages;"
+  (if (imp:provided? :dlv)
+      (dlv:set directory
+               nil ;; global mode
+               (list 'taskspace//dlv/group
+                     group
+                     :safe))
+
+    (error (concat "%s: Requires `dlv' feature/package/module;"
                    "didn't find them. %s %s")
            "taskspace/group/dlv"
            group directory)))
+
+
+;; TODO: use this to validate group in code places.
+(defun -t//group/valid? (group)
+  "Returns non-nil if GROUP is a valid group symbol/name."
+  (keywordp group))
 
 
 (defun -t//group/dlv ()
@@ -1073,9 +1054,9 @@ Error is all files not generated in alist: ((filename . 'reason')...)
         ;; Get taskname from path to supply to any file content gen funcs.
         (taskname (file-name-nondirectory taskpath)))
     (dolist (entry file-alist errors-alist)
-      (let* ((file (file-name-nondirectory (eval (first entry))))
+      (let* ((file (file-name-nondirectory (eval (cl-first entry))))
              (filepath (-t//path/generate group taskpath file))
-             (str-or-func (second entry)))
+             (str-or-func (cl-second entry)))
 
         (cond
          ;; ERROR: already exists...
@@ -1173,33 +1154,38 @@ unused description.
          (dir-name (-t//naming/make group date number description))
          (dir-full-path (expand-file-name dir-name (-t//config group :dir/tasks))))
 
+    ;; TODO: taskspace debugging func.
     (message "create-dir: %s %s %s %s" date date-dirs number dir-name)
-
     (message "create dir: %s" dir-full-path)
+
     ;; Only create if:
     ;;   - valid description input and
     ;;   - no dupes or accidental double creates
     ;;   - it doesn't exist (this is probably redundant if verify-description
     ;;     works right)
-    (when (and (-t//naming/verify group description)
-               (not (some (lambda (x) (-t//dir= group
+    (if (and (-t//naming/verify group description)
+               (not (cl-some (lambda (x) (-t//dir= group
                                                 description
                                                 x
                                                 'description))
                           date-dirs))
                (not (file-exists-p dir-full-path)))
+        ;; Make it.
+        (progn
 
-      ;; Make it.
-      ;; make-directory helpfully has no data on what it returns or why or when
-      ;; or anything. But it returns nil on success so... super useful guys.
-      (make-directory dir-full-path)
+          ;; make-directory helpfully has no data on what it returns or why or when
+          ;; or anything. But it returns nil on success so... super useful guys.
+          (make-directory dir-full-path)
 
-      ;; How about we report something actually useful maybe?
-      ;; Full path of created dir on... success?
-      ;; Nil on folder non-existance.
-      (if (file-exists-p dir-full-path)
-          dir-full-path
-        nil))))
+          ;; How about we report something actually useful maybe?
+          ;; Full path of created dir on... success?
+          ;; Nil on folder non-existance.
+          (if (file-exists-p dir-full-path)
+              dir-full-path
+            nil))
+
+      ;; Failed check; return nil.
+      nil)))
 ;; (-t//dir/create :work "testcreate" nil)
 
 
@@ -1606,9 +1592,9 @@ Else:
          ((= length-ts 1)
 
           ;; copy & return
-          (-t//kill-and-return (first taskspaces)
+          (-t//kill-and-return (cl-first taskspaces)
                                      "Existing taskspace: %s"
-                                     (first taskspaces)))
+                                     (cl-first taskspaces)))
 
          ;; For now, only give existing choices. User can use a non-dwim create
          ;; func if they want new.
@@ -1855,7 +1841,7 @@ Opens:
 
      ;; If just one, open its notes file.
      ((= length-ts 1)
-      (setq taskpath (first taskspaces))
+      (setq taskpath (cl-first taskspaces))
       (message "Only taskspace: %s" taskpath))
 
      ;; For now, only give existing choices. User can use a non-dwim create func
@@ -2023,6 +2009,19 @@ TODO:      - (\"t\" (\"n\" (\"t\" . \"taskspace\")))
 ;; TODO: prefix:            (list :desc description
 ;; TODO: prefix:                  key
 ;; TODO: prefix:                  rest)))))
+
+
+;;------------------------------------------------------------------------------
+;; Directory Local Variables
+;;------------------------------------------------------------------------------
+
+(defvar taskspace//dlv/group nil
+  "This should always be nil unless used via directory-local-variables.
+
+It should only be set via `taskspace/group/dlv'")
+
+;; Mark our DLV variable as safe for DLV use.
+(dlv:var:safe.predicate 'taskspace//dlv/group #'-t//group/valid?)
 
 
 ;;------------------------------------------------------------------------------

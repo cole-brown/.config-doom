@@ -33,11 +33,11 @@
 
 (defun spy:emacs/server:path ()
   "Path to server file."
-  (spy:path/join (if (and server-use-tcp
-                          server-socket-dir)
-                     server-socket-dir
-                   server-auth-dir)
-                 server-name))
+  (path:join (if (and server-use-tcp
+                      server-socket-dir)
+                 server-socket-dir
+               server-auth-dir)
+             server-name))
 
 
 (defun spy:emacs/server:file? ()
@@ -55,22 +55,27 @@
 ;;     -> http://lists.gnu.org/archive/html/bug-gnu-emacs/2018-06/msg00723.html
 ;; (unless (server-running-p) (server-start))
 (defun spy:emacs/server:process? ()
-    "Return non-nil if this Emacs has a server process."
-    (bound-and-true-p server-process))
+  "Return non-nil if this Emacs has a server process."
+  (bound-and-true-p server-process))
 ;; (spy:emacs/server:process?)
 
 
 (defun spy:emacs/server:running? ()
-    "Return non-nil if this Emacs has a server process and a server file."
-    (and (spy:emacs/server:process?)
-         (spy:emacs/server:file?)))
+  "Return non-nil if this Emacs has a server process and a server file."
+  (and (spy:emacs/server:process?)
+       (spy:emacs/server:file?)))
 ;; (spy:emacs/server:running?)
 
 
+;; TODO [2021-08-04]: This seems to always print out the warning, so... Something is already starting up the server?
+;;   - Figure out what that is and if it is also doing it smartly enough. Or smarter.
+;;   - For now: Downgrading the warning to just a message...
 (if (spy:emacs/server:running?)
     ;; Ignore - already running.
-    (mis0/init/warning "spy:emacs/server:running?"
-                       "[daemons] Server already running: %s"
+    ;; (mis0/init/warning "spy:emacs/server:running?"
+    ;;                    "[daemons] Server already running: %s"
+    ;;                    (spy:emacs/server:path))
+    (mis0/init/message "[daemons] Server already running: %s"
                        (spy:emacs/server:path))
 
   ;; Start up a server.

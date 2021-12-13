@@ -11,7 +11,7 @@
 ;;   - But doesn't seem to be helping on gigantic 750 kb JSON files, so...
 ;;     Tweak it?
 ;;     + Oh - probably the default `so-long-max-lines' of 5 was just too small.
-(use-package so-long
+(use-package! so-long
 
   ;; ;;--------------------
   ;; :init

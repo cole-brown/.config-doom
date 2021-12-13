@@ -9,11 +9,23 @@
 ;;------------------------------------------------------------------------------
 
 (imp:require :jerky)
+(imp:require :path)
 (imp:require :modules 'spy 'hook 'def)
 (imp:require :modules 'spy 'buffer 'search)
 (imp:require :modules 'spy 'buffer 'name)
-(imp:require :modules 'spy 'file 'path)
 (imp:require :modules 'spy 'datetime 'format)
+
+
+;;------------------------------------------------------------------------------
+;; Documents in General
+;;------------------------------------------------------------------------------
+
+;; Could move out of org-mode setup if we get more doc mode setups.
+
+(jerky/set 'docs 'tab 'short
+           :namespace :default
+           :value 2
+           :docstr "Short tab width is 2 spaces.")
 
 
 ;;------------------------------------------------------------------------------
@@ -43,22 +55,30 @@
   ;;--------------------
 
   ;; Define org-mode hooks.
-  (spy:hook/defun org-mode-hook
+  (spy:hook/defun org-jump-to-now-hook
     '(:name "org/jump-to-now-target"
       :file ".doom.d/config/org-mode.el"
       :docstr "Jump point to \"now\" link, if it's in the first part of the file."
       :quiet t)
-    (spy:cmd:buffer/search.header "[[--now")
+    (spy:cmd:buffer/search.header "[[--now"))
 
-    (setq yas-indent-line 'fixed))
+  (spy:hook/defun org-local-settings-hook
+    '(:name "org/local-settings"
+      :file ".doom.d/config/org-mode.el"
+      :docstr "Set up buffer local vars."
+      :quiet t)
+    ;; Automatically becomes buffer local.
+    (setq tab-width (jerky/get 'docs 'tab 'short))
 
+    (setq-local yas-indent-line 'auto))
 
   ;;--------------------
   :hook
   ;;--------------------
 
   ;; Connect my hooks up.
-  ((org-mode . sss:hook/org/jump-to-now-target))
+  ((org-mode . sss:hook/org/jump-to-now-target)
+   (org-mode . sss:hook/org/local-settings))
 
 
   ;;--------------------
@@ -70,7 +90,7 @@
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
-  ;; (org-default-notes-file (spy:path/to-file org-directory "notes.org"))
+  ;; (org-default-notes-file (path:file-path org-directory "notes.org"))
   ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
@@ -228,6 +248,18 @@
   ;;  #'spy:custom/org-mode/speed-commands-p
   ;;  "Allow speed keys when at any headline *, not just beginning of line.")
 
+  ;;---
+  ;; Indentation
+  ;;---
+
+  (customize-set-variable 'org-indent-indentation-per-level
+                          (jerky/get 'docs 'tab 'short)
+                          "Set indent to tab-width.")
+
+  ;; This should really depend on the source code language...
+  ;; (customize-set-variable 'org-edit-src-content-indentation
+  ;;                         (jerky/get 'docs 'code 'short)
+  ;;                         "Set indent to tab-width.")
 
   ;;--------------------
   ;; configuration: org-mode
@@ -301,9 +333,9 @@
   (setf (alist-get 'file org-link-frame-setup) #'find-file-other-window))
 
 
-;;---------------------
+;;------------------------------
 ;; TODO: Do these work well with Evil?
-;;---------------------
+;;------------------------------
 
 ;;----------
 ;; Speed Keys
@@ -327,18 +359,21 @@
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; Domain Switcher Macro
+;; Namespaced Commands
 ;;------------------------------
-(defmacro sss:org.journal/namespaced (namespace &rest body)
-  "Sets (lexical context) all org-journal custom vars related to NAMESPACE. Then runs BODY."
-  `(let ((org-journal-file-format ,(jerky/get 'org-journal 'file 'format
-                                              :namespace namespace))
-         (org-journal-dir ,(jerky/get 'path 'org 'journal
-                                      :namespace namespace)))
-     ,@body
-     ))
-;; (sss:org.journal/namespaced :home (message "%s %s" org-journal-file-format org-journal-dir))
-;; (sss:org.journal/namespaced :work (message "%s %s" org-journal-file-format org-journal-dir))
+(defun sss:org.journal/namespaced (namespace command &rest args)
+  "Run an org-journal COMMAND in NAMESPACE.
+
+Sets (lexical context) all org-journal custom vars related to NAMESPACE.
+Then runs COMMAND interactively with ARGS."
+  (interactive)
+  (let ((org-journal-file-format (jerky/get 'org-journal 'file 'format
+                                            :namespace namespace))
+        (org-journal-dir (jerky/get 'path 'org 'journal
+                                    :namespace namespace)))
+    (apply #'funcall-interactively command args)))
+;; (sss:org.journal/namespaced :home #'message "%s %s" org-journal-file-format org-journal-dir)
+;; (sss:org.journal/namespaced :work #'message "%s %s" org-journal-file-format org-journal-dir)
 
 
 ;;------------------------------
@@ -395,6 +430,9 @@
   (customize-set-variable 'org-journal-dir
                           (jerky/get 'path 'org 'journal
                                      :namespace (jerky/get 'namespace 'system)))
+  (unless (dlv:var:safe/predicate? 'org-journal-dir)
+    ;; It's marked as risky - force it to safe?
+    (dlv:var:safe.predicate 'org-journal-dir #'file-directory-p :quiet))
 
   ;; Tack day name onto our format for the org-journal headline.
   (customize-set-variable 'org-journal-date-format
@@ -427,15 +465,20 @@
   )
 
 
-
-
 ;;------------------------------------------------------------------------------
 ;; Org-Mode's Legion of Minions
 ;;------------------------------------------------------------------------------
 
-;;---------------------
+;;------------------------------
+;; Org Exporter: GitHub-Flavored Markdown
+;;------------------------------
+(use-package! ox-gfm
+  :after org)
+
+
+;;------------------------------
 ;; Org-Roam Funcs
-;;---------------------
+;;------------------------------
 ;; Zettelkasten Note-Taking with Org-Mode
 
 (defun sss:org-roam/file-name/timestamp-title (title)
@@ -515,9 +558,9 @@ It uses TITLE and the current timestamp to form a unique title.
 
 
 ;; TODO: This probably slows stuff down too much, yeah? :(
-;; ;;---------------------
+;; ;;------------------------------
 ;; ;; Org-Mode Headline Bullets: (Making Org-Mode Pretty)
-;; ;;---------------------
+;; ;;------------------------------
 ;;
 ;; ;; Display the titles with nice unicode bullets instead of the text ones.
 ;; (use-package org-bullets
@@ -539,9 +582,9 @@ It uses TITLE and the current timestamp to form a unique title.
 
 ;; TODO: Get org-contacts actually working like it never really was on vanilla?
 ;;
-;; ;;---------------------
+;; ;;------------------------------
 ;; ;; Org Contacts
-;; ;;---------------------
+;; ;;------------------------------
 ;; (use-package org-contacts
 ;;   :disabled ;; is this making things slow?
 ;;   :ensure nil
@@ -549,7 +592,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;   :demand t
 ;;
 ;;   :custom
-;;   (org-contacts-files (spy:path/to-file
+;;   (org-contacts-files (path:file-path
 ;;                        (spy:dirky/path :secrets :secrets/org)
 ;;                        "contacts.org"))
 ;;

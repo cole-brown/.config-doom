@@ -14,7 +14,12 @@
 ;;      Alternatively, press 'gd' (or 'C-c c d') on a module to browse its
 ;;      directory (for easy access to its source code).
 
-(doom! :input
+(doom! :emacs            ; Load These First!
+       imp               ; `require'/`provide' with more than one symbol
+       str               ; Strings and Things
+       path              ; Helpful path/file/dir functions.
+
+       :input
        ;;chinese
        ;;japanese
        ;;layout            ; auie,ctsrnm is the superior home row
@@ -33,17 +38,17 @@
        doom-quit         ; DOOM quit-message prompts when you quit Emacs
        ;;fill-column       ; a `fill-column' indicator
        hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
-       ;;hydra
-       ;;indent-guides     ; highlighted indent columns
-       ;;ligatures         ; ligatures and symbols to make your code pretty again
-       ;;minimap           ; show a map of the code on the side
+       hydra
+       indent-guides     ; highlighted indent columns
+       (ligatures +extra)         ; ligatures and symbols to make your code pretty again
+       minimap           ; show a map of the code on the side
        modeline          ; snazzy, Atom-inspired modeline, plus API
-       ;;nav-flash         ; blink cursor line after big motions
+       nav-flash         ; blink cursor line after big motions
        ;;neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on
        (popup +defaults)   ; tame sudden yet inevitable temporary windows
        ;;tabs              ; a tab bar for Emacs
-       ;;treemacs          ; a project drawer, like neotree but cooler
+       treemacs          ; a project drawer, like neotree but cooler
        ;;unicode           ; extended unicode support for various languages
        vc-gutter         ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
@@ -76,13 +81,14 @@
        ;;undo              ; persistent, smarter undo for your inevitable mistakes
 
        vc                ; version-control and Emacs, sitting in a tree
-       imp               ; require/provide with more than one symbol
+
+       (dlv +debug)               ; Directory Local Variables
 
        :term
-       ;;eshell            ; the elisp shell that works everywhere
-       ;;shell             ; simple shell REPL for Emacs
+       eshell            ; the elisp shell that works everywhere
+       shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
-       ;;vterm             ; the best terminal emulation in Emacs
+       (:if (not IS-WINDOWS) vterm) ; the best terminal emulation in Emacs
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
@@ -90,11 +96,11 @@
        ;;grammar           ; tasing grammar mistake every you make
 
        :tools
-       ;;ansible
+       ansible
        autogit             ; Commit (subdirs of) git repos automatically-ish.
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv
-       ;;docker
+       docker              ; docker.el, dockerfile-mode, and docker-tramp
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
        (eval +overlay)     ; run code, run (also, repls)
@@ -108,7 +114,7 @@
        ;;prodigy           ; FIXME managing external services & code builders
        ;;rgb               ; creating color strings
        ;;taskrunner        ; taskrunner for all your projects
-       ;;terraform         ; infrastructure as code
+       terraform         ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
        ;;upload            ; map local to remote projects via ssh/ftp
 
@@ -123,7 +129,7 @@
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
-       csharp            ; unity, .NET, and mono shenanigans
+       (csharp +dotnet +lsp) ; unity, .NET, and mono shenanigans
        ;;data              ; config/data formats
        ;;(dart +flutter)   ; paint ui and not much else
        ;;elixir            ; erlang done right
@@ -141,7 +147,7 @@
        ;;idris             ;
        json              ; At least it ain't XML
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
-       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
+       (javascript +lsp)        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
@@ -149,7 +155,7 @@
        ;;factor
        ;;ledger            ; an accounting system in Emacs
        ;;lua               ; one-based indices? one-based indices
-       markdown          ; writing docs for people to ignore
+       (markdown +grip)    ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
@@ -168,7 +174,7 @@
        (rust +lsp)              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
        ;;scheme            ; a fully conniving family of lisps
-       sh                ; she sells {ba,z,fi}sh shells on the C xor
+       (sh +powershell)    ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
        ;;swift             ; who asked for emoji variables?
@@ -195,15 +201,11 @@
        mis0                 ; mis v0:     Actually more like v6, but eh.
        ; mis                  ; mis:        The Final Mis For Sure™.
 
-       :taskspace
-       taskspace
-
        :spy
        ;; Functions and Helpers
        zero                ; spy:zero:     Must be first. Funcs needed to start with in init/config...
        strings             ; spy:strings:  Should be very very early for other modules' use.
        lisp                ; spy:lisp:     Helpful Elisp stuff.
-       file                ; spy:file:     For helpful path/file/dir functions.
        buffer              ; spy:buffer:   Buffer, line, point, etc functions.
        hook                ; spy:hook:     Hook helper macros/functions.
        org                 ; spy:org:      Org-Mode helpers. Must be after buffer.
@@ -211,7 +213,7 @@
        collections         ; spy:collections: alists, hash-tables, and... oh my!
 
        ;; Has to Be Ready Before Init/Config Begins in Earnest.
-       jerky               ; spy:jerky:   For key/value tree.
+       jerky               ; spy:jerky:   For key/value tree (requires `emacs/dlv' unless `-dlv' flag present).
        ;; Has to Be After jerky:
        datetime            ; spy:datetime: For dates, times, datetimes, timedates...
 
@@ -219,4 +221,9 @@
        system              ; spy:system:  For one-to-many config-to-computers setup.
        io                  ; spy:io:      Input and output stuff (e.g. inserting signatures).
        secret              ; spy:secret:  For per-system things, secret keys, etc.
+
+       ;; Run init/config after `:spy' modules.
+       :taskspace
+       taskspace           ; Note files templates and structured note-data folders (requires `emacs/dlv' unless `-dlv' flag present).
+
        )

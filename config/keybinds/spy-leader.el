@@ -5,6 +5,7 @@
 
 
 (imp:require :modules 'spy 'io 'signature)
+(imp:require :str 'hydra 'case)
 (spy:config 'spy 'art)
 (spy:config 'spy 'join)
 
@@ -176,29 +177,6 @@ If no region is active, fills current line."
 
 
 ;;------------------------------------------------------------------------------
-;; Search
-;;------------------------------------------------------------------------------
-
-(defun spy:cmd:search/project/dir (directory &optional arg)
-  "Conduct a text search in the supplied directory.
-If prefix ARG is set, include ignored/hidden files."
-  (interactive (list (read-directory-name "Start Search: ")
-                     current-prefix-arg))
-  (let* ((projectile-project-root nil)
-         (disabled-command-function nil))
-    (funcall-interactively #'+ivy/project-search arg nil directory)))
-
-
-(defun spy:cmd:search/project/here (&optional arg)
-  "Conduct a text search in the current buffer's `default-directory'.
-If prefix ARG is set, include ignored/hidden files."
-  (interactive "P")
-  (funcall-interactively #'spy:cmd:search/project/dir
-                         default-directory
-                         arg))
-
-
-;;------------------------------------------------------------------------------
 ;; Evil Spy Stuff.
 ;;------------------------------------------------------------------------------
 ;; See Doom's keybindings for how to do complicated things:
@@ -210,13 +188,6 @@ If prefix ARG is set, include ignored/hidden files."
       ;;------------------------------
       (:prefix ("-" . "spy") ; Not my first choice but no one uses dash,
                                         ; and it's easy on Dvorak.
-
-       ;;------------------------------
-       ;; Search
-       ;;------------------------------
-       (:prefix ("/" . "Search")
-        :desc "Search from here..."       "/" #'spy:cmd:search/project/here
-        :desc "Search from directory..."  "s" #'spy:cmd:search/project/dir)
 
        ;;------------------------------
        ;; Alignment
@@ -297,6 +268,13 @@ If prefix ARG is set, include ignored/hidden files."
 
 
        ;;------------------------------
+       ;; Case Conversion
+       ;;------------------------------
+       ;; Hydra
+       :desc "Case Conversion"              "c" #'str:hydra:case/body
+
+
+       ;;------------------------------
        ;; Signatures
        ;;------------------------------
        (:prefix ("s" . "Signatures")
@@ -332,17 +310,17 @@ If prefix ARG is set, include ignored/hidden files."
           ;; work namespace.
           (:when (spy:signature/exists 'id 'email :namespace :work)
            :desc (concat "work: " (spy:signature 'id 'email :namespace :work))
-           "w" (cmd! (spy:signature/insert 'id 'sigil :namespace :work)))
+           "w" (cmd! (spy:signature/insert 'id 'email :namespace :work)))
 
           ;; home namespace.
           (:when (spy:signature/exists 'id 'email :namespace :home)
            :desc (concat "home: " (spy:signature 'id 'email :namespace :home))
-           "h" (cmd! (spy:signature/insert 'id 'sigil :namespace :home)))
+           "h" (cmd! (spy:signature/insert 'id 'email :namespace :home)))
 
           ;; default namespace.
           (:when (spy:signature/exists 'id 'email :namespace :default)
            :desc (concat "default: " (spy:signature 'id 'email :namespace :default))
-           "c" (cmd! (spy:signature/insert 'id 'sigil :namespace :default)))
+           "c" (cmd! (spy:signature/insert 'id 'email :namespace :default)))
 
 
           ;; TODO: Search for sigil, todo...

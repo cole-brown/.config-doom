@@ -1,7 +1,7 @@
 ;;; spy/zero/+hook.el -*- lexical-binding: t; -*-
 
 (require 'dash)
-(imp:require :modules 'spy 'file 'path)
+(imp:require :path)
 
 
 ;;------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ BODY is the code to run in the hook.
                  (if (not (stringp ,_m//file))
                      ""
                    (concat " from "
-                           (spy:path/to-relative ,_m//file)))))
+                           (path:relative-path ,_m//file)))))
 
               ,@body)
        (add-hook ',_m//hook #',_m//hook-fn ',_m//postpend))))
@@ -77,6 +77,9 @@ BODY is the code to run in the hook.
 
 (defmacro spy:hook/defun (hook-var options &rest body)
   "Macro that `defun's a function called 'sss:hook/<hook-name>'.
+
+HOOK-VAR isn't use; currently here for consistency with `spy:hook/defun-and-hooker'.
+TODO: Remove HOOK-VAR.
 
 OPTIONS is a plist of optional vars:
   :name     - Hook function should be named 'sss:hook/<name>'.
@@ -121,7 +124,7 @@ Use this over `spy:hook/defun-and-hooker' only in cases where you aren't
                (if (not (stringp ,_m//file))
                    ""
                  (concat " from "
-                         (spy:path/to-relative ,_m//file)))))
+                         (path:relative-path ,_m//file)))))
 
             ,@body)
     ))

@@ -241,6 +241,9 @@ into `test<nub>:output:debug' list instead."
   "Steals all calls to `int<nub>:output' and puts them into `test<nub>:output:...' lists instead.
 
 Can also allow the normal output based on `test<nub>:redirect/output:type'"
+  (int<nub>:init:user "test<nub>:redirect/output:setup"
+                      test<nub>:user
+                      :error)
   (nub:vars:init test<nub>:user
                  nil ;; List: Common tags.
                  nil ;; Alist: Message prefixes.

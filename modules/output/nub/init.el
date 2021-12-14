@@ -32,7 +32,7 @@
 ;; Set imp Root
 ;;------------------------------------------------------------------------------
 
-(imp:path:root :path
+(imp:path:root :nub
                (imp:path:paths->path doom-private-dir
                                      "modules"
                                      "output"
@@ -51,6 +51,7 @@
 (load! "output")
 (load! "debug")
 (load! "debug-format")
+(load! "api")
 
 
 ;;------------------------------------------------------------------------------

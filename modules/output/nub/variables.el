@@ -59,9 +59,28 @@ can still happen.")
       nil)))
 
 
-(defun int<nub>:init:user (user)
-  "Adds USER as a registered `nub' user."
-  (push user int<nub>:var:users))
+(defun int<nub>:init:user (caller user &optional error?)
+  "Adds USER as a registered `nub' user.
+
+CALLER should be the calling function's name (string).
+
+If USER already exists and ERROR? is non-nil, signals an error.
+Else if USER already exists, just returns nil.
+
+Returns `t' when USER didn't exist and was created."
+  (if (int<nub>:user:exists? (int<nub>:format:callers "int<nub>:init:user" caller)
+                             user
+                             nil) ;; Do not raise error signal! We want to raise an error if they /do/ exist!
+      ;; User already exists so don't add them again; error or return nil instead.
+      (if error?
+          (int<nub>:error caller
+                          "User %S is already registered as a `nub' user!"
+                          user)
+        nil)
+
+    ;; User doesn't exist; create them and return `t'.
+    (push user int<nub>:var:users)
+    t))
 
 
 (defun int<nub>:terminate:user (user)
@@ -744,7 +763,7 @@ default user instead."
 ;;------------------------------------------------------------------------------
 
 (defun nub:vars:init (user &optional list:debug:tags/common alist:prefixes alist:enabled? alist:sinks)
-  "Registers USER and sets their default settings for output levels.
+  "Sets USER's default settings for output levels.
 
 LIST:DEBUG:TAGS/COMMON should be a list of debugging keyword tags.
 It is used for prompting end-users for debug tags to toggle.
@@ -757,10 +776,10 @@ ALIST:SINKS should be an alist of verbosity level to t/nil/function/list-of-func
 
 Alists should have all output levels in them; for valid levels, see
 `nub:output:levels'.
-If an alist is nil, the default/fallback will be used instead.
+  - If an alist is nil, the default/fallback will be used instead.
 
 Sets both current and backup values (backups generally only used for tests)."
-  (int<nub>:init:user user)
+  (int<nub>:init:user "nub:vars:init" user)
 
   (when alist:enabled?
     (int<nub>:init:enabled? user alist:enabled?))

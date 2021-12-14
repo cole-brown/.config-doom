@@ -311,6 +311,8 @@ If tags are not valid:
 (defun int<nub>:debug:active? (caller user tags)
   "Returns non-nil if USER is currently debugging for anything in the
 list of TAGS.
+  - Returns `t' if globally debugging.
+  - Returns list of active tags if debugging is enabled for TAGS.
 
 CALLER should be calling function's string name.
 
@@ -318,8 +320,6 @@ Debugging when `int<nub>:var:debugging' is non-nil for USER and one of these
 is true:
   - `int<nub>:var:debug:tags' for the user is nil
     + No specific debugging tags desired == all tags active.
-(progn
-
   - `int<nub>:var:debug:tags' for the user is non-nil AND matches one or more
      of the tags in TAGS.
     + Looking for a specific debug tag and found it."
@@ -473,6 +473,41 @@ is true:
     (message "nub:debug:status: Unknown user: %S" user)
     ;; Let's just say 'not debugging' for unknown user.
     nil))
+
+
+;;------------------------------------------------------------------------------
+;; API: Nub Debugging?
+;;------------------------------------------------------------------------------
+
+(defun nub:debug:active? (user &rest tags)
+  "Get whether USER is currently debugging.
+
+TAGS will be flattened before being checked.
+
+The answer depends on TAGS:
+  - nil:
+    - Returns just the debugging flag for USER.
+  - non-nil:
+    - Returns whether debugging is active for any of those TAGS for USER.
+    - So 'am I debugging and for any of these tags?'."
+  (let ((func.name "nub:debug:active?")
+        (tags (if tags
+                   ;; Passed in tags; make sure they're keywords.
+                   (seq-map #'int<nub>:normalize->keyword (flatten-list tags))
+                 ;; Else they're asking about global debugging.
+                 nil)))
+
+    (if (int<nub>:user:exists? func.name user :error)
+        ;; Get user's debugging flag/tags, and figure out if debugging for TAGS.
+        ;; This returns the list of active tags, `t', or `nil'.
+        (int<nub>:debug:active? func.name
+                                user
+                                tags)
+
+      ;; Let's just say 'not debugging' for unknown user. It'll never get here since
+      ;; (currently) we're having `int<nub>:user:exists?' signal an error when user
+      ;; doesn't exist.
+      nil)))
 
 
 ;;------------------------------------------------------------------------------

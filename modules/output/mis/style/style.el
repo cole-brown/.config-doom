@@ -1,9 +1,9 @@
 ;;; mis/args/style2.el -*- lexical-binding: t; -*-
 
 
-(-m//require 'internal 'const)
-(-m//require 'internal 'valid)
-(-m//require 'internal 'mlist2)
+(imp:require :mis 'internal 'const)
+(imp:require :mis 'internal 'valid)
+(imp:require :mis 'internal 'mlist)
 
 
 ;;------------------------------------------------------------------------------
@@ -60,9 +60,11 @@
   "Sets an alignment. Returns an mlist.
 "
   (unless (memq alignment -m//style/alignments)
-    (error "mis2/style/align: '%S' is not a valid alignment. Choices are: %S"
-           alignment
-           -m//style/alignments))
+    (nub:error int<mis>:nub:user
+               "mis2/style/align"
+               "'%S' is not a valid alignment. Choices are: %S"
+               alignment
+               -m//style/alignments))
   (mis2//out.style/align.set mlist alignment))
 ;; (mis2/style/align :center)
 
@@ -249,5 +251,4 @@ Returns updated MOUT list."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(-m//provide 'args 'style2)
-(provide 'mis/args/style2)
+(imp:provide:with-emacs :mis 'args 'style2)

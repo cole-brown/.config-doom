@@ -5,6 +5,10 @@
 ;; Load local files...
 ;;------------------------------------------------------------------------------
 
+;; Load set-up code and then run our internal set-up for nub, mis vars, etc.
+(load! "setup")
+(int<mis>:init)
+
 ;; Always load load. Cannot load anything else without it.
 (load! "load")
 
@@ -49,6 +53,21 @@
 ;;
 ;;------------------
 
+;;------------------------------------------------------------------------------
+;; Set imp Root
+;;------------------------------------------------------------------------------
+
+(imp:path:root :mis
+               (imp:path:paths->path doom-private-dir
+                                     "modules"
+                                     "output"
+                                     "mis")
+               "init.el")
+
+;; TODO: imp:require / imp:provide
+;;   - Replace mmm:require/mmm:provide.
+;;   - Make sure each file has the correct requirements up top.
+
 
 ;;------------------------------------------------------------------------------
 ;; Load more of mis now that we can load...
@@ -78,4 +97,4 @@
 ;; TODO: (mmm:require 'message)
 
 ;; TODO: provide once we're sure that mis0 is all resolved and once someone wants misNonZero
-;; (provide 'mis)
+;; (imp:provide:with-emacs :mis)

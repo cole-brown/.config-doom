@@ -1,8 +1,8 @@
 ;;; mis2/args/string2.el -*- lexical-binding: t; -*-
 
-(-m//require 'internal 'const)
-(-m//require 'internal 'valid)
-(-m//require 'internal 'mlist2)
+(imp:require :mis 'internal 'const)
+(imp:require :mis 'internal 'valid)
+(imp:require :mis 'internal 'mlist)
 
 
 ;;------------------------------------------------------------------------------
@@ -46,24 +46,27 @@ Disabled for now:
 
 Returns an mlist.
 "
-  (cond ((memq indent '(auto))  ;; disabled-for-now list
-         (error "%S: `auto' is not currently supported for indentation."
-                "mis2/string/indent"))
+  (let ((func.name "mis2/string/indent"))
+    (cond ((memq indent (alist-get :unsupported -m//const/indent)) ;; disabled-for-now list
+           (nub:error int<mis>:nub:user
+                      func.name
+                      "`auto' is not currently supported for indentation."))
 
-        ;; Supported Symbols
-        ((memq indent '(fixed existing))
-         (mis2//out.string/indent.set mlist indent (current-column)))
+          ;; Supported Symbols
+          ((memq indent (alist-get :supported -m//const/indent))
+           (mis2//out.string/indent.set mlist indent (current-column)))
 
-        ;; Supported Type: Integers
-        ((integerp indent)
-          (mis2//out.string/indent.set mlist indent))
+          ;; Supported Type: Integers
+          ((integerp indent)
+           (mis2//out.string/indent.set mlist indent))
 
-        ;; Default Case: Error out.
-        (t
-         (error "%S: indent must be: %s. Got: %S"
-                "mis2/string/indent"
-                "'auto, 'fixed, 'existing or an integer"
-                indent))))
+          ;; Default Case: Error out.
+          (t
+           (nub:error int<mis>:nub:user
+                      func.name
+                      "indent must be one of %s, or an integer. Got: %S"
+                      (alist-get :all -m//const/indent)
+                      indent)))))
 ;; (mis2/string/indent 42)
 ;; (mis2/string/indent 'fixed)
 ;; (mis2/string/indent 'auto)
@@ -98,12 +101,15 @@ Disabled for now:
   (let ((indent (-m//string/first :indent mlists 0)))
     ;; `fixed' and `existing' both return current column for the amount; they differ
     ;; in `-m//string/indent.get'.
-    (cond ((memq indent '(fixed existing))
+    (cond ((memq indent (alist-get :supported -m//const/indent))
            (current-column))
 
           ;; Auto is disabled for now...
-          ((eq indent 'auto)
-           (error "-m//string/indent.amount: `auto' not supported until it gets properly figured out.")
+          ((memq indent (alist-get :unsupported -m//const/indent))
+           (nub:error int<mis>:nub:user
+                      "-m//string/indent.amount"
+                      "%s not supported until it gets properly figured out."
+                      indent)
            ;; ;; Fun fact: No way to just ask "what will/should the indent be"...
            ;; ;; ...so... We have to actually indent in order to figure out how
            ;; ;; much indention we need?
@@ -239,5 +245,4 @@ Returns updated MOUT list."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(-m//provide 'args 'string2)
-(provide 'mis/args/string2)
+(imp:provide:with-emacs :mis 'args 'string)

@@ -1,6 +1,8 @@
-;;; mis/helpers/load.el -*- lexical-binding: t; -*-
+;;; mis/load.el -*- lexical-binding: t; -*-
 
 (require 'dash)
+(imp:require :mis 'setup)
+
 
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
@@ -53,8 +55,10 @@ Returns the normalized string.
 
         ;; Error? Do the error thing.
         (t
-         (error "-m//string/normalize: input '%s' cannot be normalized."
-                input))))
+         (nub:error int<mis>:nub:user
+                    "-m//string/normalize"
+                    "input '%s' cannot be normalized."
+                    input))))
 ;; (let ((name "jeff")) (-m//string/normalize name))
 
 
@@ -155,7 +159,10 @@ This is for loading done internally in mis.
         (let (file-name-handler-alist)
           ;(load path nil))
           (load path nil 'nomessage))
-    (error "mis fail loading: %s (%S); error: %S" path name e))))
+      (nub:error int<mis>:nub:user
+                 "-m//load"
+                 "mis fail loading: %s (%S); error: %S"
+                 path name e))))
 ;; (-m//load 'test 'something)
 
 
@@ -170,4 +177,4 @@ This is for loading done internally in mis.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(-m//provide 'internal 'load)
+(imp:provide :mis 'internal 'load)

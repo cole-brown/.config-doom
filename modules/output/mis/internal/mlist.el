@@ -1,6 +1,10 @@
 ;;; mis/internal/mout.el -*- lexical-binding: t; -*-
 
 
+(imp:require :mis 'internal 'const)
+(imp:require :mis 'internal 'valid)
+
+
 ;;------------------------------------------------------------------------------
 ;; Format
 ;;------------------------------------------------------------------------------
@@ -45,8 +49,6 @@ Guessing at wanting everything in backwards order."
     (list (-m//out/entry.set/create :mis :out))))
 ;; (-m//out/init)
 ;; (-m//out/init)
-
-
 
 
 ;;------------------------------------------------------------------------------
@@ -117,4 +119,4 @@ Returns `:mis/nil' if no KEY in MOUT."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(-m//provide 'internal 'mlist2)
+(imp:provide :mis 'internal 'mlist)

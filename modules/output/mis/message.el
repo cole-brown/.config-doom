@@ -1,6 +1,8 @@
 ;;; mis/init/+message.el -*- lexical-binding: t; -*-
 
-(-m//require 'internal 'mlist)
+(imp:require :mis 'internal 'const)
+(imp:require :mis 'internal 'valid)
+(imp:require :mis 'internal 'mlist)
 
 
 ;;------------------------------------------------------------------------------
@@ -35,6 +37,4 @@ Returns formatted output."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; provide to mis and to everyone
-(-m//provide 'message)
-(provide 'mis/message)
+(imp:provide:with-emacs :mis 'message)

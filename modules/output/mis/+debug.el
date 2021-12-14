@@ -4,46 +4,43 @@
 
 ;; Debugging functionality for mis.
 
+
+(imp:require :mis 'setup)
+
+
 ;;------------------------------------------------------------------------------
 ;; Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defvar mis//debugging nil
-  "Debug flag.")
+(defun mis//debugging (&optional tags)
+  "Returns non-nil when `nub' output level `:debug' is enabled for TAGS.
+
+If TAGS is nil, returns non-nil when `nub' global debugging is enabled."
+  (nub:debug:active? int<mis>:nub:user
+                     tags))
 
 
 (defun mis//debug/toggle ()
-  "Toggle debugging for mis."
+  "Toggle debugging flag for `mis'; leave debugging tags alone."
   (interactive)
-  (setq mis//debugging (not mis//debugging))
-  (message "mis//debugging: %s"
-           (if mis//debugging
-               "enabled"
-             "disabled")))
+  (nub:debug:toggle int<mis>:nub:user))
+
+
+(defun mis//debug/tag (tag)
+  "Toggle a debugging keyword tag."
+  (interactive)
+  (nub:debug:tag int<mis>:nub:user
+                 tag))
 
 
 ;;------------------------------------------------------------------------------
 ;; Debugging Functions
 ;;------------------------------------------------------------------------------
-
-(defun mis//debug (func msg &rest args)
-  "Print out a debug message if debugging."
-  (when mis//debugging
-    (apply #'message
-           (concat func ": " msg)
-           args)))
-;; (mis//debug "test_func" "test")
-
-
-(defmacro mis//when-debugging (&rest body)
-  "Only run BODY when debug flag is set."
-  (declare (indent defun))
-  `(when mis//debugging
-     ,@body))
+;; Just use `nub:debug', `nub:debug:func/start', `nub:debug:func/end', etc...
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(-m//provide 'internal 'debug)
 ;; Don't provide globally.
+(imp:provide :mis 'debug)

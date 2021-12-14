@@ -315,6 +315,9 @@ platform-agnostically.
 (defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
   "Set the root path(s) of KEYWORD for future `imp:require' calls.
 
+KEYWORD should be the imp package name keyword (e.g. `imp' uses `:imp' as its
+KEYWORD).
+
 PATH-TO-ROOT-DIR is the directory under which all of KEYWORD's features exist.
 
 PATH-TO-ROOT-FILE is nil or the file to load if only KEYWORD is used in an

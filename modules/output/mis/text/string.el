@@ -1,4 +1,5 @@
-;;; mis2/args/string2.el -*- lexical-binding: t; -*-
+;;; mis/text/string.el -*- lexical-binding: t; -*-
+
 
 (imp:require :mis 'internal 'const)
 (imp:require :mis 'internal 'valid)
@@ -245,4 +246,4 @@ Returns updated MOUT list."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide:with-emacs :mis 'args 'string)
+(imp:provide:with-emacs :mis 'text 'string)

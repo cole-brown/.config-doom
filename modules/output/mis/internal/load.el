@@ -1,7 +1,7 @@
-;;; mis/load.el -*- lexical-binding: t; -*-
+;;; mis/internal/load.el -*- lexical-binding: t; -*-
 
 (require 'dash)
-(imp:require :mis 'setup)
+(imp:require :mis 'internal 'setup)
 
 
 ;;------------------------------------------------------------------------------

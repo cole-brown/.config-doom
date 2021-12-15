@@ -1,20 +1,4 @@
-;;; mis/init/init.el -*- lexical-binding: t; -*-
-
-
-;;------------------------------------------------------------------------------
-;; Load local files...
-;;------------------------------------------------------------------------------
-
-;; Load set-up code and then run our internal set-up for nub, mis vars, etc.
-(load! "setup")
-(int<mis>:init)
-
-;; Always load load. Cannot load anything else without it.
-(load! "load")
-
-;; Load debug if not undesired...
-(unless (featurep! -debug)
-  (load! "+debug"))
+;;; mis/init.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -53,6 +37,7 @@
 ;;
 ;;------------------
 
+
 ;;------------------------------------------------------------------------------
 ;; Set imp Root
 ;;------------------------------------------------------------------------------
@@ -70,31 +55,48 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Load more of mis now that we can load...
+;; Load mis files...
 ;;------------------------------------------------------------------------------
 
 ;;------------------
 ;; Internal Functions
 ;;------------------
-(mmm:require 'internal 'const)
-(mmm:require 'internal 'valid)
-(mmm:require 'internal 'mlist)
+
+;; Load set-up code and then run our internal set-up for nub, mis vars, etc.
+(load! "internal/setup")
+(int<mis>:init)
+
+;; Always load load. Cannot load anything else without it.
+(load! "internal/load")
+
+;; Load debug if not undesired...
+(unless (featurep! -debug)
+  (load! "internal/+debug"))
+
+(load! "internal/const")
+(load! "internal/valid")
+(load! "internal/mlist")
+
 
 ;;------------------
 ;; Text & Styling
 ;;------------------
-(mmm:require 'text 'string)
-(mmm:require 'style 'style)
+(load! "text/string")
+(load! "style/style")
+
 
 ;;------------------
 ;; Code-Related Things
 ;;------------------
-(mmm:require 'code 'comment)
+(load! "code/comment")
+
 
 ;;------------------
 ;; Messages
 ;;------------------
-;; TODO: (mmm:require 'message)
+;; TODO: (load! "message/message")
 
-;; TODO: provide once we're sure that mis0 is all resolved and once someone wants misNonZero
+
+;; TODO: provide once we're sure that mis is all resolved and once someone wants misNonZero
+;; TODO: would probably have to also remove misNotNonZero at this time too.
 ;; (imp:provide:with-emacs :mis)

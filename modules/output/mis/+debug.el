@@ -5,7 +5,7 @@
 ;; Debugging functionality for mis.
 
 
-(imp:require :mis 'setup)
+(imp:require :mis 'internal 'setup)
 
 
 ;;------------------------------------------------------------------------------
@@ -42,5 +42,4 @@ If TAGS is nil, returns non-nil when `nub' global debugging is enabled."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; Don't provide globally.
-(imp:provide :mis 'debug)
+(imp:provide :mis 'internal 'debug)

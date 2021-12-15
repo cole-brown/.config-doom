@@ -1,4 +1,4 @@
-;;; mis/init/+message.el -*- lexical-binding: t; -*-
+;;; mis/message/message.el -*- lexical-binding: t; -*-
 
 (imp:require :mis 'internal 'const)
 (imp:require :mis 'internal 'valid)
@@ -37,4 +37,4 @@ Returns formatted output."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide:with-emacs :mis 'message)
+(imp:provide:with-emacs :mis 'message 'message)

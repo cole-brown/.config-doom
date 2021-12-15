@@ -1,4 +1,4 @@
-;;; mis/internal/mout.el -*- lexical-binding: t; -*-
+;;; mis/internal/mlist.el -*- lexical-binding: t; -*-
 
 
 (imp:require :mis 'internal 'const)

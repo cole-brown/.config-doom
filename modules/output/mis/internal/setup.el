@@ -1,7 +1,4 @@
-;;; mis/setup.el -*- lexical-binding: t; -*-
-
-
-(imp:require :nub)
+;;; mis/internal/setup.el -*- lexical-binding: t; -*-
 
 
 ;;------------------------------------------------------------------------------
@@ -33,4 +30,4 @@ Initializes `nub' for usage in `mis'."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :mis 'setup)
+(imp:provide :mis 'internal 'setup)

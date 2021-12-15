@@ -1,11 +1,12 @@
 ;;; mis/code/comment.el -*- lexical-binding: t; -*-
 
+
 ;;----------------------------------------HELP!
 ;;--         My fancy header generator is broken...                   --
 ;;------------------------------------------------------------------------------
 
-(-m//require 'internal 'mlist)
-(-m//provide 'internal 'debug)
+(imp:require :mis 'internal 'mlist)
+(imp:require :mis 'internal 'debug)
 
 
 ;;------------------------------------------------------------------------------
@@ -355,6 +356,4 @@ Returns updated MOUT list."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; provide to mis and to everyone
-(-m//provide 'code 'comment)
-(provide 'mis/code/comment)
+(imp:provide:with-emacs :mis 'code 'comment)

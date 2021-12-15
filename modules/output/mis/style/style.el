@@ -1,4 +1,4 @@
-;;; mis/args/style2.el -*- lexical-binding: t; -*-
+;;; mis/style/style.el -*- lexical-binding: t; -*-
 
 
 (imp:require :mis 'internal 'const)
@@ -251,4 +251,4 @@ Returns updated MOUT list."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide:with-emacs :mis 'args 'style2)
+(imp:provide:with-emacs :mis 'style 'style)

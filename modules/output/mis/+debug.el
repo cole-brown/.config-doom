@@ -12,7 +12,7 @@
 ;; Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defun mis//debugging (&optional tags)
+(defun int<mis>:debugging (&optional tags)
   "Returns non-nil when `nub' output level `:debug' is enabled for TAGS.
 
 If TAGS is nil, returns non-nil when `nub' global debugging is enabled."
@@ -20,13 +20,13 @@ If TAGS is nil, returns non-nil when `nub' global debugging is enabled."
                      tags))
 
 
-(defun mis//debug/toggle ()
+(defun int<mis>:debug:toggle ()
   "Toggle debugging flag for `mis'; leave debugging tags alone."
   (interactive)
   (nub:debug:toggle int<mis>:nub:user))
 
 
-(defun mis//debug/tag (tag)
+(defun int<mis>:debug:tag (tag)
   "Toggle a debugging keyword tag."
   (interactive)
   (nub:debug:tag int<mis>:nub:user

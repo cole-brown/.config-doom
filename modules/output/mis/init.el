@@ -26,14 +26,8 @@
 ;;------------------
 ;; mis Private
 ;; -------
-;; Make Message Mmmm... Private Interface:
-;;   - mmm:
-;;
-;; -------
-;; File/Folder Internal
-;; -------
-;; Make Message Mmyes.
-;;   - mmm://
+;; Internal Mis:
+;;   - int<mis>:
 ;;
 ;;------------------
 

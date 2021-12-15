@@ -9,7 +9,7 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defvar -m//init/buffer (generate-new-buffer "mis/init")
+(defvar int<mis>:init/buffer (generate-new-buffer "mis/init")
   "Buffer for mis/init messages.")
 
 
@@ -17,15 +17,15 @@
 ;; Functions
 ;;------------------------------------------------------------------------------
 
-(defun mis/init/notify (message &rest args)
-  "Output to `-m//init/buffer' and minibuffer."
-  (minibuffer-message (apply #'mis/init/message message args)))
+(defun mis:init/notify (message &rest args)
+  "Output to `int<mis>:init/buffer' and minibuffer."
+  (minibuffer-message (apply #'mis:init/message message args)))
 
 
-(defun mis/init/message (message &rest args)
-  "Format MESSAGE and ARGS, append as new line in `-m//init/buffer'.
+(defun mis:init/message (message &rest args)
+  "Format MESSAGE and ARGS, append as new line in `int<mis>:init/buffer'.
 Returns formatted output."
-  (with-current-buffer -m//init/buffer
+  (with-current-buffer int<mis>:init/buffer
     (let ((output (apply #'format message args)))
       (save-mark-and-excursion
         (goto-char (point-max))

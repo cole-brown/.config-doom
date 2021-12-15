@@ -1,4 +1,4 @@
-;;;;; init.el --- Init for :spy/files doom module. -*- lexical-binding: t; -*-
+;;; init.el --- Init for :spy/files doom module. -*- lexical-binding: t; -*-
 ;;
 ;; Copyright (C) 2020 Cole Brown
 ;;

@@ -1,6 +1,4 @@
-;;; emacs/dlv/init.el -*- lexical-binding: t; -*-
-
-;;;;; init.el --- Init for spy/jerky doom module. -*- lexical-binding: t; -*-
+;;; init.el --- Init for DLV doom module. -*- lexical-binding: t; -*-
 ;;
 
 ;; Copyright (C) 2020-2021  Cole Brown

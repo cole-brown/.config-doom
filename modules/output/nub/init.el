@@ -1,5 +1,4 @@
-;;;; init.el --- Init for :output/nub doom module. -*- lexical-binding: t; -*-
-;;
+;;; init.el --- Init for :output/nub doom module. -*- lexical-binding: t; -*-
 ;; Copyright (C) 2020 Cole Brown
 ;;
 ;; Author: Cole Brown <http://github/cole-brown>
@@ -9,7 +8,7 @@
 ;; Version: 0.0.1
 ;; Keywords: lisp
 ;; Homepage: https://github.com/cole-brown/.config-doom
-;; Package-Requires: ((emacs 27.1))
+;; Package-Requires: ((emacs "27.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -32,7 +31,7 @@
 ;; Set imp Root
 ;;------------------------------------------------------------------------------
 
-(imp:path:root :path
+(imp:path:root :nub
                (imp:path:paths->path doom-private-dir
                                      "modules"
                                      "output"

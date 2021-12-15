@@ -22,14 +22,12 @@
 ;;------------------------------------------------------------------------------
 
 (defun mis:string:trim (trim &optional mlist)
-  "Sets a string trim. Returns an mlist.
-"
+  "Sets a string trim. Returns an mlist."
   (int<mis>:out.string:trim.set mlist trim))
 
 
 (defun mis:string:string (string &optional mlist)
-  "Sets a string string. Returns an mlist.
-"
+  "Sets a string string. Returns an mlist."
   (int<mis>:out.string:string.set mlist string))
 
 
@@ -45,8 +43,7 @@ INDENT supported can be:
 Disabled for now:
   'auto     -> (indent-according-to-mode)
 
-Returns an mlist.
-"
+Returns an mlist."
   (let ((func.name "mis:string:indent"))
     (cond ((memq indent (alist-get :unsupported int<mis>:const:indent)) ;; disabled-for-now list
            (nub:error int<mis>:nub:user
@@ -80,8 +77,7 @@ Returns an mlist.
 ;;------------------------------------------------------------------------------
 
 (defun mis:string:trim.if (string mlists)
-  "Trim STRING if there is a :string/trim set in MLISTS.
-"
+  "Trim STRING if there is a :string/trim set in MLISTS."
   (if (int<mis>:return:invalid? (int<mis>:string:first :trim mlists :mis/nil) '(:mis/nil))
       string
     (string-trim string)))
@@ -97,8 +93,7 @@ Indent can be:
   integer   -> integer
 
 Disabled for now:
-  'auto    -> (indent-according-to-mode)
-"
+  'auto    -> (indent-according-to-mode)"
   (let ((indent (int<mis>:string:first :indent mlists 0)))
     ;; `fixed' and `existing' both return current column for the amount; they differ
     ;; in `int<mis>:string:indent.get'.
@@ -146,8 +141,7 @@ Indent can be:
 
 Disabled for now:
   'auto     -> Indent according to the mode's indentation:
-               (indent-according-to-mode)
-"
+               (indent-according-to-mode)"
   (if (eq (int<mis>:string:first :indent  mlists :mis/nil) 'existing)
       ""
     (make-string (int<mis>:string:indent.amount mlists) ?\s)))
@@ -160,8 +154,7 @@ Disabled for now:
   "Returns a newline string.
 
 String will possibly be indented by an amount represented in MLISTS. If no
-indentation is desired, provide nil.
-"
+indentation is desired, provide nil."
   ;; Return newline, plus any indentation.
   (concat "\n"
           (int<mis>:string:indent.get mlists)))

@@ -32,33 +32,28 @@
 ;;------------------------------------------------------------------------------
 
 (defun mis:style:width (width &optional mlist)
-  "Sets a style width. Returns an mlist.
-"
+  "Sets a style width. Returns an mlist."
   (int<mis>:out/style:width.set mlist width))
 
 
 (defun mis:style:margin (margin &optional mlist)
-  "Sets a style margin. Returns an mlist.
-"
+  "Sets a style margin. Returns an mlist."
   (int<mis>:out/style:margin.set mlist margin))
 
 
 (defun mis:style:border (border &optional mlist)
-  "Sets a style border. Returns an mlist.
-"
+  "Sets a style border. Returns an mlist."
   (int<mis>:out/style:border.set mlist border))
 ;; (mis:style:border "x")
 
 
 (defun mis:style:padding (padding &optional mlist)
-  "Sets a style padding. Returns an mlist.
-"
+  "Sets a style padding. Returns an mlist."
   (int<mis>:out/style:padding.set mlist padding))
 
 
 (defun mis:style:align (alignment &optional mlist)
-  "Sets an alignment. Returns an mlist.
-"
+  "Sets an alignment. Returns an mlist."
   (unless (memq alignment int<mis>:style:alignments)
     (nub:error int<mis>:nub:user
                "mis:style:align"
@@ -74,8 +69,7 @@
 
 Will be set to t if BOXED is non-nil, else set to nil.
 
-Returns an mlist.
-"
+Returns an mlist."
   (int<mis>:out/style:boxed.set mlist (not (null boxed))))
 
 

@@ -34,14 +34,12 @@ these functions.")
 ;;------------------------------------------------------------------------------
 
 (defun int<mis>:comment:get (key mlist &optional default)
-  "Get a comment value from this mlist.
-"
+  "Get a comment value from this mlist."
   (int<mis>:section/get key :comment mlist int<mis>:comments default))
 
 
 (defun int<mis>:comment:set (key value mlist)
-  "Set a comment value in this mlist.
-"
+  "Set a comment value in this mlist."
   (int<mis>:section/set key value :comment mlist int<mis>:comments))
 
 
@@ -49,8 +47,7 @@ these functions.")
   "Get first comment match for KEY in MLISTS. Returns DEFAULT if no matches.
 
 Use `:mis/nil', `:mis/error', etc for default if you have a \"nil is valid\"
-situation in the calling code.
-"
+situation in the calling code."
   (int<mis>:mlists/get.first key :comment mlists int<mis>:comments default))
 ;; (int<mis>:comment:first :border '((:mis t :string (:mis :string :trim t))) :mis/nil)
 
@@ -60,8 +57,7 @@ situation in the calling code.
 ;;------------------------------------------------------------------------------
 
 (defun mis:comment:adjustment (width &optional mlist)
-  "Sets a `comment-start'/`comment-stop' adjustment. Returns an mlist.
-"
+  "Sets a `comment-start'/`comment-stop' adjustment. Returns an mlist."
   (int<mis>:comment:set :adjustment width mlist))
 
 
@@ -70,15 +66,13 @@ situation in the calling code.
 ;;------------------------------------------------------------------------------
 
 (defun int<mis>:comment:ignore ()
-  "Guesses whether to ignore everything based on Emacs' comment-* vars/funcs.
-"
+  "Guesses whether to ignore everything based on Emacs' comment-* vars/funcs."
   ;; If comment-start is null, ignore.
   (null comment-start))
 
 
 (defmacro int<mis>:comment:unless (&rest body)
-  "Runs BODY forms if `int<mis>:comment:ignore' is non-nil.
-"
+  "Runs BODY forms if `int<mis>:comment:ignore' is non-nil."
   (declare (indent defun))
   `(unless (int<mis>:comment:ignore)
      ,@body))
@@ -90,8 +84,7 @@ situation in the calling code.
 Uses `comment-*' emacs functions.
 
 Returns a list of (comment-start-str comment-end-str)
-  - e.g. elisp-mode: (\";;\" nil)
-"
+  - e.g. elisp-mode: (\";;\" nil)"
   (int<mis>:comment:unless
     (let* ((adjustment
             (when with-adjustments
@@ -149,8 +142,7 @@ If there is a :comment/adjustment in the MLIST(S), pass it to
 `int<mis>:comment:borders' as WITH-ADJUSTMENTS arg.
 
 Defaults to trimming the string; override with a :string/trim of
-`nil'/`:mis/nil' in the MLIST(S).
-"
+`nil'/`:mis/nil' in the MLIST(S)."
   (int<mis>:comment:unless
     (-let* (((prefix postfix) (int<mis>:comment:adjustments
                                (int<mis>:comment:first :adjustment mlists t)))
@@ -221,8 +213,7 @@ If there is a :comment/adjustment in the MLIST(S), pass it to
 If there is a :style/width in the MLIST(S), use it as the full width of the
 line; otherwise use `fill-column'.
 
-If there is a :string/indent in the MLIST(S), use that as the indention amount.
-"
+If there is a :string/indent in the MLIST(S), use that as the indention amount."
   (-let* ((func.name "mis:comment:line")
           (debug.tags '(:output :comment))
           (line-fill (int<mis>:style:first :border mlists "-"))
@@ -332,8 +323,7 @@ MLISTS should be nil or the results from other 'mis' calls:
 If there is a :string/string in the MLIST(S), as the header title string.
 Otherwise leave the title empty.
 
-See `mis:comment:line' and `mis:comment:wrap' for the rest of the :mis options.
-"
+See `mis:comment:line' and `mis:comment:wrap' for the rest of the :mis options."
   ;; First Line: Separator
   (concat (apply #'mis:comment:line mlists)
           "\n"

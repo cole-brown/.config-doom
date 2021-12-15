@@ -15,12 +15,12 @@ a nil (to be ignored) as opposed to mis returing a nil value from a user input
 
 ;; TODO: keywords?
 (defconst int<mis>:const:indent
-  '((:all . (auto
-             fixed
-             existing))
+  '((:all         . (auto
+                     fixed
+                     existing))
     (:unsupported . (auto))
-    (:supported . (fixed
-                   existing)))
+    (:supported   . (fixed
+                     existing)))
   "Super special mis constants. Not very special. Used to indicate mis returned
 a nil (to be ignored) as opposed to mis returing a nil value from a user input
 (to be used).")

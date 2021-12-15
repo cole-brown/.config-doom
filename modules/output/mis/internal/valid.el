@@ -53,8 +53,7 @@
 
 `:mis/error' is always considered invalid; any other invalids (e.g. `nil',
 `:mis/nil') should be provided in INVALIDS as a list.
-  - For convenience, an INVALIDS of `t' means `nil' and `:mis/nil' are invalid.
-"
+  - For convenience, an INVALIDS of `t' means `nil' and `:mis/nil' are invalid."
   ;; Convert shortcut invalids into the nil&niller list.
   (let ((invalids (if (eq invalids t)
                       '(nil :mis/nil)

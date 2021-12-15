@@ -11,7 +11,7 @@
 
 ;;(Ye Old mlist)
 ;; Input mlist format:
-;;   (mis:style/boxed t)
+;;   (mis:style:boxed t)
 ;;     -> (:mis t :style (:mis :style :boxed t))
 
 ;; (Ye New mlist)
@@ -28,7 +28,7 @@
 ;; :mis/out alist
 ;;------------------------------------------------------------------------------
 
-;; (defun int<mis>:out/create (mlists)
+;; (defun int<mis>:mlist:create (mlists)
 ;;   "Create the :mis/out alist from all inputs in all the MLISTS.
 ;;
 ;; Returns the created :mis/out alist."
@@ -39,30 +39,30 @@
 ;;       (message "TODO HERE"))))
 
 
-(defun int<mis>:out/init (&optional entry)
+(defun int<mis>:mlist:init (&optional entry)
   "Create the :mis/out alist with its first entry.
 
 Guessing at wanting everything in backwards order."
   (if entry
-      (list (int<mis>:out/entry.set/create :mis :out)
+      (list (int<mis>:mlist:entry.set/create :mis :out)
             entry)
-    (list (int<mis>:out/entry.set/create :mis :out))))
-;; (int<mis>:out/init)
-;; (int<mis>:out/init)
+    (list (int<mis>:mlist:entry.set/create :mis :out))))
+;; (int<mis>:mlist:init)
+;; (int<mis>:mlist:init)
 
 
 ;;------------------------------------------------------------------------------
 ;; Entry: Set
 ;;------------------------------------------------------------------------------
 
-(defun int<mis>:out/entry.set/create (key value)
+(defun int<mis>:mlist:entry.set:create (key value)
   "Create the entry itself.
 
 Returns the entry created."
   (cons key value))
 
 
-(defun int<mis>:out/entry.set/update (mout key value)
+(defun int<mis>:mlist:entry.set:update (mout key value)
   "Update or create the entry in the MOUT alist.
 
 Returns the MOUT alist."
@@ -71,43 +71,43 @@ Returns the MOUT alist."
 
 
 ;; TODO: sanity checks?
-(defun int<mis>:out/entry.set (key value mout)
+(defun int<mis>:mlist:entry.set (key value mout)
   "Create/update KEY in MOUT alist to VALUE."
   (if (not mout)
       ;; No :mis/out - create it with the new entry.
-      (int<mis>:out/init (int<mis>:out/entry.set/create key value))
+      (int<mis>:mlist:init (int<mis>:mlist:entry.set:create key value))
 
     ;; Existing :mis/out - update key if it exists else add.
-    (int<mis>:out/entry.set/update mout key value)
+    (int<mis>:mlist:entry.set:update mout key value)
     mout))
-;; (int<mis>:out/entry.set nil :jeff 'jill)
-;; (int<mis>:out/entry.set '((:mis . :out) (:jeff . jeff)) :jeff 'jill)
+;; (int<mis>:mlist:entry.set nil :jeff 'jill)
+;; (int<mis>:mlist:entry.set '((:mis . :out) (:jeff . jeff)) :jeff 'jill)
 ;; A sub-entry:
-;; (int<mis>:out/entry.set '((:jeff . jill) (:width . 9001)) :width 80)
+;; (int<mis>:mlist:entry.set '((:jeff . jill) (:width . 9001)) :width 80)
 
 
 ;;------------------------------------------------------------------------------
 ;; Entry: Get
 ;;------------------------------------------------------------------------------
 
-(defun int<mis>:out/entry.get (mout key)
+(defun int<mis>:mlist:entry.get (mout key)
   "Get a KEY's value from MOUT.
 
 Returns `:mis/nil' if no KEY in MOUT."
   (alist-get key mout :mis/nil))
-;; (int<mis>:out/entry.get (int<mis>:out/entry :jeff 'jill nil) :dne)
-;; (int<mis>:out/entry.get (int<mis>:out/entry :jeff 'jill nil) :jeff)
+;; (int<mis>:mlist:entry.get (int<mis>:mlist:entry :jeff 'jill nil) :dne)
+;; (int<mis>:mlist:entry.get (int<mis>:mlist:entry :jeff 'jill nil) :jeff)
 ;; A sub-entry:
-;; (int<mis>:out/entry.get '((:jeff . jill) (:width . 80)) :width)
+;; (int<mis>:mlist:entry.get '((:jeff . jill) (:width . 80)) :width)
 
 
 ;; How shoud mout vs mlist work even?
-;; (mis:comment/wrap
-;;  (int<mis>:style/align "Hello There."
-;;                   (list (mis:style/align :center)
-;;                         (mis:style/padding "-"))))
+;; (mis:comment:wrap
+;;  (int<mis>:style:align "Hello There."
+;;                   (list (mis:style:align :center)
+;;                         (mis:style:padding "-"))))
 ;; --->
-;; (mis:comment/wrap
+;; (mis:comment:wrap
 ;;  '((:mis . :out)
 ;;    (:align . :center)
 ;;    (:padding "-")

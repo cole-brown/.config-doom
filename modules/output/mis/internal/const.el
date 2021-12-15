@@ -5,7 +5,7 @@
 ;; Constants
 ;;------------------------------------------------------------------------------
 
-(defconst int<mis>:const/flags
+(defconst int<mis>:const:flags
   '(:mis/nil
     :mis/error)
   "Super special mis constants. Not very special. Used to indicate mis returned
@@ -14,7 +14,7 @@ a nil (to be ignored) as opposed to mis returing a nil value from a user input
 
 
 ;; TODO: keywords?
-(defconst int<mis>:const/indent
+(defconst int<mis>:const:indent
   '((:all . (auto
              fixed
              existing))

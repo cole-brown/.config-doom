@@ -10,7 +10,7 @@
   (-some #'identity
          (-filter
           (lambda (x)
-            (if (memq x int<mis>:const/flags)
+            (if (memq x int<mis>:const:flags)
                 nil
               x))
           input)))
@@ -22,7 +22,7 @@
 ;; Predicates
 ;;------------------------------------------------------------------------------
 
-(defun int<mis>:input/invalid? (input valids)
+(defun int<mis>:input:invalid? (input valids)
   "Returns t if INPUT is not a member of valids, or if INPUT is a special case
   like `:mis/error'."
 
@@ -38,17 +38,17 @@
    ;; Not a valid member, so... invalid.
    (t
     t)))
-;; (int<mis>:input/invalid? :trim '(:trim :string))
+;; (int<mis>:input:invalid? :trim '(:trim :string))
 
 
-(defun int<mis>:return/error->nil (input)
+(defun int<mis>:return:error->nil (input)
   "Converts INPUT of `:mis/error' to nil. Leaves other inputs alone."
   (if (eq input :mis/error)
       nil
     input))
 
 
-(defun int<mis>:return/invalid? (values &optional invalids)
+(defun int<mis>:return:invalid? (values &optional invalids)
   "Returns t if any VALUES are considered \"invalid\".
 
 `:mis/error' is always considered invalid; any other invalids (e.g. `nil',
@@ -78,14 +78,16 @@
                "Check that values are not invalid."
                (eq val :mis/error))
              values))))
-;; (int<mis>:return/invalid? '(jeff))
-;; (int<mis>:return/invalid? 'jeff)
-;; (int<mis>:return/invalid? '(:mis/error))
-;; (int<mis>:return/invalid? :mis/error)
-;; (int<mis>:return/invalid? '(nil :mis/error 'jeff))
-;; (int<mis>:return/invalid? '("" 'jeff))
-;; (int<mis>:return/invalid? '(nil 'jeff) t) ;; nil is invalid
-;; (int<mis>:return/invalid? '(:mis/nil 'jeff) t) ;; :mis/nil is invalid
+;; (int<mis>:return:invalid? '(jeff))
+;; (int<mis>:return:invalid? 'jeff)
+;; (int<mis>:return:invalid? '(:mis/error))
+;; (int<mis>:return:invalid? :mis/error)
+;; (int<mis>:return:invalid? '(nil :mis/error 'jeff))
+;; (int<mis>:return:invalid? '("" 'jeff))
+;; (int<mis>:return:invalid? '(nil 'jeff) t) ;; nil is invalid
+;; (int<mis>:return:invalid? '(:mis/nil 'jeff) t) ;; :mis/nil is invalid
+
+
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------

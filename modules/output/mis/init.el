@@ -43,10 +43,6 @@
                                      "mis")
                "init.el")
 
-;; TODO: imp:require / imp:provide
-;;   - Replace mmm:require/mmm:provide.
-;;   - Make sure each file has the correct requirements up top.
-
 
 ;;------------------------------------------------------------------------------
 ;; Load mis files...
@@ -88,9 +84,10 @@
 ;;------------------
 ;; Messages
 ;;------------------
-;; TODO: (load! "message/message")
+(load! "message/init")
 
 
-;; TODO: provide once we're sure that mis is all resolved and once someone wants misNonZero
-;; TODO: would probably have to also remove misNotNonZero at this time too.
+;; TODO: Change misZero's provide to be `mis0' or something so this one can be `mis' via `imp:provide:with-emacs'.
+;; TODO: Provide once we're sure that mis is all resolved and once someone wants misNonZero
+;; TODO: Would probably have to also remove misNotNonZero at this time too.
 ;; (imp:provide:with-emacs :mis)

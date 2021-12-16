@@ -1,5 +1,5 @@
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
-;;; output/nub/test/alist.el
+;;; alist/test/alist.el
 
 ;;------------------------------------------------------------------------------
 ;; Test Requirements
@@ -33,7 +33,7 @@ TYPE:
 
 Usage:
   (test<alist>:get :global)
-    -> `test<nub/alist>:alist'
+    -> `test<alist>:alist'
   (test<alist>:get :local 'some-local-symbol-name)
     -> `some-local-symbol-name'"
   (cond ((eq type :local)
@@ -52,7 +52,7 @@ Usage:
 ;; Set-Up / Tear-Down
 ;;------------------------------
 
-(defun test<nub/alist>:setup (_)
+(defun test<alist/alist>:setup (_)
   "Create a global-scoped alist (as opposed to function scoped w/ `let') for some tests to use."
   (setq test<alist>:alist/values (list (cons :key-0 :value-0/initial)
                                        (cons :key-1 :value-1/initial)
@@ -61,16 +61,16 @@ Usage:
                                        (cons :key-4 :value-4/initial)
                                        (cons :key-5 :value-5/initial)))
   (setq test<alist>:alist/nil nil)
-  ;; (message "setup: %S" test<nub/alist>:alist)
+  ;; (message "setup: %S" test<alist>:alist)
   )
 
 
-(defun test<nub/alist>:teardown (test-name)
+(defun test<alist/alist>:teardown (test-name)
   "Leave the global-scoped alists hanging around w/ whatever values tests modified to?"
-  ;; (makunbound 'test<nub/alist>:alist)
-  ;; (unintern 'test<nub/alist>:alist)
+  ;; (makunbound 'test<alist>:alist)
+  ;; (unintern 'test<alist>:alist)
   ;; (message "teardown: %S" (condition-case _
-  ;;                             test<nub/alist>:alist
+  ;;                             test<alist>:alist
   ;;                           (void-variable "<void>")))
   )
 
@@ -90,13 +90,13 @@ Usage:
 ;; alist:alist?
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:alist? ()
+(ert-deftest test<alist>::alist:alist? ()
   "Test that `alist:alist?' behaves appropriately."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:alist?"
+   "test<alist>::alist:alist?"
    nil
    nil
 
@@ -154,13 +154,13 @@ Usage:
 ;; alist:get/value
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:get/value ()
+(ert-deftest test<alist>::alist:get/value ()
   "Test that `alist:get/value' behaves appropriately."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:get/value"
+   "test<alist>::alist:get/value"
    nil
    nil
 
@@ -181,19 +181,19 @@ Usage:
      ;;------------------------------
      ;; Check the 'cons' alist.
      ;;------------------------------
-     (test<nub>:should:marker test-name "cons: key-0")
+     (test<alist>:should:marker test-name "cons: key-0")
      (setq value/get (alist:get/value :key-0 alist/cons))
      (should value/get)
      (should (stringp value/get))
      (should (string= value/get value/expected:0))
 
-     (test<nub>:should:marker test-name "cons: key-1")
+     (test<alist>:should:marker test-name "cons: key-1")
      (setq value/get (alist:get/value :key-1 alist/cons))
      (should value/get)
      (should (keywordp value/get))
      (should (eq value/get value/expected:1))
 
-     (test<nub>:should:marker test-name "cons: key-2")
+     (test<alist>:should:marker test-name "cons: key-2")
      (setq value/get (alist:get/value :key-2 alist/cons))
      (should value/get)
      (should (integerp value/get))
@@ -202,7 +202,7 @@ Usage:
      ;;------------------------------
      ;; Check the 'list' alist.
      ;;------------------------------
-     (test<nub>:should:marker test-name "list: key-0")
+     (test<alist>:should:marker test-name "list: key-0")
      (setq value/get (alist:get/value :key-0 alist/list))
      (should value/get)
      (should (listp value/get))
@@ -211,7 +211,7 @@ Usage:
      (should (stringp value/get))
      (should (string= value/get value/expected:0))
 
-     (test<nub>:should:marker test-name "list: key-1")
+     (test<alist>:should:marker test-name "list: key-1")
      (setq value/get (alist:get/value :key-1 alist/list))
      (should value/get)
      (should (listp value/get))
@@ -220,7 +220,7 @@ Usage:
      (should (keywordp value/get))
      (should (eq value/get value/expected:1))
 
-     (test<nub>:should:marker test-name "list: key-2")
+     (test<alist>:should:marker test-name "list: key-2")
      (setq value/get (alist:get/value :key-2 alist/list))
      (should value/get)
      (should (listp value/get))
@@ -234,13 +234,13 @@ Usage:
 ;; alist:get/pair
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:get/pair ()
+(ert-deftest test<alist>::alist:get/pair ()
   "Test that `alist:get/pair' behaves appropriately."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:get/pair"
+   "test<alist>::alist:get/pair"
    nil
    nil
 
@@ -265,7 +265,7 @@ Usage:
      ;;------------------------------
      (let ((expected:key  :key-0)
            (expected:value value/expected:0))
-       (test<nub>:should:marker test-name "cons: key-0")
+       (test<alist>:should:marker test-name "cons: key-0")
        (setq value/get (alist:get/pair expected:key alist/cons))
        (should value/get)
        (should (consp value/get))
@@ -279,7 +279,7 @@ Usage:
 
      (let ((expected:key  :key-1)
            (expected:value value/expected:1))
-       (test<nub>:should:marker test-name "cons: key-1")
+       (test<alist>:should:marker test-name "cons: key-1")
        (setq value/get (alist:get/pair expected:key alist/cons))
        (should value/get)
        (should (consp value/get))
@@ -293,7 +293,7 @@ Usage:
 
      (let ((expected:key  :key-2)
            (expected:value value/expected:2))
-       (test<nub>:should:marker test-name "cons: key-2")
+       (test<alist>:should:marker test-name "cons: key-2")
        (setq value/get (alist:get/pair expected:key alist/cons))
        (should value/get)
        (should (consp value/get))
@@ -310,7 +310,7 @@ Usage:
      ;;------------------------------
      (let ((expected:key  :key-0)
            (expected:value value/expected:0))
-       (test<nub>:should:marker test-name "list: key-0")
+       (test<alist>:should:marker test-name "list: key-0")
        (setq value/get (alist:get/pair expected:key alist/list))
        (should value/get)
        (should (listp value/get))
@@ -323,7 +323,7 @@ Usage:
 
      (let ((expected:key :key-1)
            (expected:value value/expected:1))
-       (test<nub>:should:marker test-name "list: key-1")
+       (test<alist>:should:marker test-name "list: key-1")
        (setq value/get (alist:get/pair expected:key alist/list))
        (should value/get)
        (should (listp value/get))
@@ -336,7 +336,7 @@ Usage:
 
      (let ((expected:key :key-2)
            (expected:value value/expected:2))
-       (test<nub>:should:marker test-name "list: key-2")
+       (test<alist>:should:marker test-name "list: key-2")
        (setq value/get (alist:get/pair expected:key alist/list))
        (should value/get)
        (should (listp value/get))
@@ -352,13 +352,13 @@ Usage:
 ;; alist:update - local alist (defined in a `let')
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:update::local ()
+(ert-deftest test<alist>::alist:update::local ()
   "Test that `alist:update' will add/overwrite values in a local alist correctly."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:update::local"
+   "test<alist>::alist:update::local"
    nil
    nil
 
@@ -380,7 +380,7 @@ Usage:
      (should-not (alist:get/value :key-3 alist/cons))
      (should-not (alist:get/value :key-3 alist/list))
 
-     (test<nub>:should:marker test-name "cons: New Key/Value")
+     (test<alist>:should:marker test-name "cons: New Key/Value")
      (setq alist/updated (alist:update :key-3 :value-3/new alist/cons))
      (should alist/updated)
 
@@ -391,7 +391,7 @@ Usage:
      (should (keywordp value/get))
      (should (eq value/get :value-3/new))
 
-     (test<nub>:should:marker test-name "list: New Key/Value")
+     (test<alist>:should:marker test-name "list: New Key/Value")
      ;; Add the new value as a list, since it's the `alist/list'.
      (setq alist/updated (alist:update :key-3 '(:value-3/new) alist/list))
      (should alist/updated)
@@ -415,7 +415,7 @@ Usage:
        (should (eq value/cons :value-0/initial))
        (should (equal value/list '(:value-0/initial)))
 
-       (test<nub>:should:marker test-name "cons: Update Existing Key/Value")
+       (test<alist>:should:marker test-name "cons: Update Existing Key/Value")
        (setq alist/updated (alist:update :key-0 :value-0/updated alist/cons))
        (should alist/updated)
        ;; Our return value should be our alist.
@@ -425,7 +425,7 @@ Usage:
        (should (keywordp value/get))
        (should (eq value/get :value-0/updated))
 
-       (test<nub>:should:marker test-name "list: Update Existing Key/Value")
+       (test<alist>:should:marker test-name "list: Update Existing Key/Value")
        ;; Add the new value as a list, since it's the `alist/list'.
        (setq alist/updated (alist:update :key-0 '(:value-0/updated) alist/list))
        (should alist/updated)
@@ -444,13 +444,13 @@ Usage:
 ;; alist:update - non-local alist
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:update::global ()
+(ert-deftest test<alist>::alist:update::global ()
   "Test that `alist:update' will add/overwrite values in a global alist correctly."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:update::global"
+   "test<alist>::alist:update::global"
    (lambda (_)
      "Set up globals for this test."
      (setq test<alist>:alist/cons (list (cons :key-0 :value-0/initial)
@@ -478,7 +478,7 @@ Usage:
      (should-not (alist:get/value :key-3 test<alist>:alist/cons))
      (should-not (alist:get/value :key-3 test<alist>:alist/list))
 
-     (test<nub>:should:marker test-name "cons: New Key/Value")
+     (test<alist>:should:marker test-name "cons: New Key/Value")
      (setq alist/updated (alist:update :key-3 :value-3/new test<alist>:alist/cons))
      (should alist/updated)
 
@@ -489,7 +489,7 @@ Usage:
      (should (keywordp value/get))
      (should (eq value/get :value-3/new))
 
-     (test<nub>:should:marker test-name "list: New Key/Value")
+     (test<alist>:should:marker test-name "list: New Key/Value")
      ;; Add the new value as a list, since it's the `test<alist>:alist/list'.
      (setq alist/updated (alist:update :key-3 '(:value-3/new) test<alist>:alist/list))
      (should alist/updated)
@@ -513,7 +513,7 @@ Usage:
        (should (eq value/cons :value-0/initial))
        (should (equal value/list '(:value-0/initial)))
 
-       (test<nub>:should:marker test-name "cons: Update Existing Key/Value")
+       (test<alist>:should:marker test-name "cons: Update Existing Key/Value")
        (setq alist/updated (alist:update :key-0 :value-0/updated test<alist>:alist/cons))
        (should alist/updated)
        ;; Our return value should be our alist.
@@ -523,7 +523,7 @@ Usage:
        (should (keywordp value/get))
        (should (eq value/get :value-0/updated))
 
-       (test<nub>:should:marker test-name "list: Update Existing Key/Value")
+       (test<alist>:should:marker test-name "list: Update Existing Key/Value")
        ;; Add the new value as a list, since it's the `test<alist>:alist/list'.
        (setq alist/updated (alist:update :key-0 '(:value-0/updated) test<alist>:alist/list))
        (should alist/updated)
@@ -542,13 +542,13 @@ Usage:
 ;; alist:delete - local alist (defined in a `let')
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:delete::local ()
+(ert-deftest test<alist>::alist:delete::local ()
   "Test that `alist:delete' will delete keys from the alist correctly."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:delete::local"
+   "test<alist>::alist:delete::local"
    nil
    nil
 
@@ -566,14 +566,14 @@ Usage:
      ;;------------------------------
      ;; Delete keys from the alists.
      ;;------------------------------
-     (test<nub>:should:marker test-name "cons: `:key-0'")
+     (test<alist>:should:marker test-name "cons: `:key-0'")
      (setq alist/deleted (alist:delete :key-0 alist/cons))
      (should alist/deleted)
      ;; Our return value should be our alist.
      (should (eq alist/deleted alist/cons))
      (should-not (alist:get/value :key-0 alist/cons))
 
-     (test<nub>:should:marker test-name "list: `:key-0'")
+     (test<alist>:should:marker test-name "list: `:key-0'")
      (setq alist/deleted (alist:delete :key-0 alist/list))
      (should alist/deleted)
      ;; Our return value should be our alist.
@@ -585,13 +585,13 @@ Usage:
 ;; alist:delete - global alist
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:delete::global ()
+(ert-deftest test<alist>::alist:delete::global ()
   "Test that `alist:delete' will delete keys from the alist correctly."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:delete::global"
+   "test<alist>::alist:delete::global"
    (lambda (_)
      "Set up globals for this test."
      (setq test<alist>:alist/cons (list (cons :key-0 :value-0/initial)
@@ -615,14 +615,14 @@ Usage:
      ;;------------------------------
      ;; Delete keys from the alists.
      ;;------------------------------
-     (test<nub>:should:marker test-name "cons: `:key-0'")
+     (test<alist>:should:marker test-name "cons: `:key-0'")
      (setq alist/deleted (alist:delete :key-0 test<alist>:alist/cons))
      (should alist/deleted)
      ;; Our return value should be our alist.
      (should (eq alist/deleted test<alist>:alist/cons))
      (should-not (alist:get/value :key-0 test<alist>:alist/cons))
 
-     (test<nub>:should:marker test-name "list: `:key-0'")
+     (test<alist>:should:marker test-name "list: `:key-0'")
      (setq alist/deleted (alist:delete :key-0 test<alist>:alist/list))
      (should alist/deleted)
      ;; Our return value should be our alist.
@@ -640,12 +640,12 @@ Usage:
 ;; alist:update
 ;;------------------------------
 
-(ert-deftest test<nub/alist>::alist:update::regression/call-for-alist ()
+(ert-deftest test<alist>::alist:update::regression/call-for-alist ()
   "Test that `alist:update' can work if you use a macro call that
 returns a symbol-name as a parameter.
 
 Bug came from:
-  (int<nub>:layout:unbind :debug :testing :common '(:n \"s\" :layout:common:undefined))
+  (int<alist>:layout:unbind :debug :testing :common '(:n \"s\" :layout:common:undefined))
 
 ----------
 
@@ -655,13 +655,13 @@ Bug came from:
 [FIX]:
   - Simplified macros for update and delete a lot: moved updating/deleting to a
     helper function and macro just saves results back to provided symbol."
-  (test<nub>:fixture
+  (test<alist>:fixture
    ;;===
    ;; Test name, setup & teardown func.
    ;;===
-   "test<nub/alist>::alist:update::regression/call-for-alist"
-   #'test<nub/alist>:setup
-   #'test<nub/alist>:teardown
+   "test<alist>::alist:update::regression/call-for-alist"
+   #'test<alist>:setup
+   #'test<alist>:teardown
 
    ;;===
    ;; Run the test.

@@ -1,5 +1,5 @@
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
-;;; output/nub/test/base.el
+;;; alist/test/base.el
 
 
 ;;------------------------------------------------------------------------------
@@ -101,7 +101,8 @@ FUNC/SETUP and FUNC/TEARDOWN should take args:
 
 FUNC/SETUP will run as last step in set-up.
 FUNC/TEARDOWN will run as first step in tear-down."
-  )
+  (setq test<alist>:suite:func/setup    func/setup
+        test<alist>:suite:func/teardown func/teardown))
 
 
 ;;------------------------------

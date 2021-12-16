@@ -18,7 +18,9 @@
 
 
 ;;------------------------------------------------------------------------------
-;; A-list functions that are sane.
+;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;;                          Functions for All Alists
+;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;;------------------------------------------------------------------------------
 
 (defun alist:alist? (item)
@@ -51,6 +53,14 @@ the input. Does not copy the keys/values (not a deep copy)."
   (copy-alist alist))
 
 
+;;------------------------------------------------------------------------------
+;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;;                     Functions for Default/`eq' Alists
+;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+;;------------------------------------------------------------------------------
+
+;; TODO: foo: update to have names: `alist:default:...' or `int<alist/default>:...'
+;; TODO: foo: update generic.el: `int<alist>:generic:...' -> `int<alist/generic>:'
 (defun alist:get/value (key alist &optional default)
   "Get cdr of KEY's entry in ALIST."
   (alist-get key alist default))

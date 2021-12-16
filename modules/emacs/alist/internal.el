@@ -129,7 +129,7 @@ ARGS will be passed to `format' with the finalized message string."
                          ;; Formatted message based on what we got passed in.
                          ;; Use `flatten-list' to make MSG a list if it's just a string.
                          ;; It also converts cons to lists, but that's ok here.
-                         (apply #'int<alist>:format (flatten-list msg)))
+                         (apply #'int<alist>:string:format (flatten-list msg)))
          ;; Just pass ARGS directly to error - it will do final format.
          args))
 ;; (int<alist>:error "test-function-name" "hello there")

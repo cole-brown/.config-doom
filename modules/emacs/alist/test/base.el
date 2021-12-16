@@ -161,7 +161,7 @@ run no matter what happens in BODY. Binds NAME to symbol `test-name'.
 If TEST-TEARDOWN-FN is non-nil, it is /always/ called after the test is run
 (even if it errors out/fails/etc). TEST-TEARDOWN-FN should take one parameter:
 NAME."
-  (declare (indent 4))
+  (declare (indent 3))
   `(let ((test-name ,name))
      ;; `unwind-protect' lets us run teardown even if errors, etc.
      (unwind-protect

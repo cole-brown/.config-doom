@@ -16,154 +16,7 @@
 
 (require 'seq)
 (imp:require :alist 'internal)
-
-
-;;------------------------------------------------------------------------------
-;; Alist Types
-;;------------------------------------------------------------------------------
-
-
-(defconst int<alist>:types:preset
-  ;;------------------------------
-  ;; Alist Type -> Equality Function
-  ;;------------------------------
-  '(;;---
-    ;; Default/Generic Alists
-    ;;---
-    ;; Emacs' alist functions default to `eq' when a test func is not supplied
-    ;; or is `nil', so allow that defaulting to happen.
-    ;;
-    (:type/default . nil)
-    (nil           . nil)
-
-    ;;---
-    ;; Special Types
-    ;;---
-    (:type/string . string=)
-
-    ;;---
-    ;; Operators
-    ;;---
-    (:op/eq      . eq)
-    (:op/equal   . equal)
-    (:op/eql     . eql)
-    (:op/=       . =)
-    (:op/string= . string=))
-  "Alist of our preset alist type keywords to equality function.
-
-For customizing, register with `alist:type:register', which will use
-`int<alist>:types:registered'.
-
-NOTE: Use a default value when getting values so you know if you found the
-value of `:type/default' vs didn't find anything!")
-
-
-(defvar int<alist>:types:registered '()
-  "Alist of user registered alist type keywords to equality function.
-
-Register with `alist:type:register', which will not allow any of the keys
-in `int<alist>:types:preset'.")
-
-
-(defun int<alist>:type:testfn (type)
-  "Get the equality test function for the alist TYPE.
-
-E.g. `:string' returns `string='."
-  ;;------------------------------
-  ;; Translate TYPE to an equality function.
-  ;;------------------------------
-  ;; Need to have a "found" flag because the equality test can be `nil' for the default types.
-  (let (equality-function
-        found)
-    ;; Did we get a function passed in? Use that function.
-    (cond ((functionp type)
-           (setq equality-function type
-                 found t))
-
-          ;; Use a preset if found there.
-          ((let ((func (alist-get type int<alist>:types:preset :does-not-exist)))
-             (if (not (eq func :does-not-exist))
-                 (setq equality-function func
-                       found t)
-               nil)))
-
-          ;; And lowest priority: user-registered types.
-          (t
-           (let ((func (alist-get type int<alist>:types:registered :does-not-exist)))
-             (if (not (eq func :does-not-exist))
-                 (setq equality-function func
-                       found t)
-               nil))))
-
-    ;;------------------------------
-    ;; Return function or error.
-    ;;------------------------------
-    (if found
-        ;; Can be nil; that's ok and means "use Emacs' default alist equality func."
-        equality-function
-      (int<alist>:error "int<alist>:type:testfn"
-                        '(:newlines
-                          "Alist type '%S' is unknown! Register it with `(alist:type:register %S %S)'?"
-                          "Known types:"
-                          "  Presets:"
-                          "%s"
-                          "  Registered:"
-                          "%s")
-                        type
-                        type
-                        "equality-function"
-                        (pp-to-string int<alist>:types:preset)
-                        (if int<alist>:types:registered
-                            (pp-to-string int<alist>:types:registered)
-                          "(none)")))))
-;; (int<alist>:type:testfn #'ignore)
-;; (int<alist>:type:testfn :type/string)
-;; (int<alist>:type:testfn :type/default)
-;; (int<alist>:type:testfn nil)
-;; (int<alist>:type:testfn :dne)
-
-
-(defun alist:type:register (type-keyword equality-function)
-  "Register/update alist type TYPE-KEYWORD to use EQUALITY-FUNCTION for
-finding alist entries."
-  ;;------------------------------
-  ;; Error checks.
-  ;;------------------------------
-  (cond ((not (keywordp type-keyword))
-         (int<alist>:error "alist:type:register"
-                           '("TYPE-KEYWORD must be a keyword! "
-                             "Got type '%S' for `%S'.")
-                           type-keyword))
-
-        ((assoc type-keyword int<alist>:types:preset)
-         (int<alist>:error "alist:type:register"
-                           '("Alist type '%S' is pre-defined! "
-                             "Register with a different keyword. "
-                             "Preset types: %s")
-                           type-keyword
-                           int<alist>:types:preset))
-
-        ((not (functionp equality-function))
-         (int<alist>:error "alist:type:register"
-                           '("EQUALITY-FUNCTION '%S' must be a function! "
-                             "Got type: %S")
-                           equality-function
-                           (type-of equality-function)))
-
-        ;;------------------------------
-        ;; Register user type.
-        ;;------------------------------
-        (t
-         (setf (alist-get type-keyword int<alist>:types:registered)
-               equality-function))))
-;; (alist:type:register #'ignore :default)
-;; (alist:type:register :type/default #'ignore)
-;; (alist:type:register :jeff :this-is-incorrect)
-;; (alist:type:register :keyword (lambda (a b) (and (keywordp a) (keywordp b) (eq a b))))
-;; (int<alist>:type:testfn :keyword)
-
-
-;; TODO: 'Valid key' function for type? Could have a 'verify' function then...
+(imp:require :alist 'types 'types)
 
 
 ;;------------------------------------------------------------------------------
@@ -180,20 +33,22 @@ finding alist entries."
   "Get cdr of KEY's entry in ALIST.
 
 If TYPE is non-nil, get & use the proper equality function for TYPE."
+  (int<alist>:type:valid? type key)
   (alist-get key
              alist
              default
              nil
-             (int<alist>:type:testfn type)))
+             (int<alist>:type:func/equal? type)))
 
 
 (defun alist:generic:get/pair (key alist &optional type)
   "Get full assoc/entry of KEY in ALIST.
 
 If TYPE is non-nil, get & use the proper equality function for TYPE."
+  (int<alist>:type:valid? type key)
   (assoc key
          alist
-         (int<alist>:type:testfn type)))
+         (int<alist>:type:func/equal? type)))
 
 
 ;;------------------------------------------------------------------------------
@@ -210,6 +65,7 @@ If TYPE is non-nil, get & use the proper equality function for TYPE.
 
 Returns either a new alist, which isn't ALIST, or the updated alist which may
 or may not be ALIST."
+  (int<alist>:type:valid? type key)
   (if (null alist)
       ;; Create a new alist and return it.
       (list (cons key value))
@@ -219,7 +75,7 @@ or may not be ALIST."
                      alist
                      nil
                      nil
-                     (int<alist>:type:testfn type))
+                     (int<alist>:type:func/equal? type))
           value)
     alist))
 ;; (setq test-alist nil)
@@ -245,6 +101,7 @@ Returns ALIST."
          (int<alist>:macro:value ,value)
          (int<alist>:macro:alist ,alist)
          (int<alist>:macro:type  ,type))
+     (int<alist>:type:valid? int<alist>:macro:type int<alist>:macro:key)
      (cond ((listp int<alist>:macro:alist)
             ;; Overwrite the input symbol value with the updated alist value that `int<alist>:macro:alist' holds.
             (setq ,alist ;; *Have to re-eval ALIST here to actually set it for the caller.
@@ -296,13 +153,14 @@ Returns ALIST."
 If TYPE is non-nil, get & use the proper equality function for TYPE.
 
 Returns alist without the key."
+  (int<alist>:type:valid? type key)
   ;; If it's null, no need to do anything.
   (unless (null alist)
     (setf (alist-get key
                      alist
                      nil
                      'remove
-                     (int<alist>:type:testfn type))
+                     (int<alist>:type:func/equal? type))
           nil))
 
   ;; Return the alist.
@@ -319,6 +177,7 @@ Returns ALIST."
   `(let ((int<alist>:macro:alist ,alist)
          (int<alist>:macro:key   ,key)
          (int<alist>:macro:type  ,type))
+     (int<alist>:type:valid? int<alist>:macro:type int<alist>:macro:key)
      (cond ((listp int<alist>:macro:alist)
             (setq ,alist ;; *Have to re-eval ALIST here to actually set it for the caller.
                   (int<alist>:generic:delete/helper int<alist>:macro:key

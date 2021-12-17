@@ -35,13 +35,20 @@
     ;;
     (:type/default . nil)
     (nil           . nil)
-    ;; On the other hand, we need to know what that default is, occasionally.
-    ;; In those cases, use the `int<alist>:type:default-fn' variable.
 
     ;;---
     ;; Special Types
     ;;---
-    (:type/string . string=))
+    (:type/string . string=)
+
+    ;;---
+    ;; Operators
+    ;;---
+    (:op/eq      . eq)
+    (:op/equal   . equal)
+    (:op/eql     . eql)
+    (:op/=       . =)
+    (:op/string= . string=))
   "Alist of our preset alist type keywords to equality function.
 
 For customizing, register with `alist:type:register', which will use
@@ -283,46 +290,55 @@ Returns ALIST."
 ;; test<alist/alist>:alist/nil
 
 
-(defun int<alist>:generic:delete/helper (key alist)
+(defun int<alist>:generic:delete/helper (key alist type)
   "Removes KEY from ALIST.
 
+If TYPE is non-nil, get & use the proper equality function for TYPE.
+
 Returns alist without the key."
-  ;;---
-  ;; Error Checking
-  ;;---
-  (when (stringp key)
-    (int<alist>:error "alist:generic:delete"
-                      '("String key '%s' won't work... "
-                        "Use `alist:string:delete' "
-                        "for string keys.")
-                      key))
   ;; If it's null, no need to do anything.
   (unless (null alist)
-    (setf (alist-get key alist nil 'remove) nil))
+    (setf (alist-get key
+                     alist
+                     nil
+                     'remove
+                     (int<alist>:type:testfn type))
+          nil))
 
   ;; Return the alist.
   alist)
 
 
-(defmacro alist:generic:delete (key alist)
+(defmacro alist:generic:delete (key alist &optional type)
   "Removes KEY from ALIST.
+
+If TYPE is non-nil, get & use the proper equality function for TYPE.
 
 Returns ALIST."
   ;; Evaluate inputs only once.*
   `(let ((int<alist>:macro:alist ,alist)
-         (int<alist>:macro:key   ,key))
+         (int<alist>:macro:key   ,key)
+         (int<alist>:macro:type  ,type))
      (cond ((listp int<alist>:macro:alist)
             (setq ,alist ;; *Have to re-eval ALIST here to actually set it for the caller.
-                  (int<alist>:generic:delete/helper int<alist>:macro:key int<alist>:macro:alist)))
+                  (int<alist>:generic:delete/helper int<alist>:macro:key
+                                                    int<alist>:macro:alist
+                                                    int<alist>:macro:type)))
 
            ((symbolp int<alist>:macro:alist)
             (set int<alist>:macro:alist
-                 (int<alist>:generic:delete/helper int<alist>:macro:key (eval int<alist>:macro:alist))))
+                 (int<alist>:generic:delete/helper int<alist>:macro:key
+                                                   (eval int<alist>:macro:alist)
+                                                   int<alist>:macro:type)))
 
            (t
             (int<alist>:error "alist:generic:delete"
-                              "Unable to delete key from alist with type %S: %S"
-                              (type-of int<alist>:macro:alist) int<alist>:macro:alist)))))
+                              "Unable to delete key from alist (type-of %S)%s: %S"
+                              (type-of int<alist>:macro:alist)
+                              (if int<alist>:macro:type
+                                  (format " with TYPE %S" int<alist>:macro:type)
+                                "")
+                              int<alist>:macro:alist)))))
 ;; (setq test-alist '((:k . :value) (:k2 . :value2) (:jeff . :jeff)))
 ;; (alist:generic:delete :k test-alist)
 ;; test-alist
@@ -332,9 +348,11 @@ Returns ALIST."
 ;; test-alist
 ;; (alist:generic:delete :k test-alist)
 ;; test-alist
+;; (alist:generic:delete :jeff test-alist)
+;; test-alist
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :alist 'alist)
+(imp:provide :alist 'generic)

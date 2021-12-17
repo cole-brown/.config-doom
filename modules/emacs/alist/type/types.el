@@ -243,4 +243,4 @@ VALIDITY function is for validating alist keys."
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :alist 'types 'types)
+(imp:provide :alist 'type 'types)

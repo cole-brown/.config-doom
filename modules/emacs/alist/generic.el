@@ -16,7 +16,7 @@
 
 (require 'seq)
 (imp:require :alist 'internal)
-(imp:require :alist 'types 'types)
+(imp:require :alist 'type 'types)
 
 
 ;;------------------------------------------------------------------------------

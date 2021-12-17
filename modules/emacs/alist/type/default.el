@@ -1,4 +1,4 @@
-;;; alist/types/string.el -*- lexical-binding: t; -*-
+;;; alist/types/default.el -*- lexical-binding: t; -*-
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
@@ -20,67 +20,67 @@
 
 ;;------------------------------------------------------------------------------
 ;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-;;                     Functions for String/`string=' Alists
+;;                     Functions for Default/`eq' Alists
 ;; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ;;------------------------------------------------------------------------------
 
-(defun alist:string:get/value (key alist &optional default)
+(defun alist:default:get/value (key alist &optional default)
   "Get cdr of KEY's entry in ALIST."
-  (alist:generic:get/value key alist :type/string default))
+  (alist:generic:get/value key alist :type/default default))
 
 
-(defun alist:string:get/pair (key alist)
+(defun alist:default:get/pair (key alist)
   "Get full assoc/entry of KEY in ALIST."
-  (alist:generic:get/pair key alist :type/string))
+  (alist:generic:get/pair key alist :type/default))
 
 
-(defmacro alist:string:update (key value alist)
+(defmacro alist:default:update (key value alist)
   "Set/overwrite an entry in the ALIST.
 
 SYMBOL/ALIST should be a (quoted) symbol so that this can update it directly.
 
 If VALUE is nil, it will be set as KEY's value. Use
-`alist:string:delete' if you want to remove it.
+`alist:default:delete' if you want to remove it.
 
 Returns ALIST."
-  `(alist:generic:update ,key ,value ,alist :type/string))
+  `(alist:generic:update ,key ,value ,alist :type/default))
 ;; A global variable:
 ;;   (setq test-alist nil)
-;;   (alist:string:update "k" :v test-alist)
+;;   (alist:default:update :k :v test-alist)
 ;;   test-alist
-;;   (alist:string:update "k" :v test-alist)
+;;   (alist:default:update :k :v test-alist)
 ;;   test-alist
-;;   (alist:string:update "k2" :v2 test-alist)
-;;   (alist:string:update "k2" :v2.0 test-alist)
+;;   (alist:default:update :k2 :v2 test-alist)
+;;   (alist:default:update :k2 :v2.0 test-alist)
 ;;   test-alist
 ;;
 ;; A scoped variable:
 ;;   (let (test-alist/let)
-;;     (alist:string:update "k" :v test-alist/let)
-;;     (alist:string:update "k2" :v2 test-alist/let)
-;;     (alist:string:update "k2" :v2.0 test-alist/let)
+;;     (alist:default:update :k :v test-alist/let)
+;;     (alist:default:update :k2 :v2 test-alist/let)
+;;     (alist:default:update :k2 :v2.0 test-alist/let)
 ;;     test-alist/let)
 
 
-(defmacro alist:string:delete (key alist)
+(defmacro alist:default:delete (key alist)
   "Removes KEY from ALIST.
 
 Returns ALIST."
-  `(alist:generic:delete ,key ,alist :type/string))
-;; (setq test-alist '(("k" . :value) ("k2" . :value2) ("jeff" . :jeff)))
-;; (alist:string:delete "k" test-alist)
+  `(alist:generic:delete ,key ,alist :type/default))
+;; (setq test-alist '((:k . :value) (:k2 . :value2) (:jeff . :jeff)))
+;; (alist:default:delete :k test-alist)
 ;; test-alist
-;; (alist:string:update "k" :v test-alist)
+;; (alist:default:update :k :v test-alist)
 ;; test-alist
-;; (alist:string:delete "k2" test-alist)
+;; (alist:default:delete :k2 test-alist)
 ;; test-alist
-;; (alist:string:delete "k" test-alist)
+;; (alist:default:delete :k test-alist)
 ;; test-alist
-;; (alist:string:delete "jeff" test-alist)
+;; (alist:default:delete :jeff test-alist)
 ;; test-alist
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :alist 'types 'string)
+(imp:provide :alist 'type 'default)

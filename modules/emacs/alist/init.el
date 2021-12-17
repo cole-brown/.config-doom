@@ -45,7 +45,20 @@
 ;; Load Files
 ;;------------------------------------------------------------------------------
 
-(load! "alist")
+(load! "internal")
+
+;;---
+;; General/Generic Alist Functionality
+;;---
+(load! "type/types") ;; 'generic.el' needs these functions/vars.
+(load! "generic")
+
+;;---
+;; Typed Alists
+;;---
+(load! "type/default")
+(load! "type/keyword")
+(load! "type/string")
 
 
 ;;------------------------------------------------------------------------------

@@ -36,7 +36,7 @@
 (imp:path:root :alist
                (imp:path:paths->path doom-private-dir
                                      "modules"
-                                     "output"
+                                     "emacs"
                                      "alist")
                "init.el")
 

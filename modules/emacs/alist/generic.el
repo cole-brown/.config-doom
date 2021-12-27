@@ -212,6 +212,42 @@ Returns ALIST."
 
 
 ;;------------------------------------------------------------------------------
+;; Alist helpers.
+;;------------------------------------------------------------------------------
+
+(defun alist:alist? (item)
+  "Returns non-nil if ITEM is an alist.
+
+If ITEM is nil, returns `t', because:
+  1. We cannot be sure it's /NOT/ an alist.
+  2. `nil' is a valid list, and an empty list is a valid alist."
+  ;; We'll consider `nil' a valid alist.
+  (cond (nil
+         t)
+
+        ;; An alist has to be a list.
+        ((not (listp item))
+         nil)
+
+        ;; An alist has to have only lists (or cons, which are lists).
+        ;; If this is truthy, we'll just return its truthiness.
+        ((seq-every-p #'listp item))
+
+        (t
+         nil)))
+
+
+(defun alist:copy/shallow (alist)
+  "Returns a shallow copy of ALIST.
+
+Copies the ALIST so that the returned alist does not share structure with
+the input. Does not copy the keys/values (not a deep copy)."
+  (copy-alist alist))
+
+
+
+
+;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
 (imp:provide :alist 'generic)

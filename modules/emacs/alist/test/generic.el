@@ -8,73 +8,6 @@
 (load! "base.el")
 
 
-;;------------------------------------------------------------------------------
-;; Test Debugging Helpers
-;;------------------------------------------------------------------------------
-
-;;------------------------------
-;; Global Scoped Variable
-;;------------------------------
-
-(setq test<alist>:alist/nil    nil)
-(setq test<alist>:alist/values nil)
-
-
-(defun test<alist>:get (type &optional local-symbol-name)
-  "Function call that will return some alist based on TYPE.
-
-TYPE:
-  - :local
-    + Returns LOCAL-SYMBOL-NAME.
-  - :global/nil
-    + Returns `test<alist>:alist/nil'.
-  - :global/values
-    + Returns `test<alist>:alist/values'.
-
-Usage:
-  (test<alist>:get :global)
-    -> `test<alist>:alist'
-  (test<alist>:get :local 'some-local-symbol-name)
-    -> `some-local-symbol-name'"
-  (cond ((eq type :local)
-         local-symbol-name)
-        ((eq type :global/nil)
-         'test<alist>:alist/nil)
-        ((eq type :global/values)
-         'test<alist>:alist/values)
-        (t
-         (should-not "wrong input, idiot."))))
-;; (test<alist>:get :global/values)
-;; (let ((alist/local '((:k . :v)))) (test<alist>:get :local 'alist/local))
-
-
-;;------------------------------
-;; Set-Up / Tear-Down
-;;------------------------------
-
-(defun test<alist/alist>:setup (_)
-  "Create a global-scoped alist (as opposed to function scoped w/ `let') for some tests to use."
-  (setq test<alist>:alist/values (list (cons :key-0 :value-0/initial)
-                                       (cons :key-1 :value-1/initial)
-                                       (cons :key-2 :value-2/initial)
-                                       (cons :key-3 :value-3/initial)
-                                       (cons :key-4 :value-4/initial)
-                                       (cons :key-5 :value-5/initial)))
-  (setq test<alist>:alist/nil nil)
-  ;; (message "setup: %S" test<alist>:alist)
-  )
-
-
-(defun test<alist/alist>:teardown (test-name)
-  "Leave the global-scoped alists hanging around w/ whatever values tests modified to?"
-  ;; (makunbound 'test<alist>:alist)
-  ;; (unintern 'test<alist>:alist)
-  ;; (message "teardown: %S" (condition-case _
-  ;;                             test<alist>:alist
-  ;;                           (void-variable "<void>")))
-  )
-
-
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗
 ;; ╟─────────────────────────────┤ ERT TESTS ├─────────────────────────────────╢
 ;; ╠══════════╤══════════════════╧═══════════╧══════════════════╤══════════════╣
@@ -90,13 +23,13 @@ Usage:
 ;; alist:alist?
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:alist? ()
+(ert-deftest test<alist/generic>::alist:alist? ()
   "Test that `alist:alist?' behaves appropriately."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:alist?"
+      "test<alist/generic>::alist:alist?"
       nil
       nil
 
@@ -151,16 +84,16 @@ Usage:
 
 
 ;;------------------------------
-;; alist:get/value
+;; alist:generic:get/value
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:get/value ()
-  "Test that `alist:get/value' behaves appropriately."
+(ert-deftest test<alist/generic>::alist:generic:get/value ()
+  "Test that `alist:generic:get/value' behaves appropriately."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:get/value"
+      "test<alist/generic>::alist:generic:get/value"
       nil
       nil
 
@@ -182,19 +115,19 @@ Usage:
       ;; Check the 'cons' alist.
       ;;------------------------------
       (test<alist>:should:marker test-name "cons: key-0")
-      (setq value/get (alist:get/value :key-0 alist/cons))
+      (setq value/get (alist:generic:get/value :key-0 alist/cons))
       (should value/get)
       (should (stringp value/get))
       (should (string= value/get value/expected:0))
 
       (test<alist>:should:marker test-name "cons: key-1")
-      (setq value/get (alist:get/value :key-1 alist/cons))
+      (setq value/get (alist:generic:get/value :key-1 alist/cons))
       (should value/get)
       (should (keywordp value/get))
       (should (eq value/get value/expected:1))
 
       (test<alist>:should:marker test-name "cons: key-2")
-      (setq value/get (alist:get/value :key-2 alist/cons))
+      (setq value/get (alist:generic:get/value :key-2 alist/cons))
       (should value/get)
       (should (integerp value/get))
       (should (= value/get value/expected:2))
@@ -203,7 +136,7 @@ Usage:
       ;; Check the 'list' alist.
       ;;------------------------------
       (test<alist>:should:marker test-name "list: key-0")
-      (setq value/get (alist:get/value :key-0 alist/list))
+      (setq value/get (alist:generic:get/value :key-0 alist/list))
       (should value/get)
       (should (listp value/get))
       (should (= 1 (length value/get)))
@@ -212,7 +145,7 @@ Usage:
       (should (string= value/get value/expected:0))
 
       (test<alist>:should:marker test-name "list: key-1")
-      (setq value/get (alist:get/value :key-1 alist/list))
+      (setq value/get (alist:generic:get/value :key-1 alist/list))
       (should value/get)
       (should (listp value/get))
       (should (= 1 (length value/get)))
@@ -221,7 +154,7 @@ Usage:
       (should (eq value/get value/expected:1))
 
       (test<alist>:should:marker test-name "list: key-2")
-      (setq value/get (alist:get/value :key-2 alist/list))
+      (setq value/get (alist:generic:get/value :key-2 alist/list))
       (should value/get)
       (should (listp value/get))
       (should (= 1 (length value/get)))
@@ -234,13 +167,13 @@ Usage:
 ;; alist:get/pair
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:get/pair ()
-  "Test that `alist:get/pair' behaves appropriately."
+(ert-deftest test<alist/generic>::alist:generic:get/pair ()
+  "Test that `alist:generic:get/pair' behaves appropriately."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:get/pair"
+      "test<alist/generic>::alist:generic:get/pair"
       nil
       nil
 
@@ -266,7 +199,7 @@ Usage:
       (let ((expected:key  :key-0)
             (expected:value value/expected:0))
         (test<alist>:should:marker test-name "cons: key-0")
-        (setq value/get (alist:get/pair expected:key alist/cons))
+        (setq value/get (alist:generic:get/pair expected:key alist/cons))
         (should value/get)
         (should (consp value/get))
         (should (listp value/get)) ;; Cons are also lists.
@@ -280,7 +213,7 @@ Usage:
       (let ((expected:key  :key-1)
             (expected:value value/expected:1))
         (test<alist>:should:marker test-name "cons: key-1")
-        (setq value/get (alist:get/pair expected:key alist/cons))
+        (setq value/get (alist:generic:get/pair expected:key alist/cons))
         (should value/get)
         (should (consp value/get))
         (should (listp value/get)) ;; Cons are also lists.
@@ -294,7 +227,7 @@ Usage:
       (let ((expected:key  :key-2)
             (expected:value value/expected:2))
         (test<alist>:should:marker test-name "cons: key-2")
-        (setq value/get (alist:get/pair expected:key alist/cons))
+        (setq value/get (alist:generic:get/pair expected:key alist/cons))
         (should value/get)
         (should (consp value/get))
         (should (listp value/get)) ;; Cons are also lists.
@@ -311,7 +244,7 @@ Usage:
       (let ((expected:key  :key-0)
             (expected:value value/expected:0))
         (test<alist>:should:marker test-name "list: key-0")
-        (setq value/get (alist:get/pair expected:key alist/list))
+        (setq value/get (alist:generic:get/pair expected:key alist/list))
         (should value/get)
         (should (listp value/get))
         (setq value/get:key   (nth 0 value/get)
@@ -324,7 +257,7 @@ Usage:
       (let ((expected:key :key-1)
             (expected:value value/expected:1))
         (test<alist>:should:marker test-name "list: key-1")
-        (setq value/get (alist:get/pair expected:key alist/list))
+        (setq value/get (alist:generic:get/pair expected:key alist/list))
         (should value/get)
         (should (listp value/get))
         (setq value/get:key   (nth 0 value/get)
@@ -337,7 +270,7 @@ Usage:
       (let ((expected:key :key-2)
             (expected:value value/expected:2))
         (test<alist>:should:marker test-name "list: key-2")
-        (setq value/get (alist:get/pair expected:key alist/list))
+        (setq value/get (alist:generic:get/pair expected:key alist/list))
         (should value/get)
         (should (listp value/get))
         (setq value/get:key   (nth 0 value/get)
@@ -349,16 +282,16 @@ Usage:
 
 
 ;;------------------------------
-;; alist:update - local alist (defined in a `let')
+;; alist:generic:update - local alist (defined in a `let')
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:update::local ()
-  "Test that `alist:update' will add/overwrite values in a local alist correctly."
+(ert-deftest test<alist/generic>::alist:generic:update::local ()
+  "Test that `alist:generic:update' will add/overwrite values in a local alist correctly."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:update::local"
+      "test<alist/generic>::alist:generic:update::local"
       nil
       nil
 
@@ -377,27 +310,27 @@ Usage:
       ;;------------------------------
       ;; Add new key/values.
       ;;------------------------------
-      (should-not (alist:get/value :key-3 alist/cons))
-      (should-not (alist:get/value :key-3 alist/list))
+      (should-not (alist:generic:get/value :key-3 alist/cons))
+      (should-not (alist:generic:get/value :key-3 alist/list))
 
       (test<alist>:should:marker test-name "cons: New Key/Value")
-      (setq alist/updated (alist:update :key-3 :value-3/new alist/cons))
+      (setq alist/updated (alist:generic:update :key-3 :value-3/new alist/cons))
       (should alist/updated)
 
       ;; Our return value should be our alist.
       (should (eq alist/updated alist/cons))
-      (setq value/get (alist:get/value :key-3 alist/cons))
+      (setq value/get (alist:generic:get/value :key-3 alist/cons))
       (should value/get)
       (should (keywordp value/get))
       (should (eq value/get :value-3/new))
 
       (test<alist>:should:marker test-name "list: New Key/Value")
       ;; Add the new value as a list, since it's the `alist/list'.
-      (setq alist/updated (alist:update :key-3 '(:value-3/new) alist/list))
+      (setq alist/updated (alist:generic:update :key-3 '(:value-3/new) alist/list))
       (should alist/updated)
       ;; Our return value should be our alist.
       (should (eq alist/updated alist/list))
-      (setq value/get (alist:get/value :key-3 alist/list))
+      (setq value/get (alist:generic:get/value :key-3 alist/list))
       (should value/get)
       (should (listp value/get))
       (should (= 1 (length value/get)))
@@ -408,30 +341,30 @@ Usage:
       ;;------------------------------
       ;; Update existing key's value.
       ;;------------------------------
-      (let ((value/cons (alist:get/value :key-0 alist/cons))
-            (value/list (alist:get/value :key-0 alist/list)))
+      (let ((value/cons (alist:generic:get/value :key-0 alist/cons))
+            (value/list (alist:generic:get/value :key-0 alist/list)))
         (should value/cons)
         (should value/list)
         (should (eq value/cons :value-0/initial))
         (should (equal value/list '(:value-0/initial)))
 
         (test<alist>:should:marker test-name "cons: Update Existing Key/Value")
-        (setq alist/updated (alist:update :key-0 :value-0/updated alist/cons))
+        (setq alist/updated (alist:generic:update :key-0 :value-0/updated alist/cons))
         (should alist/updated)
         ;; Our return value should be our alist.
         (should (eq alist/updated alist/cons))
-        (setq value/get (alist:get/value :key-0 alist/cons))
+        (setq value/get (alist:generic:get/value :key-0 alist/cons))
         (should value/get)
         (should (keywordp value/get))
         (should (eq value/get :value-0/updated))
 
         (test<alist>:should:marker test-name "list: Update Existing Key/Value")
         ;; Add the new value as a list, since it's the `alist/list'.
-        (setq alist/updated (alist:update :key-0 '(:value-0/updated) alist/list))
+        (setq alist/updated (alist:generic:update :key-0 '(:value-0/updated) alist/list))
         (should alist/updated)
         ;; Our return value should be our alist.
         (should (eq alist/updated alist/list))
-        (setq value/get (alist:get/value :key-0 alist/list))
+        (setq value/get (alist:generic:get/value :key-0 alist/list))
         (should value/get)
         (should (listp value/get))
         (should (= 1 (length value/get)))
@@ -441,29 +374,29 @@ Usage:
 
 
 ;;------------------------------
-;; alist:update - non-local alist
+;; alist:generic:update - non-local alist
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:update::global ()
-  "Test that `alist:update' will add/overwrite values in a global alist correctly."
+(ert-deftest test<alist/generic>::alist:generic:update::global ()
+  "Test that `alist:generic:update' will add/overwrite values in a global alist correctly."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:update::global"
+      "test<alist/generic>::alist:generic:update::global"
       (lambda (_)
         "Set up globals for this test."
-        (setq test<alist>:alist/cons (list (cons :key-0 :value-0/initial)
-                                           (cons :key-1 :value-1/initial)
-                                           (cons :key-2 :value-2/initial)))
-        (setq test<alist>:alist/list (list (list :key-0 :value-0/initial)
-                                           (list :key-1 :value-1/initial)
-                                           (list :key-2 :value-2/initial)))
+        (setq test<alist>:var:alist/cons (list (cons :key-0 :value-0/initial)
+                                               (cons :key-1 :value-1/initial)
+                                               (cons :key-2 :value-2/initial)))
+        (setq test<alist>:var:alist/list (list (list :key-0 :value-0/initial)
+                                               (list :key-1 :value-1/initial)
+                                               (list :key-2 :value-2/initial)))
         )
       (lambda (_)
         "Clean up the alist of lists."
-        ;; (unintern test<alist>:alist/cons)
-        ;; (unintern test<alist>:alist/list)
+        ;; (unintern test<alist>:var:alist/cons)
+        ;; (unintern test<alist>:var:alist/list)
         )
 
     ;;===
@@ -475,27 +408,27 @@ Usage:
       ;;------------------------------
       ;; Add new key/values.
       ;;------------------------------
-      (should-not (alist:get/value :key-3 test<alist>:alist/cons))
-      (should-not (alist:get/value :key-3 test<alist>:alist/list))
+      (should-not (alist:generic:get/value :key-3 test<alist>:var:alist/cons))
+      (should-not (alist:generic:get/value :key-3 test<alist>:var:alist/list))
 
       (test<alist>:should:marker test-name "cons: New Key/Value")
-      (setq alist/updated (alist:update :key-3 :value-3/new test<alist>:alist/cons))
+      (setq alist/updated (alist:generic:update :key-3 :value-3/new test<alist>:var:alist/cons))
       (should alist/updated)
 
       ;; Our return value should be our alist.
-      (should (eq alist/updated test<alist>:alist/cons))
-      (setq value/get (alist:get/value :key-3 test<alist>:alist/cons))
+      (should (eq alist/updated test<alist>:var:alist/cons))
+      (setq value/get (alist:generic:get/value :key-3 test<alist>:var:alist/cons))
       (should value/get)
       (should (keywordp value/get))
       (should (eq value/get :value-3/new))
 
       (test<alist>:should:marker test-name "list: New Key/Value")
-      ;; Add the new value as a list, since it's the `test<alist>:alist/list'.
-      (setq alist/updated (alist:update :key-3 '(:value-3/new) test<alist>:alist/list))
+      ;; Add the new value as a list, since it's the `test<alist>:var:alist/list'.
+      (setq alist/updated (alist:generic:update :key-3 '(:value-3/new) test<alist>:var:alist/list))
       (should alist/updated)
       ;; Our return value should be our alist.
-      (should (eq alist/updated test<alist>:alist/list))
-      (setq value/get (alist:get/value :key-3 test<alist>:alist/list))
+      (should (eq alist/updated test<alist>:var:alist/list))
+      (setq value/get (alist:generic:get/value :key-3 test<alist>:var:alist/list))
       (should value/get)
       (should (listp value/get))
       (should (= 1 (length value/get)))
@@ -506,30 +439,30 @@ Usage:
       ;;------------------------------
       ;; Update existing key's value.
       ;;------------------------------
-      (let ((value/cons (alist:get/value :key-0 test<alist>:alist/cons))
-            (value/list (alist:get/value :key-0 test<alist>:alist/list)))
+      (let ((value/cons (alist:generic:get/value :key-0 test<alist>:var:alist/cons))
+            (value/list (alist:generic:get/value :key-0 test<alist>:var:alist/list)))
         (should value/cons)
         (should value/list)
         (should (eq value/cons :value-0/initial))
         (should (equal value/list '(:value-0/initial)))
 
         (test<alist>:should:marker test-name "cons: Update Existing Key/Value")
-        (setq alist/updated (alist:update :key-0 :value-0/updated test<alist>:alist/cons))
+        (setq alist/updated (alist:generic:update :key-0 :value-0/updated test<alist>:var:alist/cons))
         (should alist/updated)
         ;; Our return value should be our alist.
-        (should (eq alist/updated test<alist>:alist/cons))
-        (setq value/get (alist:get/value :key-0 test<alist>:alist/cons))
+        (should (eq alist/updated test<alist>:var:alist/cons))
+        (setq value/get (alist:generic:get/value :key-0 test<alist>:var:alist/cons))
         (should value/get)
         (should (keywordp value/get))
         (should (eq value/get :value-0/updated))
 
         (test<alist>:should:marker test-name "list: Update Existing Key/Value")
-        ;; Add the new value as a list, since it's the `test<alist>:alist/list'.
-        (setq alist/updated (alist:update :key-0 '(:value-0/updated) test<alist>:alist/list))
+        ;; Add the new value as a list, since it's the `test<alist>:var:alist/list'.
+        (setq alist/updated (alist:generic:update :key-0 '(:value-0/updated) test<alist>:var:alist/list))
         (should alist/updated)
         ;; Our return value should be our alist.
-        (should (eq alist/updated test<alist>:alist/list))
-        (setq value/get (alist:get/value :key-0 test<alist>:alist/list))
+        (should (eq alist/updated test<alist>:var:alist/list))
+        (setq value/get (alist:generic:get/value :key-0 test<alist>:var:alist/list))
         (should value/get)
         (should (listp value/get))
         (should (= 1 (length value/get)))
@@ -539,16 +472,16 @@ Usage:
 
 
 ;;------------------------------
-;; alist:delete - local alist (defined in a `let')
+;; alist:generic:delete - local alist (defined in a `let')
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:delete::local ()
-  "Test that `alist:delete' will delete keys from the alist correctly."
+(ert-deftest test<alist/generic>::alist:generic:delete::local ()
+  "Test that `alist:generic:delete' will delete keys from the alist correctly."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:delete::local"
+      "test<alist/generic>::alist:generic:delete::local"
       nil
       nil
 
@@ -567,44 +500,44 @@ Usage:
       ;; Delete keys from the alists.
       ;;------------------------------
       (test<alist>:should:marker test-name "cons: `:key-0'")
-      (setq alist/deleted (alist:delete :key-0 alist/cons))
+      (setq alist/deleted (alist:generic:delete :key-0 alist/cons))
       (should alist/deleted)
       ;; Our return value should be our alist.
       (should (eq alist/deleted alist/cons))
-      (should-not (alist:get/value :key-0 alist/cons))
+      (should-not (alist:generic:get/value :key-0 alist/cons))
 
       (test<alist>:should:marker test-name "list: `:key-0'")
-      (setq alist/deleted (alist:delete :key-0 alist/list))
+      (setq alist/deleted (alist:generic:delete :key-0 alist/list))
       (should alist/deleted)
       ;; Our return value should be our alist.
       (should (eq alist/deleted alist/list))
-      (should-not (alist:get/value :key-0 alist/list)))))
+      (should-not (alist:generic:get/value :key-0 alist/list)))))
 
 
 ;;------------------------------
-;; alist:delete - global alist
+;; alist:generic:delete - global alist
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:delete::global ()
-  "Test that `alist:delete' will delete keys from the alist correctly."
+(ert-deftest test<alist/generic>::alist:generic:delete::global ()
+  "Test that `alist:generic:delete' will delete keys from the alist correctly."
   (test<alist>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:delete::global"
+      "test<alist/generic>::alist:generic:delete::global"
       (lambda (_)
         "Set up globals for this test."
-        (setq test<alist>:alist/cons (list (cons :key-0 :value-0/initial)
-                                           (cons :key-1 :value-1/initial)
-                                           (cons :key-2 :value-2/initial)))
-        (setq test<alist>:alist/list (list (list :key-0 :value-0/initial)
-                                           (list :key-1 :value-1/initial)
-                                           (list :key-2 :value-2/initial)))
+        (setq test<alist>:var:alist/cons (list (cons :key-0 :value-0/initial)
+                                               (cons :key-1 :value-1/initial)
+                                               (cons :key-2 :value-2/initial)))
+        (setq test<alist>:var:alist/list (list (list :key-0 :value-0/initial)
+                                               (list :key-1 :value-1/initial)
+                                               (list :key-2 :value-2/initial)))
         )
       (lambda (_)
         "Clean up the alist of lists."
-        ;; (unintern test<alist>:alist/cons)
-        ;; (unintern test<alist>:alist/list)
+        ;; (unintern test<alist>:var:alist/cons)
+        ;; (unintern test<alist>:var:alist/list)
         )
 
     ;;===
@@ -616,18 +549,18 @@ Usage:
       ;; Delete keys from the alists.
       ;;------------------------------
       (test<alist>:should:marker test-name "cons: `:key-0'")
-      (setq alist/deleted (alist:delete :key-0 test<alist>:alist/cons))
+      (setq alist/deleted (alist:generic:delete :key-0 test<alist>:var:alist/cons))
       (should alist/deleted)
       ;; Our return value should be our alist.
-      (should (eq alist/deleted test<alist>:alist/cons))
-      (should-not (alist:get/value :key-0 test<alist>:alist/cons))
+      (should (eq alist/deleted test<alist>:var:alist/cons))
+      (should-not (alist:generic:get/value :key-0 test<alist>:var:alist/cons))
 
       (test<alist>:should:marker test-name "list: `:key-0'")
-      (setq alist/deleted (alist:delete :key-0 test<alist>:alist/list))
+      (setq alist/deleted (alist:generic:delete :key-0 test<alist>:var:alist/list))
       (should alist/deleted)
       ;; Our return value should be our alist.
-      (should (eq alist/deleted test<alist>:alist/list))
-      (should-not (alist:get/value :key-0 test<alist>:alist/list)))))
+      (should (eq alist/deleted test<alist>:var:alist/list))
+      (should-not (alist:generic:get/value :key-0 test<alist>:var:alist/list)))))
 
 
 ;;------------------------------------------------------------------------------
@@ -637,11 +570,11 @@ Usage:
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; alist:update
+;; alist:generic:update
 ;;------------------------------
 
-(ert-deftest test<alist>::alist:update::regression/call-for-alist ()
-  "Test that `alist:update' can work if you use a macro call that
+(ert-deftest test<alist/generic>::alist:generic:update::regression/call-for-alist ()
+  "Test that `alist:generic:update' can work if you use a macro call that
 returns a symbol-name as a parameter.
 
 Bug came from:
@@ -659,14 +592,14 @@ Bug came from:
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<alist>::alist:update::regression/call-for-alist"
-      #'test<alist/alist>:setup
-      #'test<alist/alist>:teardown
+      "test<alist/generic>::alist:generic:update::regression/call-for-alist"
+      nil
+      nil
 
     ;;===
     ;; Run the test.
     ;;===
-    (should test<alist>:alist/values)
+    (should test<alist>:var:alist/values)
     (should-error alist/values)
 
     (let* ((alist/values (list (cons :key-0 :value-0/initial)
@@ -677,49 +610,49 @@ Bug came from:
       ;;------------------------------
       ;; Update should work when passing in the symbol itself.
       ;;------------------------------
-      (should (alist:update :key-3
+      (should (alist:generic:update :key-3
                             :value-3/00
                             ;; Passes in value of `alist/values'.
                             alist/values))
-      (should (alist:update :key-3
+      (should (alist:generic:update :key-3
                             :value-3/01
                             ;; Passes in value of `alist/nil'.
                             alist/nil))
-      (should (alist:update :key-3
+      (should (alist:generic:update :key-3
                             :value-3/02
                             ;; Passes in value of `alist/nil'.
-                            test<alist>:alist/values))
+                            test<alist>:var:alist/values))
 
       ;;------------------------------
       ;; Update should work w/ a macro call which returns the symbol name.
       ;;------------------------------
       (should (eq 'alist/values
-                  (test<alist>:get :local 'alist/values)))
-      (should (eq 'test<alist>:alist/nil
-                  (test<alist>:get :global/nil)))
-      (should (eq 'test<alist>:alist/values
-                  (test<alist>:get :global/values)))
+                  (test<alist>:var:alist/get :local 'alist/values)))
+      (should (eq 'test<alist>:var:alist/nil
+                  (test<alist>:var:alist/get :global/nil)))
+      (should (eq 'test<alist>:var:alist/values
+                  (test<alist>:var:alist/get :global/values)))
 
       ;; Dunno how to get lexicals to work? :(
-      (should-error (alist:update :key-3
+      (should-error (alist:generic:update :key-3
                                   :value-3/07
-                                  (test<alist>:get :local 'alist/values)))
+                                  (test<alist>:var:alist/get :local 'alist/values)))
 
       ;; Should update a list if given the values variable name.
-      (should (alist:update :key-3
+      (should (alist:generic:update :key-3
                             :value-3/08
-                            (test<alist>:get :global/values)))
+                            (test<alist>:var:alist/get :global/values)))
       (should (eq :value-3/08
-                  (alist:get/value :key-3 test<alist>:alist/values)))
+                  (alist:generic:get/value :key-3 test<alist>:var:alist/values)))
 
       ;; Should create a list if given the nil variable name.
       (should (eq nil
-                  test<alist>:alist/nil))
-      (should (alist:update :key-3
+                  test<alist>:var:alist/nil))
+      (should (alist:generic:update :key-3
                             :value-3/09
-                            (test<alist>:get :global/nil)))
+                            (test<alist>:var:alist/get :global/nil)))
       (should (eq :value-3/09
-                  (alist:get/value :key-3 test<alist>:alist/nil))))))
+                  (alist:generic:get/value :key-3 test<alist>:var:alist/nil))))))
 
 
 ;;------------------------------------------------------------------------------

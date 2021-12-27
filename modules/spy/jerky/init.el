@@ -1,6 +1,5 @@
-;;;;; init.el --- Init for spy/jerky doom module. -*- lexical-binding: t; -*-
+;;; init.el --- Init for spy/jerky doom module. -*- lexical-binding: t; -*-
 ;;
-
 ;; Copyright (C) 2020-2021  Cole Brown
 ;; Author: Cole Brown <http://github/cole-brown>
 ;; Maintainer: Cole Brown <code@brown.dev>

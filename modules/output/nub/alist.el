@@ -145,7 +145,7 @@ Returns alist without the key."
   ;; Error Checking
   ;;---
   (when (stringp key)
-    (int<nub>:output "int<nub>:alist:delete"
+    (int<nub>:error  "int<nub>:alist:delete"
                      '("String key '%s' won't work... "
                        "Use `int<nub>:alist/string:delete' "
                        "for string keys.")

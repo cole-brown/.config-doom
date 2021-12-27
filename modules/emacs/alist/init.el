@@ -1,29 +1,31 @@
-;;; init.el --- Init for :output/nub doom module. -*- lexical-binding: t; -*-
+;;; init.el --- Init for :emacs/alist doom module. -*- lexical-binding: t; -*-
+;;
 ;; Copyright (C) 2020 Cole Brown
 ;;
-;; Author: Cole Brown <http://github/cole-brown>
-;; Maintainer: Cole Brown <code@brown.dev>
-;; Created: 2021-11-30
-;; Modified: 2021-11-30
-;; Version: 0.0.1
-;; Keywords: lisp
-;; Homepage: https://github.com/cole-brown/.config-doom
+;; Author:           Cole Brown <http://github/cole-brown>
+;; Maintainer:       Cole Brown <code@brown.dev>
+;; Created:          2021-12-15
+;; Modified:         2021-12-15
+;; Version:          0.0.1
+;; Keywords:         lisp
+;; Homepage:         https://github.com/cole-brown/.config-doom
 ;; Package-Requires: ((emacs "27.1"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
 ;;; Commentary:
 ;;
-;; Initialize the ':output/nub' module.
+;; Initialize the ':emacs/alist' module.
 ;;
 ;;; Code:
 
 ;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
-;; ║               Nub: /noun/ A small lump or protuberance.                ║ ;;
+;; ║                           Association Lists                            ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
 ;;                                   ──────                                   ;;
-;;                       Hey... Naming things is hard.                        ;;
+;;   - Namespaced so you can find related functions.                          ;;
+;;   - Other useful things, probably.                                         ;;
 ;;                                 ──────────                                 ;;
 
 
@@ -31,11 +33,11 @@
 ;; Set imp Root
 ;;------------------------------------------------------------------------------
 
-(imp:path:root :nub
+(imp:path:root :alist
                (imp:path:paths->path doom-private-dir
                                      "modules"
-                                     "output"
-                                     "nub")
+                                     "emacs"
+                                     "alist")
                "init.el")
 
 
@@ -44,16 +46,22 @@
 ;;------------------------------------------------------------------------------
 
 (load! "internal")
-(load! "alist")
-(load! "utils")
-(load! "variables")
-(load! "output")
-(load! "debug")
-(load! "debug-format")
-(load! "api")
+
+;;---
+;; General/Generic Alist Functionality
+;;---
+(load! "type/types") ;; 'generic.el' needs these functions/vars.
+(load! "generic")
+
+;;---
+;; Typed Alists
+;;---
+(load! "type/default")
+(load! "type/keyword")
+(load! "type/string")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :nub)
+(imp:provide :alist)

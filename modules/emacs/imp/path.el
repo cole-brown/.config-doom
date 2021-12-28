@@ -10,6 +10,122 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
+(defconst int<imp>:path:replace:rx
+  `(;;------------------------------
+    ;; Default/Any/All
+    ;;------------------------------
+    (default
+      ;;---
+      ;; Valid, but...
+      ;;---
+      ;; We are going to disallow some valids just to make life easier.
+      ;; E.g. regex "^:" is not allowed so that keywords can be used.
+      ,(list (rx-to-string `(sequence string-start ":"))
+             "")
+      ;;---
+      ;; Disallowed by all:
+      ;;---
+      ("/"
+       "")
+      ,(list (rx-to-string `control)
+             ""))
+
+    ;;------------------------------
+    ;; Linux/Unix/Etc.
+    ;;------------------------------
+    ;; We'll just assume all the unixy systems are the same...
+    ;;
+    ;; Linux has these restrictions:
+    ;;   1. Invalid/reserved file system characters:
+    ;;      - / (forward slash)
+    ;;      - Integer 0 (1-31: technically legal, but we will not allow).
+    (gnu
+     ;; Just the defaults, thanks.
+     nil)
+    (gnu/linux
+     ;; Just the defaults, thanks.
+     nil)
+    (gnu/kfreebsd
+     ;; Just the defaults, thanks.
+     nil)
+    (cygwin
+     ;; Just the defaults, thanks.
+     nil)
+
+    ;;------------------------------
+    ;; Windows
+    ;;------------------------------
+    ;; Windows has these restrictions:
+    ;;   1. Invalid/reserved file system characters:
+    ;;      - < (less than)
+    ;;      - > (greater than)
+    ;;      - : (colon)
+    ;;      - " (double quote)
+    ;;      - / (forward slash)
+    ;;      - \ (backslash)
+    ;;      - | (vertical bar or pipe)
+    ;;      - ? (question mark)
+    ;;      - * (asterisk)
+    ;;      - Integers 0 through 31.
+    ;;      - "Any other character that the target file system does not allow.
+    ;;        - Very useful; thanks.
+    ;;   2. Invalid as filenames (bare or with extensions):
+    ;;      - CON, PRN, AUX, NUL COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8,
+    ;;        COM9, LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, LPT9
+    ;;   3. Other rules:
+    ;;      - Filenames cannot end in: . (period/dot/full-stop)
+    (windows-nt
+     ,(list (rx-to-string `(sequence (or "<"
+                                         ">"
+                                         ":"
+                                         "\""
+                                         "/" ; Also in defaults.
+                                         "\\"
+                                         "|"
+                                         "?"
+                                         "*")))
+            "")
+     ,(list (rx-to-string `(sequence string-start
+                                     (or "CON"  "PRN"  "AUX"  "NUL"  "COM1"
+                                         "COM2" "COM3" "COM4" "COM5" "COM6"
+                                         "COM7" "COM8" "COM9" "LPT1" "LPT2"
+                                         "LPT3" "LPT4" "LPT5" "LPT6" "LPT7"
+                                         "LPT8" "LPT9")
+                                     (or "." string-end)))
+             "")
+     ,(list (rx-to-string `(sequence "." string-end))
+            ""))
+
+    ;;------------------------------
+    ;; Mac
+    ;;------------------------------
+    ;; Mac has these restrictions:
+    ;;   1. Invalid/reserved file system characters:
+    ;;      - / (forward slash)
+    ;;      - : (colon)
+    ;;      - Technically that's all for HFS+, but usually you can't get away with
+    ;;        NUL (integer 0), et al.
+    (darwin
+     (":" ""))
+
+    ;;------------------------------
+    ;; Unsupported/Only Defaults
+    ;;------------------------------
+    (ms-dos
+     nil))
+  "Alist of regexs to replace and their replacement strings.
+
+Used symbol-by-symbol in `iii:feature:imp->emacs' when translating an imp symbol
+chain into one symbol for Emacs.
+
+Alist format in `defcustom' language:
+  :type '(alist :key-type (choice (string :tag \"Regex String\")
+                                  (sexp :tag \"Expression that returns a string.\"))
+                :value-type (choice (list string :tag \"Replacement Value\")
+                                    (list symbol :tag \"Symbol whose value is the replacement value\")))")
+;; (pp-display-expression int<imp>:path:replace:rx "*int<imp>:path:replace:rx*")
+;; (makunbound 'int<imp>:path:replace:rx)
+
 
 (defvar imp:path:roots nil
   "alist of require/provide root keywords to a cons of: (root-dir . root-file).
@@ -117,7 +233,7 @@ KWARGS should be a plist. All default to `t':
 
 (defun iii:path:to-string (symbol-or-string)
   "Translate the FEATURE (a single symbol) to a path string using
-`imp:translate-to-path:replace' translations."
+`int<imp>:path:replace:rx' translations."
   (let ((name (if (symbolp symbol-or-string)
                   (symbol-name symbol-or-string)
                 symbol-or-string))
@@ -126,7 +242,7 @@ KWARGS should be a plist. All default to `t':
     ;; Defaults first.
     (iii:debug "iii:path:to-string" "defaults:")
     (dolist (pair
-             (iii:alist/general:get 'default imp:translate-to-path:replace)
+             (iii:alist/general:get 'default int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
@@ -140,7 +256,7 @@ KWARGS should be a plist. All default to `t':
     ;; we're done.
     (iii:debug "iii:path:to-string" "system(%S):" system-type)
     (dolist (pair
-             (iii:alist/general:get system-type imp:translate-to-path:replace)
+             (iii:alist/general:get system-type int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))

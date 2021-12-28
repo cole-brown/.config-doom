@@ -72,6 +72,7 @@
 (load! "path")
 (load! "provide")
 (load! "require")
+(load! "commands")
 
 ;; Path was needed earlier than provide, so now we need to let path
 ;; provide itself.

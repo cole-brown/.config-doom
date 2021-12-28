@@ -51,6 +51,26 @@ For example:
         - ...")
 ;; (setq imp:features nil)
 
+;;------------------------------------------------------------------------------
+;; Imp structured tree/list -> Emacs symbol name
+;;------------------------------------------------------------------------------
+
+(defconst int<imp>:string:replace:rx
+  '((":" ""))
+  "Alist of regexs to replace and their replacement strings.
+
+Using lists instead of cons for alist entries because `cons' doesn't like
+strings.
+
+Used symbol-by-symbol in `iii:feature:imp->emacs' when translating an imp symbol
+chain into one symbol for Emacs.")
+
+
+(defconst int<imp>:string:replace:separator
+  ":"
+  "String to use in between symbols when translating an imp symbol chain to
+an Emacs symbol.")
+
 
 ;;------------------------------------------------------------------------------
 ;; Private Functions
@@ -65,13 +85,13 @@ appropriate for Emacs' `provide'."
    (mapconcat (lambda (symbol)
                 "Translates each symbol based on replacement regexes."
                 (let ((symbol/string (symbol-name symbol)))
-                  (dolist (pair imp:translate-to-emacs:replace symbol/string)
+                  (dolist (pair int<imp>:string:replace:rx symbol/string)
                     (setq symbol/string
                           (replace-regexp-in-string (nth 0 pair)
                                                     (nth 1 pair)
                                                     symbol/string)))))
               feature
-              imp:translate-to-emacs:separator)))
+              int<imp>:string:replace:separator)))
 ;; (iii:feature:imp->emacs '(:imp test symbols))
 ;; (iii:feature:imp->emacs '(:imp provide))
 
@@ -94,13 +114,6 @@ appropriate for Emacs' `provide'."
 ;; (iii:alist/general:get :imp imp:features)
 ;; (iii:tree:contains? '(:imp) imp:features)
 ;; (iii:tree:contains? '(:imp ort something) imp:features)
-
-
-(defun imp:features:print ()
-  "Pretty print `imp:features' to a temp buffer."
-  (interactive)
-  (pp-display-expression imp:features imp:features:buffer))
-;; (imp:features:print)
 
 
 ;;------------------------------------------------------------------------------

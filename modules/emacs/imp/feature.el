@@ -44,17 +44,17 @@ E.g.
 
              ;; Other? Error.
              (t
-              (iii:error "imp:feature:normalize"
-                         (concat "Cannot convert INPUT item type to a symbol. "
-                                 "Need a string or symbol/keyword. Got: %S")
-                         item)))
+              (int<imp>:error "imp:feature:normalize"
+                              (concat "Cannot convert INPUT item type to a symbol. "
+                                      "Need a string or symbol/keyword. Got: %S")
+                              item)))
        output))
 
     ;; Return the list, the one item, or what?
     (cond ((null output)
-           (iii:error "imp:feature:normalize"
-                      "No normalized features produced from INPUT: %S"
-                      input))
+           (int<imp>:error "imp:feature:normalize"
+                           "No normalized features produced from INPUT: %S"
+                           input))
 
           ((= 1 (length output))
            (nth 0 output))

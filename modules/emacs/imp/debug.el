@@ -103,20 +103,21 @@ and will be printed as the debug message.
 
 ARGS should be args for formatting the STRING."
   (when (int<imp>:debug:enabled?)
-    (apply #'message
-           (concat "[   debug]: "
-                   caller
-                   ": "
-                   string)
-           args)))
+    (int<imp>:output :debug
+                     caller
+                     string
+                     args)))
 ;; (int<imp>:debug "test_func" "test")
 
 
 (defun int<imp>:debug:newline ()
   "Prints an empty debug line if debugging."
-  (when (int<imp>:debug:enabled?)
-    (message " ")))
-
+  (when t ;; (int<imp>:debug:enabled?)
+    (int<imp>:output :blank
+                     nil
+                     " "
+                     nil)))
+;; (int<imp>:debug:newline)
 
 ;;------------------------------------------------------------------------------
 ;; The End.

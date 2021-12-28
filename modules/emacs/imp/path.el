@@ -144,9 +144,9 @@ Example:
   "Get the root directory from `imp:path:roots' for KEYWORD."
   (if-let ((dir (nth 0 (iii:alist/general:get keyword imp:path:roots))))
       (expand-file-name "" dir)
-    (iii:error "iii:path:root/dir"
-               "Root keyword '%S' unknown."
-               keyword)))
+    (int<imp>:error "iii:path:root/dir"
+                    "Root keyword '%S' unknown."
+                    keyword)))
 ;; (iii:path:root/dir :imp)
 
 
@@ -158,9 +158,9 @@ Example:
           (expand-file-name (nth 1 paths) (nth 0 paths))
         ;; No root file; return nil.
         nil)
-    (iii:error "iii:path:root/file"
-               "Root keyword '%S' unknown."
-               keyword)))
+    (int<imp>:error "iii:path:root/file"
+                    "Root keyword '%S' unknown."
+                    keyword)))
 ;; (iii:path:root/file :imp)
 ;; (iii:path:root/file :modules)
 
@@ -198,15 +198,15 @@ KWARGS should be a plist. All default to `t':
     ;;---
     (when (or exists dir)  ; :dir implies :exists
       (cond ((null path)
-             (iii:error func
-                        "Null `path'?! path: %s"
-                        path)
+             (int<imp>:error func
+                             "Null `path'?! path: %s"
+                             path)
              (setq result nil))
 
             ((not (file-exists-p path))
-             (iii:error func
-                        "Path does not exist: %s"
-                        path)
+             (int<imp>:error func
+                             "Path does not exist: %s"
+                             path)
              (setq result nil))
 
             (t
@@ -214,9 +214,9 @@ KWARGS should be a plist. All default to `t':
 
     (when dir
       (unless (file-directory-p path)
-        (iii:error func
-                   "Path is not a directory: %s"
-                   path)
+        (int<imp>:error func
+                        "Path is not a directory: %s"
+                        path)
         (setq result nil)))
 
     ;;---
@@ -293,14 +293,14 @@ NEXT and PARENT are expected to be keywords or symbols.
   ;; Error checks first.
   (cond ((and parent
               (not (stringp parent)))
-         (iii:error "iii:path:append"
-                    "Paths to append must be strings. Parent is: %S"
-                    parent))
+         (int<imp>:error "iii:path:append"
+                         "Paths to append must be strings. Parent is: %S"
+                         parent))
         ((or (null next)
              (not (stringp next)))
-         (iii:error "iii:path:append"
-                    "Paths to append must be strings. Next is: %S"
-                    next))
+         (int<imp>:error "iii:path:append"
+                         "Paths to append must be strings. Next is: %S"
+                         next))
 
         ;;---
         ;; Append or not?
@@ -323,9 +323,9 @@ or possibly
   -> \"jeff\\jill\""
   (int<imp>:debug "iii:path:features->path" "--input: %S" feature)
   (unless (seq-every-p #'symbolp feature)
-    (iii:error "iii:path:features->path"
-               "FEATURE list must only contain symbols/keywords. Got: %S"
-               feature))
+    (int<imp>:error "iii:path:features->path"
+                    "FEATURE list must only contain symbols/keywords. Got: %S"
+                    feature))
   (seq-reduce #'iii:path:append
               (iii:path:imp->string feature)
               nil))
@@ -439,21 +439,21 @@ in `imp:path:roots'.
   - This can be either an absolute or relative path. If relative, it will be
     relative to PATH-TO-ROOT-DIR."
   (cond ((iii:path:root/contains? keyword)
-         (iii:error "imp:root"
-                    "Keyword '%S' is already an imp root.\n  path: %s\n  file: %s"
-                    keyword
-                    (iii:path:root/dir keyword)
-                    (iii:path:root/file keyword)))
+         (int<imp>:error "imp:root"
+                         "Keyword '%S' is already an imp root.\n  path: %s\n  file: %s"
+                         keyword
+                         (iii:path:root/dir keyword)
+                         (iii:path:root/file keyword)))
 
         ((not (keywordp keyword))
-         (iii:error "imp:root"
-                    "Keyword must be a keyword (e.g. `:foo' `:bar' etc)"))
+         (int<imp>:error "imp:root"
+                         "Keyword must be a keyword (e.g. `:foo' `:bar' etc)"))
 
         ;; iii:path:root/valid? will error with better reason, so the error here
         ;; isn't actually triggered... I think?
         ((not (iii:path:root/valid? "imp:root" path-to-root-dir))
-         (iii:error "imp:root"
-                    "Path must be a valid directory: %s" path-to-root-dir))
+         (int<imp>:error "imp:root"
+                         "Path must be a valid directory: %s" path-to-root-dir))
 
         ;; Ok; set keyword to path.
         (t

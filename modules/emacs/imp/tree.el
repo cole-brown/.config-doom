@@ -89,9 +89,9 @@ Return value is KEY's entry in TREE, or nil if KEY does not exist."
 (defun iii:tree:chain (chain value)
   "Create an alist entry for a tree from CHAIN and VALUE."
   (unless (listp chain) ;; nil ok too
-    (iii:error "iii:tree:chain"
-               "Chain cannot be created - expected list, got: %S"
-               chain))
+    (int<imp>:error "iii:tree:chain"
+                    "Chain cannot be created - expected list, got: %S"
+                    chain))
   ;; Set-up: Need to build in reverse.
   (let* ((backwards (reverse chain))
          ;; Entry starts off as the final link w/ the value (if the value is not
@@ -175,12 +175,12 @@ If VALUE is nil, just adds chain - does not add a nil child."
   ;; Don't allow a null chain.
   (when (or (null chain)
             (not (iii:tree:chain? chain)))
-    (iii:error "iii:tree:update" "CHAIN is not a chain: %S" chain))
+    (int<imp>:error "iii:tree:update" "CHAIN is not a chain: %S" chain))
 
   ;; Valid tree?
   (when (and (not (null tree)) ;; We can deal with a tree of nil.
              (not (iii:tree:tree? tree))) ;; We can't deal with an invalid tree.
-    (iii:error "iii:tree:update" "TREE is not a tree: %S" tree))
+    (int<imp>:error "iii:tree:update" "TREE is not a tree: %S" tree))
 
   ;;------------------------------
   ;; Create or update?
@@ -303,12 +303,12 @@ If VALUE is nil, just adds chain - does not add a nil child."
   ;; Don't allow a null chain.
   (when (or (null chain)
             (not (iii:tree:chain? chain)))
-    (iii:error "iii:tree:contains" "CHAIN is not a chain: %S" chain))
+    (int<imp>:error "iii:tree:contains" "CHAIN is not a chain: %S" chain))
 
   ;; Valid tree?
   (when (or (null tree)
             (not (iii:tree:tree? tree)))
-    (iii:error "iii:tree:contains" "TREE is not a tree: %S" tree))
+    (int<imp>:error "iii:tree:contains" "TREE is not a tree: %S" tree))
 
   (int<imp>:debug "iii:tree:contains?" "CHAIN and TREE verified as valid.\n  chain: %S\n  tree:\n    %S"
                   chain tree)

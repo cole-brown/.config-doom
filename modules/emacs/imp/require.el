@@ -54,7 +54,7 @@ Returns non-nil if loaded."
                (let (file-name-handler-alist)
                  (load path nil 'nomessage))
 
-             (iii:error "iii:load"
+             (int<imp>:error "iii:load"
                         "imp fail to load %S via path: %S\n  - error: %S"
                         (cons root features)
                         path

@@ -1,49 +1,74 @@
 ;;; emacs/imp/error.el -*- lexical-binding: t; -*-
 
 
-;; TODO: Add "[ERROR   ]: " prefix to error message like nub has.
-;;   - modules/output/nub/variables.el
-
-
 ;;------------------------------------------------------------------------------
-;; Error Function
+;; Output Functions / Variables
 ;;------------------------------------------------------------------------------
 
-;; TODO: Do we fuck with this for unit tests?
-;;   - if not, delete this and hard-code to `error'.
-(defconst imp:error:function
-  #'error
-  "A function to call for imp errors.
+(defconst int<imp>:output:level
+  '((:error . (:prefix "[ERROR   ]: "
+               :func error))
+    (:debug . (:prefix "[   debug]: "
+               :func message))
 
-If you desire to not raise error signals during init, for instance, change this
-to:
-  - #'warn    - Produce a warning message
-  - #'message - just send error to *Messages* buffer.
-  - nil       - Silently ignore errors (not recommended).
-  - Your own function with parameters: (format-string &rest args)"
-  :type '(choice (const #'error)
-                 (const #'warn)
-                 (const #'message)
-                 (const nil :tag "nil - Silently ignore errors.")
-                  function)
-  :group 'imp:group)
+    ;; Not really a level, but available to debug messages via
+    ;; `int<imp>:debug:newline'.
+    (:blank . (:prefix ""
+               :func message)))
+  "Output message level (:debug, :error, etc) settings.")
+
+
+(defun int<imp>:output:level/get (level setting)
+  "Get a SETTING for an output LEVEL."
+  (plist-get (alist-get level int<imp>:output:level)
+             setting))
+;; (int<imp>:output:level/get :error :prefix)
+;; (int<imp>:output:level/get :debug :func)
+
+
+(defun int<imp>:output (level caller string args)
+  "Output a message (formatted from STRING & ARGS) from CALLER function.
+
+LEVEL should be one of the alist keys in `int<imp>:output:prefix'.
+
+CALLER should be a string of the calling function's name.
+  - It can be nil, though it is /really/ not suggested.
+
+STRING should be a string, which can have formatting info in it (see `format'),
+and will be printed as the debug message.
+
+ARGS should be a list of args for formatting the STRING, or nil."
+  (when-let ((func (int<imp>:output:level/get level :func))
+             (prefix (int<imp>:output:level/get level :prefix)))
+
+    (apply func
+           (concat prefix
+                   caller
+                   (if caller ": " "")
+                   string)
+           args)))
 
 
 ;;------------------------------------------------------------------------------
 ;; String Helpers
 ;;------------------------------------------------------------------------------
 
-(defun iii:error (func string &rest args)
-  "Prepend FUNC string to STRING (the format-string for ARGS), then pass
-formatted string and ARGS into `imp:error:function'.
+(defun int<imp>:error (caller string &rest args)
+  "Create a formatted error message and raise an error signal with it.
 
-Or, if `imp:error:function' is nil, just do nothing."
-  (when imp:error:function
-    (funcall imp:error:function
-             "%s: %s" func (apply #'format string args))))
-;; (iii:error "test:func" "True == %s" "False")
-;; (let ((imp:error:function nil)) (iii:error "test:func" "True == %s" "False"))
-;; (let ((imp:error:function #'message)) (iii:error "test:func" "True == %s" "False"))
+Uses `:error' level settings in `int<imp>:output:level'.
+
+STRING should be a string, which can have formatting info in it (see `format'),
+and will be printed as the debug message.
+
+ARGS should be a list of args for formatting the STRING."
+  (int<imp>:output :error
+                   caller
+                   string
+                   args))
+;; (int<imp>:error "test:func" "True == %s" "False")
+;; (let ((imp:error:function nil)) (int<imp>:error "test:func" "True == %s" "False"))
+;; (let ((imp:error:function #'message)) (int<imp>:error "test:func" "True == %s" "False"))
 
 
 ;;------------------------------------------------------------------------------

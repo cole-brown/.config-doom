@@ -3,13 +3,14 @@
 ;;------------------------------------------------------------------------------
 ;; Custom Variables
 ;;------------------------------------------------------------------------------
+;; TODO: Move to wherever file uses `imp:features:buffer'?
 
 (defgroup imp:group nil
   "Automatically-ish commit/push git repos for note, docs, etc."
   :prefix "imp:"
   :group 'tools)
 
-
+;; TODO: Move to wherever file uses `imp:features:buffer'?
 (defcustom imp:features:buffer
   "*imp:features*"
   "Name of the buffer for `imp:features:print' to output a pretty-printed tree
@@ -21,7 +22,7 @@ of the features imp has provided."
 ;; Imp structured tree/list -> Emacs symbol name
 ;;------------------------------------------------------------------------------
 
-(defcustom imp:translate-to-emacs:replace
+(defconst imp:translate-to-emacs:replace
   '((":" ""))
   "Alist of regexs to replace and their replacement strings.
 
@@ -29,26 +30,24 @@ Using lists instead of cons for alist entries because `cons' doesn't like
 strings.
 
 Used symbol-by-symbol in `iii:feature:imp->emacs' when translating an imp symbol
-chain into one symbol for Emacs."
-  :group 'imp:group)
+chain into one symbol for Emacs.")
 
 
-(defcustom imp:translate-to-emacs:separator
+(defconst imp:translate-to-emacs:separator
   ":"
   "String to use in between symbols when translating an imp symbol chain to
-an Emacs symbol."
-  :group 'imp:group)
+an Emacs symbol.")
 
 
 ;;------------------------------------------------------------------------------
 ;; Imp structured tree/list -> File Path
 ;;------------------------------------------------------------------------------
 
-(defcustom imp:translate-to-path:replace/default ""
+(defconst imp:translate-to-path:replace/default ""
   "Default replacement for entries in `imp:translate-to-path:replace'.")
 
 
-(defcustom imp:translate-to-path:replace
+(defconst imp:translate-to-path:replace
   `(;;------------------------------
     ;; Default/Any/All
     ;;------------------------------
@@ -154,12 +153,13 @@ an Emacs symbol."
   "Alist of regexs to replace and their replacement strings.
 
 Used symbol-by-symbol in `iii:feature:imp->emacs' when translating an imp symbol
-chain into one symbol for Emacs."
-  :type '(alist :key-type (choice (string :tag "Regex String")
-                                  (sexp :tag "Expression that returns a string."))
-                :value-type (choice (list string :tag "Replacement Value")
-                                    (list symbol :tag "Symbol whose value is the replacement value")))
-  :group 'imp:group)
+chain into one symbol for Emacs.
+
+Alist format in `defcustom' language:
+  :type '(alist :key-type (choice (string :tag \"Regex String\")
+                                  (sexp :tag \"Expression that returns a string.\"))
+                :value-type (choice (list string :tag \"Replacement Value\")
+                                    (list symbol :tag \"Symbol whose value is the replacement value\")))")
 ;; (pp-display-expression imp:translate-to-path:replace "*imp:translate-to-path:replace*")
 ;; (makunbound 'imp:translate-to-path:replace)
 
@@ -168,14 +168,12 @@ chain into one symbol for Emacs."
 ;; Normalize to keywords/symbols.
 ;;------------------------------------------------------------------------------
 
-;; TODO: remove "+", other regex things in a defcustom somewhere?
 (defun imp:feature:normalize (&rest input)
   "Normalize INPUT to feature in one of two ways.
 
 If only one INPUT param, returns a symbol/keyword.
   - This is useful for converting strings to symbols for e.g. `imp:provide'.
 If more than one INPUT param, returns a list of symbol/keywords.
-  - TODO: Keep this functionality? Remove it?
 
 If INPUT item is:
   - Keyword: Return as-is.

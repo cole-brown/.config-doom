@@ -270,10 +270,10 @@
 ;;                                   children))
 ;;          (new (iii:node:create :child-2))
 ;;          (expected (iii:node:add parent new)))
-;;     (iii:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
+;;     (int<imp>:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
 ;;     (should (equal (iii:node:update parent new)
 ;;                    expected)))
-;;   (iii:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")
+;;   (int<imp>:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")
 
 ;;   ;;---
 ;;   ;; Pre-existing new - existing gone; replaced with the new one.
@@ -293,11 +293,11 @@
 ;;                                   (iii:node:create :child-2)))
 ;;          (expected (iii:node:create :root
 ;;                                     expected-children)))
-;;     (iii:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
+;;     (int<imp>:debug "TEST<TREE>:NODE:UPDATE" "<TEST>")
 ;;     (should (equal (iii:node:update parent new)
 ;;                    expected))
-;;     (iii:debug "TEST<TREE>:NODE:UPDATE" "orig parent: %S" parent)
-;;     (iii:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")))
+;;     (int<imp>:debug "TEST<TREE>:NODE:UPDATE" "orig parent: %S" parent)
+;;     (int<imp>:debug "TEST<TREE>:NODE:UPDATE" "</TEST>")))
 
 
 ;; ;;------------------------------
@@ -423,10 +423,10 @@
 ;;   ;;------------------------------
 ;;   (let* ((tree (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four))))
 ;;          (chain '(:root :one :two :three :fore)))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name=\"bug: `:fore'\">")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name=\"bug: `:fore'\">")
 ;;     (should (equal (iii:tree:chain:get tree chain)
 ;;                    '(((:four)) (:fore))))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name=\"bug: `:fore'\">")))
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name=\"bug: `:fore'\">")))
 
 
 ;; ;;------------------------------
@@ -441,31 +441,31 @@
 
 
 ;;   (let ((tree (iii:node:tree (iii:node:chain:create :root '(:one :two :three :four)))))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='null tree'>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='null tree'>")
 ;;     (should-not (null tree))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='null tree'>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='null tree'>")
 
 ;;     ;;---
 ;;     ;; No chain - error.
 ;;     ;;---
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='chain error'>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='chain error'>")
 ;;     (should-error (iii:tree:chain:create tree nil))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='chain error'>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='chain error'>")
 
 ;;     ;;---
 ;;     ;; Existing chain - error.
 ;;     ;;---
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=00>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=00>")
 ;;     (should-error (iii:tree:chain:create tree '(:root :one :two)))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=00>")
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=01>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=00>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "<TEST name='tree error' number=01>")
 ;;     (should-error (iii:tree:chain:create tree '(:root :one :two :three :four)))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=01>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='tree error' number=01>")
 
 ;;     ;;---
 ;;     ;; New leaf node.
 ;;     ;;---
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")
 ;;     (should (equal (iii:tree:chain:create tree '(:root :one :two :three :fore))
 ;;                    '(:root (:one (:two (:three (:four :fore)))))))
-;;     (iii:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")))
+;;     (int<imp>:debug "TEST<TREE>:TREE:CHAIN:CREATE" "</TEST name='new leaf' number=00>")))

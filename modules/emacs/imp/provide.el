@@ -98,13 +98,13 @@ appropriate for Emacs' `provide'."
 
 (defun iii:feature:add (feature)
   "Add the FEATURE (a list of keywords/symbols) to the `imp:features' tree."
-  (iii:debug "iii:feature:add" "Adding to imp:features...")
-  (iii:debug "iii:feature:add" "  feature: %S" feature)
-  (iii:debug "iii:feature:add" "imp:features before:\n%S"
-             (pp-to-string imp:features))
+  (int<imp>:debug "iii:feature:add" "Adding to imp:features...")
+  (int<imp>:debug "iii:feature:add" "  feature: %S" feature)
+  (int<imp>:debug "iii:feature:add" "imp:features before:\n%S"
+                  (pp-to-string imp:features))
   (setq imp:features (iii:tree:update feature nil imp:features))
-  (iii:debug "iii:feature:add" "imp:features after:\n%S"
-             (pp-to-string imp:features))
+  (int<imp>:debug "iii:feature:add" "imp:features after:\n%S"
+                  (pp-to-string imp:features))
   ;; Not sure what to return, but the updated features seems decent enough.
   imp:features)
 ;; (setq imp:features nil)
@@ -142,7 +142,7 @@ If FILE-NAME is a string, returns true if loading that exact
       ;; Exactly that file loading?
       (and load-in-progress
            (string= load-file-name file-name))
-   ;; Just anything loading?
+    ;; Just anything loading?
     load-in-progress))
 
 
@@ -164,8 +164,8 @@ If you want to provide the feature to emacs as well, you can either:
      - imp will translate the FEATURE symbol chain via `iii:feature:imp->emacs'.
   2. Do it yourself by also calling Emacs' `provide' with a symbol of your
      choosing."
-  (iii:debug "imp:provide" "Providing feature '%S'..."
-             feature)
+  (int<imp>:debug "imp:provide" "Providing feature '%S'..."
+                  feature)
   (iii:feature:add feature))
 ;; (imp:provide :package 'module 'submodule 'feature)
 
@@ -178,8 +178,8 @@ imp will translate the FEATURE symbol chain via `iii:feature:imp->emacs' and use
 the result for the call to Emacs' `provide'."
   (apply #'imp:provide feature)
   (let ((feature/emacs (iii:feature:imp->emacs feature)))
-    (iii:debug "imp:provide:with-emacs" "Providing to emacs as '%S'..."
-               feature/emacs)
+    (int<imp>:debug "imp:provide:with-emacs" "Providing to emacs as '%S'..."
+                    feature/emacs)
     (provide feature/emacs)))
 
 

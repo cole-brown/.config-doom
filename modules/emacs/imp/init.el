@@ -56,11 +56,7 @@
 ;;------------------
 ;; Debug ASAP!..
 ;;------------------
-(if (featurep! +debug)
-    (load! "+debug")
-
-  ;; Fake debug funcs so no one screams.
-  (load! "+no-debug"))
+(load! "debug")
 
 
 ;;------------------

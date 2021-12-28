@@ -92,7 +92,7 @@
                                          "LPT3" "LPT4" "LPT5" "LPT6" "LPT7"
                                          "LPT8" "LPT9")
                                      (or "." string-end)))
-             "")
+            "")
      ,(list (rx-to-string `(sequence "." string-end))
             ""))
 
@@ -186,12 +186,12 @@ KWARGS should be a plist. All default to `t':
                   t))
         (result t))
 
-    (iii:debug "iii:path:root/valid?" "func:   %s" func)
-    (iii:debug "iii:path:root/valid?" "path:   %s" path)
-    (iii:debug "iii:path:root/valid?" "kwargs: %S" kwargs)
-    (iii:debug "iii:path:root/valid?" "  exists: %S" exists)
-    (iii:debug "iii:path:root/valid?" "  dir:    %S" dir)
-    (iii:debug "iii:path:root/valid?" "  result: %S" result)
+    (int<imp>:debug "iii:path:root/valid?" "func:   %s" func)
+    (int<imp>:debug "iii:path:root/valid?" "path:   %s" path)
+    (int<imp>:debug "iii:path:root/valid?" "kwargs: %S" kwargs)
+    (int<imp>:debug "iii:path:root/valid?" "  exists: %S" exists)
+    (int<imp>:debug "iii:path:root/valid?" "  dir:    %S" dir)
+    (int<imp>:debug "iii:path:root/valid?" "  result: %S" result)
 
     ;;---
     ;; Validity Checks
@@ -222,7 +222,7 @@ KWARGS should be a plist. All default to `t':
     ;;---
     ;; Return valid
     ;;---
-    (iii:debug "iii:path:root/valid?" "->result: %S" result)
+    (int<imp>:debug "iii:path:root/valid?" "->result: %S" result)
     result))
 ;; (iii:path:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
 
@@ -240,30 +240,30 @@ KWARGS should be a plist. All default to `t':
         regex
         replacement)
     ;; Defaults first.
-    (iii:debug "iii:path:to-string" "defaults:")
+    (int<imp>:debug "iii:path:to-string" "defaults:")
     (dolist (pair
              (iii:alist/general:get 'default int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
-                                          (symbol-value (nth 1 pair))
-                                        (nth 1 pair)))
-      (iii:debug "iii:path:to-string" "  rx: %S" regex)
-      (iii:debug "iii:path:to-string" "  ->: %S" replacement)
+                            (symbol-value (nth 1 pair))
+                          (nth 1 pair)))
+      (int<imp>:debug "iii:path:to-string" "  rx: %S" regex)
+      (int<imp>:debug "iii:path:to-string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))
 
     ;; Now the system-specifics, if any. Return `name' from `dolist' because
     ;; we're done.
-    (iii:debug "iii:path:to-string" "system(%S):" system-type)
+    (int<imp>:debug "iii:path:to-string" "system(%S):" system-type)
     (dolist (pair
              (iii:alist/general:get system-type int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
-                                          (symbol-value (nth 1 pair))
+                            (symbol-value (nth 1 pair))
                           (nth 1 pair)))
-      (iii:debug "iii:path:to-string" "  rx: %S" regex)
-      (iii:debug "iii:path:to-string" "  ->: %S" replacement)
+      (int<imp>:debug "iii:path:to-string" "  rx: %S" regex)
+      (int<imp>:debug "iii:path:to-string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))))
 ;; (iii:path:to-string :imp)
 ;; Should lose both slashes:
@@ -321,7 +321,7 @@ platform-agnostically.
   -> \"jeff/jill\"
 or possibly
   -> \"jeff\\jill\""
-  (iii:debug "iii:path:features->path" "--input: %S" feature)
+  (int<imp>:debug "iii:path:features->path" "--input: %S" feature)
   (unless (seq-every-p #'symbolp feature)
     (iii:error "iii:path:features->path"
                "FEATURE list must only contain symbols/keywords. Got: %S"
@@ -409,7 +409,7 @@ platform-agnostically.
   -> \"jeff/jill\"
 or possibly
   -> \"jeff\\jill\""
-  (iii:debug "imp:path:features->path" "input: %S" feature)
+  (int<imp>:debug "imp:path:features->path" "input: %S" feature)
   (iii:path:features->path feature))
 ;; works: (imp:path:features->path :jeff 'jill)
 ;; fails: (imp:path:features->path "~/.doom.d/" "modules")

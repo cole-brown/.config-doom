@@ -1,11 +1,17 @@
 ;;; emacs/imp/error.el -*- lexical-binding: t; -*-
 
 
+;; TODO: Add "[ERROR   ]: " prefix to error message like nub has.
+;;   - modules/output/nub/variables.el
+
+
 ;;------------------------------------------------------------------------------
 ;; Error Function
 ;;------------------------------------------------------------------------------
 
-(defcustom imp:error:function
+;; TODO: Do we fuck with this for unit tests?
+;;   - if not, delete this and hard-code to `error'.
+(defconst imp:error:function
   #'error
   "A function to call for imp errors.
 

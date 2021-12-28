@@ -103,9 +103,9 @@ Return value is KEY's entry in TREE, or nil if KEY does not exist."
          (link (cadr backwards))
          (remaining (cddr backwards)))
 
-    (iii:debug "iii:tree:chain" "entry:     %S" entry)
-    (iii:debug "iii:tree:chain" "link:      %S" link)
-    (iii:debug "iii:tree:chain" "remaining: %S" remaining)
+    (int<imp>:debug "iii:tree:chain" "entry:     %S" entry)
+    (int<imp>:debug "iii:tree:chain" "link:      %S" link)
+    (int<imp>:debug "iii:tree:chain" "remaining: %S" remaining)
 
     ;; Grow entry by remaining links.
     (while link
@@ -139,22 +139,22 @@ ENTRY must be an alist entry for a tree; e.g. a return value from
 
 BRANCH must be a tree - an alist of alists. ENTRY will be added to root of
 BRANCH."
-  (iii:debug "iii:tree:branch/update" "->entry:  %S" entry)
-  (iii:debug "iii:tree:branch/update" "->branch: %S" branch)
+  (int<imp>:debug "iii:tree:branch/update" "->entry:  %S" entry)
+  (int<imp>:debug "iii:tree:branch/update" "->branch: %S" branch)
   (let* ((key (car entry))
          ;; Need the entry, not the alist, of key's children.
          ;; Need '(:value), not '((:value)).
          (value (cadr entry))
          (siblings (iii:alist/general:get key branch)))
-    (iii:debug "iii:tree:branch/update" "  key:      %S" key)
-    (iii:debug "iii:tree:branch/update" "  vaule:    %S" value)
-    (iii:debug "iii:tree:branch/update" "  siblings: %S" siblings)
+    (int<imp>:debug "iii:tree:branch/update" "  key:      %S" key)
+    (int<imp>:debug "iii:tree:branch/update" "  vaule:    %S" value)
+    (int<imp>:debug "iii:tree:branch/update" "  siblings: %S" siblings)
 
     ;; Add new value to its new siblings, update branch and done.
     (push value siblings)
-    (iii:debug "iii:tree:branch/update" "updated siblings: %S" siblings)
+    (int<imp>:debug "iii:tree:branch/update" "updated siblings: %S" siblings)
     (setq branch (iii:alist/general:update key siblings branch))
-    (iii:debug "iii:tree:branch/update" "updated branch: %S" branch)
+    (int<imp>:debug "iii:tree:branch/update" "updated branch: %S" branch)
     branch))
 ;; (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0)))))
 ;; (alist-get :two (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0))))))
@@ -212,16 +212,16 @@ If VALUE is nil, just adds chain - does not add a nil child."
         (push branch parent-branches)
         (setq branch (iii:alist/general:get link branch))
         (push link parent-links)
-        (iii:debug "iii:tree:update" "%S = %S" parent-links parent-branches)
+        (int<imp>:debug "iii:tree:update" "%S = %S" parent-links parent-branches)
 
         ;; Update link/remaining for next round.
         (setq link (car remaining))
         (setq remaining (cdr remaining)))
 
-      (iii:debug "iii:tree:update" "found final branch:")
-      (iii:debug "iii:tree:update" "  branch:    %S" branch)
-      (iii:debug "iii:tree:update" "  remaining: %S" remaining)
-      (iii:debug "iii:tree:update" "  link:      %S" link)
+      (int<imp>:debug "iii:tree:update" "found final branch:")
+      (int<imp>:debug "iii:tree:update" "  branch:    %S" branch)
+      (int<imp>:debug "iii:tree:update" "  remaining: %S" remaining)
+      (int<imp>:debug "iii:tree:update" "  link:      %S" link)
 
       ;;------------------------------
       ;; Error Check: Invalid chain after all?
@@ -245,11 +245,11 @@ If VALUE is nil, just adds chain - does not add a nil child."
           ;;------------------------------
           ;; New Branch.
           ;;------------------------------
-          (iii:debug "iii:tree:update" "branch: %S" branch)
-          (iii:debug "iii:tree:update" "link: %S" link)
-          (iii:debug "iii:tree:update" "new: %S" entry)
-          (iii:debug "iii:tree:update" "  key:   %S" (car entry))
-          (iii:debug "iii:tree:update" "  value: %S" (cdr entry))
+          (int<imp>:debug "iii:tree:update" "branch: %S" branch)
+          (int<imp>:debug "iii:tree:update" "link: %S" link)
+          (int<imp>:debug "iii:tree:update" "new: %S" entry)
+          (int<imp>:debug "iii:tree:update" "  key:   %S" (car entry))
+          (int<imp>:debug "iii:tree:update" "  value: %S" (cdr entry))
           (setq branch-update (iii:alist/general:update (car entry)
                                                         (cdr entry)
                                                         branch)))
@@ -257,9 +257,9 @@ If VALUE is nil, just adds chain - does not add a nil child."
         ;;------------------------------
         ;; Finish by updating tree.
         ;;------------------------------
-        (iii:debug "iii:tree:update" "branch-update: %S" branch-update)
+        (int<imp>:debug "iii:tree:update" "branch-update: %S" branch-update)
 
-        (iii:debug "iii:tree:update" "Branch found/updated. Walk update up to root...\n")
+        (int<imp>:debug "iii:tree:update" "Branch found/updated. Walk update up to root...\n")
 
         ;; Now backtrack up the tree to the root - have to update every branch
         ;; along the way to save the new value.
@@ -274,12 +274,12 @@ If VALUE is nil, just adds chain - does not add a nil child."
           (setq parent-links (cdr parent-links))
           (setq branch (car parent-branches))
           (setq parent-branches (cdr parent-branches))
-          (iii:debug "iii:tree:update" "link: %S" link)
-          (iii:debug "iii:tree:update" "branch: %S" branch)
+          (int<imp>:debug "iii:tree:update" "link: %S" link)
+          (int<imp>:debug "iii:tree:update" "branch: %S" branch)
 
           ;; Push updated branch of tree into place.
           (setq branch-update (iii:alist/general:update link branch-update branch))
-          (iii:debug "iii:tree:update" "branch-update: %S" branch-update))
+          (int<imp>:debug "iii:tree:update" "branch-update: %S" branch-update))
         branch-update))))
 ;; Chain splits from tree:
 ;; (iii:tree:update '(:root :one :two :free) :leaf-node1 (iii:tree:create '(:root :one :two :three) :leaf-node0))
@@ -310,8 +310,8 @@ If VALUE is nil, just adds chain - does not add a nil child."
             (not (iii:tree:tree? tree)))
     (iii:error "iii:tree:contains" "TREE is not a tree: %S" tree))
 
-  (iii:debug "iii:tree:contains?" "CHAIN and TREE verified as valid.\n  chain: %S\n  tree:\n    %S"
-             chain tree)
+  (int<imp>:debug "iii:tree:contains?" "CHAIN and TREE verified as valid.\n  chain: %S\n  tree:\n    %S"
+                  chain tree)
 
   ;;------------------------------
   ;; Does tree contain the chain?
@@ -319,18 +319,18 @@ If VALUE is nil, just adds chain - does not add a nil child."
   (let ((branch tree) ;; Start at root of the tree.
         entry)
     (dolist (link chain)
-      (iii:debug "iii:tree:contains?" "  link:   %S" link)
-      (iii:debug "iii:tree:contains?" "  branch: %S" branch)
+      (int<imp>:debug "iii:tree:contains?" "  link:   %S" link)
+      (int<imp>:debug "iii:tree:contains?" "  branch: %S" branch)
       (setq entry (iii:tree:key/exists? link branch))
-      (iii:debug "iii:tree:contains?" "  entry: %S" entry)
+      (int<imp>:debug "iii:tree:contains?" "  entry: %S" entry)
       ;; Next branch will be entry's children.
       (setq branch (cdr entry)))
 
     ;; Final entry:
-    (iii:debug "iii:tree:contains?" "final entry for link '%S': %S"
-               (car (last chain)) entry)
-    (iii:debug "iii:tree:contains?" "final branch: %S"
-               branch)
+    (int<imp>:debug "iii:tree:contains?" "final entry for link '%S': %S"
+                    (car (last chain)) entry)
+    (int<imp>:debug "iii:tree:contains?" "final branch: %S"
+                    branch)
 
     ;; Return whatever we found after walking that whole chain. Will be either
     ;; a tree entry or nil, so that satisfies our predicate nature.

@@ -1,5 +1,28 @@
 ;;; emacs/imp/error.el -*- lexical-binding: t; -*-
 
+
+;;------------------------------------------------------------------------------
+;; Error Function
+;;------------------------------------------------------------------------------
+
+(defcustom imp:error:function
+  #'error
+  "A function to call for imp errors.
+
+If you desire to not raise error signals during init, for instance, change this
+to:
+  - #'warn    - Produce a warning message
+  - #'message - just send error to *Messages* buffer.
+  - nil       - Silently ignore errors (not recommended).
+  - Your own function with parameters: (format-string &rest args)"
+  :type '(choice (const #'error)
+                 (const #'warn)
+                 (const #'message)
+                 (const nil :tag "nil - Silently ignore errors.")
+                  function)
+  :group 'imp:group)
+
+
 ;;------------------------------------------------------------------------------
 ;; String Helpers
 ;;------------------------------------------------------------------------------

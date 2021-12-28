@@ -1,20 +1,25 @@
-;;; emacs/imp/+debug-off.el -*- lexical-binding: t; -*-
+;;; emacs/imp/+debug.el -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
-;; Mock debugging functionality for imp.
+;; Debugging functionality for imp.
 
 ;;------------------------------------------------------------------------------
 ;; Debugging Toggle
 ;;------------------------------------------------------------------------------
 
-(defconst iii:debugging nil
-  "Debug currently disable - useless var.")
+(defvar iii:debugging nil
+  "Debug flag.")
 
 
 (defun imp:debug:toggle ()
-  "No-op. Debug currently disabled."
-  nil)
+  "Toggle debugging for imp."
+  (interactive)
+  (setq iii:debugging (not iii:debugging))
+  (message "imp:debugging: %s"
+           (if iii:debugging
+               "enabled"
+             "disabled")))
 
 
 ;;------------------------------------------------------------------------------
@@ -22,17 +27,20 @@
 ;;------------------------------------------------------------------------------
 
 (defun iii:debug (func msg &rest args)
-  "No-op. Debug currently disabled."
-  (ignore func msg args))
+  "Print out a debug message if debugging."
+  (when iii:debugging
+    (apply #'message
+           (concat func ": " msg)
+           args)))
 ;; (iii:debug "test_func" "test")
 
 
 (defun iii:debug:newline ()
   "Prints a newline if debugging."
-  nil)
-;; (iii:debug:newline)
+  (when iii:debugging
+    (message " ")))
+
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; Don't provide. Imp internal only.

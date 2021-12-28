@@ -62,7 +62,7 @@
 ;;------------------
 ;; Order matters.
 ;;------------------
-(load! "utils")
+(load! "feature")
 (load! "alist")
 (load! "tree")
 (load! "path")

@@ -142,7 +142,7 @@ Example:
 
 (defun iii:path:root/dir (keyword)
   "Get the root directory from `imp:path:roots' for KEYWORD."
-  (if-let ((dir (nth 0 (iii:alist/general:get keyword imp:path:roots))))
+  (if-let ((dir (nth 0 (int<imp>:alist:get/value keyword imp:path:roots))))
       (expand-file-name "" dir)
     (int<imp>:error "iii:path:root/dir"
                     "Root keyword '%S' unknown."
@@ -152,7 +152,7 @@ Example:
 
 (defun iii:path:root/file (keyword)
   "Get the root init file from `imp:path:roots' for KEYWORD."
-  (if-let ((paths (iii:alist/general:get keyword imp:path:roots)))
+  (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
       (if (nth 1 paths) ;; Does it even have a filename? Can be nil.
           ;; `expand-file-name' doesn't like `nil'.
           (expand-file-name (nth 1 paths) (nth 0 paths))
@@ -167,7 +167,7 @@ Example:
 
 (defun iii:path:root/contains? (keyword)
   "Returns bool based on if `imp:path:roots' contains KEYWORD."
-  (not (null (iii:alist/general:get keyword imp:path:roots))))
+  (not (null (int<imp>:alist:get/value keyword imp:path:roots))))
 
 
 (defun iii:path:root/valid? (func path &rest kwargs)
@@ -242,7 +242,7 @@ KWARGS should be a plist. All default to `t':
     ;; Defaults first.
     (int<imp>:debug "iii:path:to-string" "defaults:")
     (dolist (pair
-             (iii:alist/general:get 'default int<imp>:path:replace:rx)
+             (int<imp>:alist:get/value 'default int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
@@ -256,7 +256,7 @@ KWARGS should be a plist. All default to `t':
     ;; we're done.
     (int<imp>:debug "iii:path:to-string" "system(%S):" system-type)
     (dolist (pair
-             (iii:alist/general:get system-type int<imp>:path:replace:rx)
+             (int<imp>:alist:get/value system-type int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))

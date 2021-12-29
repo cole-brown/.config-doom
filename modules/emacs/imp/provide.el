@@ -111,7 +111,7 @@ appropriate for Emacs' `provide'."
 ;; (iii:feature:add :imp 'test)
 ;; imp:features
 ;; (iii:feature:add :imp 'ort 'something 'here)
-;; (iii:alist/general:get :imp imp:features)
+;; (int<imp>:alist:get/value :imp imp:features)
 ;; (iii:tree:contains? '(:imp) imp:features)
 ;; (iii:tree:contains? '(:imp ort something) imp:features)
 

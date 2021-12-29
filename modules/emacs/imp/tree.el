@@ -78,7 +78,7 @@ is nil)."
   "Returns non-nil if key exists in tree, even if it has no children.
 
 Return value is KEY's entry in TREE, or nil if KEY does not exist."
-  (iii:alist/general:entry key tree))
+  (int<imp>:alist:get/pair key tree))
 ;; (iii:tree:key/exists? :root1 (iii:tree:update '(:root1) nil (iii:tree:create '(:root0 :one :two) :leaf)))
 
 
@@ -145,7 +145,7 @@ BRANCH."
          ;; Need the entry, not the alist, of key's children.
          ;; Need '(:value), not '((:value)).
          (value (cadr entry))
-         (siblings (iii:alist/general:get key branch)))
+         (siblings (int<imp>:alist:get/value key branch)))
     (int<imp>:debug "iii:tree:branch/update" "  key:      %S" key)
     (int<imp>:debug "iii:tree:branch/update" "  vaule:    %S" value)
     (int<imp>:debug "iii:tree:branch/update" "  siblings: %S" siblings)
@@ -153,7 +153,7 @@ BRANCH."
     ;; Add new value to its new siblings, update branch and done.
     (push value siblings)
     (int<imp>:debug "iii:tree:branch/update" "updated siblings: %S" siblings)
-    (setq branch (iii:alist/general:update key siblings branch))
+    (setq branch (int<imp>:alist:update key siblings branch))
     (int<imp>:debug "iii:tree:branch/update" "updated branch: %S" branch)
     branch))
 ;; (iii:tree:branch/update '(:two (:leaf-node1)) '((:two (:three (:leaf-node0)))))
@@ -210,7 +210,7 @@ If VALUE is nil, just adds chain - does not add a nil child."
         ;; 'parent-branch' for the 'parent-link' should include the link as an key
         ;; - we need it for easier updating on the way back up to the root.
         (push branch parent-branches)
-        (setq branch (iii:alist/general:get link branch))
+        (setq branch (int<imp>:alist:get/value link branch))
         (push link parent-links)
         (int<imp>:debug "iii:tree:update" "%S = %S" parent-links parent-branches)
 
@@ -236,7 +236,7 @@ If VALUE is nil, just adds chain - does not add a nil child."
         ;;------------------------------
         ;; New Branch or Add Here?
         ;;------------------------------
-        (if (iii:alist/general:get link branch)
+        (if (int<imp>:alist:get/value link branch)
             ;;------------------------------
             ;; Add Here.
             ;;------------------------------
@@ -250,7 +250,7 @@ If VALUE is nil, just adds chain - does not add a nil child."
           (int<imp>:debug "iii:tree:update" "new: %S" entry)
           (int<imp>:debug "iii:tree:update" "  key:   %S" (car entry))
           (int<imp>:debug "iii:tree:update" "  value: %S" (cdr entry))
-          (setq branch-update (iii:alist/general:update (car entry)
+          (setq branch-update (int<imp>:alist:update (car entry)
                                                         (cdr entry)
                                                         branch)))
 
@@ -278,7 +278,7 @@ If VALUE is nil, just adds chain - does not add a nil child."
           (int<imp>:debug "iii:tree:update" "branch: %S" branch)
 
           ;; Push updated branch of tree into place.
-          (setq branch-update (iii:alist/general:update link branch-update branch))
+          (setq branch-update (int<imp>:alist:update link branch-update branch))
           (int<imp>:debug "iii:tree:update" "branch-update: %S" branch-update))
         branch-update))))
 ;; Chain splits from tree:

@@ -10,7 +10,6 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-;; TODO: Delete? Where was this supposed to be used???
 (defconst int<imp/path>:find/regex
   (rx
    ;; Prefix
@@ -38,7 +37,11 @@ Feature name string will replace the '%S'.")
       ;;---
       ;; We are going to disallow some valids just to make life easier.
       ;; E.g. regex "^:" is not allowed so that keywords can be used.
-      ,(list (rx-to-string `(sequence string-start ":"))
+      ,(list (rx-to-string `(sequence string-start (or ":" "~"))
+                           :no-group)
+             "")
+      ,(list (rx-to-string `(sequence string-start ":")
+                           :no-group)
              "")
       ;;---
       ;; Disallowed by all:
@@ -183,7 +186,6 @@ Example:
 ;; (int<imp/path>:root/file :modules)
 
 
-;; TODO: used by imp
 (defun int<imp>:path:root/contains? (keyword)
   "Returns bool based on if `imp:path:roots' contains KEYWORD."
   (not (null (int<imp>:alist:get/value keyword imp:path:roots))))
@@ -281,15 +283,15 @@ KWARGS should be a plist. All default to `t':
             replacement (if (symbolp (nth 1 pair))
                             (symbol-value (nth 1 pair))
                           (nth 1 pair)))
-      (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
-      (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
-      (setq name (replace-regexp-in-string regex replacement name)))))
-;; TODO: bugged now...
-;; TODO: fix.
+      (unless (null regex)
+        (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
+        (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
+        (setq name (replace-regexp-in-string regex replacement name))))))
 ;; (int<imp/path>:normalize:string :imp)
-;; Should lose both slashes:
+;; Should lose both slashes and ~:
 ;; (int<imp/path>:normalize:string "~/doom.d/")
-;; bugged: (int<imp/path>:normalize:string "config")
+;; Should remain the same:
+;; (int<imp/path>:normalize:string "config")
 
 
 (defun int<imp/path>:normalize:list (feature)
@@ -309,8 +311,7 @@ Returns the list of normalized string."
   "Append NEXT element as-is to PARENT, adding dir separator between them if
 needed.
 
-NEXT and PARENT are expected to be keywords or symbols.
-"
+NEXT and PARENT are expected to be keywords or symbols."
   ;; Error checks first.
   (cond ((and parent
               (not (stringp parent)))
@@ -352,14 +353,13 @@ or possibly
               nil))
 ;; works: (int<imp/path>:normalize:path '(:jeff jill))
 ;; fails: (int<imp/path>:normalize:path '("~/.doom.d/" "modules"))
-;; bugged: (int<imp/path>:normalize:path '(spy system config))
+;; works: (int<imp/path>:normalize:path '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
 ;; Load Symbols -> Load Path
 ;;------------------------------------------------------------------------------
 
-;; TODO: Used by imp.
 (defun int<imp>:path:get (feature)
   "Convert FEATURE (a list of keywords/symbols) to a load path string.
 
@@ -371,8 +371,6 @@ presumably by having called `imp:root'."
 ;; (int<imp>:path:get '(:config spy system config))
 
 
-;; TODO: Change to this after implementing?
-;; TODO: implement?
 (defun int<imp>:path:find (feature)
   "Convert FEATURE (a list of keywords/symbols) to a load path.
 
@@ -405,20 +403,6 @@ Example:
 ;;------------------------------------------------------------------------------
 ;; Public API: Feature Root Directories
 ;;------------------------------------------------------------------------------
-
-(defun imp:path:normalize (&rest paths)
-  "Combine PATHS (a list of path strings) together into a path
-platform-agnostically.
-
-(imp:path:paths->path \"~/.doom.d\" \"foo\" \"bar\")
-  -> \"~/.doom.d/foo/bar\""
-  (seq-reduce #'int<imp/path>:append
-              paths
-              nil))
-;; works: (imp:path:paths->path "~/.doom.d/" "modules")
-;; works: (imp:path:paths->path "~/.doom.d" "modules")
-;; TODO: fails; shouldn't: (imp:path:paths->path :jeff 'jill)
-
 
 (defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
   "Set the root path(s) of KEYWORD for future `imp:require' calls.

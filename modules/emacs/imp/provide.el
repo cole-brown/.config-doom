@@ -102,7 +102,7 @@ appropriate for Emacs' `provide'."
   (int<imp>:debug "iii:feature:add" "  feature: %S" feature)
   (int<imp>:debug "iii:feature:add" "imp:features before:\n%S"
                   (pp-to-string imp:features))
-  (setq imp:features (iii:tree:update feature nil imp:features))
+  (setq imp:features (int<imp>:tree:update feature nil imp:features))
   (int<imp>:debug "iii:feature:add" "imp:features after:\n%S"
                   (pp-to-string imp:features))
   ;; Not sure what to return, but the updated features seems decent enough.
@@ -112,8 +112,8 @@ appropriate for Emacs' `provide'."
 ;; imp:features
 ;; (iii:feature:add :imp 'ort 'something 'here)
 ;; (int<imp>:alist:get/value :imp imp:features)
-;; (iii:tree:contains? '(:imp) imp:features)
-;; (iii:tree:contains? '(:imp ort something) imp:features)
+;; (int<imp>:tree:contains? '(:imp) imp:features)
+;; (int<imp>:tree:contains? '(:imp ort something) imp:features)
 
 
 ;;------------------------------------------------------------------------------
@@ -148,7 +148,7 @@ If FILE-NAME is a string, returns true if loading that exact
 
 (defun imp:provided? (&rest feature)
   "Checks for FEATURE in `imp:features'."
-  (iii:tree:contains? feature imp:features))
+  (int<imp>:tree:contains? feature imp:features))
 ;; (imp:provided? :imp)
 ;; (imp:providedp :imp)
 ;; (imp:feature? :imp)

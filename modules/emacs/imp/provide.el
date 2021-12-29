@@ -1,10 +1,5 @@
 ;;; emacs/imp/provide.el -*- lexical-binding: t; -*-
 
-;; imp requirements:
-;;   - :imp 'debug
-;;   - :imp 'error
-;;   - :imp 'path
-
 
 ;;------------------------------------------------------------------------------
 ;; Public API: Provide

@@ -62,7 +62,7 @@ Returns non-nil if loaded."
 
         ;; Fallback: Try to let emacs require it:
         (t
-         (require (iii:feature:imp->emacs feature)
+         (require (int<imp>:feature:normalize:imp->emacs feature)
                  ;; TODO: guess at a file/path based on 'root/feature-0/...'?
                  nil
                  'noerror))))
@@ -96,7 +96,7 @@ Returns non-nil on success."
         ;; Can we load it?
         ((apply #'iii:load root names)
          ;; Yes; so add to imp's feature tree.
-         (iii:feature:add (cons root feature)))
+         (int<imp>:feature:add (cons root feature)))
 
         ;; Nope; return nil.
         (t

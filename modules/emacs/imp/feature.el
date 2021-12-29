@@ -6,10 +6,11 @@
 ;;------------------------------------------------------------------------------
 
 (defvar imp:features nil
-  "Features that have been loaded by `iii:provide'.
+  "Features that have been loaded by `imp:provide'.
 
-Is an alist of alists of ... ad nauseam. Provided features are the leaves, and
-their feature names should be built from the path traversed to get to them.
+It is a tree; an alist of alists of ... ad nauseam. Provided features are the
+leaves, and their feature names should be built from the path traversed to get
+to them.
   - I.e. directory structures w/ files as leaves.
 
 For example:

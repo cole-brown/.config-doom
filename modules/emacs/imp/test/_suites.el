@@ -14,14 +14,14 @@
 ;;   test<SUITE-NAME>:<FUNC-NAME-MINUS-imp-OR-iii>
 ;; For example, the test for the `:tree' suite's `iii:node:add' should be named:
 ;;   test<tree>:node:add
-(setq iii:test:suite/prefix-fmt "test<%s>:")
+(setq test<imp>:suite/prefix-fmt "test<%s>:")
 
 ;; "Run All Tests" is special.
-(setq iii:test:suite:all.name "[--all--]")
-(setq iii:test:suite:all.keyword :all)
+(setq test<imp>:suite:all.name "[--all--]")
+(setq test<imp>:suite:all.keyword :all)
 
 
-(setq iii:test:suite/all/regex
+(setq test<imp>:suite/all/regex
       (rx-to-string `(sequence line-start
                                ;; Test Suite Name Prefix
                                (group
@@ -38,7 +38,7 @@
 ;; Files & Paths
 ;;------------------------------
 
-(setq iii:test:path:root
+(setq test<imp>:path:root
       ;; Parent directory should be the base imp dir.
       (file-name-directory
        (directory-file-name
@@ -65,61 +65,61 @@
 ;; Files & Paths
 ;;------------------------------
 
-(defun iii:test:path (relative)
+(defun test<imp>:path (relative)
   "Returns absolute path to RELATIVE file/directory by
-prepending `iii:test:path:root'."
-  (concat iii:test:path:root relative))
-;; (iii:test:path "tree.el")
-;; (iii:test:path "test/tree.el")
+prepending `test<imp>:path:root'."
+  (concat test<imp>:path:root relative))
+;; (test<imp>:path "tree.el")
+;; (test<imp>:path "test/tree.el")
 
 
 ;;------------------------------
 ;; ERT Test Selector
 ;;------------------------------
 
-(defun iii:test:suite/regex.create (suite-name)
-  "Returns a regex based on `iii:test:suite/prefix-fmt' for finding ERT tests."
+(defun test<imp>:suite/regex.create (suite-name)
+  "Returns a regex based on `test<imp>:suite/prefix-fmt' for finding ERT tests."
   (rx-to-string `(sequence line-start
-                           (eval (format iii:test:suite/prefix-fmt suite-name))
+                           (eval (format test<imp>:suite/prefix-fmt suite-name))
                            (one-or-more printing)
                            line-end)))
-;; (iii:test:suite/regex.create "tree")
+;; (test<imp>:suite/regex.create "tree")
 
 
 ;;------------------------------
 ;; Suite Name/Keyword
 ;;------------------------------
 
-(defun iii:test:suite/name->keyword (suite-name)
+(defun test<imp>:suite/name->keyword (suite-name)
   "Convert a suite name to a keyword symbol.
 
 Handles the special 'all tests' string (currently '[--all--]') by returning
 `:all'.
 
 Other tests are just converted to a keyword: 'tree' -> `:tree'."
-  (if (string= suite-name iii:test:suite:all.name)
-      iii:test:suite:all.keyword
+  (if (string= suite-name test<imp>:suite:all.name)
+      test<imp>:suite:all.keyword
     (intern (concat ":" suite-name))))
-;; (iii:test:suite/name->keyword iii:test:suite:all.name)
-;; (iii:test:suite/name->keyword "tree")
+;; (test<imp>:suite/name->keyword test<imp>:suite:all.name)
+;; (test<imp>:suite/name->keyword "tree")
 
 
-(defun iii:test:suite/keyword->name (suite)
+(defun test<imp>:suite/keyword->name (suite)
   "Convert a suite keyword to a string.
 
 Handles the special 'all tests' keyword -> string; `:all' returns '[--all--]'."
-  (if (eq suite iii:test:suite:all.keyword)
-      iii:test:suite:all.name
+  (if (eq suite test<imp>:suite:all.keyword)
+      test<imp>:suite:all.name
     (string-remove-prefix ":" (symbol-name suite))))
-;; (iii:test:suite/keyword->name iii:test:suite:all.keyword)
-;; (iii:test:suite/keyword->name :tree)
+;; (test<imp>:suite/keyword->name test<imp>:suite:all.keyword)
+;; (test<imp>:suite/keyword->name :tree)
 
 
 ;;------------------------------
 ;; Suite Creation
 ;;------------------------------
 
-(defun iii:test:suite (suite-keyword depends-on-suites filepaths)
+(defun test<imp>:suite (suite-keyword depends-on-suites filepaths)
   "Helper to use if suite keyword is the same as the suite's prefix format,
 which it should be...
 
@@ -131,11 +131,11 @@ Returns an alist of:
   - A list of file paths (relative to 'imp/' directory.
 "
   (list suite-keyword
-        (iii:test:suite/regex.create
+        (test<imp>:suite/regex.create
          (string-remove-prefix ":" (symbol-name suite-keyword)))
         depends-on-suites
         filepaths))
-;; (iii:test:suite :tree :alist '("tree.el" "test/tree.el"))
+;; (test<imp>:suite :tree :alist '("tree.el" "test/tree.el"))
 
 
 ;;------------------------------------------------------------------------------
@@ -150,7 +150,7 @@ Returns an alist of:
 
 ;; Always load these regardless of test suite running.
 ;; Should be relative to "imp/" directory.
-(setq iii:test:suites:files/load-always
+(setq test<imp>:suites:files/load-always
       '("+debug.el"
         "error.el"))
 
@@ -159,7 +159,7 @@ Returns an alist of:
 ;; The Test Suites Themselves
 ;;------------------------------
 
-(setq iii:test:suites
+(setq test<imp>:suites
       ;; An alist of:
       ;;   - A symbol we'll use to identify a test suite.
       ;;   - A regex string for finding all of that suite's ERT test functions.
@@ -171,7 +171,7 @@ Returns an alist of:
        ;; Special Case: ALL TESTS!!!
        ;;-----------------------------------------------------------------------
        (list :all
-             iii:test:suite/all/regex
+             test<imp>:suite/all/regex
              ;; No dependencies - it's running everything.
              nil
              ;; No list of files for all; it will generate from everyone else's.
@@ -180,7 +180,7 @@ Returns an alist of:
        ;;-----------------------------------------------------------------------
        ;; alist
        ;;-----------------------------------------------------------------------
-       (iii:test:suite :alist
+       (test<imp>:suite :alist
                        nil
                        '("alist.el"
                          "test/alist.el"))
@@ -188,7 +188,7 @@ Returns an alist of:
        ;;-----------------------------------------------------------------------
        ;; tree
        ;;-----------------------------------------------------------------------
-       (iii:test:suite :tree
+       (test<imp>:suite :tree
                        :alist
                        '("path.el" ;; May consider moving path to defaults?
                          "tree.el"
@@ -199,79 +199,79 @@ Returns an alist of:
 ;; Suite Accessors
 ;;------------------------------
 
-(defun iii:test:suite//regex.get (suite-keyword)
+(defun test<imp>:suite//regex.get (suite-keyword)
   "Returns the ERT test functions regex for the SUITE-KEYWORD."
-  (nth 0 (alist-get suite-keyword iii:test:suites)))
-;; (iii:test:suite//regex.get :tree)
+  (nth 0 (alist-get suite-keyword test<imp>:suites)))
+;; (test<imp>:suite//regex.get :tree)
 
 
-(defun iii:test:suite//dependencies.get (suite-keyword)
+(defun test<imp>:suite//dependencies.get (suite-keyword)
   "Returns the dependencies list for the SUITE-KEYWORD."
-  (nth 1 (alist-get suite-keyword iii:test:suites)))
-;; (iii:test:suite//dependencies.get :tree)
+  (nth 1 (alist-get suite-keyword test<imp>:suites)))
+;; (test<imp>:suite//dependencies.get :tree)
 
 
-(defun iii:test:suite//files.get (suite-keyword)
+(defun test<imp>:suite//files.get (suite-keyword)
   "Returns the files list for the SUITE-KEYWORD."
-  (nth 2 (alist-get suite-keyword iii:test:suites)))
-;; (iii:test:suite//files.get :tree)
+  (nth 2 (alist-get suite-keyword test<imp>:suites)))
+;; (test<imp>:suite//files.get :tree)
 
 
 ;;------------------------------
 ;; All Registered Suites
 ;;------------------------------
 
-(defun iii:test:suite//get-all-names ()
-  "Returns a list of the test suite names from `iii:test:suites'."
+(defun test<imp>:suite//get-all-names ()
+  "Returns a list of the test suite names from `test<imp>:suites'."
   (mapcar
    (lambda (suite)
      "Convert suite keyword to a name string."
-     (iii:test:suite/keyword->name (car suite)))
-   iii:test:suites))
-;; (iii:test:suite//get-all-names)
+     (test<imp>:suite/keyword->name (car suite)))
+   test<imp>:suites))
+;; (test<imp>:suite//get-all-names)
 
 
-(defun iii:test:suite//get-all-keywords ()
-  "Returns a list of the test suite keywords from `iii:test:suites'."
-  (mapcar #'car iii:test:suites))
-;; (iii:test:suite//get-all-keywords)
+(defun test<imp>:suite//get-all-keywords ()
+  "Returns a list of the test suite keywords from `test<imp>:suites'."
+  (mapcar #'car test<imp>:suites))
+;; (test<imp>:suite//get-all-keywords)
 
 
 ;;------------------------------
 ;; Suite Files
 ;;------------------------------
 
-(defun iii:test:suite/files (suite-name-or-keyword)
+(defun test<imp>:suite/files (suite-name-or-keyword)
   "Returns the files to load for SUITE-NAME-OR-KEYWORD.
 
-Does /not/ include `iii:test:suites:files/load-always'."
+Does /not/ include `test<imp>:suites:files/load-always'."
   (let* ((suite-keyword (if (keywordp suite-name-or-keyword)
                             suite-name-or-keyword
-                          (iii:test:suite/name->keyword suite-name-or-keyword)))
+                          (test<imp>:suite/name->keyword suite-name-or-keyword)))
          files)
-    (cond ((not (memq suite-keyword (iii:test:suite//get-all-keywords)))
+    (cond ((not (memq suite-keyword (test<imp>:suite//get-all-keywords)))
            (error "Invalid suite '%S'; valid choices are: %S or %S"
                   suite-name-or-keyword
-                  (iii:test:suite/keywords)
-                  (iii:test:suite/names)))
+                  (test<imp>:suite/keywords)
+                  (test<imp>:suite/names)))
 
           ;; "All" has null files - need to return the sum of everyone else's.
-          ((eq suite-keyword iii:test:suite:all.keyword)
-           (dolist (each-suite iii:test:suites)
+          ((eq suite-keyword test<imp>:suite:all.keyword)
+           (dolist (each-suite test<imp>:suites)
              (let ((each-keyword (car each-suite)))
-               (unless (eq each-keyword iii:test:suite:all.keyword)
-                 (dolist (file (iii:test:suite//files.get each-keyword))
+               (unless (eq each-keyword test<imp>:suite:all.keyword)
+                 (dolist (file (test<imp>:suite//files.get each-keyword))
                    (when (not (member file files))
                      (push file files))))))
                ;; Reverse in case there's some interdependency...
-               ;; TODO: Sort out dependencies using `iii:test:suite//dependencies.get'?
+               ;; TODO: Sort out dependencies using `test<imp>:suite//dependencies.get'?
                (setq files (nreverse files)))
 
           ;; Other tests: Get just the files for the test.
           (t
-           (setq files (iii:test:suite//files.get suite-keyword))))
+           (setq files (test<imp>:suite//files.get suite-keyword))))
 
     files))
-;; (iii:test:suite/files iii:test:suite:all.name)
-;; (iii:test:suite/files "tree")
-;; (iii:test:suite/files :alist)
+;; (test<imp>:suite/files test<imp>:suite:all.name)
+;; (test<imp>:suite/files "tree")
+;; (test<imp>:suite/files :alist)

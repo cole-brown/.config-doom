@@ -17,8 +17,8 @@ tree or nil)."
        (not (null (car node)))
        (not (listp (car node)))
        (symbolp (car node))))
-;; (iii:node? :root)
-;; (iii:node? '(:root))
+;; (int<imp/tree>:node? :root)
+;; (int<imp/tree>:node? '(:root))
 
 
 (defun int<imp/tree>:tree? (tree)
@@ -65,13 +65,13 @@ is nil)."
     ;; Chain?
     (and is-chain is-rooted)))
 ;; symbol: no
-;;   (iii:chain? :root)
+;;   (int<imp/tree>:chain? :root)
 ;; list: yes
-;;   (iii:chain? '(:root))
-;;   (iii:chain? '(root))
-;;   (iii:chain? '(:root) t)
+;;   (int<imp/tree>:chain? '(:root))
+;;   (int<imp/tree>:chain? '(root))
+;;   (int<imp/tree>:chain? '(:root) t)
 ;; list, but not rooted: no
-;;   (iii:chain? '(root) t)
+;;   (int<imp/tree>:chain? '(root) t)
 
 
 (defun int<imp/tree>:key/exists? (key tree)

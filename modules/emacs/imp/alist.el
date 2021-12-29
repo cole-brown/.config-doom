@@ -5,38 +5,32 @@
 ;; A-list Functions
 ;;------------------------------------------------------------------------------
 
-(defun int<imp>:alist:valid/key (key)
+(defun int<imp>:alist:valid/key (caller key &optional error?)
   "Returns non-nil if KEY is valid.
 
-Caller should probably raise an error if they get a nil returned."
-  (not (stringp key)))
-;; (int<imp>:alist:valid/key 'foo)
-;; (int<imp>:alist:valid/key :foo)
-;; (int<imp>:alist:valid/key "foo")
+If ERROR? is non-nil, raises an error for invalid keys. Else returns t/nil."
+  (if (not (stringp key))
+      (if error?
+          (int<imp>:error (int<imp>:output:callers "int<imp>:alist:valid/key" caller)
+                          "Imp alist cannot have a string key! Key: %S"
+                          key)
+        nil)
+    key))
+;; (int<imp>:alist:valid/key "test" 'foo t)
+;; (int<imp>:alist:valid/key "test" :foo t)
+;; (int<imp>:alist:valid/key "test" "foo" t)
 
 
 (defun int<imp>:alist:get/value (key alist)
   "Get value of KEY's entry in ALIST."
-  ;;---
-  ;; Error Checking
-  ;;---
-  (if (int<imp>:alist:valid/key key)
-      (alist-get key alist)
-    (error (concat "int<imp>:alist:get/value: "
-                   "String key '%s' won't work... ")
-           key)))
+  (int<imp>:alist:valid/key "int<imp>:alist:get/value" key :error)
+  (alist-get key alist))
 
 
 (defun int<imp>:alist:get/pair (key alist)
   "Get KEY's entire entry (`car' is KEY, `cdr' is value) from ALIST."
-  ;;---
-  ;; Error Checking
-  ;;---
-  (if (int<imp>:alist:valid/key key)
-      (assoc key alist)
-    (error (concat "int<imp>:alist:get/pair: "
-                   "String key '%s' won't work... ")
-           key)))
+  (int<imp>:alist:valid/key "int<imp>:alist:get/pair" key :error)
+  (assoc key alist))
 
 
 (defmacro int<imp>:alist:update (key value alist)
@@ -53,13 +47,7 @@ Returns ALIST."
     ;; Eval inputs once.
     `(let ((,mmm:alist ,alist)
            (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (unless (int<imp>:alist:valid/key ,mmm:key)
-         (error (concat "int<imp>:alist:update: "
-                        "String key '%s' won't work... ")
-                ,mmm:key))
+       (int<imp>:alist:valid/key "int<imp>:alist:update" key :error)
        (setf (alist-get ,mmm:key ,mmm:alist) ,value)
        ,mmm:alist)))
 
@@ -75,13 +63,7 @@ Returns ALIST."
     ;; Eval inputs once.
     `(let ((,mmm:alist ,alist)
            (,mmm:key ,key))
-       ;;---
-       ;; Error Checking
-       ;;---
-       (unless (int<imp>:alist:valid/key ,mmm:key)
-         (error (concat "int<imp>:alist:update: "
-                        "String key '%s' won't work... ")
-                ,mmm:key))
+       (int<imp>:alist:valid/key "int<imp>:alist:delete" key :error)
        (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
        (when ,set-alist
          (setq ,alist ,mmm:alist))

@@ -53,6 +53,25 @@ ARGS should be a list of args for formatting the STRING, or nil."
 ;; String Helpers
 ;;------------------------------------------------------------------------------
 
+(defun int<imp>:output:callers (this &optional callers)
+  "Builds a caller string from THIS & CALLERS strings."
+  (let ((this (cond ((null this)
+                     nil)
+                    ((stringp this)
+                     this)
+                    (t
+                     (format "%S" this))))
+        (callers (cond ((null callers)
+                        nil)
+                       ((stringp callers)
+                        callers)
+                       (t
+                        (format "%S" callers)))))
+    (if callers
+        (concat this " <-via- " callers)
+      this)))
+
+
 (defun int<imp>:error (caller string &rest args)
   "Create a formatted error message and raise an error signal with it.
 

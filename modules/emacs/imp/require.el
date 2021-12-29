@@ -18,7 +18,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; TODO: a load timing feature?
-;;   - One in `iii:load' that will:
+;;   - One in `int<imp>:load' that will:
 ;;     1. start timer, output: "loading xxx..."?
 ;;     2. stop timer, output:  "└─yy.zzz seconds"
 ;;     3. Look nice when cascading?
@@ -27,17 +27,20 @@
 ;;        "│ └─cc.dd seconds"
 ;;        "└─aa.bb seconds"
 ;;     4. Output to some buffer named by defcustom (default "*Messages*").
-;;  - One or two stand-alone, external-api-named funcs (that `iii:load' calls?).
+;;  - One or two stand-alone, external-api-named funcs (that `int<imp>:load' calls?).
 ;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
+;; TODO: Think that would be an optional file '+output.el'?
+;; TODO: Or like debug - triggers off of a module flag or a toggle var?
+;;       - Also should trigger off of Emacs' "--debug-init" command line arg.
 
 
-(defun iii:load (root &rest feature)
+(defun int<imp>:load (root &rest feature)
   "Load a file relative to ROOT based on FEATURE list of keywords/symbols.
 
 ROOT must be a keyword which exists in `imp:path:roots' (set via the
 `imp:path:root'function).
 
-E.g. (iii:load :imp 'provide)
+E.g. (int<imp>:load :imp 'provide)
   Will try to load: \"/path/to/imp-root/provide.el\"
 
 Returns non-nil if loaded."
@@ -54,7 +57,7 @@ Returns non-nil if loaded."
                (let (file-name-handler-alist)
                  (load path nil 'nomessage))
 
-             (int<imp>:error "iii:load"
+             (int<imp>:error "int<imp>:load"
                         "imp fail to load %S via path: %S\n  - error: %S"
                         (cons root features)
                         path
@@ -66,8 +69,8 @@ Returns non-nil if loaded."
                  ;; TODO: guess at a file/path based on 'root/feature-0/...'?
                  nil
                  'noerror))))
-;; (iii:load :imp 'something)
-;; (iii:load :config 'spy 'system 'config)
+;; (int<imp>:load :imp 'something)
+;; (int<imp>:load :config 'spy 'system 'config)
 
 
 ;;------------------------------------------------------------------------------
@@ -94,7 +97,7 @@ Returns non-nil on success."
          t)
 
         ;; Can we load it?
-        ((apply #'iii:load root names)
+        ((apply #'int<imp>:load root names)
          ;; Yes; so add to imp's feature tree.
          (int<imp>:feature:add (cons root feature)))
 

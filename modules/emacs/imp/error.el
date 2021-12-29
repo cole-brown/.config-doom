@@ -34,8 +34,11 @@ LEVEL should be one of the alist keys in `int<imp>:output:prefix'.
 CALLER should be a string of the calling function's name.
   - It can be nil, though it is /really/ not suggested.
 
-STRING should be a string, which can have formatting info in it (see `format'),
-and will be printed as the debug message.
+STRING should be:
+  - A string (which can have formatting info in it (see `format')).
+    Will be printed as the debug message.
+  - A list of strings (which can have formatting info in it (see `format')).
+    Will be concatenated and printed as the debug message.
 
 ARGS should be a list of args for formatting the STRING, or nil."
   (when-let ((func (int<imp>:output:level/get level :func))
@@ -45,7 +48,12 @@ ARGS should be a list of args for formatting the STRING, or nil."
            (concat prefix
                    caller
                    (if caller ": " "")
-                   string)
+                   (cond ((stringp string)
+                          string)
+                         ((null string)
+                          nil)
+                         ((listp string)
+                          (apply #'concat string))))
            args)))
 
 

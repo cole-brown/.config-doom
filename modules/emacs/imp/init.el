@@ -70,9 +70,13 @@
 (load! "require")
 (load! "commands")
 
-;; Path was needed earlier than provide, so now we need to let path
-;; provide itself.
-(iii:path:provide)
+;;------------------------------------------------------------------------------
+;; Initialization
+;;------------------------------------------------------------------------------
+
+;; Path is needed earlier than provide, so now that everything is ready, let
+;; 'path.el' provide itself and do other set-up.
+(int<imp>:path:init)
 
 
 ;;------------------------------------------------------------------------------

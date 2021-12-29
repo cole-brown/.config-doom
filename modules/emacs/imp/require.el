@@ -47,9 +47,9 @@ Returns non-nil if loaded."
          t)
 
         ;; Not loaded, but we know where to find it?
-        ((iii:path:root/contains? root)
+        ((int<imp>:path:root/contains? root)
          ;; imp knows about this - let's try to load it.
-         (let* ((path (iii:path:get (cons root feature))))
+         (let* ((path (int<imp>:path:get (cons root feature))))
            (condition-case-unless-debug err
                (let (file-name-handler-alist)
                  (load path nil 'nomessage))

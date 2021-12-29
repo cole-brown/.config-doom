@@ -10,7 +10,25 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defconst int<imp>:path:replace:rx
+;; TODO: Delete? Where was this supposed to be used???
+(defconst int<imp/path>:find/regex
+  (rx
+   ;; Prefix
+   (group (optional (or "+"
+                        ;; Any other prefixes?
+                        )))
+   ;; Feature Name to insert
+   "%S"
+   ;; Postfix
+   (group (optional (or ".el"
+                        ".imp.el"))))
+  "Regex to apply to each name in a feature list (except root) when searching
+for a filepath match.
+
+Feature name string will replace the '%S'.")
+
+
+(defconst int<imp/path>:replace:rx
   `(;;------------------------------
     ;; Default/Any/All
     ;;------------------------------
@@ -123,8 +141,8 @@ Alist format in `defcustom' language:
                                   (sexp :tag \"Expression that returns a string.\"))
                 :value-type (choice (list string :tag \"Replacement Value\")
                                     (list symbol :tag \"Symbol whose value is the replacement value\")))")
-;; (pp-display-expression int<imp>:path:replace:rx "*int<imp>:path:replace:rx*")
-;; (makunbound 'int<imp>:path:replace:rx)
+;; (pp-display-expression int<imp/path>:replace:rx "*int<imp/path>:replace:rx*")
+;; (makunbound 'int<imp/path>:replace:rx)
 
 
 (defvar imp:path:roots nil
@@ -140,17 +158,17 @@ Example:
 ;; `imp:path:roots' Getters
 ;;------------------------------------------------------------------------------
 
-(defun iii:path:root/dir (keyword)
+(defun int<imp/path>:root/dir (keyword)
   "Get the root directory from `imp:path:roots' for KEYWORD."
   (if-let ((dir (nth 0 (int<imp>:alist:get/value keyword imp:path:roots))))
       (expand-file-name "" dir)
-    (int<imp>:error "iii:path:root/dir"
+    (int<imp>:error "int<imp/path>:root/dir"
                     "Root keyword '%S' unknown."
                     keyword)))
-;; (iii:path:root/dir :imp)
+;; (int<imp/path>:root/dir :imp)
 
 
-(defun iii:path:root/file (keyword)
+(defun int<imp/path>:root/file (keyword)
   "Get the root init file from `imp:path:roots' for KEYWORD."
   (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
       (if (nth 1 paths) ;; Does it even have a filename? Can be nil.
@@ -158,19 +176,20 @@ Example:
           (expand-file-name (nth 1 paths) (nth 0 paths))
         ;; No root file; return nil.
         nil)
-    (int<imp>:error "iii:path:root/file"
+    (int<imp>:error "int<imp/path>:root/file"
                     "Root keyword '%S' unknown."
                     keyword)))
-;; (iii:path:root/file :imp)
-;; (iii:path:root/file :modules)
+;; (int<imp/path>:root/file :imp)
+;; (int<imp/path>:root/file :modules)
 
 
-(defun iii:path:root/contains? (keyword)
+;; TODO: used by imp
+(defun int<imp>:path:root/contains? (keyword)
   "Returns bool based on if `imp:path:roots' contains KEYWORD."
   (not (null (int<imp>:alist:get/value keyword imp:path:roots))))
 
 
-(defun iii:path:root/valid? (func path &rest kwargs)
+(defun int<imp/path>:root/valid? (func path &rest kwargs)
   "Checks that PATH is a vaild root path.
 
 KWARGS should be a plist. All default to `t':
@@ -186,12 +205,12 @@ KWARGS should be a plist. All default to `t':
                   t))
         (result t))
 
-    (int<imp>:debug "iii:path:root/valid?" "func:   %s" func)
-    (int<imp>:debug "iii:path:root/valid?" "path:   %s" path)
-    (int<imp>:debug "iii:path:root/valid?" "kwargs: %S" kwargs)
-    (int<imp>:debug "iii:path:root/valid?" "  exists: %S" exists)
-    (int<imp>:debug "iii:path:root/valid?" "  dir:    %S" dir)
-    (int<imp>:debug "iii:path:root/valid?" "  result: %S" result)
+    (int<imp>:debug "int<imp/path>:root/valid?" "func:   %s" func)
+    (int<imp>:debug "int<imp/path>:root/valid?" "path:   %s" path)
+    (int<imp>:debug "int<imp/path>:root/valid?" "kwargs: %S" kwargs)
+    (int<imp>:debug "int<imp/path>:root/valid?" "  exists: %S" exists)
+    (int<imp>:debug "int<imp/path>:root/valid?" "  dir:    %S" dir)
+    (int<imp>:debug "int<imp/path>:root/valid?" "  result: %S" result)
 
     ;;---
     ;; Validity Checks
@@ -222,69 +241,71 @@ KWARGS should be a plist. All default to `t':
     ;;---
     ;; Return valid
     ;;---
-    (int<imp>:debug "iii:path:root/valid?" "->result: %S" result)
+    (int<imp>:debug "int<imp/path>:root/valid?" "->result: %S" result)
     result))
-;; (iii:path:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
+;; (int<imp/path>:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
 
 
 ;;------------------------------------------------------------------------------
-;; String Helpers
+;; Normalize
 ;;------------------------------------------------------------------------------
 
-(defun iii:path:to-string (symbol-or-string)
+(defun int<imp/path>:normalize:string (symbol-or-string)
   "Translate the FEATURE (a single symbol) to a path string using
-`int<imp>:path:replace:rx' translations."
+`int<imp/path>:replace:rx' translations."
   (let ((name (if (symbolp symbol-or-string)
                   (symbol-name symbol-or-string)
                 symbol-or-string))
         regex
         replacement)
     ;; Defaults first.
-    (int<imp>:debug "iii:path:to-string" "defaults:")
+    (int<imp>:debug "int<imp/path>:normalize:string" "defaults:")
     (dolist (pair
-             (int<imp>:alist:get/value 'default int<imp>:path:replace:rx)
+             (int<imp>:alist:get/value 'default int<imp/path>:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
                             (symbol-value (nth 1 pair))
                           (nth 1 pair)))
-      (int<imp>:debug "iii:path:to-string" "  rx: %S" regex)
-      (int<imp>:debug "iii:path:to-string" "  ->: %S" replacement)
+      (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
+      (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))
 
     ;; Now the system-specifics, if any. Return `name' from `dolist' because
     ;; we're done.
-    (int<imp>:debug "iii:path:to-string" "system(%S):" system-type)
+    (int<imp>:debug "int<imp/path>:normalize:string" "system(%S):" system-type)
     (dolist (pair
-             (int<imp>:alist:get/value system-type int<imp>:path:replace:rx)
+             (int<imp>:alist:get/value system-type int<imp/path>:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
                             (symbol-value (nth 1 pair))
                           (nth 1 pair)))
-      (int<imp>:debug "iii:path:to-string" "  rx: %S" regex)
-      (int<imp>:debug "iii:path:to-string" "  ->: %S" replacement)
+      (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
+      (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))))
-;; (iii:path:to-string :imp)
+;; TODO: bugged now...
+;; TODO: fix.
+;; (int<imp/path>:normalize:string :imp)
 ;; Should lose both slashes:
-;; (iii:path:to-string "~/doom.d/")
-;; bugged: (iii:path:to-string "config")
+;; (int<imp/path>:normalize:string "~/doom.d/")
+;; bugged: (int<imp/path>:normalize:string "config")
 
 
-(defun iii:path:imp->string (feature)
+(defun int<imp/path>:normalize:list (feature)
   "Normalize FEATURE (a list of symbols/keywords) to a list of strings.
 
 Returns the list of normalized string."
-  (mapcar #'iii:path:to-string feature))
-;; (iii:path:imp->string '(:root test feature))
-;; bugged: (iii:path:imp->string '(spy system config))
+  (mapcar #'int<imp/path>:normalize:string feature))
+;; (int<imp/path>:normalize:list '(:root test feature))
+;; bugged: (int<imp/path>:normalize:list '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
 ;; Path Helpers
 ;;------------------------------------------------------------------------------
 
-(defun iii:path:append (parent next)
+(defun int<imp/path>:append (parent next)
   "Append NEXT element as-is to PARENT, adding dir separator between them if
 needed.
 
@@ -293,12 +314,12 @@ NEXT and PARENT are expected to be keywords or symbols.
   ;; Error checks first.
   (cond ((and parent
               (not (stringp parent)))
-         (int<imp>:error "iii:path:append"
+         (int<imp>:error "int<imp/path>:append"
                          "Paths to append must be strings. Parent is: %S"
                          parent))
         ((or (null next)
              (not (stringp next)))
-         (int<imp>:error "iii:path:append"
+         (int<imp>:error "int<imp/path>:append"
                          "Paths to append must be strings. Next is: %S"
                          next))
 
@@ -313,62 +334,46 @@ NEXT and PARENT are expected to be keywords or symbols.
          (concat (file-name-as-directory parent) next))))
 
 
-(defun iii:path:features->path (feature)
+(defun int<imp/path>:normalize:path (feature)
   "Combine FEATURE (a list of keywords/symbols) together into a path
 platform-agnostically.
 
-(iii:path:features->path :jeff 'jill)
+(int<imp/path>:normalize:path :jeff 'jill)
   -> \"jeff/jill\"
 or possibly
   -> \"jeff\\jill\""
-  (int<imp>:debug "iii:path:features->path" "--input: %S" feature)
+  (int<imp>:debug "int<imp/path>:normalize:path" "--input: %S" feature)
   (unless (seq-every-p #'symbolp feature)
-    (int<imp>:error "iii:path:features->path"
+    (int<imp>:error "int<imp/path>:normalize:path"
                     "FEATURE list must only contain symbols/keywords. Got: %S"
                     feature))
-  (seq-reduce #'iii:path:append
-              (iii:path:imp->string feature)
+  (seq-reduce #'int<imp/path>:append
+              (int<imp/path>:normalize:list feature)
               nil))
-;; works: (iii:path:features->path '(:jeff jill))
-;; fails: (iii:path:features->path '("~/.doom.d/" "modules"))
-;; bugged: (iii:path:features->path '(spy system config))
+;; works: (int<imp/path>:normalize:path '(:jeff jill))
+;; fails: (int<imp/path>:normalize:path '("~/.doom.d/" "modules"))
+;; bugged: (int<imp/path>:normalize:path '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
 ;; Load Symbols -> Load Path
 ;;------------------------------------------------------------------------------
 
-(defun iii:path:get (feature)
+;; TODO: Used by imp.
+(defun int<imp>:path:get (feature)
   "Convert FEATURE (a list of keywords/symbols) to a load path string.
 
 NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
 presumably by having called `imp:root'."
-  (iii:path:append (iii:path:root/dir (car feature))
-                   (iii:path:features->path (cdr feature))))
-;; (iii:path:get '(:imp test feature))
-;; (iii:path:get '(:config spy system config))
-
-
-;; TODO: Move this to init.el with other defcustoms.
-(defcustom imp:path:find/regex
-  (rx
-   ;; Prefix
-   (group (optional (or "+"
-                        ;; Any other prefixes?
-                        )))
-   ;; Feature Name to insert
-   "%S"
-   ;; Postfix
-   (group (optional (or ".el"
-                        ".imp.el"))))
-  "Regex to apply to each name in a feature list (except root) when searching
-for a filepath match.
-
-Feature name string will replace the '%S'.")
+  (int<imp/path>:append (int<imp/path>:root/dir (car feature))
+                        (int<imp/path>:normalize:path (cdr feature))))
+;; (int<imp>:path:get '(:imp test feature))
+;; (int<imp>:path:get '(:config spy system config))
 
 
 ;; TODO: Change to this after implementing?
-(defun iii:path:find (feature)
+;; TODO: implement?
+(defun int<imp>:path:find (feature)
   "Convert FEATURE (a list of keywords/symbols) to a load path.
 
 1) Converts FEATURE into a load path regex string.
@@ -381,13 +386,13 @@ NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
 presumably by having called `imp:root'.
 
 Example:
-  (iii:path:find :imp 'foo 'bar 'baz)
+  (int<imp>:path:find :imp 'foo 'bar 'baz)
   Could return:
     -> \"/path/to/imp-root/foo/bar/baz.el\"
     -> \"/path/to/imp-root/+foo/bar/baz.el\"
     -> \"/path/to/imp-root/foo/+bar/baz.el\"
     -> \"/path/to/imp-root/+foo/bar/+baz.el\"
-    -> etc, depending on `imp:path:find/regex' settings."
+    -> etc, depending on `int<imp/path>:find/regex' settings."
   ;; TODO: implement this.
   ;; Features to strings.
   ;; For each string except first:
@@ -401,31 +406,18 @@ Example:
 ;; Public API: Feature Root Directories
 ;;------------------------------------------------------------------------------
 
-(defun imp:path:features->path (&rest feature)
-  "Combine FEATURE (keywords/symbols) together into a path
-platform-agnostically.
-
-(imp:path:features->path :jeff 'jill)
-  -> \"jeff/jill\"
-or possibly
-  -> \"jeff\\jill\""
-  (int<imp>:debug "imp:path:features->path" "input: %S" feature)
-  (iii:path:features->path feature))
-;; works: (imp:path:features->path :jeff 'jill)
-;; fails: (imp:path:features->path "~/.doom.d/" "modules")
-
-
-(defun imp:path:paths->path (&rest paths)
+(defun imp:path:normalize (&rest paths)
   "Combine PATHS (a list of path strings) together into a path
 platform-agnostically.
 
 (imp:path:paths->path \"~/.doom.d\" \"foo\" \"bar\")
   -> \"~/.doom.d/foo/bar\""
-  (seq-reduce #'iii:path:append
+  (seq-reduce #'int<imp/path>:append
               paths
               nil))
 ;; works: (imp:path:paths->path "~/.doom.d/" "modules")
-;; fails: (imp:path:paths->path :jeff 'jill)
+;; works: (imp:path:paths->path "~/.doom.d" "modules")
+;; TODO: fails; shouldn't: (imp:path:paths->path :jeff 'jill)
 
 
 (defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
@@ -438,20 +430,20 @@ PATH-TO-ROOT-FILE is nil or the file to load if only KEYWORD is used in an
 in `imp:path:roots'.
   - This can be either an absolute or relative path. If relative, it will be
     relative to PATH-TO-ROOT-DIR."
-  (cond ((iii:path:root/contains? keyword)
+  (cond ((int<imp>:path:root/contains? keyword)
          (int<imp>:error "imp:root"
                          "Keyword '%S' is already an imp root.\n  path: %s\n  file: %s"
                          keyword
-                         (iii:path:root/dir keyword)
-                         (iii:path:root/file keyword)))
+                         (int<imp/path>:root/dir keyword)
+                         (int<imp/path>:root/file keyword)))
 
         ((not (keywordp keyword))
          (int<imp>:error "imp:root"
                          "Keyword must be a keyword (e.g. `:foo' `:bar' etc)"))
 
-        ;; iii:path:root/valid? will error with better reason, so the error here
+        ;; int<imp/path>:root/valid? will error with better reason, so the error here
         ;; isn't actually triggered... I think?
-        ((not (iii:path:root/valid? "imp:root" path-to-root-dir))
+        ((not (int<imp/path>:root/valid? "imp:root" path-to-root-dir))
          (int<imp>:error "imp:root"
                          "Path must be a valid directory: %s" path-to-root-dir))
 
@@ -463,25 +455,41 @@ in `imp:path:roots'.
 
 
 ;;------------------------------------------------------------------------------
-;; The End.
+;; Internal API: Initialization
 ;;------------------------------------------------------------------------------
+;; We are loaded before 'provide.el', but we have public functions that people
+;; may want, so we want to call:
+;;   (imp:provide:with-emacs :imp 'path)
+;;
+;; Instead of calling directly when this file is loaded/eval'd, we'll depend on
+;; 'init.el' to call this function.
 
-;; Might as well automatically fill ourself in.
-(let ((dir/imp (file-name-directory (if load-in-progress
-                                        load-file-name
-                                      (buffer-file-name)))))
+(defun int<imp>:path:init ()
+  "Initialize imp's path functions/variables.
+
+This will:
+  - Call `imp:path:root' for setting imp's root dir & file.
+  - Provide 'path.el' feature to imp & emacs.
+
+Must be called after 'provide.el' is loaded."
+  ;;---
+  ;; Set `imp' root.
+  ;;   - Might as well automatically fill ourself in.
+  ;;---
   (imp:path:root :imp
                  ;; root dir
-                 dir/imp
+                 (file-name-directory (if load-in-progress
+                                          load-file-name
+                                        (buffer-file-name)))
                  ;; root file - just provide relative to dir/imp
-                 "init.el"))
+                 "init.el")
 
-;; And provide; we have an external/API function so we'd like to follow our imp
-;; policy of using `imp:provide:with-emacs', but...
-;; We are loaded before that exists.
-;;   (imp:provide:with-emacs :imp 'path)
-;; So instead expect someone to call this function:
-(defun iii:path:provide ()
-  "Lets the imp:path module provide itself after
-`imp:provide:with-emacs' is loaded."
+  ;;---
+  ;; Provide feature symbol for 'path.el'.
+  ;;---
   (imp:provide:with-emacs :imp 'path))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------

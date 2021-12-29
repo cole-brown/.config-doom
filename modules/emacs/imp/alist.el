@@ -41,15 +41,15 @@ If VALUE is nil, it will be set as KEY's value. Use
 
 Returns ALIST."
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist/general"))
-        (mmm:key   (make-symbol "alist/general:key")))
+  (let ((macro<imp>:alist (make-symbol "macro<imp>:alist"))
+        (macro<imp>:key   (make-symbol "macro<imp>:alist:key")))
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
     ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
+    `(let ((,macro<imp>:alist ,alist)
+           (,macro<imp>:key   ,key))
        (int<imp>:alist:valid/key "int<imp>:alist:update" key :error)
-       (setf (alist-get ,mmm:key ,mmm:alist) ,value)
-       ,mmm:alist)))
+       (setf (alist-get ,macro<imp>:key ,macro<imp>:alist) ,value)
+       ,macro<imp>:alist)))
 
 
 (defmacro int<imp>:alist:delete (key alist &optional set-alist)
@@ -57,17 +57,17 @@ Returns ALIST."
 
 Returns ALIST."
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars
-  (let ((mmm:alist (make-symbol "alist/general"))
-        (mmm:key   (make-symbol "alist/general:key")))
+  (let ((macro<imp>:alist (make-symbol "macro<imp>:alist"))
+        (macro<imp>:key   (make-symbol "macro<imp>:alist:key")))
     ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Argument-Evaluation.html#Argument-Evaluation
     ;; Eval inputs once.
-    `(let ((,mmm:alist ,alist)
-           (,mmm:key ,key))
+    `(let ((,macro<imp>:alist ,alist)
+           (,macro<imp>:key   ,key))
        (int<imp>:alist:valid/key "int<imp>:alist:delete" key :error)
-       (setf (alist-get ,mmm:key ,mmm:alist nil 'remove) nil)
+       (setf (alist-get ,macro<imp>:key ,macro<imp>:alist nil 'remove) nil)
        (when ,set-alist
-         (setq ,alist ,mmm:alist))
-       ,mmm:alist)))
+         (setq ,alist ,macro<imp>:alist))
+       ,macro<imp>:alist)))
 ;; (let ((alist '((foo . bar))))
 ;;   (int<imp>:alist:delete "foo" alist)
 ;;   alist)

@@ -20,7 +20,7 @@
   :group 'tools)
 
 
-(defcustom imp:features:buffer
+(defcustom imp:output:features:buffer
   "*imp:features*"
   "Name of the buffer for `imp:features:print' to output a pretty-printed tree
 of the features imp has provided."
@@ -31,8 +31,8 @@ of the features imp has provided."
 ;; Display Features
 ;;------------------------------------------------------------------------------
 
-(defun imp:features:print ()
+(defun imp:cmd:features:print ()
   "Pretty print `imp:features' to a temp buffer."
   (interactive)
-  (pp-display-expression imp:features imp:features:buffer))
+  (pp-display-expression imp:features imp:output:features:buffer))
 ;; (imp:features:print)

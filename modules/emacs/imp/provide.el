@@ -51,15 +51,28 @@ If FILE-NAME is a string, returns true if loading that exact
 (defun imp:provide (&rest feature)
   "Record FEATURE in `imp:features' as having been provided.
 
+Each FEATURE should be one of:
+  - A keyword.
+  - A symbol.
+  - A string to be passed through `imp:feature:normalize'.
+
 If you want to provide the feature to emacs as well, you can either:
   1. Use `imp:provide:with-emacs' instead of this to have it automatically
      happen.
      - imp will translate the FEATURE symbol chain via `int<imp>:feature:normalize:imp->emacs'.
   2. Do it yourself by also calling Emacs' `provide' with a symbol of your
      choosing."
-  (int<imp>:debug "imp:provide" "Providing feature '%S'..."
-                  feature)
-  (int<imp>:feature:add feature))
+  (let ((feature/imp (apply #'imp:feature:normalize feature)))
+    (if (null feature/imp)
+        (int<imp>:error "imp:provide"
+                        '("No features to provide? "
+                          "input: %S, normalized: %S")
+                        feature
+                        feature/imp)
+
+      (int<imp>:debug "imp:provide" "Providing feature '%S'..."
+                      feature/imp)
+      (int<imp>:feature:add feature/imp))))
 ;; (imp:provide :package 'module 'submodule 'feature)
 
 
@@ -67,13 +80,21 @@ If you want to provide the feature to emacs as well, you can either:
   "Record FEATURE in `imp:features' and in Emacs' `features' (via
 Emacs' `provide') as having been provided.
 
+Each FEATURE should be one of:
+  - A keyword.
+  - A symbol.
+  - A string to be passed through `imp:feature:normalize'.
+
 imp will translate the FEATURE symbol chain via `int<imp>:feature:normalize:imp->emacs' and use
-the result for the call to Emacs' `provide'."
+the result for the call to Emacs' `provide'.
+
+Returns the Emacs feature symbol created/used."
   (apply #'imp:provide feature)
   (let ((feature/emacs (int<imp>:feature:normalize:imp->emacs feature)))
     (int<imp>:debug "imp:provide:with-emacs" "Providing to emacs as '%S'..."
                     feature/emacs)
-    (provide feature/emacs)))
+    (provide feature/emacs)
+    feature/emacs))
 
 
 ;;------------------------------------------------------------------------------

@@ -1,8 +1,14 @@
 ;;; emacs/imp/+debug.el -*- lexical-binding: t; -*-
 
-;;; Commentary:
 
-;; Debugging functionality for imp.
+;;                                 ──────────                                 ;;
+;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
+;; ║              Debugging for Imps & Other Mischievous Sprites            ║ ;;
+;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
+;;                                   ──────                                   ;;
+;;                        Insert all Heisenbugs here.                         ;;
+;;                                 ──────────                                 ;;
+
 
 ;;------------------------------------------------------------------------------
 ;; Debugging Toggle

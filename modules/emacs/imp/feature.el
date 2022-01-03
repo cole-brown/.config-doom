@@ -98,12 +98,8 @@ appropriate for Emacs' `provide'."
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
 
 
-(defun imp:feature:normalize (&rest input)
-  "Normalize INPUT to feature in one of two ways.
-
-If only one INPUT param, returns a symbol/keyword.
-  - This is useful for converting strings to symbols for e.g. `imp:provide'.
-If more than one INPUT param, returns a list of symbol/keywords.
+(defun int<imp>:feature:normalize (&rest input)
+  "Normalize INPUT to a list of feature symbols/keywords.
 
 If INPUT item is:
   - Keyword: Return as-is.
@@ -113,7 +109,8 @@ E.g.
   1) `:modules' -> `:modules'
   2) `feature' -> `feature'
   3) \"str-4874\" -> `:str-4874'"
-  (let (output)
+  (let ((func.name "int<imp>:feature:normalize")
+        output)
     (dolist (item input)
       (push
        ;; Keyword or symbol? -> no-op
@@ -138,23 +135,53 @@ E.g.
 
              ;; Other? Error.
              (t
-              (int<imp>:error "imp:feature:normalize"
+              (int<imp>:error func.name
                               (concat "Cannot convert INPUT item type to a symbol. "
                                       "Need a string or symbol/keyword. Got: %S")
                               item)))
        output))
 
+    ;; Return the list or raise an error.
+    (if (null output)
+        (int<imp>:error func.name
+                        "No normalized features produced from INPUT: %S"
+                        input))
+
+    (nreverse output)))
+;; (int<imp>:feature:normalize '+layout/spydez)
+;; (int<imp>:feature:normalize :spydez)
+;; (int<imp>:feature:normalize "spydez")
+;; (int<imp>:feature:normalize "+spydez")
+;; (int<imp>:feature:normalize "+spydez" "foo" "bar")
+
+
+(defun imp:feature:normalize (&rest input)
+  "Normalize INPUT to feature in one of two ways.
+
+If only one INPUT param, returns a symbol/keyword.
+  - This is useful for converting strings to symbols for e.g. `imp:provide'.
+If more than one INPUT param, returns a list of symbol/keywords.
+
+If INPUT item is:
+  - Keyword: Return as-is.
+  - Symbol:  Return as-is.
+  - String:  Convert to a keyword.
+E.g.
+  1) `:modules' -> `:modules'
+  2) `feature' -> `feature'
+  3) \"str-4874\" -> `:str-4874'"
+  (let ((normalized (apply #'int<imp>:feature:normalize input)))
     ;; Return the list, the one item, or what?
-    (cond ((null output)
+    (cond ((null normalized)
            (int<imp>:error "imp:feature:normalize"
                            "No normalized features produced from INPUT: %S"
                            input))
 
-          ((= 1 (length output))
-           (nth 0 output))
+          ((= 1 (length normalized))
+           (nth 0 normalized))
 
           (t
-           (nreverse output)))))
+           normalized))))
 ;; (imp:feature:normalize '+layout/spydez)
 ;; (imp:feature:normalize :spydez)
 ;; (imp:feature:normalize "spydez")

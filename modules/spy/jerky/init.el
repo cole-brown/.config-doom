@@ -21,10 +21,10 @@
 ;;------------------------------------------------------------------------------
 
 (imp:path:root :jerky
-               (imp:path:paths->path doom-private-dir
-                                     "modules"
-                                     "spy"
-                                     "jerky")
+               (imp:path:join doom-private-dir
+                              "modules"
+                              "spy"
+                              "jerky")
                "init.el")
 
 

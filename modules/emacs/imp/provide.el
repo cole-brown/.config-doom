@@ -54,7 +54,7 @@ If FILE-NAME is a string, returns true if loading that exact
 Each FEATURE should be one of:
   - A keyword.
   - A symbol.
-  - A string to be passed through `imp:feature:normalize'.
+  - A string (will be passed through `imp:feature:normalize').
 
 If you want to provide the feature to emacs as well, you can either:
   1. Use `imp:provide:with-emacs' instead of this to have it automatically
@@ -62,7 +62,7 @@ If you want to provide the feature to emacs as well, you can either:
      - imp will translate the FEATURE symbol chain via `int<imp>:feature:normalize:imp->emacs'.
   2. Do it yourself by also calling Emacs' `provide' with a symbol of your
      choosing."
-  (let ((feature/imp (apply #'imp:feature:normalize feature)))
+  (let ((feature/imp (apply #'int<imp>:feature:normalize feature)))
     (if (null feature/imp)
         (int<imp>:error "imp:provide"
                         '("No features to provide? "

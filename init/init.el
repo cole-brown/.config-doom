@@ -12,9 +12,9 @@
 ;; Set-Up imp Roots
 ;;------------------------------
 
-(imp:path:root :modules (imp:path:paths->path doom-private-dir "modules"))
-(imp:path:root :config (imp:path:paths->path doom-private-dir "config"))
-(imp:path:root :init (imp:path:paths->path doom-private-dir "init"))
+(imp:path:root :modules (imp:path:join doom-private-dir "modules"))
+(imp:path:root :config  (imp:path:join doom-private-dir "config"))
+(imp:path:root :init    (imp:path:join doom-private-dir "init"))
 
 
 ;;------------------------------

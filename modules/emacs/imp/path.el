@@ -366,6 +366,17 @@ NEXT and PARENT are expected to be strings."
          (concat (file-name-as-directory parent) next))))
 
 
+(defun imp:path:join (&rest path)
+  "Combines PATH elements together into a path platform-agnostically.
+
+(imp:path:join \"jeff\" \"jill.el\")
+  ->\"jeff/jill.el\""
+  (seq-reduce #'int<imp/path>:append path nil))
+;; (imp:path:join "/foo" "bar.el")
+;; (imp:path:join "foo" "bar.el")
+;; (imp:path:join "foo")
+
+
 (defun int<imp/path>:normalize:path (feature)
   "Combine FEATURE (a list of keywords/symbols) together into a path
 platform-agnostically.

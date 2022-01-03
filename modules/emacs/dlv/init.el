@@ -41,10 +41,10 @@
 ;;------------------------------------------------------------------------------
 
 (imp:path:root :dlv
-               (imp:path:paths->path doom-private-dir
-                                     "modules"
-                                     "emacs"
-                                     "dlv")
+               (imp:path:join doom-private-dir
+                              "modules"
+                              "emacs"
+                              "dlv")
                "init.el")
 
 

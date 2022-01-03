@@ -21,10 +21,10 @@
 ;; Set up imp.
 ;;------------------------------------------------------------------------------
 (imp:path:root :taskspace
-               (imp:path:paths->path doom-private-dir
-                                     "modules"
-                                     "taskspace"
-                                     "taskspace")
+               (imp:path:join doom-private-dir
+                              "modules"
+                              "taskspace"
+                              "taskspace")
                "init.el")
 
 ;;------------------------------------------------------------------------------

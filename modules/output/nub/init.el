@@ -32,10 +32,10 @@
 ;;------------------------------------------------------------------------------
 
 (imp:path:root :nub
-               (imp:path:paths->path doom-private-dir
-                                     "modules"
-                                     "output"
-                                     "nub")
+               (imp:path:join doom-private-dir
+                              "modules"
+                              "output"
+                              "nub")
                "init.el")
 
 

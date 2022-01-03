@@ -36,15 +36,15 @@
   "Backup `imp:features' and clear it out for 'feature.el' testing."
   (setq test<imp/feature>:features:backup      imp:features
         imp:features                           nil
-        test<imp/feature>:features:test-values nil))
+        test<imp/feature>:features:test nil))
 
 
 (defun test<imp/feature>:teardown (test-name)
   "Restore `imp:features'."
-  ;; Save whatever testing did to `test<imp/feature>:features:test-values'
-  (setq test<imp/feature>:features:test-values   imp:features
+  ;; Save whatever testing did to `test<imp/feature>:features:test'
+  (setq test<imp/feature>:features:test   imp:features
         ;; Restore `imp:features'.
-        imp:features test<imp/feature>:features:backup
+        imp:features                      test<imp/feature>:features:backup
         test<imp/feature>:features:backup nil))
 
 

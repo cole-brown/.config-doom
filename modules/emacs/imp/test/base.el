@@ -88,6 +88,23 @@ Search for \"[MARK-\[0-9\]+]:\"."
 
 
 ;;------------------------------------------------------------------------------
+;; Test Helpers
+;;------------------------------------------------------------------------------
+
+(defun test<imp>:path/file:this ()
+  "Filepath of caller file, depending on if this is being loaded or looked at."
+  (if load-in-progress
+      load-file-name
+    (buffer-file-name)))
+;; (test<imp>:path/file:this)
+
+
+(defun test<imp>:path/dir:this ()
+  "Filepath of caller file, depending on if this is being loaded or looked at."
+  (file-name-directory (test<imp>:path/file:this)))
+
+
+;;------------------------------------------------------------------------------
 ;; Test Fixture (Set-Up / Tear-Down) Functions
 ;;------------------------------------------------------------------------------
 

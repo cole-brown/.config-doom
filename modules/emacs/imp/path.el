@@ -195,13 +195,14 @@ Example:
   (not (null (int<imp>:alist:get/value keyword imp:path:roots))))
 
 
-(defun int<imp/path>:root/valid? (func path &rest kwargs)
+(defun int<imp/path>:root/valid? (caller path &rest kwargs)
   "Checks that PATH is a vaild root path.
 
 KWARGS should be a plist. All default to `t':
-  - :exists - path must exist
-  - :dir    - path must be a directory (implies :exists)"
-  (let ((exists (if (and kwargs
+  - :exists - Path must exist.
+  - :dir    - Path must be a directory (implies :exists)."
+  (let ((func.name "int<imp/path>:root/valid?")
+        (exists (if (and kwargs
                          (plist-member kwargs :exists))
                     (plist-get kwargs :exists)
                   t))
@@ -211,35 +212,62 @@ KWARGS should be a plist. All default to `t':
                   t))
         (result t))
 
-    (int<imp>:debug "int<imp/path>:root/valid?" "func:   %s" func)
-    (int<imp>:debug "int<imp/path>:root/valid?" "path:   %s" path)
-    (int<imp>:debug "int<imp/path>:root/valid?" "kwargs: %S" kwargs)
-    (int<imp>:debug "int<imp/path>:root/valid?" "  exists: %S" exists)
-    (int<imp>:debug "int<imp/path>:root/valid?" "  dir:    %S" dir)
-    (int<imp>:debug "int<imp/path>:root/valid?" "  result: %S" result)
+    (int<imp>:debug func.name "caller:   %s" caller)
+    (int<imp>:debug func.name "path:     %s" path)
+    (int<imp>:debug func.name "kwargs:   %S" kwargs)
+    (int<imp>:debug func.name "  exists: - %S" exists)
+    (int<imp>:debug func.name "  dir:    - %S" dir)
 
     ;;---
     ;; Validity Checks
     ;;---
-    (when (or exists dir)  ; :dir implies :exists
+    (if (not (or exists dir))  ; :dir implies :exists
+        (int<imp>:debug func.name
+                        "Existance not required. (or exists(%S) dir(%S)) -> %S"
+                        exists
+                        dir
+                        (or exists dir))
+
+      ;; Path is required to exist.
+      (int<imp>:debug func.name
+                      "Existance required! (or exists(%S) dir(%S)) -> %S"
+                      exists
+                      dir
+                      (or exists dir))
+
       (cond ((null path)
-             (int<imp>:error func
+             (int<imp>:error caller
                              "Null `path'?! path: %s"
                              path)
              (setq result nil))
 
             ((not (file-exists-p path))
-             (int<imp>:error func
+             (int<imp>:error caller
                              "Path does not exist: %s"
                              path)
              (setq result nil))
 
             (t
+             (int<imp>:debug func.name
+                             "Path exists!"
+                             path)
              nil)))
 
-    (when dir
-      (unless (file-directory-p path)
-        (int<imp>:error func
+    (if (not dir)
+        (int<imp>:debug func.name
+                        "Path can be any type. dir(%S)"
+                        dir)
+
+      ;; Make sure path is a directory.
+      (int<imp>:debug func.name
+                      "Path must be directory. dir(%S)"
+                      dir)
+
+      (if (file-directory-p path)
+          (int<imp>:debug func.name
+                          "  -> Path is a directory!")
+
+        (int<imp>:error caller
                         "Path is not a directory: %s"
                         path)
         (setq result nil)))
@@ -247,7 +275,7 @@ KWARGS should be a plist. All default to `t':
     ;;---
     ;; Return valid
     ;;---
-    (int<imp>:debug "int<imp/path>:root/valid?" "->result: %S" result)
+    (int<imp>:debug func.name "->result: %S" result)
     result))
 ;; (int<imp/path>:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
 
@@ -304,7 +332,6 @@ KWARGS should be a plist. All default to `t':
 Returns the list of normalized string."
   (mapcar #'int<imp/path>:normalize:string feature))
 ;; (int<imp/path>:normalize:list '(:root test feature))
-;; bugged: (int<imp/path>:normalize:list '(spy system config))
 
 
 ;;------------------------------------------------------------------------------
@@ -315,7 +342,7 @@ Returns the list of normalized string."
   "Append NEXT element as-is to PARENT, adding dir separator between them if
 needed.
 
-NEXT and PARENT are expected to be keywords or symbols."
+NEXT and PARENT are expected to be strings."
   ;; Error checks first.
   (cond ((and parent
               (not (stringp parent)))

@@ -27,27 +27,8 @@
 
 
 ;;------------------------------
-;; `imp:path'.
-;;------------------------------
-
-(defvar test<imp/path>:path:roots:backup nil
-  "Backup `imp:path:roots' so we can test it and then restore to its actual values.")
-
-
-(defvar test<imp/path>:path:roots:test nil
-  "Save `imp:path:roots' after a test so we can check it for debugging if needed.")
-
-
-;;------------------------------
 ;; Set-Up / Tear-Down
 ;;------------------------------
-
-(defun test<imp/path>:setup (_)
-  "Backup `imp:path:roots' and clear it out for 'path.el' testing."
-  (setq test<imp/path>:path:roots:backup imp:path:roots
-        imp:path:roots                   nil
-        test<imp/path>:path:roots:test   nil))
-
 
 (defun test<imp/path>:setup:roots (&optional no-default-values &rest alist-entries)
   "Manually set `imp:path:roots' so we can test getting things out of it."
@@ -61,15 +42,6 @@
   (when alist-entries
     (dolist (entry alist-entries)
       (push entry imp:path:roots))))
-
-
-(defun test<imp/path>:teardown (test-name)
-  "Restore `imp:path:roots'."
-  ;; Save whatever testing did to `test<imp/path>:path:roots:test'
-  (setq test<imp/path>:path:roots:test   imp:path:roots
-        ;; Restore `imp:path:roots'.
-        imp:path:roots                   test<imp/path>:path:roots:backup
-        test<imp/path>:path:roots:backup nil))
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗
@@ -94,8 +66,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:root/dir"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -133,8 +105,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:root/file"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -172,8 +144,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp>:path:root/contains?"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -203,8 +175,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:root/valid?::dirs"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -369,8 +341,8 @@
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:root/valid?::files"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -544,8 +516,8 @@ to paths properly."
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:normalize:string"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -575,8 +547,8 @@ to paths properly."
       ;; Test name, setup & teardown func.
       ;;===
       "test<imp/path>::int<imp/path>:normalize:list"
-      #'test<imp/path>:setup
-      #'test<imp/path>:teardown
+      nil
+      nil
 
     ;;===
     ;; Run the test.
@@ -645,8 +617,8 @@ to paths properly."
    ;; Test name, setup & teardown func.
    ;;===
    "test<imp/path>::int<imp/path>:append"
-   #'test<imp/path>:setup
-   #'test<imp/path>:teardown
+   nil
+   nil
 
    ;;===
    ;; Run the test.
@@ -695,8 +667,8 @@ to paths properly."
    ;; Test name, setup & teardown func.
    ;;===
    "test<imp/path>::imp:path:join"
-   #'test<imp/path>:setup
-   #'test<imp/path>:teardown
+   nil
+   nil
 
    ;;===
    ;; Run the test.
@@ -754,8 +726,8 @@ to a path properly."
    ;; Test name, setup & teardown func.
    ;;===
    "test<imp/path>::int<imp/path>:normalize:path"
-   #'test<imp/path>:setup
-   #'test<imp/path>:teardown
+   nil
+   nil
 
    ;;===
    ;; Run the test.
@@ -789,8 +761,8 @@ to a path properly."
    ;; Test name, setup & teardown func.
    ;;===
    "test<imp/path>::int<imp>:path:get"
-   #'test<imp/path>:setup
-   #'test<imp/path>:teardown
+   nil
+   nil
 
    ;;===
    ;; Run the test.
@@ -829,8 +801,8 @@ to a path properly."
 ;;    ;; Test name, setup & teardown func.
 ;;    ;;===
 ;;    "test<imp/path>::int<imp>:path:find"
-;;    #'test<imp/path>:setup
-;;    #'test<imp/path>:teardown
+;;    nil
+;;    nil
 ;;
 ;;    ;;===
 ;;    ;; Run the test.
@@ -850,8 +822,8 @@ to a path properly."
    ;; Test name, setup & teardown func.
    ;;===
    "test<imp/path>::imp:path:root"
-   #'test<imp/path>:setup
-   #'test<imp/path>:teardown
+   nil
+   nil
 
    ;;===
    ;; Run the test.

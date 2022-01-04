@@ -371,7 +371,9 @@ NEXT and PARENT are expected to be strings."
 
 (imp:path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
-  (seq-reduce #'int<imp/path>:append path nil))
+  (seq-reduce #'int<imp/path>:append
+              path
+              nil))
 ;; (imp:path:join "/foo" "bar.el")
 ;; (imp:path:join "foo" "bar.el")
 ;; (imp:path:join "foo")

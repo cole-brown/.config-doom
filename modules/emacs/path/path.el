@@ -6,11 +6,29 @@
 
 (imp:require :str)
 
+;; TODO: defaliases for emacs's path functions?
+;;   - file-name-as-directory == path->dir ?
+;;     - and some inverse: path->file ?
+
+;;------------------------------------------------------------------------------
+;; Predicates
+;;------------------------------------------------------------------------------
+
+(defun path:directory? (path)
+  "Returns non-nil if PATH is a directory name path."
+  (directory-name-p path))
+
+
+(defun path:file? (path)
+  "Returns non-nil if PATH is a file name path."
+  (not (path:directory? path)))
+
 
 ;;------------------------------------------------------------------------------
 ;; Path Functions
 ;;------------------------------------------------------------------------------
 
+;; TODO: `path:validate' function?
 
 (defun int<path>:append (parent next)
   "Append NEXT element as-is to parent, adding dir separator between them if
@@ -38,43 +56,93 @@ keywords or symbol names can be used as well as strings."
 "
   (-reduce #'int<path>:append path))
 ;; (path:join "jeff" "jill")
+;; (path:join "jeff" "jill/")
 ;; (path:join "jeff")
 
 
-(defun path:file-path (parent &rest path)
-  "Given a base dir, and a &rest of e.g. ('path/to' 'dir'
-'with-file' 'file.txt'), will return full /file/ path in
-platform-agnostic manner. Does not 'fix' any `path' components;
-they are expected to be valid.
-"
+(defun path:parent (path)
+  "Returns the parent directory of PATH."
+  (directory-file-name (file-name-directory path)))
+
+
+;; TODO: Rename to `path:canonicalize:file'?
+(defun path:file-path (path &rest segment)
+  "Canonicalize/normalize a file PATH and path SEGMENTS.
+
+Returns an absolute path.
+
+Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
   (apply #'path:join
-         (expand-file-name "" parent)
-         path))
+         (expand-file-name "" path)
+         segment))
 ;; (path:file-path "~" "personal" "something.exe" "zort.txt")
 
 
-(defun path:dir-path (parent &rest path)
-  "Given a base dir, and a &rest of e.g. ('path/to' 'dir' 'with-file'),
-will return full /directory/ path in platform-agnostic manner.
-Does not 'fix' any `path' components; they are expected to be
-valid."
-  ;; fully qualify base as start of return value
-  (file-name-as-directory (apply #'path:file-path parent path)))
+(defun path:canonicalize:absolute (path &rest segment)
+  "Canonicalize/normalize a file PATH and path SEGMENTS.
+
+Attempts to preserve file/directory-ness off PATH - that is, tries to
+preserve the final slash if it exists.
+
+Returns an absolute path.
+
+Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
+  (let ((path/joined (apply #'path:join path segment)))
+    (funcall (if (path:directory? path/joined)
+                 #'path:dir-path
+               #'path:file-path)
+             path/joined)))
+;; (path:canonicalize:absolute "/foo" "bar")
+;; (path:canonicalize:absolute "/foo" "bar/")
+
+
+;; TODO: Rename to `path:canonicalize:dir'?
+(defun path:dir-path (path &rest segment)
+  "Canonicalize/normalize a directory PATH and path SEGMENTS.
+
+Returns an absolute path.
+
+Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
+  ;; Fully qualify base as start of return value.
+  (file-name-as-directory (apply #'path:file-path path segment)))
 ;; (path:dir-path "~" "personal" "something" "zort")
 
 
+;; TODO: Rename to `path:canonicalize:relative'?
 (defun path:relative-path (&optional path root)
-  "Given a possibly absolute PATH, try to trim out ROOT. If both
-nil, returns file name."
-  (let ((path (or path (buffer-file-name)))
-        (root (or root "")))
-    (s-replace (file-name-as-directory  ;; make sure to have an ending slash
-                (expand-file-name root)) ;; and expand it out fully
-               "" ;; replace with nothing
-               (expand-file-name path)))) ;; make sure we're all expanded here too.
+  "Returns a file path to PATH relative to ROOT.
+
+Could just return PATH if it has no relation to ROOT.
+
+Raises an error if PATH is not a string.
+Raises an error if ROOT is not nil and not a string."
+  (unless (stringp path)
+    (error "path:relative-path: PATH must be a string! Got: path: %S, root: %S"
+           path root))
+  (unless (or (null root)
+              (stringp root))
+    (error "path:relative-path: ROOT must be nil or a string! Got: path: %S, root: %S"
+           path root))
+
+  ;; Translate nil ROOT to empty string if needed.
+  ;; And canonicalize our paths.
+  (let ((root (or (path:dir-path root) ""))
+        (path (path:file-path path)))
+    (replace-regexp-in-string
+     root ;; Look for ROOT directory path...
+     ""   ;; Replace with nothing to get a relative path.
+     path ;; Ensure
+     :fixedcase
+     :literal)))
 ;; (path:relative-path "/path/to/a/file/location.txt" "/path/to/a/")
+;; (path:relative-path "/path/to/a/dir/location/" "/path/to/a/")
+;; (path:relative-path "/path/to/a/dir/location/" "/path/to/a")
 ;; (path:relative-path)
 
+
+;;------------------------------------------------------------------------------
+;; OS Path Translations
+;;------------------------------------------------------------------------------
 
 ;; There are some existing packages for dealing with windows->unix or unix->windows paths...
 ;;   Windows emacs, Cygwin paths: https://www.emacswiki.org/emacs/cygwin-mount.el

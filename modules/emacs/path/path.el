@@ -25,7 +25,16 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Path Functions
+;; Traversal
+;;------------------------------------------------------------------------------
+
+(defun path:parent (path)
+  "Returns the parent directory of PATH."
+  (directory-file-name (file-name-directory path)))
+
+
+;;------------------------------------------------------------------------------
+;; Join
 ;;------------------------------------------------------------------------------
 
 ;; TODO: `path:validate' function?
@@ -60,10 +69,9 @@ keywords or symbol names can be used as well as strings."
 ;; (path:join "jeff")
 
 
-(defun path:parent (path)
-  "Returns the parent directory of PATH."
-  (directory-file-name (file-name-directory path)))
-
+;;------------------------------------------------------------------------------
+;; Normalize / Canonicalize
+;;------------------------------------------------------------------------------
 
 ;; TODO: Rename to `path:canonicalize:file'?
 (defun path:file-path (path &rest segment)
@@ -76,6 +84,18 @@ Does not fix or validate PATH or SEGMENT components; they are expected to be val
          (expand-file-name "" path)
          segment))
 ;; (path:file-path "~" "personal" "something.exe" "zort.txt")
+
+
+;; TODO: Rename to `path:canonicalize:dir'?
+(defun path:dir-path (path &rest segment)
+  "Canonicalize/normalize a directory PATH and path SEGMENTS.
+
+Returns an absolute path.
+
+Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
+  ;; Fully qualify base as start of return value.
+  (file-name-as-directory (apply #'path:file-path path segment)))
+;; (path:dir-path "~" "personal" "something" "zort")
 
 
 (defun path:canonicalize:absolute (path &rest segment)
@@ -96,17 +116,9 @@ Does not fix or validate PATH or SEGMENT components; they are expected to be val
 ;; (path:canonicalize:absolute "/foo" "bar/")
 
 
-;; TODO: Rename to `path:canonicalize:dir'?
-(defun path:dir-path (path &rest segment)
-  "Canonicalize/normalize a directory PATH and path SEGMENTS.
-
-Returns an absolute path.
-
-Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
-  ;; Fully qualify base as start of return value.
-  (file-name-as-directory (apply #'path:file-path path segment)))
-;; (path:dir-path "~" "personal" "something" "zort")
-
+;;------------------------------------------------------------------------------
+;; Relative Paths
+;;------------------------------------------------------------------------------
 
 ;; TODO: Rename to `path:canonicalize:relative'?
 (defun path:relative-path (&optional path root)
@@ -141,7 +153,7 @@ Raises an error if ROOT is not nil and not a string."
 
 
 ;;------------------------------------------------------------------------------
-;; OS Path Translations
+;; Translations Between OSes
 ;;------------------------------------------------------------------------------
 
 ;; There are some existing packages for dealing with windows->unix or unix->windows paths...

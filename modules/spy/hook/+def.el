@@ -58,7 +58,7 @@ BODY is the code to run in the hook.
                  (if (not (stringp ,_m//file))
                      ""
                    (concat " from "
-                           (path:relative-path ,_m//file)))))
+                           (path:relative ,_m//file)))))
 
               ,@body)
        (add-hook ',_m//hook #',_m//hook-fn ',_m//postpend))))
@@ -124,7 +124,7 @@ Use this over `spy:hook/defun-and-hooker' only in cases where you aren't
                (if (not (stringp ,_m//file))
                    ""
                  (concat " from "
-                         (path:relative-path ,_m//file)))))
+                         (path:relative ,_m//file)))))
 
             ,@body)
     ))

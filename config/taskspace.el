@@ -81,7 +81,7 @@ sss:taskspace/generate' and see what file it's defined in."
       ;; Add taskspace paths to jerky for info.
       (jerky/set 'path 'taskspace 'notes
                  :namespace group
-                 :value (path:dir-path
+                 :value (path:abs:dir
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
                          (str:normalize:symbol->string group))
@@ -133,7 +133,7 @@ sss:taskspace/generate' and see what file it's defined in."
       ;; Add taskspace paths to jerky for info.
       (jerky/set 'path 'taskspace 'notes
                  :namespace group
-                 :value (path:dir-path
+                 :value (path:abs:dir
                          (jerky/get 'path 'lily :namespace group)
                          "taskspace"
                          (str:normalize:symbol->string group))

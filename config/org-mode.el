@@ -90,7 +90,7 @@
   ;;--------------------
 
   ;; Doom or someone already sets this to org-directory/"notes.org".
-  ;; (org-default-notes-file (path:file-path org-directory "notes.org"))
+  ;; (org-default-notes-file (path:abs:file org-directory "notes.org"))
   ;;   (mis0/init/message "config for org vars... <org-startup-folded: %S" org-startup-folded)
   (customize-set-variable 'org-startup-folded t
                           "Change org back to opening a file with all the headers collapsed.")
@@ -592,7 +592,7 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;   :demand t
 ;;
 ;;   :custom
-;;   (org-contacts-files (path:file-path
+;;   (org-contacts-files (path:abs:file
 ;;                        (spy:dirky/path :secrets :secrets/org)
 ;;                        "contacts.org"))
 ;;

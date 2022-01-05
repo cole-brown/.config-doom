@@ -20,7 +20,7 @@
 init/config directory, if it has secrets.
 
 Does not check for validity."
-  (load (path:file-path (sss:secret/path/load) file)))
+  (load (path:abs:file (sss:secret/path/load) file)))
 
 
 (defun sss:secret/load.system (file)
@@ -28,7 +28,7 @@ Does not check for validity."
 directory, if it has secrets.
 
 Does not check for validity."
-  (load (path:file-path (sss:secret/path/system) file)))
+  (load (path:abs:file (sss:secret/path/system) file)))
 
 
 (defun sss:secret/load.path/required (&rest path)
@@ -44,7 +44,7 @@ NOTE: Do not include file's extension ('.el[c]') in PATH."
   (if-let* ((hash (spy:secret/hash))
             (id   (spy:secret/id))
             (root (sss:secret/path/load))
-            (filepath (apply #'path:file-path root path)) ; No ".el"; want compiled too.
+            (filepath (apply #'path:abs:file root path)) ; No ".el"; want compiled too.
             (name (concat filepath ".el")))
 
       ;; We got all the vars from jerky, so check for existance now.
@@ -99,7 +99,7 @@ NOTE: Do not include file's extension ('.el[c]') in PATH."
   (if-let* ((hash (spy:secret/hash))
             (id   (spy:secret/id))
             (root (sss:secret/path/load))
-            (filepath (apply #'path:file-path root path)) ; No ".el"; want compiled too.
+            (filepath (apply #'path:abs:file root path)) ; No ".el"; want compiled too.
             (name (concat filepath ".el")))
 
       ;; We got all the vars from jerky, so check for existance now.
@@ -149,7 +149,7 @@ NOTE: Do not include file's extension ('.el[c]') in PATH."
       (sss:secret/load.root "init")
 
     ;; No secrets for this system.
-    (let ((path/init (path:file-path (sss:secret/path/system) "init.el")))
+    (let ((path/init (path:abs:file (sss:secret/path/system) "init.el")))
       (mis0/init/warning "spy:secret/init"
                          (mapconcat #'identity
                                     '("%s: Cannot init; system has no secrets."
@@ -178,8 +178,8 @@ NOTE: Do not include file's extension ('.el[c]') in PATH."
       (sss:secret/load.root "config")
 
     ;; No secrets for this system.
-    (let ((path/init (path:file-path (sss:secret/path/system) "init.el"))
-          (path/config (path:file-path (sss:secret/path/system) "config.el")))
+    (let ((path/init (path:abs:file (sss:secret/path/system) "init.el"))
+          (path/config (path:abs:file (sss:secret/path/system) "config.el")))
       (mis0/init/warning "spy:secret/init"
                          (mapconcat #'identity
                                     '("%s: Cannot init; system has no secrets."

@@ -179,7 +179,7 @@ Else, generate a system hash from `system-name' and `system-type'."
   "Generate a path to where the secrets file should be, based
 on the UNIQUE-ID of the system and the ROOT path.
 "
-  (path:dir-path root
+  (path:abs:dir root
                    (replace-regexp-in-string "::" "_"
                                              (replace-regexp-in-string "/" "-"
                                                                        unique-id))))
@@ -302,7 +302,7 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
 
 
   (let* ((id (str:hash:recreate (list domain date type) hash))
-         (path/secret/init.abs (path:dir-path path/secret/root path/secret/init)))
+         (path/secret/init.abs (path:abs:dir path/secret/root path/secret/init)))
     ;;------------------------------
     ;; Debug?
     ;;------------------------------

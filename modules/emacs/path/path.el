@@ -73,8 +73,7 @@ keywords or symbol names can be used as well as strings."
 ;; Normalize / Canonicalize
 ;;------------------------------------------------------------------------------
 
-;; TODO: Rename to `path:canonicalize:file'?
-(defun path:file-path (path &rest segment)
+(defun path:canonicalize:file (path &rest segment)
   "Canonicalize/normalize a file PATH and path SEGMENTS.
 
 Returns an absolute path.
@@ -83,19 +82,26 @@ Does not fix or validate PATH or SEGMENT components; they are expected to be val
   (apply #'path:join
          (expand-file-name "" path)
          segment))
-;; (path:file-path "~" "personal" "something.exe" "zort.txt")
+;; (path:canonicalize:file "~" "personal" "something.exe" "zort.txt")
 
 
-;; TODO: Rename to `path:canonicalize:dir'?
-(defun path:dir-path (path &rest segment)
+(defalias 'path:absolute:file 'path:canonicalize:file)
+(defalias 'path:abs:file      'path:canonicalize:file)
+
+
+(defun path:canonicalize:dir (path &rest segment)
   "Canonicalize/normalize a directory PATH and path SEGMENTS.
 
 Returns an absolute path.
 
 Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
   ;; Fully qualify base as start of return value.
-  (file-name-as-directory (apply #'path:file-path path segment)))
-;; (path:dir-path "~" "personal" "something" "zort")
+  (file-name-as-directory (apply #'path:canonicalize:file path segment)))
+;; (path:canonicalize:dir "~" "personal" "something" "zort")
+
+
+(defalias 'path:absolute:dir 'path:canonicalize:dir)
+(defalias 'path:abs:dir      'path:canonicalize:dir)
 
 
 (defun path:canonicalize:absolute (path &rest segment)
@@ -109,11 +115,16 @@ Returns an absolute path.
 Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
   (let ((path/joined (apply #'path:join path segment)))
     (funcall (if (path:directory? path/joined)
-                 #'path:dir-path
-               #'path:file-path)
+                 #'path:canonicalize:dir
+               #'path:canonicalize:file)
              path/joined)))
 ;; (path:canonicalize:absolute "/foo" "bar")
 ;; (path:canonicalize:absolute "/foo" "bar/")
+
+
+(defalias 'path:canonicalize       'path:canonicalize:absolute)
+(defalias 'path:absolute           'path:canonicalize:absolute)
+(defalias 'path:abs                'path:canonicalize:absolute)
 
 
 ;;------------------------------------------------------------------------------
@@ -121,7 +132,7 @@ Does not fix or validate PATH or SEGMENT components; they are expected to be val
 ;;------------------------------------------------------------------------------
 
 ;; TODO: Rename to `path:canonicalize:relative'?
-(defun path:relative-path (&optional path root)
+(defun path:canonicalize:relative (&optional path root)
   "Returns a file path to PATH relative to ROOT.
 
 Could just return PATH if it has no relation to ROOT.
@@ -129,27 +140,31 @@ Could just return PATH if it has no relation to ROOT.
 Raises an error if PATH is not a string.
 Raises an error if ROOT is not nil and not a string."
   (unless (stringp path)
-    (error "path:relative-path: PATH must be a string! Got: path: %S, root: %S"
+    (error "path:canonicalize:relative: PATH must be a string! Got: path: %S, root: %S"
            path root))
   (unless (or (null root)
               (stringp root))
-    (error "path:relative-path: ROOT must be nil or a string! Got: path: %S, root: %S"
+    (error "path:canonicalize:relative: ROOT must be nil or a string! Got: path: %S, root: %S"
            path root))
 
   ;; Translate nil ROOT to empty string if needed.
   ;; And canonicalize our paths.
-  (let ((root (or (path:dir-path root) ""))
-        (path (path:file-path path)))
+  (let ((root (or (path:canonicalize:dir root) ""))
+        (path (path:canonicalize:file path)))
     (replace-regexp-in-string
      root ;; Look for ROOT directory path...
      ""   ;; Replace with nothing to get a relative path.
      path ;; Ensure
      :fixedcase
      :literal)))
-;; (path:relative-path "/path/to/a/file/location.txt" "/path/to/a/")
-;; (path:relative-path "/path/to/a/dir/location/" "/path/to/a/")
-;; (path:relative-path "/path/to/a/dir/location/" "/path/to/a")
-;; (path:relative-path)
+;; (path:canonicalize:relative "/path/to/a/file/location.txt" "/path/to/a/")
+;; (path:canonicalize:relative "/path/to/a/dir/location/" "/path/to/a/")
+;; (path:canonicalize:relative "/path/to/a/dir/location/" "/path/to/a")
+;; (path:canonicalize:relative)
+
+
+(defalias 'path:relative           'path:canonicalize:relative)
+(defalias 'path:rel                'path:canonicalize:relative)
 
 
 ;;------------------------------------------------------------------------------

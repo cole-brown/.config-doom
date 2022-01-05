@@ -17,14 +17,6 @@
 ;; TODO: platform-smart way of figuring out if file-names equal.
 ;;   - Windows is case-insensitive; forget if macOS is - don't think so.
 
-(defalias 'imp:feature? 'imp:provided?
-  "Checks for FEATURE in `imp:features'.")
-(defalias 'imp:featurep 'imp:provided?
-  "Checks for FEATURE in `imp:features'.")
-(defalias 'imp:providedp 'imp:provided?
-  "Checks for FEATURE in `imp:features'.")
-
-
 (defun imp:provide:loading? (&optional file-name)
   "Returns true if loading file.
 
@@ -43,9 +35,16 @@ If FILE-NAME is a string, returns true if loading that exact
   "Checks for FEATURE in `imp:features'."
   (int<imp>:tree:contains? feature imp:features))
 ;; (imp:provided? :imp)
+;; (imp:provided? :imp 'path)
+;; (imp:provided? :dne)
 ;; (imp:providedp :imp)
 ;; (imp:feature? :imp)
 ;; (imp:featurep :imp)
+
+
+(defalias 'imp:feature? 'imp:provided?)
+(defalias 'imp:featurep 'imp:provided?)
+(defalias 'imp:providedp 'imp:provided?)
 
 
 (defun imp:provide (&rest feature)

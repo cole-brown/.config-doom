@@ -1,8 +1,5 @@
-;; -*- no-byte-compile: t; -*-
-;;; emacs/imp/test/provide.el
-
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
-;;; emacs/imp/test/path.el
+;;; emacs/imp/test/provide.el
 
 
 ;;------------------------------------------------------------------------------
@@ -36,21 +33,21 @@
 
 
 (defun test<imp/provide>:load:exists? ()
-  "Returns t if `test<imp/provide>:file:loading?' exists in the symbol table."
+  "Returns t if `test<imp>:file:loading?' exists in the symbol table."
   (condition-case err
       (progn
         ;; Just try to access this. If we can't, `condition-case' will catch the `void-variable' signal.
-        test<imp/provide>:file:loading?
+        test<imp>:file:loading?
         ;; If we could access it, return `t' because it exists.
         t)
     ;; Couldn't access it, so it doesn't exist, so return nil.
     (void-variable nil)))
 ;; Probably exists to start off with:
-;;   test<imp/provide>:file:loading?
-;;   (test<imp/provide>:load:exists?)
-;;   (test<imp/provide>:load:unset)
+;;   test<imp>:file:loading?
+;;   (test<imp>:load:exists?)
+;;   (test<imp>:load:unset)
 ;; And now it should not exist:
-;;   (test<imp/provide>:load:exists?)
+;;   (test<imp>:load:exists?)
 
 
 ;;------------------------------
@@ -58,13 +55,13 @@
 ;;------------------------------
 
 (defun test<imp/provide>:setup:load (&optional load)
-  "Deletes `test<imp/provide>:file:loading?' variable if it exists.
+  "Deletes `test<imp>:file:loading?' variable if it exists.
 
 If LOAD is non-nil, loads 'test/loading/load.el' to set-up the
 `imp:provide:loading?' helpers."
-  ;; Make sure `test<imp/provide>:file:loading?' doesn't exist.
+  ;; Make sure `test<imp>:file:loading?' doesn't exist.
   ;; We may or may not have loaded the file so we can't rely on its functions, so:
-  (makunbound 'test<imp/provide>:file:loading?)
+  (makunbound 'test<imp>:file:loading?)
 
   (when load
     (load! "loading/load.el")))
@@ -107,9 +104,9 @@ If LOAD is non-nil, loads 'test/loading/load.el' to set-up the
     ;; when loading a file.
     (test<imp/provide>:setup:load :load)
     (should (test<imp/provide>:load:exists?))
-    ;; `test<imp/provide>:file:loading?' should have been set to `t' during its load.
+    ;; `test<imp>:file:loading?' should have been set to `t' during its load.
     (should (eq t
-                test<imp/provide>:file:loading?))))
+                test<imp>:file:loading?))))
 
 
 ;;------------------------------

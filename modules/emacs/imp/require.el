@@ -31,10 +31,10 @@
 ;;       - Also should trigger off of Emacs' "--debug-init" command line arg.
 
 
-(defun int<imp>:load (root &rest feature)
-  "Load a file relative to ROOT based on FEATURE list of keywords/symbols.
+(defun int<imp>:load (feature:base &rest feature)
+  "Load a file relative to FEATURE:BASE based on FEATURE list of keywords/symbols.
 
-ROOT must be a keyword which exists in `imp:path:roots' (set via the
+FEATURE:BASE must be a keyword which exists in `imp:path:roots' (set via the
 `imp:path:root'function).
 
 E.g. (int<imp>:load :imp 'provide)
@@ -43,27 +43,27 @@ E.g. (int<imp>:load :imp 'provide)
 Returns non-nil if loaded."
   ;; TODO: 'load-all' functionality?
 
-  (cond ((apply #'imp:provided? root feature)
+  (cond ((apply #'imp:provided? feature:base feature)
          t)
 
         ;; Not loaded, but we know where to find it?
-        ((int<imp>:path:root/contains? root)
+        ((int<imp>:path:root/contains? feature:base)
          ;; imp knows about this - let's try to load it.
-         (let* ((path (int<imp>:path:get (cons root feature))))
+         (let* ((path (int<imp>:path:get (cons feature:base feature))))
            (condition-case-unless-debug err
                (let (file-name-handler-alist)
                  (load path nil 'nomessage))
 
              (int<imp>:error "int<imp>:load"
                         "imp fail to load %S via path: %S\n  - error: %S"
-                        (cons root features)
+                        (cons feature:base features)
                         path
                         err))))
 
         ;; Fallback: Try to let emacs require it:
         (t
          (require (int<imp>:feature:normalize:imp->emacs feature)
-                 ;; TODO: guess at a file/path based on 'root/feature-0/...'?
+                 ;; TODO: guess at a file/path based on 'feature:base/feature-0/...'?
                  nil
                  'noerror))))
 ;; (int<imp>:load :imp 'something)
@@ -75,28 +75,28 @@ Returns non-nil if loaded."
 ;;------------------------------------------------------------------------------
 
 
-(defun imp:require (root &rest names)
-  "Loads file(s) indicated by NAMES from ROOT keyword if not already loaded.
+(defun imp:require (feature:base &rest feature)
+  "Ensures file(s) for FEATURE:BASE keyword & FEATURE symbols are provided.
 
 Examples:
   (imp:root :mis \"path/to/mis\")
 
   To require/load \"mis/code/comment.el[c]\":
-    (imp:load :mis 'code 'comment)
+    (imp:require :mis 'code 'comment)
 
   To require/load \"mis/code/*.el[c]\":
-    (imp:load :mis 'code)
+    (imp:require :mis 'code)
 
 Returns non-nil on success."
   ;; TODO: the load-all functionality
   ;; Already provided?
-  (cond ((apply #'imp:provided? root names)
+  (cond ((apply #'imp:provided? feature:base feature)
          t)
 
         ;; Can we load it?
-        ((apply #'int<imp>:load root names)
+        ((apply #'int<imp>:load feature:base feature)
          ;; Yes; so add to imp's feature tree.
-         (int<imp>:feature:add (cons root feature)))
+         (int<imp>:feature:add (cons feature:base feature)))
 
         ;; Nope; return nil.
         (t

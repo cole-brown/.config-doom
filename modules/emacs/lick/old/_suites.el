@@ -10,11 +10,16 @@
 ;;------------------------------
 
 ;; ERT tests should be named according to this.
-;; More specifically, they should be:
-;;   test<SUITE-NAME>:<FUNC-NAME-MINUS-imp-OR-iii>
-;; For example, the test for the `:tree' suite's `iii:node:add' should be named:
-;;   test<tree>:node:add
-(setq test<imp>:suite/prefix-fmt "test<%s>:")
+;; More specifically, they should be one of:
+;;   test<SUITE-NAME>::<FUNC-NAME>
+;;   test<SUITE-NAME>::<DESCRIPTION>
+;;   test<SUITE-NAME>::<FUNC-NAME>::<DESCRIPTION>
+;; For example, the test for 'imp/tree.el' function `int<imp/tree>:chain'
+;; should be named:
+;;   test<imp/tree>::int<imp/tree>:chain
+;; If there was a bug that was fixed, maybe you'd have:
+;;   test<imp/tree>::int<imp/tree>:chain::regression/nil-bug
+(setq test<imp>:suite/prefix-fmt "test<%s>::")
 
 ;; "Run All Tests" is special.
 (setq test<imp>:suite:all.name "[--all--]")
@@ -27,11 +32,12 @@
                                (group
                                 "test<"
                                 (one-or-more printing)
-                                ">")
+                                ">::")
                                ;; Test Name
                                (one-or-more printing)
                                ;; Done
-                               line-end)))
+                               line-end)
+                    :no-group))
 
 
 ;;------------------------------
@@ -82,8 +88,9 @@ prepending `test<imp>:path:root'."
   (rx-to-string `(sequence line-start
                            (eval (format test<imp>:suite/prefix-fmt suite-name))
                            (one-or-more printing)
-                           line-end)))
-;; (test<imp>:suite/regex.create "tree")
+                           line-end)
+                :no-group))
+;; (test<imp>:suite/regex.create "imp/tree")
 
 
 ;;------------------------------
@@ -101,7 +108,7 @@ Other tests are just converted to a keyword: 'tree' -> `:tree'."
       test<imp>:suite:all.keyword
     (intern (concat ":" suite-name))))
 ;; (test<imp>:suite/name->keyword test<imp>:suite:all.name)
-;; (test<imp>:suite/name->keyword "tree")
+;; (test<imp>:suite/name->keyword "imp/tree")
 
 
 (defun test<imp>:suite/keyword->name (suite)
@@ -112,7 +119,7 @@ Handles the special 'all tests' keyword -> string; `:all' returns '[--all--]'."
       test<imp>:suite:all.name
     (string-remove-prefix ":" (symbol-name suite))))
 ;; (test<imp>:suite/keyword->name test<imp>:suite:all.keyword)
-;; (test<imp>:suite/keyword->name :tree)
+;; (test<imp>:suite/keyword->name :imp/tree)
 
 
 ;;------------------------------
@@ -128,14 +135,13 @@ Returns an alist of:
   - A regex string for finding all of that suite's ERT test functions.
   - A list of suites this 'depends' on - that is a list of
     functionality that this test wants to already be working.
-  - A list of file paths (relative to 'imp/' directory.
-"
+  - A list of file paths (relative to 'imp/' directory. "
   (list suite-keyword
         (test<imp>:suite/regex.create
          (string-remove-prefix ":" (symbol-name suite-keyword)))
         depends-on-suites
         filepaths))
-;; (test<imp>:suite :tree :alist '("tree.el" "test/tree.el"))
+;; (test<imp>:suite :imp/tree :imp/alist '("tree.el" "test/tree.el"))
 
 
 ;;------------------------------------------------------------------------------
@@ -143,16 +149,6 @@ Returns an alist of:
 ;; TEST SUITES
 ;;==============================================================================
 ;;------------------------------------------------------------------------------
-
-;;------------------------------
-;; Always Load These!
-;;------------------------------
-
-;; Always load these regardless of test suite running.
-;; Should be relative to "imp/" directory.
-(setq test<imp>:suites:files/load-always
-      '("+debug.el"
-        "error.el"))
 
 
 ;;------------------------------

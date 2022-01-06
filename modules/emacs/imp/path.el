@@ -338,6 +338,37 @@ Returns the list of normalized string."
 ;; Path Helpers
 ;;------------------------------------------------------------------------------
 
+(defvar int<imp/path>:path:platform:case-insensitive
+  '(;; Windows
+    cygwin windows-nt ms-dos
+    ;; MacOS
+    darwin)
+  "These operating systems have case-insensitive paths.")
+
+
+(defun int<imp/path>:path:platform-agnostic (path)
+  "Converts PATH string into a standardized path for the platform.
+
+Replaces backslash with forward slash.
+Downcases path on case-insensitive OSes."
+  ;; Convert backslashes to forward slashes.
+  (replace-regexp-in-string
+   (rx "\\")
+   "/"
+   ;; Convert path to lowercase if on a case-insensitive OS.
+   (funcall
+    (if (memq system-type int<imp/path>:path:platform:case-insensitive)
+        #'downcase
+      #'identity)
+    path)
+   path))
+;; (int<imp/path>:path:platform-agnostic "/foo/bar")
+;; (int<imp/path>:path:platform-agnostic "/FOO/BAR")
+;; (int<imp/path>:path:platform-agnostic "/Foo/Bar")
+;; (int<imp/path>:path:platform-agnostic "C:/Foo/Bar")
+;; (int<imp/path>:path:platform-agnostic "C:\\Foo\\Bar")
+
+
 (defun int<imp/path>:append (parent next)
   "Append NEXT element as-is to PARENT, adding dir separator between them if
 needed.
@@ -367,7 +398,7 @@ NEXT and PARENT are expected to be strings."
 
 
 (defun imp:path:join (&rest path)
-  "Combines PATH elements together into a path platform-agnostically.
+  "Combines PATH elements together into a path.
 
 (imp:path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""

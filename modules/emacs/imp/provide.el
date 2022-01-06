@@ -14,9 +14,6 @@
 ;; Public API: Provide
 ;;------------------------------------------------------------------------------
 
-;; TODO: platform-smart way of figuring out if file-names equal.
-;;   - Windows is case-insensitive; forget if macOS is - don't think so.
-
 (defun imp:provide:loading? (&optional file-name)
   "Returns true if loading file.
 
@@ -26,7 +23,9 @@ If FILE-NAME is a string, returns true if loading that exact
   (if file-name
       ;; Exactly that file loading?
       (and load-in-progress
-           (string= load-file-name file-name))
+           (string=
+            (int<imp/path>:path:platform-agnostic load-file-name)
+            (int<imp/path>:path:platform-agnostic file-name)))
     ;; Just anything loading?
     load-in-progress))
 

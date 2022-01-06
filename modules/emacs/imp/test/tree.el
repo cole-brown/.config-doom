@@ -210,11 +210,112 @@ It should basically make a list of the `int<imp/tree>:chain' output."
 
 
 ;;------------------------------
+;; int<imp>:tree:update/helper
+;;------------------------------
+
+(ert-deftest test<imp/tree>::int<imp>:tree:update/helper ()
+  "Tests that the `int<imp>:tree:update/helper' predicate functions correctly.
+
+This is not guarenteed to set the tree variable passed in to the updated tree."
+
+  ;;---
+  ;; Chain splits from tree:
+  ;;---
+  (let* ((tree/orig     (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/working  (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/expected '((:root (:one (:two (:free (:leaf-node1)) (:three (:leaf-node0))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root :one :two :free)
+                                                :leaf-node1
+                                                tree/working))))
+
+  ;;---
+  ;; Tree doesn't exist:
+  ;;---
+  (let* ((tree/orig     nil)
+         (tree/working  nil)
+         (tree/expected '((:root (:one (:two (:free (:leaf-node1))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root :one :two :free)
+                                                :leaf-node1
+                                                tree/working)))
+
+    ;; `int<imp>:tree:update/helper' does not set `tree/working'.
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/expected tree/working)))
+
+  ;;---
+  ;; Chain doesn't exist in tree:
+  ;;---
+  (let* ((tree/orig    (int<imp/tree>:create '(:root0 :one :two :three) :leaf-node0))
+         (tree/working (int<imp/tree>:create '(:root0 :one :two :three) :leaf-node0))
+         (tree/expected '((:root1 (:won (:too (:free (:leaf-node1)))))
+                          (:root0 (:one (:two (:three (:leaf-node0))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root1 :won :too :free)
+                                                :leaf-node1
+                                                tree/working))))
+
+  ;;---
+  ;; Chain pre-exists in tree:
+  ;;---
+  (let* ((tree/orig     (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/working  (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/expected '((:root (:one (:two (:leaf-node1) (:three (:leaf-node0))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root :one :two)
+                                                :leaf-node1
+                                                tree/working))))
+
+  ;;---
+  ;; Reach end of tree before end of chain:
+  ;;---
+  (let* ((tree/orig     (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/working  (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/expected '((:root (:one (:two (:three (:four (:leaf-node1)) (:leaf-node0))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root :one :two :three :four)
+                                                :leaf-node1
+                                                tree/working))))
+
+  ;;---
+  ;; Chain w/ null value:
+  ;;---
+  (let* ((tree/orig     (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/working  (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+         (tree/expected '((:root (:one (:two (:free) (:three (:leaf-node0))))))))
+    (should (equal tree/orig tree/working))
+    (should-not (equal tree/orig tree/expected))
+
+    (should (equal tree/expected
+                   (int<imp>:tree:update/helper '(:root :one :two :free)
+                                                nil
+                                                tree/working)))))
+
+
+;;------------------------------
 ;; int<imp>:tree:update
 ;;------------------------------
 
 (ert-deftest test<imp/tree>::int<imp>:tree:update ()
-  "Tests that the `int<imp>:tree:update' predicate functions correctly."
+  "Tests that the `int<imp>:tree:update' predicate functions correctly.
+
+This should guarenteed setting the tree variable passed in to the updated tree."
 
   ;;---
   ;; Chain splits from tree:
@@ -230,12 +331,9 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                                          :leaf-node1
                                          tree/working)))
 
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working))
-    ;; (should (equal tree/expected tree/working))
-    )
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working)))
 
   ;;---
   ;; Tree doesn't exist:
@@ -251,12 +349,9 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                                          :leaf-node1
                                          tree/working)))
 
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working)))
-    ;; (should (equal tree/expected tree/working))
-    )
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working)))
 
   ;;---
   ;; Chain doesn't exist in tree:
@@ -273,12 +368,9 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                                          :leaf-node1
                                          tree/working)))
 
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working)))
-    ;; (should (equal tree/expected tree/working))
-    )
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working)))
 
   ;;---
   ;; Chain pre-exists in tree:
@@ -294,12 +386,9 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                           :leaf-node1
                           tree/working)))
 
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working)))
-    ;; (should (equal tree/expected tree/working))
-    )
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working)))
 
   ;;---
   ;; Reach end of tree before end of chain:
@@ -315,12 +404,9 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                                          :leaf-node1
                                          tree/working)))
 
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working)))
-    ;; (should (equal tree/expected tree/working))
-    )
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working)))
 
   ;;---
   ;; Chain w/ null value:
@@ -335,12 +421,10 @@ It should basically make a list of the `int<imp/tree>:chain' output."
                    (int<imp>:tree:update '(:root :one :two :free)
                                          nil
                                          tree/working)))
-    ;; TODO: Do we want/need this? `int<imp>:alist:update' (macro) can do it but
-    ;; currently `int<imp>:tree:update' (function) cannot.
-    ;; ;; Tree should be updated.
-    ;; (should-not (equal tree/orig tree/working))))
-    ;; (should (equal tree/expected tree/working))
-    ))
+
+    ;; Tree should be updated.
+    (should-not (equal tree/orig tree/working))
+    (should (equal tree/expected tree/working))))
 
 
 ;;------------------------------

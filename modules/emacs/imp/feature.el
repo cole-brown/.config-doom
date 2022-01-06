@@ -199,7 +199,10 @@ E.g.
   (int<imp>:debug "int<imp>:feature:add" "  feature: %S" feature)
   (int<imp>:debug "int<imp>:feature:add" "imp:features before:\n%S"
                   (pp-to-string imp:features))
-  (setq imp:features (int<imp>:tree:update feature nil imp:features))
+
+  ;; Add features to `imp:features' tree & set updated tree back to `imp:features'.
+  (int<imp>:tree:update feature nil imp:features)
+
   (int<imp>:debug "int<imp>:feature:add" "imp:features after:\n%S"
                   (pp-to-string imp:features))
   ;; Not sure what to return, but the updated features seems decent enough.

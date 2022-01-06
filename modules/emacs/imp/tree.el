@@ -174,10 +174,19 @@ BRANCH."
 ;; API for imp:
 ;;------------------------------------------------------------------------------
 
-(defun int<imp>:tree:update (chain value tree)
-  "Adds CHAIN of symbols/keywords with final VALUE to alists TREE.
 
-If VALUE is nil, just adds chain - does not add a nil child."
+;; TODO:tree: make this update `tree' so caller doesn't have to do: (setq tree (int<imp>:tree:update ...))
+(defun int<imp>:tree:update/helper (chain value tree)
+  "Adds CHAIN with final VALUE to TREE.
+
+CHAIN should be a list of symbols and/or keywords.
+VALUE should be a symbol or keyword.
+TREE should be a list or symbol that holds the list.
+
+If VALUE is nil, just adds chain - does not add a nil child.
+
+Returns an updated copy of tree."
+
   ;;------------------------------
   ;; Error Checking
   ;;------------------------------
@@ -291,17 +300,49 @@ If VALUE is nil, just adds chain - does not add a nil child."
           (int<imp>:debug "int<imp>:tree:update" "branch-update: %S" branch-update))
         branch-update))))
 ;; Chain splits from tree:
-;; (int<imp>:tree:update '(:root :one :two :free) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+;;   (int<imp>:tree:update '(:root :one :two :free) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
 ;; Tree doesn't exist:
-;; (int<imp>:tree:update '(:root :one :two :free) :leaf-node1 nil)
+;;   (int<imp>:tree:update '(:root :one :two :free) :leaf-node1 nil)
 ;; Chain doesn't exist in tree:
-;; (int<imp>:tree:update '(:root1 :won :too :free) :leaf-node1 (int<imp/tree>:create '(:root0 :one :two :three) :leaf-node0))
+;;   (int<imp>:tree:update '(:root1 :won :too :free) :leaf-node1 (int<imp/tree>:create '(:root0 :one :two :three) :leaf-node0))
 ;; Chain pre-exists in tree:
-;; (int<imp>:tree:update '(:root :one :two) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+;;   (int<imp>:tree:update '(:root :one :two) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
 ;; Reach end of tree before end of chain:
-;; (int<imp>:tree:update '(:root :one :two :three :four) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+;;   (int<imp>:tree:update '(:root :one :two :three :four) :leaf-node1 (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
 ;; Chain w/ null value:
-;; (int<imp>:tree:update '(:root :one :two :free) nil (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+;;   (int<imp>:tree:update '(:root :one :two :free) nil (int<imp/tree>:create '(:root :one :two :three) :leaf-node0))
+;; This func does not update the variable; use `int<imp>:tree:update' for that.
+;;   (setq test<imp>:tree nil)
+;;   (int<imp>:tree:update/helper '(:foo bar baz) 'qux test<imp>:tree)
+;;   test<imp>:tree
+
+
+(defmacro int<imp>:tree:update (chain value tree)
+  "Adds CHAIN with final VALUE to TREE.
+
+CHAIN should be a list of symbols and/or keywords.
+VALUE should be a symbol or keyword.
+TREE should be a list or symbol that holds the list.
+
+If VALUE is nil, just adds chain - does not add a nil child."
+  ;; Have to eval ,tree up to twice to set it, but we can avoid more than that?
+  `(let ((macro<imp>:tree ,tree))
+     (cond
+      ((listp macro<imp>:tree)
+       (setq ,tree
+             (int<imp>:tree:update/helper ,chain ,value ,tree)))
+      ((symbolp macro<imp>:tree)
+       (set macro<imp>:tree
+            (int<imp>:tree:update/helper ,chain ,value (eval macro<imp>:tree))))
+
+      (t
+       (int<imp>:error "int<imp>:tree:update"
+                       "Unable to update tree: not a list or a symbol: %S (type: %S)"
+                       macro<imp>:tree
+                       (typeof macro<imp>:tree))))))
+;; (setq test<imp>:tree nil)
+;; (int<imp>:tree:update '(:foo bar baz) 'qux test<imp>:tree)
+;; test<imp>:tree
 
 
 (defun int<imp>:tree:contains? (chain tree)

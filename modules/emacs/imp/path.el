@@ -466,7 +466,7 @@ Example:
     -> \"/path/to/imp-root/foo/+bar/baz.el\"
     -> \"/path/to/imp-root/+foo/bar/+baz.el\"
     -> etc, depending on `int<imp/path>:find/regex' settings."
-  ;; TODO: implement this.
+  ;; TODO:find: implement this.
   ;; Features to strings.
   ;; For each string except first:
   ;;   - turn into regex

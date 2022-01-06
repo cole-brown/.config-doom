@@ -14,7 +14,7 @@
 ;; Private Functions
 ;;------------------------------------------------------------------------------
 
-;; TODO: a load timing feature?
+;; TODO:load: a load timing feature?
 ;;   - One in `int<imp>:load' that will:
 ;;     1. start timer, output: "loading xxx..."?
 ;;     2. stop timer, output:  "└─yy.zzz seconds"
@@ -26,8 +26,8 @@
 ;;     4. Output to some buffer named by defcustom (default "*Messages*").
 ;;  - One or two stand-alone, external-api-named funcs (that `int<imp>:load' calls?).
 ;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
-;; TODO: Think that would be an optional file '+output.el'?
-;; TODO: Or like debug - triggers off of a module flag or a toggle var?
+;; TODO:load: Think that would be an optional file '+output.el'?
+;; TODO:load: Or like debug - triggers off of a module flag or a toggle var?
 ;;       - Also should trigger off of Emacs' "--debug-init" command line arg.
 
 
@@ -41,7 +41,7 @@ E.g. (int<imp>:load :imp 'provide)
   Will try to load: \"/path/to/imp-root/provide.el\"
 
 Returns non-nil if loaded."
-  ;; TODO: 'load-all' functionality?
+  ;; TODO:load: 'load-all' functionality?
 
   (cond ((apply #'imp:provided? feature:base feature)
          t)
@@ -63,7 +63,7 @@ Returns non-nil if loaded."
         ;; Fallback: Try to let emacs require it:
         (t
          (require (int<imp>:feature:normalize:imp->emacs feature)
-                 ;; TODO: guess at a file/path based on 'feature:base/feature-0/...'?
+                 ;; TODO:load: guess at a file/path based on 'feature:base/feature-0/...'?
                  nil
                  'noerror))))
 ;; (int<imp>:load :imp 'something)
@@ -88,7 +88,7 @@ Examples:
     (imp:require :mis 'code)
 
 Returns non-nil on success."
-  ;; TODO: the load-all functionality
+  ;; TODO:load: the load-all functionality
   ;; Already provided?
   (cond ((apply #'imp:provided? feature:base feature)
          t)

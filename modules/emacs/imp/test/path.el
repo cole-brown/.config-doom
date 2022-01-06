@@ -808,7 +808,7 @@ to a path properly."
 ;;    ;; Run the test.
 ;;    ;;===
 ;;
-;;    (should-not "TODO: implement test when `int<imp>:path:find' is implemented.")))
+;;    (should-not "TODO:find: implement test when `int<imp>:path:find' is implemented.")))
 
 
 ;;------------------------------

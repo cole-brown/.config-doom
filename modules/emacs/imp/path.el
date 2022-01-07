@@ -338,6 +338,36 @@ Returns the list of normalized string."
 ;; Path Helpers
 ;;------------------------------------------------------------------------------
 
+(defun int<imp>:path:current:file ()
+  "Return the emacs lisp file this macro is called from."
+  (cond
+   ;;------------------------------
+   ;; Look for a valid "current file" variable.
+   ;;------------------------------
+   ((bound-and-true-p byte-compile-current-file))
+
+   (load-file-name)
+
+   ((stringp (car-safe current-load-list))
+    (car current-load-list))
+
+   (buffer-file-name)
+
+   ;;------------------------------
+   ;; Error: Didn't find anything valid.
+   ;;------------------------------
+   ((int<imp>:error "int<imp>:path:current:file"
+                    "Cannot get this file-path"))))
+;; (int<imp>:path:current:file)
+
+
+(defun int<imp>:path:current:dir ()
+  "Returns the directory of the emacs lisp file this macro is called from."
+  (when-let (path (int<imp>:path:current:file))
+    (directory-file-name (file-name-directory path))))
+;; (int<imp>:path:current:dir)
+
+
 (defvar int<imp/path>:path:platform:case-insensitive
   '(;; Windows
     cygwin windows-nt ms-dos

@@ -9,6 +9,41 @@
 ;;                                 ──────────                                 ;;
 
 
+;;------------------------------
+;; Future Features:
+;;------------------------------
+;;   - Delayed output mode:
+;;     - If enabled, just save info about load ordering to a tree list.
+;;       Then once some 'loading done' condition is hit (emacs hook?),
+;;       construct the whole loading tree of messages and print.
+;;       - Saves some start-up time by not doing (expensive) output.
+;;     - If disabled, normal 'print-as-you-go' that slows down start-up some.
+;;------------------------------
+
+
+;;------------------------------------------------------------------------------
+;; Timings Toggle
+;;------------------------------------------------------------------------------
+
+(defcustom imp:timing:enabled? nil
+  "Should loading & timing messages be printed?"
+  :group 'imp:group
+  :type '(boolean)
+  :risky t)
+
+
+(defconst imp:timing:feature? (featurep! +timing)
+  "Cache of our feature flag.")
+
+
+(defun imp:timing:enabled? ()
+  "Returns non-nil if `imp:timing:enabled?' is non-nil or imp's `+timing'
+feature flag is set."
+  (or imp:timing:enabled?
+      imp:timing:feature?))
+;; (imp:timing:enabled?)
+
+
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
@@ -89,7 +124,10 @@ Args to this format string are:
 (defcustom imp:timing:separator:launch
   (concat "\n\n"
           (make-string 40 ?─ :multibyte))
-  "String that can be inserted into the output buffer via `int<imp>:timing:launch'.")
+  "String that can be inserted into the output buffer via `int<imp>:timing:launch'."
+  :group 'imp:group
+  :type '(string)
+  :risky t)
 
 
 ;;------------------------------------------------------------------------------
@@ -310,9 +348,20 @@ Message depends on `imp:timing:format:time'."
   "Print a starting separator to the timing buffer if needed.
 
 If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
-  (unless (or (int<imp>:timing:buffer:messages?)
-              (not (get-buffer (imp:timing:buffer:name))))
-    (int<imp>:timing:buffer:insert imp:timing:separator:launch)))
+  ;; Broken up because it's too early for this... :|
+  (cond
+   ;; Not enabled = no output.
+   ((not (imp:timing:enabled?))
+    nil)
+   ;; *Messages* buffer = no output.
+   ((int<imp>:timing:buffer:messages?)
+    nil)
+   ;; Not *Messages* and exists = output!
+   ((get-buffer (imp:timing:buffer:name))
+    (int<imp>:timing:buffer:insert imp:timing:separator:launch))
+   ;; Else, no output.
+   (t
+    nil)))
 
 
 (defmacro imp:timing (feature filename path &rest body)
@@ -321,23 +370,33 @@ If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
 Message depends on `imp:timing:format:time'.
 
 Returns result of evaluating BODY."
-  `(let ((macro<imp>:feature  ,feature)
-         (macro<imp>:filename ,filename)
-         (macro<imp>:path     ,path)
-         (macro<imp>:time     (current-time)))
-     (prog2
-         ;; Start with load message.
-         (int<imp>:timing:start macro<imp>:feature
-                                macro<imp>:filename
-                                macro<imp>:path)
-         ;; Increase indent level for body.
-         (let ((int<imp>:timing:indent (1+ int<imp>:timing:indent)))
-           ;; Run the body...
-           ,@body)
-       ;; Finish with the timing message.
-       (int<imp>:timing:end macro<imp>:time))))
+  `(if (imp:timing:enabled?)
+       ;; Timings enabled: Run body in between timing start/end messages.
+       (let ((macro<imp>:feature  ,feature)
+             (macro<imp>:filename ,filename)
+             (macro<imp>:path     ,path)
+             (macro<imp>:time     (current-time)))
+         (prog2
+             ;; Start with load message.
+             (int<imp>:timing:start macro<imp>:feature
+                                    macro<imp>:filename
+                                    macro<imp>:path)
+             ;; Increase indent level for body.
+             (let ((int<imp>:timing:indent (1+ int<imp>:timing:indent)))
+               ;; Run the body...
+               ,@body)
+           ;; Finish with the timing message.
+           (int<imp>:timing:end macro<imp>:time)))
+
+     ;; Timings disabled: Just run body.
+     ,@body))
 ;; (imp:timing :test "+timing.el" ".config/doom/modules/emacs/imp" (message "Time!"))
-;; (progn
+;; (let ((imp:timing:enabled? nil))
+;;   (imp:timing:launch)
+;;   (imp:timing :test "+timing.el" ".config/doom/modules/emacs/imp"
+;;               (imp:timing :test/foo "+foo.el" ".config/doom/modules/emacs/imp"
+;;                           (message "Double Time!"))))
+;; (let ((imp:timing:enabled? t))
 ;;   (imp:timing:launch)
 ;;   (imp:timing :test "+timing.el" ".config/doom/modules/emacs/imp"
 ;;               (imp:timing :test/foo "+foo.el" ".config/doom/modules/emacs/imp"

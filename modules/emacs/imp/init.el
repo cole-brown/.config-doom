@@ -12,22 +12,22 @@
 ;; Usage
 ;;------------------------------------------------------------------------------
 ;;
-;;------------------
+;;------------------------------
 ;; Require
 ;; ------
 ;; (imp:require <symbol/keyword0> ...)
 ;;   - If a root is set for <symbol/keyword0>, this can (try to) find the file
 ;;     required.
-;;------------------
+;;------------------------------
 ;;
-;;------------------
+;;------------------------------
 ;; Provide
 ;; -------
 ;; (imp:provide <symbol/keyword0> ...)            ; Provide via imp only.
 ;; (imp:provide:with-emacs <symbol/keyword0> ...) ; Provide via imp and emacs.
-;;------------------
+;;------------------------------
 ;;
-;;------------------
+;;------------------------------
 ;; (Optional) Set-Up:
 ;; ------
 ;; (imp:path:root <symbol/keyword0>
@@ -35,7 +35,7 @@
 ;;                &optional <path-to-root-file-relative-or-absolute>)
 ;;   - Setting a root for <symbol/keyword0> allows later `imp:require' calls to
 ;;     try to find the file if not already provided.
-;;------------------
+;;------------------------------
 ;;
 ;;
 ;;; Code:
@@ -46,26 +46,27 @@
 ;; Load our files...
 ;;------------------------------------------------------------------------------
 
-;;------------------
+;;------------------------------
 ;; Required by debug.
-;;------------------
+;;------------------------------
 ;; Try not to have too many things here.
 (load! "error")
 
 
-;;------------------
+;;------------------------------
 ;; Debug ASAP!..
-;;------------------
+;;------------------------------
 (load! "debug")
 
 
-;;------------------
+;;------------------------------
 ;; Order matters.
-;;------------------
+;;------------------------------
 (load! "feature")
 (load! "alist")
 (load! "tree")
 (load! "path")
+(load! "+timing") ;; Optional, but always load it - it'll time or not time based on settings.
 (load! "provide")
 (load! "require")
 (load! "commands")

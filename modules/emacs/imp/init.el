@@ -67,6 +67,7 @@
 (load! "tree")
 (load! "path")
 (load! "+timing") ;; Optional, but always load it - it'll time or not time based on settings.
+(load! "load")
 (load! "provide")
 (load! "require")
 (load! "commands")
@@ -79,7 +80,7 @@
 ;; Path is needed earlier than provide, so now that everything is ready, let
 ;; 'path.el' provide itself and do other set-up.
 (int<imp>:path:init)
-
+(int<imp>:load:init)
 
 ;;------------------------------------------------------------------------------
 ;; The End.

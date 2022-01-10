@@ -32,7 +32,7 @@ If FILE-NAME is a string, returns true if loading that exact
 
 (defun imp:provided? (&rest feature)
   "Checks for FEATURE in `imp:features'."
-  (int<imp>:tree:contains? feature imp:features))
+  (int<imp>:feature:exists? feature))
 ;; (imp:provided? :imp)
 ;; (imp:provided? :imp 'path)
 ;; (imp:provided? :dne)

@@ -197,8 +197,6 @@ indention levels."
 ;; (int<imp>:timing:tree:string :root)
 
 
-
-
 ;;------------------------------------------------------------------------------
 ;; Buffer Functions
 ;;------------------------------------------------------------------------------
@@ -370,6 +368,8 @@ If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
 Message depends on `imp:timing:format:time'.
 
 Returns result of evaluating BODY."
+  (declare (indent 3))
+
   `(if (imp:timing:enabled?)
        ;; Timings enabled: Run body in between timing start/end messages.
        (let ((macro<imp>:feature  ,feature)

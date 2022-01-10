@@ -461,6 +461,74 @@ or possibly
 ;; works: (int<imp/path>:normalize:path '(spy system config))
 
 
+;; TODO:test: Make unit test.
+(defun int<path>:normalize (root relative &optional assert-exists)
+  "Joins ROOT and RELATIVE paths, normalizes, and returns the path string.
+
+If ASSERT-EXISTS is `:file', raises an error if normalized path is not an
+existing, readable file.
+If ASSERT-EXISTS is `:dir', raises an error if normalized path is not an
+existing directory.
+
+Returns normalized path."
+
+  (let ((func.name "int<path>:normalize")
+        (valid:assert-exists '(nil :file :dir)))
+    ;;------------------------------
+    ;; Error Check Inputs
+    ;;------------------------------
+    (unless (stringp root)
+      (int<imp>:error func.name
+                      "ROOT must be a string; got: %S"
+                      root))
+    (unless (stringp relative)
+      (int<imp>:error func.name
+                      "RELATIVE must be a string; got: %S"
+                      relative))
+    (unless (memq assert-exists valid:assert-exists)
+      (int<imp>:error func.name
+                      "ASSERT-EXISTS must be one of %S; got: %S"
+                      valid:assert-exists
+                      relative))
+
+    ;;------------------------------
+    ;; Normalize & check path.
+    ;;------------------------------
+    (let ((path (imp:path:join root relative))) ;; Assumes ROOT is already normalized.
+      (cond
+       ;;---
+       ;; Sanity Check?
+       ;;---
+       ((not (stringp path))
+        (int<imp>:error func.name
+                        '("Error creating path from inputs (expected a string result)! "
+                          "'%s' & '%s' -> %S")
+                        root
+                        relative
+                        path))
+
+       ;;---
+       ;; ASSERT-EXISTS != nil
+       ;;---
+       ((eq assert-exists :file)
+        ;; Return `nil' if file doesn't exist or is not readable.
+        (if (file-readable-p path)
+            path
+          nil))
+
+       ((eq assert-exists :dir)
+        ;; Return `nil' if directory doesn't exist.
+        (if (file-directory-p path)
+            path
+          nil))
+
+       ;;---
+       ;; ASSERT-EXISTS == `nil'
+       ;;---
+       (t
+        path)))))
+
+
 ;;------------------------------------------------------------------------------
 ;; Load Symbols -> Load Path
 ;;------------------------------------------------------------------------------

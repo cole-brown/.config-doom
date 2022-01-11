@@ -338,6 +338,19 @@ Returns the list of normalized string."
 ;; Path Helpers
 ;;------------------------------------------------------------------------------
 
+;; TODO:test: Make unit test.
+(defun int<imp>:path:parent (path)
+  "Returns the parent directory component of PATH."
+  (directory-file-name (file-name-directory path)))
+
+
+;; TODO:test: Make unit test.
+(defun int<imp>:path:filename (path)
+  "Returns the filename component of PATH."
+  (file-name-nondirectory path))
+
+
+;; TODO:test: Make unit test?
 (defun int<imp>:path:current:file ()
   "Return the emacs lisp file this macro is called from."
   (cond
@@ -361,6 +374,7 @@ Returns the list of normalized string."
 ;; (int<imp>:path:current:file)
 
 
+;; TODO:test: Make unit test?
 (defun int<imp>:path:current:dir ()
   "Returns the directory of the emacs lisp file this macro is called from."
   (when-let (path (int<imp>:path:current:file))
@@ -376,6 +390,7 @@ Returns the list of normalized string."
   "These operating systems have case-insensitive paths.")
 
 
+;; TODO:test: Make unit test?
 (defun int<imp/path>:path:platform-agnostic (path)
   "Converts PATH string into a standardized path for the platform.
 

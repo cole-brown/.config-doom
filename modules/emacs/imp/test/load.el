@@ -1,5 +1,6 @@
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
-;;; emacs/imp/test/require.el
+;; -*- no-byte-compile: t; -*-
+;;; emacs/imp/test/load.el
 
 
 ;;------------------------------------------------------------------------------
@@ -14,40 +15,38 @@
 (load! "../path.el")
 (load! "../+timing.el")
 (load! "../load.el")
-(load! "../provide.el")
-(load! "../require.el")
 
 
 ;;------------------------------------------------------------------------------
 ;; Test Debugging Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar test<imp/require>:loading:root (imp:path:join (test<imp>:path/dir:this)
+(defvar test<imp/load>:loading:root (imp:path:join (test<imp>:path/dir:this)
                                                       "loading")
   "The \"root\" directory for our 'imp/test/loading/load.el' file.")
 
 
-(defvar test<imp/require>:loading:feature :loading
+(defvar test<imp/load>:loading:feature :loading
   "The feature name for our 'imp/test/loading/' files.")
 
 
-(defvar test<imp/require>:loading:load:file "load"
+(defvar test<imp/load>:loading:load:file "load"
   "The \"root\" filename (or filepath) for our 'imp/test/loading/load.el' file.")
 
 
-(defvar test<imp/require>:loading:load:feature '(:loading load)
+(defvar test<imp/load>:loading:load:feature '(:loading load)
   "The feature name for our 'imp/test/loading/load.el' file.")
 
 
-(defvar test<imp/require>:loading:dont-load:file "dont-load"
+(defvar test<imp/load>:loading:dont-load:file "dont-load"
   "The \"root\" filename (or filepath) for our 'imp/test/loading/dont-load.el' file.")
 
 
-(defvar test<imp/require>:loading:dont-load:feature '(:loading dont-load)
+(defvar test<imp/load>:loading:dont-load:feature '(:loading dont-load)
   "The feature name for our 'imp/test/loading/dont-load.el' file.")
 
 
-(defvar test<imp/require>:loading:doesnt-exist:feature '(:loading doesnt-exist)
+(defvar test<imp/load>:loading:doesnt-exist:feature '(:loading doesnt-exist)
   "A feature name for 'imp/test/loading/doesnt-exist.el', which doesn't exist.")
 
 
@@ -55,7 +54,7 @@
 ;; Set-Up / Tear-Down
 ;;------------------------------
 
-(defun test<imp/require>:setup:vars ()
+(defun test<imp/load>:setup:vars ()
   "Deletes variable from 'test/loading/*.el' files."
   ;; These are fine to do even if they already don't exist.
   (makunbound 'test<imp>:file:loading?)
@@ -71,20 +70,27 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Tests: Imp Require Functions
+;; Tests: Imp Load Functions
 ;;------------------------------------------------------------------------------
 
 ;;------------------------------
-;; imp:require
+;; int<imp>:load:file
+;;------------------------------
+;; Is just a wrapper around `load'; testing other `:imp/load' functions will test
+;; this fine (until we encounter a bug in this function, I guess).
+
+
+;;------------------------------
+;; int<imp>:load
 ;;------------------------------
 
-(ert-deftest test<imp/require>::imp:require ()
-  "Test that `imp:require' behaves appropriately."
+(ert-deftest test<imp/load>::int<imp>:load ()
+  "Test that `int<imp>:load' behaves appropriately."
   (test<imp>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<imp/require>::imp:require"
+      "test<imp/load>::int<imp>:load"
       nil
       nil
 
@@ -92,27 +98,27 @@
     ;; Run the test.
     ;;===
 
-    (test<imp/require>:setup:vars)
+    (test<imp/load>:setup:vars)
     (should-error test<imp>:file:loading?)
     (should-error test<imp>:loading:load:loaded)
     (should-error test<imp>:loading:dont-load:loaded)
 
     ;;------------------------------
-    ;; Require feature & root.
+    ;; Load feature & root.
     ;;------------------------------
 
     ;;---
     ;; Supply a root:
     ;;---
-    ;; For testing that it can load something it knows about but that hasn't been required.
-    (imp:path:root test<imp/require>:loading:feature
-                   test<imp/require>:loading:root)
+    ;; For testing that it can load something it knows about but that hasn't been loaded yet.
+    (imp:path:root test<imp/load>:loading:feature
+                   test<imp/load>:loading:root)
 
     ;;---
-    ;; Require a feature:
+    ;; Load a feature:
     ;;---
-    ;; For testing that nothing happens when it's already required.
-    (apply #'imp:provide test<imp/require>:loading:dont-load:feature)
+    ;; For testing that nothing happens when it's already loaded.
+    (apply #'imp:provide test<imp/load>:loading:dont-load:feature)
 
     ;;---
     ;; Set up variables:
@@ -126,24 +132,22 @@
     ;;------------------------------
 
     ;;---
-    ;; If feature is alredy required, nothing should happen.
+    ;; If feature is alredy loaded, nothing should happen.
     ;;---
     (should-not test<imp>:loading:dont-load:loaded)
-    ;; Call `imp:require on it's feature; shouldn't be loaded since we've required it already.
-    (should (apply #'imp:require
-                   test<imp/require>:loading:dont-load:feature))
+    ;; Call `int<imp>:load on it's feature; shouldn't be loaded since we've loaded it already.
+    (should (apply #'int<imp>:load
+                   test<imp/load>:loading:dont-load:feature))
     (should-not test<imp>:loading:dont-load:loaded)
 
     ;;---
     ;; If we know the base feature, we should be able to load the file by the feature name.
     ;;---
     (should-not test<imp>:loading:load:loaded)
-    (should (apply #'imp:require
-                   test<imp/require>:loading:load:feature))
+    (should (apply #'int<imp>:load
+                   test<imp/load>:loading:load:feature))
     (should test<imp>:loading:load:loaded)
     (should test<imp>:file:loading?)
-    ;; And it should now be provided.
-    (should (apply #'imp:provided? test<imp/require>:loading:load:feature))
 
     ;;------------------------------
     ;; Errors:
@@ -153,13 +157,13 @@
     ;; Know the base feature, but can't find anything to load.
     ;;---
     (should-error test<imp>:loading:load:doesnt-exist)
-    (should-error (apply #'imp:require
-                         test<imp/require>:loading:doesnt-exist:feature))
+    (should-error (apply #'int<imp>:load
+                         test<imp/load>:loading:doesnt-exist:feature))
     (should-error test<imp>:loading:load:doesnt-exist)
 
     ;;---
     ;; Don't know the base feature.
     ;;---
-    ;; We fallback to asking Emacs to `require' it, but it doesn't know anything about this either.
+    ;; We fallback to asking Emacs to `load' it, but it doesn't know anything about this either.
     ;; This won't error; it'll just return nil.
-    (should-not (imp:require 'something-that-doesnt-exist-in-emacs))))
+    (should-not (int<imp>:load 'something-that-doesnt-exist-in-emacs))))

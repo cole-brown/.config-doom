@@ -12,6 +12,8 @@
 (load! "../alist.el")
 (load! "../tree.el")
 (load! "../path.el")
+(load! "../+timing.el")
+(load! "../load.el")
 (load! "../provide.el")
 
 

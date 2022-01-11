@@ -65,18 +65,6 @@ Returns non-nil if loaded."
 
 
 ;; TODO:test: Make unit test.
-(defun int<imp/path>:parent (path)
-  "Returns the parent directory component of PATH."
-  (directory-file-name (file-name-directory path)))
-
-
-;; TODO:test: Make unit test.
-(defun int<imp/path>:filename (path)
-  "Returns the filename component of PATH."
-  (file-name-nondirectory path))
-
-
-;; TODO:test: Make unit test.
 (defun int<imp>:load:paths (feature path:root paths:relative)
   "Load PATHS files (list of path strings relative to PATH:ROOT path string).
 
@@ -95,8 +83,8 @@ FEATURE is only for `imp:timing' use."
                               ;; Time this load if timing is enabled.
                               (imp:timing
                                   feature
-                                  (int<imp/path>:filename path:absolute)
-                                  (int<imp/path>:parent   path:absolute)
+                                  (int<imp>:path:filename path:absolute)
+                                  (int<imp>:path:parent   path:absolute)
                                 (int<imp>:load:file path:absolute))))))))
 
 

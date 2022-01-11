@@ -21,14 +21,25 @@ Lexically clears `file-name-handler-alist' for loading.
 Calls `load' with errors allowed and `nomessage' set.
 
 Returns result of `load' or signals error."
-  (condition-case-unless-debug err
-      (let (file-name-handler-alist)
-        (load path nil 'nomessage))
+  (let ((func.name "int<imp>:load:file"))
+    (int<imp>:debug func.name
+                    "load filepath '%s'..."
+                    filepath)
 
-    (int<imp>:error "int<imp>:load:file"
-                    "imp fail to load filepath: %s\n  - error: %S"
-                    filepath
-                    err)))
+    (condition-case-unless-debug err
+        ;; Set `file-name-handler-alist' to nil so we can `load' without it,
+        ;; then load and save result for return value.
+        (let* (file-name-handler-alist
+               (loaded (load filepath nil 'nomessage)))
+          (int<imp>:debug func.name
+                          "loaded '%s': %S"
+                          filepath
+                          loaded)
+          loaded)
+      (error (int<imp>:error "int<imp>:load:file"
+                             "imp fail to load filepath: %s\n  - error: %S"
+                             filepath
+                             err)))))
 
 
 ;; TODO: Rename `int<imp>:load:feature'?
@@ -66,20 +77,37 @@ Returns non-nil if loaded."
 
 ;; TODO:test: Make unit test.
 (defun int<imp>:load:paths (feature path:root paths:relative)
-  "Load PATHS files (list of path strings relative to PATH:ROOT path string).
+  "Load PATHS:RELATIVE files (list of path strings relative to PATH:ROOT path string).
 
 Returns or'd result of loading feature's files if feature is found;
 returns non-nil if feature's files were all loaded successfully.
 
 FEATURE is only for `imp:timing' use."
-  (let ((load-result t))
+  (let ((func.name "int<imp>:load:paths")
+        (load-result t))
+    (int<imp>:debug func.name
+                    '("Inputs:\n"
+                      "  feature:        %S\n"
+                      "  path:root:      %s\n"
+                      "  paths:relative: %S")
+                    feature
+                    path:root
+                    paths:relative)
 
     ;; Get full path and load file.
     ;; Return `load-result' when done with loading.
     ;; TODO: map/reduce instead of dolist?
     (dolist (relative paths:relative load-result)
-      (let ((path:absolute (int<path>:normalize path:root relative :file)))
-        (setq load-result (or load-result
+      (let ((path:absolute (int<imp>:path:normalize path:root relative :file:load)))
+        (int<imp>:debug func.name
+                        '("loading:\n"
+                          "  root:             %s\n"
+                          "  relative:         %s\n"
+                          "-> `path:absolute': %s")
+                        path:root
+                        relative
+                        path:absolute)
+        (setq load-result (and load-result
                               ;; Time this load if timing is enabled.
                               (imp:timing
                                   feature

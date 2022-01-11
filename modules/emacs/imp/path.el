@@ -339,15 +339,88 @@ Returns the list of normalized string."
 ;;------------------------------------------------------------------------------
 
 ;; TODO:test: Make unit test.
-(defun int<imp>:path:parent (path)
-  "Returns the parent directory component of PATH."
-  (directory-file-name (file-name-directory path)))
+(defun int<imp>:path:rx:file-glob (filepath)
+  "Converts FILEPATH to a regex for filepath + '.*' glob."
+  (rx-to-string
+   (list 'sequence
+         (int<imp>:path:filename filepath)
+         (list 'zero-or-more
+               "."
+               '(one-or-more printing)))
+   :no-group))
+;; (int<imp>:path:rx:file-glob "/foo/bar")
 
 
 ;; TODO:test: Make unit test.
-(defun int<imp>:path:filename (path)
-  "Returns the filename component of PATH."
-  (file-name-nondirectory path))
+(defun int<imp>:path:dir? (path)
+  "Returns non-nil if PATH is a directory path."
+  ;; Directory path if the PATH is equal to its path-as-a-directory.
+  (string= (file-name-as-directory path)
+           path))
+;; (int<imp>:path:dir? "/foo")
+;; (int<imp>:path:dir? "/foo/")
+;; (int<imp>:path:dir? nil)
+
+
+;; TODO:test: Make unit test.
+(defun int<imp>:path:parent (path)
+  "Returns the parent directory component of PATH."
+  (cond
+   ;;------------------------------
+   ;; Errors
+   ;;------------------------------
+   ((not (stringp path))
+    (int<imp>:error "int<imp>:path:parent"
+                    "PATH is not a string! %S"
+                    path))
+
+   ;;------------------------------
+   ;; Figure out path type so we can figure out parent.
+   ;;------------------------------
+   ;; Directory path?
+   ((int<imp>:path:dir? path)
+    ;; First get the dirname:      "/foo/bar/" -> "/foo/bar"
+    ;; Then get its parent dir:    "/foo/bar"  -> "/foo/"
+    ;; Then get the parent's name: "/foo/"     -> "/foo"
+    (directory-file-name
+     (file-name-directory
+      (directory-file-name path))))
+
+    ;; File path?
+    (t
+    ;; Then get its parent dir:    "/foo/bar.el" -> "/foo/"
+    ;; Then get the parent's name: "/foo/"       -> "/foo"
+     (directory-file-name (file-name-directory path)))))
+;; (int<imp>:path:parent "/foo/bar/")
+;; (int<imp>:path:parent "/foo/bar.el")
+
+
+;; TODO:test: Make unit test.
+(defun int<imp>:path:filename (path &optional dirname?)
+  "Returns the filename component of PATH.
+
+If DIRNAME? is nil, returns \"\" for the filename of a directory path.
+  example:
+    (int<imp>:path:filename \"/foo/bar/\")
+      -> \"\"
+
+If DIRNAME? is non-nil, returns the directory's name for the filename of
+a directory path.
+  example:
+    (int<imp>:path:filename \"/foo/bar/\" :dir)
+      -> \"bar\""
+  (let ((path:filename path))
+    ;; Should we clean a directory path up to a directory-name path first?
+    (when (and dirname?
+               (int<imp>:path:dir? path:filename))
+      (setq path:filename (directory-file-name path:filename)))
+
+    ;; Return the filename segment of the path.
+    (file-name-nondirectory path:filename)))
+;; (int<imp>:path:filename "/foo/bar/" nil)
+;; (int<imp>:path:filename "/foo/bar/" t)
+;; (int<imp>:path:filename "/foo/bar.el" nil)
+;; (int<imp>:path:filename "/foo/bar.el" t)
 
 
 ;; TODO:test: Make unit test?
@@ -477,18 +550,22 @@ or possibly
 
 
 ;; TODO:test: Make unit test.
-(defun int<path>:normalize (root relative &optional assert-exists)
+(defun int<imp>:path:normalize (root relative &optional assert-exists)
   "Joins ROOT and RELATIVE paths, normalizes, and returns the path string.
 
 If ASSERT-EXISTS is `:file', raises an error if normalized path is not an
 existing, readable file.
+
+If ASSERT-EXISTS is `:file:load', raises an error if normalized path
+plus an extension glob (\".*\") is not an existing, readable file.
+
 If ASSERT-EXISTS is `:dir', raises an error if normalized path is not an
 existing directory.
 
 Returns normalized path."
 
-  (let ((func.name "int<path>:normalize")
-        (valid:assert-exists '(nil :file :dir)))
+  (let ((func.name "int<imp>:path:normalize")
+        (valid:assert-exists '(nil :file :file:load :dir)))
     ;;------------------------------
     ;; Error Check Inputs
     ;;------------------------------
@@ -529,19 +606,49 @@ Returns normalized path."
         ;; Return `nil' if file doesn't exist or is not readable.
         (if (file-readable-p path)
             path
-          nil))
+          (int<imp>:error func.name
+                          "File does not exist: %s"
+                          path)))
+
+       ((eq assert-exists :file:load)
+        ;; Check in the ordering that `load' checks: .elc, .el, <order of `load-suffixes'>, no-suffix
+        (cond ((file-readable-p (concat path ".elc"))
+               path)
+              ((file-readable-p (concat path ".el"))
+               path)
+              ((and load-suffixes
+                    (seq-some (lambda (ext)
+                                "Is PATH + EXT a readable file?"
+                                (file-readable-p (concat path ext)))
+                              load-suffixes))
+               path)
+              ((file-readable-p path)
+               path)
+              (t
+               (int<imp>:error func.name
+                               "No (readable) files exist to load: %s"
+                               path))))
 
        ((eq assert-exists :dir)
         ;; Return `nil' if directory doesn't exist.
         (if (file-directory-p path)
             path
-          nil))
+          (int<imp>:error func.name
+                          "Directory does not exist: %s"
+                          path)))
 
        ;;---
        ;; ASSERT-EXISTS == `nil'
        ;;---
        (t
         path)))))
+;; Just Normalize:
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load")
+;; Error:
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load" :file)
+;; Ok:
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load" :file:load)
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load.el" :file:load)
 
 
 ;;------------------------------------------------------------------------------

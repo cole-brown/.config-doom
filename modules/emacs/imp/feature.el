@@ -330,7 +330,7 @@ Errors if:
 
 ;; TODO:test: Make unit test.
 (defun int<imp>:feature:load (feature:base &rest feature)
-  "Load to files for FEATURE:BASE + FEATURE.
+  "Load files for FEATURE:BASE + FEATURE.
 
 This only provides the paths for the feature itself, each of which may
 `imp:require' more features.

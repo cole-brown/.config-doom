@@ -244,7 +244,6 @@
                                  test<imp/load>:loading:root
                                  (list test<imp/load>:loading:load:file)))
     (should test<imp>:loading:load:loaded)
-    ))
 
     ;;------------------------------
     ;; Errors:

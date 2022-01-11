@@ -67,8 +67,8 @@
 (load! "tree")
 (load! "path")
 (load! "+timing") ;; Optional, but always load it - it'll time or not time based on settings.
-(load! "load")
 (load! "provide")
+(load! "load")
 (load! "require")
 (load! "commands")
 

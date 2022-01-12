@@ -106,6 +106,18 @@ Args to this format string are:
   :risky t)
 
 
+(defcustom imp:timing:format:already-provided "skip %1$S; feature already provided"
+  "Format string for loading a filename.
+
+Args to this format string are:
+  1. Feature symbol: :imp/+timing
+  2. File name:      +timing.el
+  3. File path:      /path/to/imp/+timing.el"
+  :group 'imp:group
+  :type '(string)
+  :risky t)
+
+
 (defcustom imp:timing:format:time
   (concat "%0"                                     ;; Fill with zeros.
           (number-to-string
@@ -360,6 +372,18 @@ If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
    ;; Else, no output.
    (t
     nil)))
+
+
+(defun imp:timing:already-provided (feature filename path)
+  "Prints out a message about skipping this FEATURE / FILENAME / PATH.
+
+Message depends on `imp:timing:format:skip'."
+  (when (imp:timing:enabled?)
+    (int<imp>:timing:message :root
+                             imp:timing:format:already-provided
+                             feature
+                             filename
+                             path)))
 
 
 (defmacro imp:timing (feature filename path &rest body)

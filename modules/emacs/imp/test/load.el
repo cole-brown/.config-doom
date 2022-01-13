@@ -532,6 +532,97 @@ EXPECTED should be a plist with keys:
                                          :filename "hello")))))
 
 
-
-;; TODO:
+;;------------------------------
 ;; imp:load
+;;------------------------------
+
+(ert-deftest test<imp/load>::imp:load ()
+  "Test that `imp:load' behaves appropriately."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/load>::imp:load"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (test<imp/load>:setup:vars)
+    (should-error test<imp>:file:loading?)
+    (should-error test<imp>:loading:load:loaded)
+    (should-error test<imp>:loading:dont-load:loaded)
+
+    ;;------------------------------
+    ;; Load feature & root.
+    ;;------------------------------
+
+    ;;---
+    ;; +Supply a root:+
+    ;;---
+    ;; `imp:load' doesn't care about `imp:path:roots'.
+
+    ;;---
+    ;; Load a feature:
+    ;;---
+    ;; `imp:load' will not load again if already provided.
+    (apply #'imp:provide test<imp/load>:loading:dont-load:feature)
+
+    ;;---
+    ;; Set up variables:
+    ;;---
+    ;; First, set these variable to `nil' so they exist.
+    (setq test<imp>:loading:load:loaded      nil  ;; If 'test/loading/load.el' is loaded, it will be set to `t'.
+          test<imp>:loading:dont-load:loaded nil) ;; If 'test/loading/dont-load.el' is loaded, it will be set to `t'.
+
+    ;;------------------------------
+    ;; Load:
+    ;;------------------------------
+
+    ;;---
+    ;; If feature is alredy provided, do not load.
+    ;;---
+    (let (result)
+      (should-not test<imp>:loading:dont-load:loaded)
+      (should (file-exists-p (imp:path:join test<imp/load>:loading:root
+                                            (concat test<imp/load>:loading:dont-load:file ".el"))))
+      ;; Call `imp:load on it's feature...
+      (setq result (imp:load :feature  test<imp/load>:loading:dont-load:feature
+                             :path     test<imp/load>:loading:root
+                             :filename test<imp/load>:loading:dont-load:file
+                             :error    nil))
+      ;; ...should not load.
+      (should-not result)
+      (should-not test<imp>:loading:dont-load:loaded))
+
+    ;;---
+    ;; If feature is not provided, load it.
+    ;;---
+    (let (result)
+      (should-not test<imp>:loading:load:loaded)
+      ;; Call `imp:load on it's feature...
+      (setq result (imp:load :feature  test<imp/load>:loading:load:feature
+                             :path     test<imp/load>:loading:root
+                             :filename test<imp/load>:loading:load:file
+                             :error    nil))
+      ;; ...should have loaded.
+      (should result)
+      (should test<imp>:loading:load:loaded))
+
+    ;;------------------------------
+    ;; Errors:
+    ;;------------------------------
+    ;; Expecting wrong feature.
+    (should-not (eval (imp:load :feature  test<imp/load>:loading:doesnt-exist:feature
+                                :path     test<imp/load>:loading:root
+                                :filename test<imp/load>:loading:load:file
+                                :error    nil)))
+    (should-error (eval (imp:load :feature  test<imp/load>:loading:doesnt-exist:feature
+                                  :path     test<imp/load>:loading:root
+                                  :filename test<imp/load>:loading:load:file
+                                  :error    t)))
+    (should-error (eval (imp:load :feature  test<imp/load>:loading:doesnt-exist:feature
+                                  :path     test<imp/load>:loading:root
+                                  :filename test<imp/load>:loading:load:file)))))

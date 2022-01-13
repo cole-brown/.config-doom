@@ -165,14 +165,20 @@ Example:
 ;; `imp:path:roots' Getters
 ;;------------------------------------------------------------------------------
 
-(defun int<imp/path>:root/dir (keyword)
-  "Get the root directory from `imp:path:roots' for KEYWORD."
+(defun int<imp/path>:root/dir (keyword &optional no-error)
+  "Get the root directory from `imp:path:roots' for KEYWORD.
+
+If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
   (if-let ((dir (nth 0 (int<imp>:alist:get/value keyword imp:path:roots))))
       (expand-file-name "" dir)
-    (int<imp>:error "int<imp/path>:root/dir"
-                    "Root keyword '%S' unknown."
-                    keyword)))
+    (if no-error
+        nil
+      (int<imp>:error "int<imp/path>:root/dir"
+                      "Root keyword '%S' unknown."
+                      keyword))))
 ;; (int<imp/path>:root/dir :imp)
+;; (int<imp/path>:root/dir :dne)
+;; (int<imp/path>:root/dir :dne t)
 
 
 (defun int<imp/path>:root/file (keyword)

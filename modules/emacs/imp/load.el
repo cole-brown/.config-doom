@@ -75,7 +75,6 @@ Returns non-nil if loaded."
 ;; (int<imp>:load :config 'spy 'system 'config)
 
 
-;; TODO:test: Make unit test.
 (defun int<imp>:load:paths (feature path:root paths:relative)
   "Load PATHS:RELATIVE files (list of path strings relative to PATH:ROOT path string).
 
@@ -244,8 +243,16 @@ Returns a plist:
     ;; Prep Outputs:
     ;;------------------------------
     ;;---
+    ;; Process FEATURE.
+    ;;---
+    ;; Normalize to a list.
+    (setq out:feature (apply #'int<imp>:feature:normalize in:feature))
+    (int<imp>:debug caller "out:feature: %S" out:feature)
+
+    ;;---
     ;; Process PATH & FILENAME into single output path.
     ;;---
+    ;; Need FEATURE first.
 
     ;; 0) Ease-of-use: Promote PATH to FILENAME if only PATH was provided.
     ;;---
@@ -255,11 +262,13 @@ Returns a plist:
 
     ;; 1) Check PATH first so we can have it for FILENAME if needed.
     ;;---
-    ;; Prefer provided path.
-    (let ((path (or in:path path:current-dir)))
+    ;; Prefer provided path, then look for the root, then use `path:current-dir'.
+    (let ((path (or in:path
+                    (int<imp/path>:root/dir (nth 0 out:feature) :no-error)
+                    path:current-dir)))
       (unless (stringp path)
         (int<imp>:error caller
-                        '("Could not determine a path to look for filename: '%s'"
+                        '("Could not determine a path to look for filename: '%s' "
                           "PATH and current directory are not strings. path: %S, current-dir: %S")
                         in:filename
                         in:path
@@ -271,13 +280,6 @@ Returns a plist:
     ;;---
     (setq out:path (expand-file-name in:filename in:path))
     (int<imp>:debug caller "out:path:    %S" out:path)
-
-    ;;---
-    ;; FEATURE & FEATURES
-    ;;---
-    ;; Normalize to a list.
-    (setq out:feature (apply #'int<imp>:feature:normalize in:feature))
-    (int<imp>:debug caller "out:feature: %S" out:feature)
 
     ;;---
     ;; ERROR
@@ -357,55 +359,84 @@ It will still raise an error if:
   - It cannot determine where to /look/ for the file.
 
 Only loads the file if the FEATURE is not already provided in `imp:features'."
-  (let* ((macro:func.name "imp:load")
-         (macro:parsed (int<imp>:load:parse macro:func.name
-                                      (int<imp>:path:current:dir)
-                                      (upcase "load-args-plist")
-                                      load-args-plist))
-         (macro:feature:raw   (plist-get macro:parsed :feature))
-         (macro:path          (plist-get macro:parsed :path))
-         (macro:path:filename (int<imp>:path:filename macro:path))
-         (macro:path:parent   (int<imp>:path:parent   macro:path))
-         ;; Invert for `load' parameter NO-ERROR.
-         (macro:error? (plist-get macro:parsed :path)))
-    ;; Avoid `void-function' error signal.
-    `(let ((macro:feature:list (list ,@macro:feature:raw))
-           ;; Set `file-name-handler-alist' to nil to speed up loading.
-           file-name-handler-alist
-           load-result)
-       ;; Only load if it's not provided already.
-       (if (imp:provided? ,@macro:feature:raw)
-           ;; Skip w/ optional timing message.
-           (imp:timing:already-provided macro:feature:list
-                                        ,macro:path:filename
-                                        ,macro:path:parent)
+  `(let* ((macro:func.name "imp:load")
+          (macro:parsed (int<imp>:load:parse macro:func.name
+                                             (int<imp>:path:current:dir)
+                                             (upcase "load-args-plist")
+                                             (list ,@load-args-plist)))
+          (macro:path          (plist-get macro:parsed :path))
+          (macro:path:filename (int<imp>:path:filename macro:path))
+          (macro:path:parent   (int<imp>:path:parent   macro:path))
+          (macro:feature (plist-get macro:parsed :feature))
+          ;; Invert for `load' parameter NO-ERROR.
+          (macro:error? (plist-get macro:parsed :error))
+          ;; Set `file-name-handler-alist' to nil to speed up loading.
+          file-name-handler-alist
+          load-result)
+     (int<imp>:debug macro:func.name
+                     '("parsed:\n"
+                       "  path: %s\n"
+                       "    -> dir:  %s\n"
+                       "    -> file: %s\n"
+                       "  feature: %S\n"
+                       "  error?:  %S")
+                     macro:path
+                     macro:path:parent
+                     macro:path:filename
+                     macro:feature
+                     macro:error?)
 
-         ;; Load w/ timing info if desired.
-         (imp:timing
-             macro:feature:list
-             ,macro:path:filename
-             ,macro:path:parent
-           ;; Actually do the load.
-           (setq load-result (load ,macro:path
-                                   (not ,macro:error?)
-                                   'nomessage)))
+     ;;------------------------------
+     ;; Provide Check
+     ;;------------------------------
+     ;; Only load if it's not provided already.
+     (if (apply #'imp:provided? macro:feature)
+         ;; Skip w/ optional timing message.
+         (progn
+           (imp:timing:already-provided macro:feature
+                                        macro:path:filename
+                                        macro:path:parent)
+           ;; Return nil for 'did not load'.
+           (setq load-result nil))
 
-         ;;---
-         ;; Sanity Check: (obey ERROR flag though)
-         ;;---
-         ;; Does that feature exists now?
-         ;;   - Prevent feature name drift, since this doesn't actually require
-         ;;     the feature name for the actual loading.
-         (unless (and ,macro:error?
-                      (imp:provided? ,@macro:feature:raw))
-           (int<imp>:error ,macro:func.name
-                           '("Feature is still not defined after loading the file!\n"
-                             "  feature:       %S\n"
-                             "  path:          %S\n"
-                             "  `load'-result: %S")
-                           macro:feature:list
-                           ,macro:path
-                           load-result))))))
+       ;;------------------------------
+       ;; Load!
+       ;;------------------------------
+       ;; Load w/ timing info if desired.
+       (imp:timing
+           macro:feature:list
+           macro:path:filename
+           macro:path:parent
+         ;; Actually do the load.
+         (setq load-result (load macro:path
+                                 (not macro:error?)
+                                 'nomessage)))
+
+       ;;------------------------------
+       ;; Sanity Check: (obey ERROR flag though)
+       ;;------------------------------
+       ;; Does that feature exists now?
+       ;;   - Prevent feature name drift, since this doesn't actually require
+       ;;     the feature name for the actual loading.
+       (unless (and macro:error?
+                    (apply #'imp:provided? macro:feature))
+         (int<imp>:error macro:func.name
+                         '("Feature is still not defined after loading the file!\n"
+                           "  feature:       %S\n"
+                           "  path:          %S\n"
+                           "  `load'-result: %S")
+                         macro:feature
+                         macro:path
+                         load-result)))
+
+     ;;------------------------------
+     ;; Return
+     ;;------------------------------
+     load-result))
+;; (imp:load :feature :test
+;;           :path     test<imp/load>:loading:root
+;;           :filename test<imp/load>:loading:dont-load:file
+;;           :error    nil)
 
 
 ;;------------------------------------------------------------------------------

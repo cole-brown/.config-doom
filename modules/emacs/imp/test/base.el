@@ -63,7 +63,7 @@ Search for \"[MARK-\[0-9\]+]:\"."
   ;;---
   ;; Big noticeable banner.
   ;;---
-  (let ((fmt/str (concat "\n"
+  (let ((fmt:str (concat "\n"
                          "╔═════════════════════════════════════╗\n"
                          "╠══╣            MARK-%02d            ╠══╣\n"
                          "╚═╤═══════════════════════════════════╝\n"))
@@ -73,11 +73,12 @@ Search for \"[MARK-\[0-9\]+]:\"."
     ;; Test's name and the `args' to print.
     ;;---
     (if (null args)
-        ;; No extra stuff in `fmt/str` when no ARGS.
-        (setq fmt/str (concat "  └──┤ " test-name "\n"))
+        ;; No extra stuff in `fmt:str` when no ARGS.
+        (setq fmt:str (concat fmt:str
+                              "  └──┤ " test-name "\n"))
 
       ;; `test-name' and the args.
-      (setq fmt/str (concat fmt/str
+      (setq fmt:str (concat fmt:str
                             "  │\n"
                             "  ├──┤ " test-name "\n"
                             "  │\n"
@@ -95,7 +96,7 @@ Search for \"[MARK-\[0-9\]+]:\"."
     ;;---
 
     ;; Eval string first so it's cleaner in the list of asserts.
-    (setq formatted (apply #'format fmt/str
+    (setq formatted (apply #'format fmt:str
                            test<imp>:should:marker/counter
                            args))
 
@@ -105,6 +106,57 @@ Search for \"[MARK-\[0-9\]+]:\"."
 
     ;; Assert the string so it ends up in the list of asserts.
     (should formatted)))
+;; (test<imp>:should:marker "test name" "marker name")
+
+
+(defun test<imp>:should:marker:small (&rest args)
+  "Put a `should' in the test which will evaluate to some searchable output for
+marking where in a test you are.
+
+Search for \"[MARK-\[0-9\]+]:\"."
+  ;;---
+  ;; Smaller noticeable banner.
+  ;;---
+  (let ((fmt:str (if args
+                     (concat "\n"
+                         "───────────\n"
+                         "  MARK-%02d\n"
+                         "──┬────────\n")
+                   (concat "\n"
+                           "───────────\n"
+                           "  MARK-%02d\n"
+                           "───────────\n")))
+        formatted)
+
+    ;;---
+    ;; `args' to print?
+    ;;---
+    (when args
+      (setq fmt:str (concat fmt:str
+                            "  └──┤ "
+                            ;; String formatting if just a str, else "whatever" formatting.
+                            (cond ((and (= 1 (length args))
+                                        (stringp (nth 0 args)))
+                                   "%s")
+                                  (t
+                                   "%S"))
+                            "\n")))
+    ;;---
+    ;; Output
+    ;;---
+
+    ;; Eval string first so it's cleaner in the list of asserts.
+    (setq formatted (apply #'format fmt:str
+                           test<imp>:should:marker/counter
+                           args))
+
+    ;; Increment counter for next time.
+    (setq test<imp>:should:marker/counter
+          (1+ test<imp>:should:marker/counter))
+
+    ;; Assert the string so it ends up in the list of asserts.
+    (should formatted)))
+;; (test<imp>:should:marker:small "mark name")
 
 
 ;;------------------------------------------------------------------------------

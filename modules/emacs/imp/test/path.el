@@ -105,16 +105,16 @@
 
 
 ;;------------------------------
-;; int<imp>:path:root/file
+;; int<imp>:path:root/file/init
 ;;------------------------------
 
-(ert-deftest test<imp/path>::int<imp>:path:root/file ()
-  "Test that `int<imp>:path:root/file' behaves appropriately."
+(ert-deftest test<imp/path>::int<imp>:path:root/file/init ()
+  "Test that `int<imp>:path:root/file/init' behaves appropriately."
   (test<imp>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<imp/path>::int<imp>:path:root/file"
+      "test<imp/path>::int<imp>:path:root/file/init"
       nil
       nil
 
@@ -125,22 +125,22 @@
     ;; Manually set `imp:path:roots' so we can test this function.
     (test<imp/path>:setup:roots)
 
-    (let ((dir (int<imp>:path:root/file :imp)))
+    (let ((dir (int<imp>:path:root/file/init :imp)))
       (should dir)
       (should (stringp dir))
-      ;; `int<imp>:path:root/file' should just return the absolute path "/path/to/imp/init.el".
+      ;; `int<imp>:path:root/file/init' should just return the absolute path "/path/to/imp/init.el".
       (should (string= "/path/to/imp/init.el"
                        dir)))
 
-    (let ((dir (int<imp>:path:root/file :test)))
+    (let ((dir (int<imp>:path:root/file/init :test)))
       (should dir)
       (should (stringp dir))
-      ;; `int<imp>:path:root/file' should add the root to relative file path.
+      ;; `int<imp>:path:root/file/init' should add the root to relative file path.
       (should (string= "/another/path/set-up.el"
                        dir)))
 
     ;; Test that non-existant keyword throws an error.
-    (should-error (int<imp>:path:root/file :dne))))
+    (should-error (int<imp>:path:root/file/init :dne))))
 
 
 ;;------------------------------
@@ -395,17 +395,17 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :imp)
+                                       (int<imp>:path:root/file/init :imp)
                                        :dir nil
                                        :exists nil))
 
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :imp)
+                                       (int<imp>:path:root/file/init :imp)
                                        :dir nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :imp)
+                                       (int<imp>:path:root/file/init :imp)
                                        :dir nil
                                        :exists t))
 
@@ -414,7 +414,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :imp)
+                                             (int<imp>:path:root/file/init :imp)
                                              :dir t))
 
     ;;------------------------------
@@ -427,16 +427,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :test)
+                                       (int<imp>:path:root/file/init :test)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :test)
+                                       (int<imp>:path:root/file/init :test)
                                        :dir nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :test)
+                                       (int<imp>:path:root/file/init :test)
                                        :dir nil
                                        :exists t))
 
@@ -445,7 +445,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :test)
+                                             (int<imp>:path:root/file/init :test)
                                              :dir t))
 
     ;;------------------------------
@@ -458,16 +458,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :dne/file)
+                                       (int<imp>:path:root/file/init :dne/file)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist. It does not, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file)
                                              :dir nil))
     ;; Path must exist. It does not, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file)
                                              :dir nil
                                              :exists t))
 
@@ -476,7 +476,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error. It also doesn't exist, so also expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file)
                                              :dir t))
 
     ;;------------------------------
@@ -489,16 +489,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file :dne/dir)
+                                       (int<imp>:path:root/file/init :dne/dir)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir)
                                              :dir nil))
     ;; Path must exist.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir)
                                              :dir nil
                                              :exists t))
 
@@ -510,7 +510,7 @@
     ;;   - It also doesn't exist, so also expect an error.
     ;;   - And it's not a directory, so... keep expecting an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir)
                                              :dir t))))
 
 

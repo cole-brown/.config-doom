@@ -144,6 +144,14 @@ Example:
 ;; (setq imp:path:roots nil)
 
 
+(defconst imp:path:filename:init "imp-init.el"
+  "Default filename for your imp init file.")
+
+
+(defconst imp:path:filename:features "imp-features.el"
+  "Default filename for your imp features file.")
+
+
 ;;------------------------------------------------------------------------------
 ;; `imp:path:roots' Getters
 ;;------------------------------------------------------------------------------
@@ -164,19 +172,71 @@ If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
 ;; (int<imp>:path:root/dir :dne t)
 
 
-(defun int<imp>:path:root/file (keyword)
-  "Get the root init file from `imp:path:roots' for KEYWORD."
+(defun int<imp>:path:file:exists? (root &rest paths)
+  "Returns canonical path to file if it exists, else nil.
+
+Join ROOT and PATHS together into a filepath and canonicalize (normalize) it.
+Then checks that:
+  1) It exists as a file.
+  2) The file is readable."
+  ;; Join PATHS, canonicalize at ROOT.
+  (let ((filepath (expand-file-name (apply #'imp:path:join paths) root)))
+    ;; Check that it exists.
+    (if (and (file-regular-p  filepath)
+             (file-readable-p filepath))
+        filepath
+      nil)))
+;; (int<imp>:path:file:exists? default-directory "init.el")
+
+
+(defun int<imp>:path:root/file/init (keyword)
+  "Get the init file from `imp:path:roots' for KEYWORD."
   (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
-      (if (nth 1 paths) ;; Does it even have a filename? Can be nil.
-          ;; `expand-file-name' doesn't like `nil'.
-          (expand-file-name (nth 1 paths) (nth 0 paths))
-        ;; No root file; return nil.
-        nil)
-    (int<imp>:error "int<imp>:path:root/file"
+      (let ((root    (nth 0 paths))
+            (init    (or (nth 1 paths) "")))
+
+        (cond
+         ;; Do we have an entry?
+         ((int<imp>:path:file:exists? root init))
+         ;; Not found; check for default.
+         ((int<imp>:path:file:exists? root imp:path:filename:init))
+         ;; Still not found; error.
+         (t
+          (int<imp>:error "int<imp>:path:root/file/init"
+                    "No imp init file found for `%S'!"
+                    keyword))))
+
+    ;; Error when no entry in `imp:path:roots'.
+    (int<imp>:error "int<imp>:path:root/file/init"
                     "Root keyword '%S' unknown."
                     keyword)))
-;; (int<imp>:path:root/file :imp)
-;; (int<imp>:path:root/file :modules)
+;; (int<imp>:path:root/file/init :imp)
+;; (int<imp>:path:root/file/init :modules)
+
+
+(defun int<imp>:path:root/file/features (keyword)
+  "Get the features file from `imp:path:roots' for KEYWORD."
+  (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
+      (let ((root     (nth 0 paths))
+            (features (or (nth 2 paths) "")))
+
+        (cond
+         ;; Do we have an entry?
+         ((int<imp>:path:file:exists? root features))
+         ;; Not found; check for default.
+         ((int<imp>:path:file:exists? root imp:path:filename:features))
+         ;; Still not found; error.
+         (t
+          (int<imp>:error "int<imp>:path:root/file/features"
+                    "No imp features file found for `%S'!"
+                    keyword))))
+
+    ;; Error when no entry in `imp:path:roots'.
+    (int<imp>:error "int<imp>:path:root/file/features"
+                    "Root keyword '%S' unknown."
+                    keyword)))
+;; (int<imp>:path:root/file/features :imp)
+;; (int<imp>:path:root/file/features :modules)
 
 
 (defun int<imp>:path:root/contains? (keyword)
@@ -657,22 +717,27 @@ presumably by having called `imp:root'."
 ;; Public API: Feature Root Directories
 ;;------------------------------------------------------------------------------
 
-(defun imp:path:root (keyword path-to-root-dir &optional path-to-root-file)
+(defun imp:path:root (keyword path:dir:root &optional path:file:init path:file:features)
   "Set the root path(s) of KEYWORD for future `imp:require' calls.
 
-PATH-TO-ROOT-DIR is the directory under which all of KEYWORD's features exist.
+PATH:DIR:ROOT is the directory under which all of KEYWORD's features exist.
 
-PATH-TO-ROOT-FILE is nil or the file to load if only KEYWORD is used in an
+PATH:FILE:INIT is nil or the file to load if only KEYWORD is used in an
 `imp:require', and the feature isn't loaded, AND we have the entry... somehow...
 in `imp:path:roots'.
   - This can be either an absolute or relative path. If relative, it will be
-    relative to PATH-TO-ROOT-DIR."
+    relative to PATH:DIR:ROOT.
+
+PATH:FILE:FEATURES is nil or a minimal file with a call to `imp:feature:at'.
+  - If a sub-feature (that isn't provided) is requested for your feature and there
+    is no entry in `imp:features', this file will be loaded in order to populate
+    `imp:features' so the feature can be looked for."
   (cond ((int<imp>:path:root/contains? keyword)
          (int<imp>:error "imp:root"
                          "Keyword '%S' is already an imp root.\n  path: %s\n  file: %s"
                          keyword
                          (int<imp>:path:root/dir keyword)
-                         (int<imp>:path:root/file keyword)))
+                         (int<imp>:path:root/file/init keyword)))
 
         ((not (keywordp keyword))
          (int<imp>:error "imp:root"
@@ -680,13 +745,13 @@ in `imp:path:roots'.
 
         ;; int<imp>:path:root/valid? will error with better reason, so the error here
         ;; isn't actually triggered... I think?
-        ((not (int<imp>:path:root/valid? "imp:root" path-to-root-dir))
+        ((not (int<imp>:path:root/valid? "imp:root" path:dir:root))
          (int<imp>:error "imp:root"
-                         "Path must be a valid directory: %s" path-to-root-dir))
+                         "Path must be a valid directory: %s" path:dir:root))
 
         ;; Ok; set keyword to path.
         (t
-         (push (list keyword path-to-root-dir path-to-root-file)
+         (push (list keyword path:dir:root path:file:init path:file:features)
                imp:path:roots))))
 ;; (imp:path:root :test "~/.doom.d")
 

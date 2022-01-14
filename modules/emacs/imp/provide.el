@@ -24,8 +24,8 @@ If FILE-NAME is a string, returns true if loading that exact
       ;; Exactly that file loading?
       (and load-in-progress
            (string=
-            (int<imp/path>:path:platform-agnostic load-file-name)
-            (int<imp/path>:path:platform-agnostic file-name)))
+            (int<imp>:path:path:platform-agnostic load-file-name)
+            (int<imp>:path:path:platform-agnostic file-name)))
     ;; Just anything loading?
     load-in-progress))
 

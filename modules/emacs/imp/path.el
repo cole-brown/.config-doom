@@ -14,7 +14,7 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defconst int<imp/path>:find/regex
+(defconst int<imp>:path:find/regex
   (rx
    ;; Prefix
    (group (optional (or "+"
@@ -31,7 +31,7 @@ for a filepath match.
 Feature name string will replace the '%S'.")
 
 
-(defconst int<imp/path>:replace:rx
+(defconst int<imp>:path:replace:rx
   `(;;------------------------------
     ;; Default/Any/All
     ;;------------------------------
@@ -148,8 +148,8 @@ Alist format in `defcustom' language:
                                   (sexp :tag \"Expression that returns a string.\"))
                 :value-type (choice (list string :tag \"Replacement Value\")
                                     (list symbol :tag \"Symbol whose value is the replacement value\")))")
-;; (pp-display-expression int<imp/path>:replace:rx "*int<imp/path>:replace:rx*")
-;; (makunbound 'int<imp/path>:replace:rx)
+;; (pp-display-expression int<imp>:path:replace:rx "*int<imp>:path:replace:rx*")
+;; (makunbound 'int<imp>:path:replace:rx)
 
 
 (defvar imp:path:roots nil
@@ -165,7 +165,7 @@ Example:
 ;; `imp:path:roots' Getters
 ;;------------------------------------------------------------------------------
 
-(defun int<imp/path>:root/dir (keyword &optional no-error)
+(defun int<imp>:path:root/dir (keyword &optional no-error)
   "Get the root directory from `imp:path:roots' for KEYWORD.
 
 If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
@@ -173,15 +173,15 @@ If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
       (expand-file-name "" dir)
     (if no-error
         nil
-      (int<imp>:error "int<imp/path>:root/dir"
+      (int<imp>:error "int<imp>:path:root/dir"
                       "Root keyword '%S' unknown."
                       keyword))))
-;; (int<imp/path>:root/dir :imp)
-;; (int<imp/path>:root/dir :dne)
-;; (int<imp/path>:root/dir :dne t)
+;; (int<imp>:path:root/dir :imp)
+;; (int<imp>:path:root/dir :dne)
+;; (int<imp>:path:root/dir :dne t)
 
 
-(defun int<imp/path>:root/file (keyword)
+(defun int<imp>:path:root/file (keyword)
   "Get the root init file from `imp:path:roots' for KEYWORD."
   (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
       (if (nth 1 paths) ;; Does it even have a filename? Can be nil.
@@ -189,11 +189,11 @@ If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
           (expand-file-name (nth 1 paths) (nth 0 paths))
         ;; No root file; return nil.
         nil)
-    (int<imp>:error "int<imp/path>:root/file"
+    (int<imp>:error "int<imp>:path:root/file"
                     "Root keyword '%S' unknown."
                     keyword)))
-;; (int<imp/path>:root/file :imp)
-;; (int<imp/path>:root/file :modules)
+;; (int<imp>:path:root/file :imp)
+;; (int<imp>:path:root/file :modules)
 
 
 (defun int<imp>:path:root/contains? (keyword)
@@ -201,13 +201,13 @@ If NO-ERROR is `nil' and KEYWORD is not in `imp:path:roots', signals an error."
   (not (null (int<imp>:alist:get/value keyword imp:path:roots))))
 
 
-(defun int<imp/path>:root/valid? (caller path &rest kwargs)
+(defun int<imp>:path:root/valid? (caller path &rest kwargs)
   "Checks that PATH is a vaild root path.
 
 KWARGS should be a plist. All default to `t':
   - :exists - Path must exist.
   - :dir    - Path must be a directory (implies :exists)."
-  (let ((func.name "int<imp/path>:root/valid?")
+  (let ((func.name "int<imp>:path:root/valid?")
         (exists (if (and kwargs
                          (plist-member kwargs :exists))
                     (plist-get kwargs :exists)
@@ -283,61 +283,61 @@ KWARGS should be a plist. All default to `t':
     ;;---
     (int<imp>:debug func.name "->result: %S" result)
     result))
-;; (int<imp/path>:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
+;; (int<imp>:path:root/valid? "manual:test" "d:/home/spydez/.doom.d/modules/emacs/imp/")
 
 
 ;;------------------------------------------------------------------------------
 ;; Normalize
 ;;------------------------------------------------------------------------------
 
-(defun int<imp/path>:normalize:string (symbol-or-string)
+(defun int<imp>:path:normalize:string (symbol-or-string)
   "Translate the FEATURE (a single symbol) to a path string using
-`int<imp/path>:replace:rx' translations."
+`int<imp>:path:replace:rx' translations."
   (let ((name (if (symbolp symbol-or-string)
                   (symbol-name symbol-or-string)
                 symbol-or-string))
         regex
         replacement)
     ;; Defaults first.
-    (int<imp>:debug "int<imp/path>:normalize:string" "defaults:")
+    (int<imp>:debug "int<imp>:path:normalize:string" "defaults:")
     (dolist (pair
-             (int<imp>:alist:get/value 'default int<imp/path>:replace:rx)
+             (int<imp>:alist:get/value 'default int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
                             (symbol-value (nth 1 pair))
                           (nth 1 pair)))
-      (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
-      (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
+      (int<imp>:debug "int<imp>:path:normalize:string" "  rx: %S" regex)
+      (int<imp>:debug "int<imp>:path:normalize:string" "  ->: %S" replacement)
       (setq name (replace-regexp-in-string regex replacement name)))
 
     ;; Now the system-specifics, if any. Return `name' from `dolist' because
     ;; we're done.
-    (int<imp>:debug "int<imp/path>:normalize:string" "system(%S):" system-type)
+    (int<imp>:debug "int<imp>:path:normalize:string" "system(%S):" system-type)
     (dolist (pair
-             (int<imp>:alist:get/value system-type int<imp/path>:replace:rx)
+             (int<imp>:alist:get/value system-type int<imp>:path:replace:rx)
              name)
       (setq regex (nth 0 pair)
             replacement (if (symbolp (nth 1 pair))
                             (symbol-value (nth 1 pair))
                           (nth 1 pair)))
       (unless (null regex)
-        (int<imp>:debug "int<imp/path>:normalize:string" "  rx: %S" regex)
-        (int<imp>:debug "int<imp/path>:normalize:string" "  ->: %S" replacement)
+        (int<imp>:debug "int<imp>:path:normalize:string" "  rx: %S" regex)
+        (int<imp>:debug "int<imp>:path:normalize:string" "  ->: %S" replacement)
         (setq name (replace-regexp-in-string regex replacement name))))))
-;; (int<imp/path>:normalize:string :imp)
+;; (int<imp>:path:normalize:string :imp)
 ;; Should lose both slashes and ~:
-;; (int<imp/path>:normalize:string "~/doom.d/")
+;; (int<imp>:path:normalize:string "~/doom.d/")
 ;; Should remain the same:
-;; (int<imp/path>:normalize:string "config")
+;; (int<imp>:path:normalize:string "config")
 
 
-(defun int<imp/path>:normalize:list (feature)
+(defun int<imp>:path:normalize:list (feature)
   "Normalize FEATURE (a list of symbols/keywords) to a list of strings.
 
 Returns the list of normalized string."
-  (mapcar #'int<imp/path>:normalize:string feature))
-;; (int<imp/path>:normalize:list '(:root test feature))
+  (mapcar #'int<imp>:path:normalize:string feature))
+;; (int<imp>:path:normalize:list '(:root test feature))
 
 
 ;;------------------------------------------------------------------------------
@@ -461,7 +461,7 @@ a directory path.
 ;; (int<imp>:path:current:dir)
 
 
-(defvar int<imp/path>:path:platform:case-insensitive
+(defvar int<imp>:path:path:platform:case-insensitive
   '(;; Windows
     cygwin windows-nt ms-dos
     ;; MacOS
@@ -470,7 +470,7 @@ a directory path.
 
 
 ;; TODO:test: Make unit test?
-(defun int<imp/path>:path:platform-agnostic (path)
+(defun int<imp>:path:path:platform-agnostic (path)
   "Converts PATH string into a standardized path for the platform.
 
 Replaces backslash with forward slash.
@@ -481,19 +481,19 @@ Downcases path on case-insensitive OSes."
    "/"
    ;; Convert path to lowercase if on a case-insensitive OS.
    (funcall
-    (if (memq system-type int<imp/path>:path:platform:case-insensitive)
+    (if (memq system-type int<imp>:path:path:platform:case-insensitive)
         #'downcase
       #'identity)
     path)
    path))
-;; (int<imp/path>:path:platform-agnostic "/foo/bar")
-;; (int<imp/path>:path:platform-agnostic "/FOO/BAR")
-;; (int<imp/path>:path:platform-agnostic "/Foo/Bar")
-;; (int<imp/path>:path:platform-agnostic "C:/Foo/Bar")
-;; (int<imp/path>:path:platform-agnostic "C:\\Foo\\Bar")
+;; (int<imp>:path:path:platform-agnostic "/foo/bar")
+;; (int<imp>:path:path:platform-agnostic "/FOO/BAR")
+;; (int<imp>:path:path:platform-agnostic "/Foo/Bar")
+;; (int<imp>:path:path:platform-agnostic "C:/Foo/Bar")
+;; (int<imp>:path:path:platform-agnostic "C:\\Foo\\Bar")
 
 
-(defun int<imp/path>:append (parent next)
+(defun int<imp>:path:append (parent next)
   "Append NEXT element as-is to PARENT, adding dir separator between them if
 needed.
 
@@ -501,12 +501,12 @@ NEXT and PARENT are expected to be strings."
   ;; Error checks first.
   (cond ((and parent
               (not (stringp parent)))
-         (int<imp>:error "int<imp/path>:append"
+         (int<imp>:error "int<imp>:path:append"
                          "Paths to append must be strings. Parent is: %S"
                          parent))
         ((or (null next)
              (not (stringp next)))
-         (int<imp>:error "int<imp/path>:append"
+         (int<imp>:error "int<imp>:path:append"
                          "Paths to append must be strings. Next is: %S"
                          next))
 
@@ -526,7 +526,7 @@ NEXT and PARENT are expected to be strings."
 
 (imp:path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
-  (seq-reduce #'int<imp/path>:append
+  (seq-reduce #'int<imp>:path:append
               path
               nil))
 ;; (imp:path:join "/foo" "bar.el")
@@ -534,25 +534,25 @@ NEXT and PARENT are expected to be strings."
 ;; (imp:path:join "foo")
 
 
-(defun int<imp/path>:normalize:path (feature)
+(defun int<imp>:path:normalize:path (feature)
   "Combine FEATURE (a list of keywords/symbols) together into a path
 platform-agnostically.
 
-(int<imp/path>:normalize:path :jeff 'jill)
+(int<imp>:path:normalize:path :jeff 'jill)
   -> \"jeff/jill\"
 or possibly
   -> \"jeff\\jill\""
-  (int<imp>:debug "int<imp/path>:normalize:path" "--input: %S" feature)
+  (int<imp>:debug "int<imp>:path:normalize:path" "--input: %S" feature)
   (unless (seq-every-p #'symbolp feature)
-    (int<imp>:error "int<imp/path>:normalize:path"
+    (int<imp>:error "int<imp>:path:normalize:path"
                     "FEATURE list must only contain symbols/keywords. Got: %S"
                     feature))
-  (seq-reduce #'int<imp/path>:append
-              (int<imp/path>:normalize:list feature)
+  (seq-reduce #'int<imp>:path:append
+              (int<imp>:path:normalize:list feature)
               nil))
-;; works: (int<imp/path>:normalize:path '(:jeff jill))
-;; fails: (int<imp/path>:normalize:path '("~/.doom.d/" "modules"))
-;; works: (int<imp/path>:normalize:path '(spy system config))
+;; works: (int<imp>:path:normalize:path '(:jeff jill))
+;; fails: (int<imp>:path:normalize:path '("~/.doom.d/" "modules"))
+;; works: (int<imp>:path:normalize:path '(spy system config))
 
 
 ;; TODO:test: Make unit test.
@@ -666,8 +666,8 @@ Returns normalized path."
 
 NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
 presumably by having called `imp:root'."
-  (int<imp/path>:append (int<imp/path>:root/dir (car feature))
-                        (int<imp/path>:normalize:path (cdr feature))))
+  (int<imp>:path:append (int<imp>:path:root/dir (car feature))
+                        (int<imp>:path:normalize:path (cdr feature))))
 ;; (int<imp>:path:get '(:imp test feature))
 ;; (int<imp>:path:get '(:config spy system config))
 
@@ -691,7 +691,7 @@ Example:
     -> \"/path/to/imp-root/+foo/bar/baz.el\"
     -> \"/path/to/imp-root/foo/+bar/baz.el\"
     -> \"/path/to/imp-root/+foo/bar/+baz.el\"
-    -> etc, depending on `int<imp/path>:find/regex' settings."
+    -> etc, depending on `int<imp>:path:find/regex' settings."
   ;; TODO:find: implement this.
   ;; Features to strings.
   ;; For each string except first:
@@ -719,16 +719,16 @@ in `imp:path:roots'.
          (int<imp>:error "imp:root"
                          "Keyword '%S' is already an imp root.\n  path: %s\n  file: %s"
                          keyword
-                         (int<imp/path>:root/dir keyword)
-                         (int<imp/path>:root/file keyword)))
+                         (int<imp>:path:root/dir keyword)
+                         (int<imp>:path:root/file keyword)))
 
         ((not (keywordp keyword))
          (int<imp>:error "imp:root"
                          "Keyword must be a keyword (e.g. `:foo' `:bar' etc)"))
 
-        ;; int<imp/path>:root/valid? will error with better reason, so the error here
+        ;; int<imp>:path:root/valid? will error with better reason, so the error here
         ;; isn't actually triggered... I think?
-        ((not (int<imp/path>:root/valid? "imp:root" path-to-root-dir))
+        ((not (int<imp>:path:root/valid? "imp:root" path-to-root-dir))
          (int<imp>:error "imp:root"
                          "Path must be a valid directory: %s" path-to-root-dir))
 

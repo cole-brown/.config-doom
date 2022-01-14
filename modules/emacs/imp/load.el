@@ -264,7 +264,7 @@ Returns a plist:
     ;;---
     ;; Prefer provided path, then look for the root, then use `path:current-dir'.
     (let ((path (or in:path
-                    (int<imp/path>:root/dir (nth 0 out:feature) :no-error)
+                    (int<imp>:path:root/dir (nth 0 out:feature) :no-error)
                     path:current-dir)))
       (unless (stringp path)
         (int<imp>:error caller

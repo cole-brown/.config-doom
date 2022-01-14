@@ -21,11 +21,12 @@ If FILE-NAME is nil, returns true if loading any file.
 If FILE-NAME is a string, returns true if loading that exact
 (full path to) file name."
   (if file-name
-      ;; Exactly that file loading?
+      ;; Exactly* that file loading?
+      ;;   * Exactly for this platform (OS).
       (and load-in-progress
            (string=
-            (int<imp>:path:path:platform-agnostic load-file-name)
-            (int<imp>:path:path:platform-agnostic file-name)))
+            (int<imp>:path:platform-agnostic load-file-name)
+            (int<imp>:path:platform-agnostic file-name)))
     ;; Just anything loading?
     load-in-progress))
 

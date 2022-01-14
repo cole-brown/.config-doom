@@ -22,8 +22,18 @@
   "This file's directory path.")
 
 
+(defvar test<imp/path>:path/dir::int<imp>:path:current:dir
+  (int<imp>:path:current:dir)
+  "Value to use when testing `int<imp>:path:current:dir'.")
+
+
 (defvar test<imp/path>:path/file:this (test<imp>:path/file:this)
   "This file's path.")
+
+
+(defvar test<imp/path>:path/file::int<imp>:path:current:file
+  (int<imp>:path:current:file)
+  "Value to use when testing `int<imp>:path:current:file'.")
 
 
 ;;------------------------------
@@ -613,47 +623,47 @@ to paths properly."
 (ert-deftest test<imp/path>::int<imp>:path:append ()
   "Test that `int<imp>:path:append' glues together path segments properly."
   (test<imp>:fixture
-   ;;===
-   ;; Test name, setup & teardown func.
-   ;;===
-   "test<imp/path>::int<imp>:path:append"
-   nil
-   nil
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:append"
+      nil
+      nil
 
-   ;;===
-   ;; Run the test.
-   ;;===
+    ;;===
+    ;; Run the test.
+    ;;===
 
-   (let ((parent/valid "foo")
-         (next/valid   "bar"))
-     ;;------------------------------
-     ;; Invalid:
-     ;;------------------------------
+    (let ((parent/valid "foo")
+          (next/valid   "bar"))
+      ;;------------------------------
+      ;; Invalid:
+      ;;------------------------------
 
-     ;; PARENT non-nil but not a string
-     (should-error (int<imp>:path:append :foo next/valid))
+      ;; PARENT non-nil but not a string
+      (should-error (int<imp>:path:append :foo next/valid))
 
-     ;; NEXT is nil
-     (should-error (int<imp>:path:append parent/valid nil))
+      ;; NEXT is nil
+      (should-error (int<imp>:path:append parent/valid nil))
 
-     ;; NEXT not a string
-     (should-error (int<imp>:path:append parent/valid :bar))
+      ;; NEXT not a string
+      (should-error (int<imp>:path:append parent/valid :bar))
 
-     ;;------------------------------
-     ;; Valid:
-     ;;------------------------------
+      ;;------------------------------
+      ;; Valid:
+      ;;------------------------------
 
-     ;; PARENT is nil
-     (should (string= next/valid
-                      (int<imp>:path:append nil next/valid)))
+      ;; PARENT is nil
+      (should (string= next/valid
+                       (int<imp>:path:append nil next/valid)))
 
-     ;; Both PARENT and NEXT valid strings.
-     (should (string= (concat parent/valid "/" next/valid)
-                      (int<imp>:path:append parent/valid next/valid)))
-     (should (string= "/foo/bar/baz"
-                      (int<imp>:path:append "/foo" "bar/baz")))
-     (should (string= "/foo/bar/baz/"
-                      (int<imp>:path:append "/foo" "bar/baz/"))))))
+      ;; Both PARENT and NEXT valid strings.
+      (should (string= (concat parent/valid "/" next/valid)
+                       (int<imp>:path:append parent/valid next/valid)))
+      (should (string= "/foo/bar/baz"
+                       (int<imp>:path:append "/foo" "bar/baz")))
+      (should (string= "/foo/bar/baz/"
+                       (int<imp>:path:append "/foo" "bar/baz/"))))))
 
 
 ;;------------------------------
@@ -663,55 +673,55 @@ to paths properly."
 (ert-deftest test<imp/path>::imp:path:join ()
   "Test that `imp:path:join' glues together path segments properly."
   (test<imp>:fixture
-   ;;===
-   ;; Test name, setup & teardown func.
-   ;;===
-   "test<imp/path>::imp:path:join"
-   nil
-   nil
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::imp:path:join"
+      nil
+      nil
 
-   ;;===
-   ;; Run the test.
-   ;;===
+    ;;===
+    ;; Run the test.
+    ;;===
 
-   (let ((parent/valid "foo")
-         (next/valid   "bar"))
-     ;;------------------------------
-     ;; Invalid:
-     ;;------------------------------
+    (let ((parent/valid "foo")
+          (next/valid   "bar"))
+      ;;------------------------------
+      ;; Invalid:
+      ;;------------------------------
 
-     ;; PARENT non-nil but not a string
-     (should-error (imp:path:join :foo next/valid))
+      ;; PARENT non-nil but not a string
+      (should-error (imp:path:join :foo next/valid))
 
-     ;; NEXT is nil
-     (should-error (imp:path:join parent/valid nil))
+      ;; NEXT is nil
+      (should-error (imp:path:join parent/valid nil))
 
-     ;; NEXT not a string
-     (should-error (imp:path:join parent/valid :bar))
+      ;; NEXT not a string
+      (should-error (imp:path:join parent/valid :bar))
 
-     (should-error (imp:path:join "/foo" nil "baz/"))
+      (should-error (imp:path:join "/foo" nil "baz/"))
 
-     ;;------------------------------
-     ;; Valid:
-     ;;------------------------------
+      ;;------------------------------
+      ;; Valid:
+      ;;------------------------------
 
-     (should (string= parent/valid
-                      (imp:path:join parent/valid)))
-     (should (string= next/valid
-                      (imp:path:join next/valid)))
+      (should (string= parent/valid
+                       (imp:path:join parent/valid)))
+      (should (string= next/valid
+                       (imp:path:join next/valid)))
 
-     ;; Both PARENT and NEXT valid strings.
-     (should (string= (concat parent/valid "/" next/valid)
-                      (imp:path:join parent/valid next/valid)))
+      ;; Both PARENT and NEXT valid strings.
+      (should (string= (concat parent/valid "/" next/valid)
+                       (imp:path:join parent/valid next/valid)))
 
-     (should (string= "/foo/bar/baz"
-                      (imp:path:join "/foo" "bar/baz")))
+      (should (string= "/foo/bar/baz"
+                       (imp:path:join "/foo" "bar/baz")))
 
-     (should (string= "/foo/bar/baz"
-                      (imp:path:join "/foo" "bar" "baz")))
+      (should (string= "/foo/bar/baz"
+                       (imp:path:join "/foo" "bar" "baz")))
 
-     (should (string= "/foo/bar/baz/"
-                      (imp:path:join "/foo" "bar" "baz/"))))))
+      (should (string= "/foo/bar/baz/"
+                       (imp:path:join "/foo" "bar" "baz/"))))))
 
 
 ;;------------------------------
@@ -722,32 +732,32 @@ to paths properly."
   "Test that `int<imp>:path:normalize:path' normalizes a list of features
 to a path properly."
   (test<imp>:fixture
-   ;;===
-   ;; Test name, setup & teardown func.
-   ;;===
-   "test<imp/path>::int<imp>:path:normalize:path"
-   nil
-   nil
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:normalize:path"
+      nil
+      nil
 
-   ;;===
-   ;; Run the test.
-   ;;===
+    ;;===
+    ;; Run the test.
+    ;;===
 
-   ;;------------------------------
-   ;; Invalid:
-   ;;------------------------------
+    ;;------------------------------
+    ;; Invalid:
+    ;;------------------------------
 
-   ;; Everything should be a symbol.
-   (should-error (int<imp>:path:normalize:path '("foo" "bar" "baz")))
-   (should-error (int<imp>:path:normalize:path '(:foo "bar" "baz")))
-   (should-error (int<imp>:path:normalize:path '(:foo bar "baz")))
-   (should-error (int<imp>:path:normalize:path '(:foo bar 'baz)))
+    ;; Everything should be a symbol.
+    (should-error (int<imp>:path:normalize:path '("foo" "bar" "baz")))
+    (should-error (int<imp>:path:normalize:path '(:foo "bar" "baz")))
+    (should-error (int<imp>:path:normalize:path '(:foo bar "baz")))
+    (should-error (int<imp>:path:normalize:path '(:foo bar 'baz)))
 
-   ;;------------------------------
-   ;; Valid:
-   ;;------------------------------
-   (should (string= (imp:path:join "foo" "bar" "baz")
-                    (int<imp>:path:normalize:path '(:foo bar baz))))))
+    ;;------------------------------
+    ;; Valid:
+    ;;------------------------------
+    (should (string= (imp:path:join "foo" "bar" "baz")
+                     (int<imp>:path:normalize:path '(:foo bar baz))))))
 
 
 ;;------------------------------
@@ -757,58 +767,37 @@ to a path properly."
 (ert-deftest test<imp/path>::int<imp>:path:get ()
   "Test that `int<imp>:path:get' gets/normalizes a path from a list of features."
   (test<imp>:fixture
-   ;;===
-   ;; Test name, setup & teardown func.
-   ;;===
-   "test<imp/path>::int<imp>:path:get"
-   nil
-   nil
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:get"
+      nil
+      nil
 
-   ;;===
-   ;; Run the test.
-   ;;===
+    ;;===
+    ;; Run the test.
+    ;;===
 
-   ;; Manually set `imp:path:roots' so we can test `int<imp>:path:get'.
-   (test<imp/path>:setup:roots)
+    ;; Manually set `imp:path:roots' so we can test `int<imp>:path:get'.
+    (test<imp/path>:setup:roots)
 
-   ;;------------------------------
-   ;; Invalid:
-   ;;------------------------------
+    ;;------------------------------
+    ;; Invalid:
+    ;;------------------------------
 
-   ;; Must have the root feature.
-   (should-not (int<imp>:path:root/contains? :foo))
-   (should-error (int<imp>:path:get '(:foo)))
+    ;; Must have the root feature.
+    (should-not (int<imp>:path:root/contains? :foo))
+    (should-error (int<imp>:path:get '(:foo)))
 
-   ;; Must have valid features (for `int<imp>:path:normalize:path') after root.
-   (should-error (int<imp>:path:get '(:imp "invalid")))
-   (should-error (int<imp>:path:get '(:imp 'invalid)))
+    ;; Must have valid features (for `int<imp>:path:normalize:path') after root.
+    (should-error (int<imp>:path:get '(:imp "invalid")))
+    (should-error (int<imp>:path:get '(:imp 'invalid)))
 
-   ;;------------------------------
-   ;; Valid:
-   ;;------------------------------
-   (should (string= (imp:path:join (int<imp>:path:root/dir :imp) "foo" "bar" "baz")
-                    (int<imp>:path:get '(:imp foo bar baz))))))
-
-
-;; ;;------------------------------
-;; ;; int<imp>:path:find
-;; ;;------------------------------
-;;
-;; (ert-deftest test<imp/path>::int<imp>:path:find ()
-;;   "Test that `int<imp>:path:find' finds a path properly from the features."
-;;   (test<imp>:fixture
-;;    ;;===
-;;    ;; Test name, setup & teardown func.
-;;    ;;===
-;;    "test<imp/path>::int<imp>:path:find"
-;;    nil
-;;    nil
-;;
-;;    ;;===
-;;    ;; Run the test.
-;;    ;;===
-;;
-;;    (should-not "TODO:find: implement test when `int<imp>:path:find' is implemented.")))
+    ;;------------------------------
+    ;; Valid:
+    ;;------------------------------
+    (should (string= (imp:path:join (int<imp>:path:root/dir :imp) "foo" "bar" "baz")
+                     (int<imp>:path:get '(:imp foo bar baz))))))
 
 
 ;;------------------------------
@@ -818,67 +807,326 @@ to a path properly."
 (ert-deftest test<imp/path>::imp:path:root ()
   "Test that `imp:path:root' sets the feature root's path root correctly."
   (test<imp>:fixture
-   ;;===
-   ;; Test name, setup & teardown func.
-   ;;===
-   "test<imp/path>::imp:path:root"
-   nil
-   nil
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::imp:path:root"
+      nil
+      nil
 
-   ;;===
-   ;; Run the test.
-   ;;===
+    ;;===
+    ;; Run the test.
+    ;;===
 
-   ;; Manually set `imp:path:roots' so we can test `imp:path:root'.
-   (test<imp/path>:setup:roots)
+    ;; Manually set `imp:path:roots' so we can test `imp:path:root'.
+    (test<imp/path>:setup:roots)
 
-   ;;------------------------------
-   ;; Invalid:
-   ;;------------------------------
+    ;;------------------------------
+    ;; Invalid:
+    ;;------------------------------
 
-   ;; Must not the root feature.
-   (should (int<imp>:path:root/contains? :test))
-   (should-error (imp:path:root :test "."))
+    ;; Must not the root feature.
+    (should (int<imp>:path:root/contains? :test))
+    (should-error (imp:path:root :test "."))
 
-   ;; Root must be a keyword.
-   (should-error (imp:path:root 'foo "."))
-   (should-error (imp:path:root "foo" "."))
-   (should-error (imp:path:root "/foo" "."))
+    ;; Root must be a keyword.
+    (should-error (imp:path:root 'foo "."))
+    (should-error (imp:path:root "foo" "."))
+    (should-error (imp:path:root "/foo" "."))
 
-   ;; Dir must exist.
-   (should-error (int<imp>:path:root/valid? test-name
-                                            "./does-not/exist"))
-   (should-error (imp:path:root "/foo" "."))
+    ;; Dir must exist.
+    (should-error (int<imp>:path:root/valid? test-name
+                                             "./does-not/exist"))
+    (should-error (imp:path:root "/foo" "."))
 
-   ;;------------------------------
-   ;; Valid:
-   ;;------------------------------
-   ;; Valid; no file.
-   ;; Returns new `imp:path:roots', so check for the thing we're adding.
-   (let* ((feature :foo)
-          (path    "../test")
-          (result  (imp:path:root feature path)))
-     (should result)
-     (should (int<imp>:alist:get/value feature result))
-     ;; Dir
-     (should (string= "../test"
-                      (nth 0 (int<imp>:alist:get/value feature result))))
-     ;; File
-     (should (eq nil
-                 (nth 1 (int<imp>:alist:get/value feature result))))
-     )
+    ;;------------------------------
+    ;; Valid:
+    ;;------------------------------
+    ;; Valid; no file.
+    ;; Returns new `imp:path:roots', so check for the thing we're adding.
+    (let* ((feature :foo)
+           (path    "../test")
+           (result  (imp:path:root feature path)))
+      (should result)
+      (should (int<imp>:alist:get/value feature result))
+      ;; Dir
+      (should (string= "../test"
+                       (nth 0 (int<imp>:alist:get/value feature result))))
+      ;; File
+      (should (eq nil
+                  (nth 1 (int<imp>:alist:get/value feature result))))
+      )
 
-   ;; Valid path and file.
-   ;; Returns new `imp:path:roots', so check for the thing we're adding.
-   (let* ((feature :bar)
-          (path    test<imp/path>:path/dir:this)
-          (file    test<imp/path>:path/file:this)
-          (result  (imp:path:root feature path file)))
-     (should result)
-     (should (int<imp>:alist:get/value feature result))
-     ;; Dir
-     (should (string= path
-                      (nth 0 (int<imp>:alist:get/value feature result))))
-     ;; File
-     (should (string= file
-                      (nth 1 (int<imp>:alist:get/value feature result)))))))
+    ;; Valid path and file.
+    ;; Returns new `imp:path:roots', so check for the thing we're adding.
+    (let* ((feature :bar)
+           (path    test<imp/path>:path/dir:this)
+           (file    test<imp/path>:path/file:this)
+           (result  (imp:path:root feature path file)))
+      (should result)
+      (should (int<imp>:alist:get/value feature result))
+      ;; Dir
+      (should (string= path
+                       (nth 0 (int<imp>:alist:get/value feature result))))
+      ;; File
+      (should (string= file
+                       (nth 1 (int<imp>:alist:get/value feature result)))))))
+
+
+;;------------------------------
+;; int<imp>:path:dir?
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:dir? ()
+  "Test that `int<imp>:path:dir?' correctly identifies path types."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:dir?"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should-not (int<imp>:path:dir? ""))
+    (should     (int<imp>:path:dir? "/"))
+    (should-not (int<imp>:path:dir? "/foo/bar"))
+    (should-not (int<imp>:path:dir? "/foo/bar.el"))
+    (should     (int<imp>:path:dir? "/foo/bar/"))))
+
+
+;;------------------------------
+;; int<imp>:path:parent
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:parent ()
+  "Test that `int<imp>:path:parent' correctly identifies path types."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:parent"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should-error (int<imp>:path:parent ""))
+
+    (should (string= "/"
+                     (int<imp>:path:parent "/")))
+
+    (should (string= "/foo"
+                     (int<imp>:path:parent "/foo/bar")))
+    (should (string= "/foo"
+                     (int<imp>:path:parent "/foo/bar.el")))
+    (should (string= "/foo"
+                     (int<imp>:path:parent "/foo/bar/")))))
+
+
+;;------------------------------
+;; int<imp>:path:filename
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:filename ()
+  "Test that `int<imp>:path:filename' correctly identifies file names."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:filename"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should (string= ""
+                     (int<imp>:path:filename "")))
+
+    (should (string= ""
+                     (int<imp>:path:filename "/")))
+
+    (should (string= "bar"
+                     (int<imp>:path:filename "/foo/bar")))
+    (should (string= "bar.el"
+                     (int<imp>:path:filename "/foo/bar.el")))
+    (should (string= ""
+                     (int<imp>:path:filename "/foo/bar/")))))
+
+
+;;------------------------------
+;; int<imp>:path:current:file
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:current:file ()
+  "Test that `int<imp>:path:current:file' correctly returns current file's path."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:current:file"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should (string= test<imp/path>:path/file:this
+                     test<imp/path>:path/file::int<imp>:path:current:file))))
+
+
+;;------------------------------
+;; int<imp>:path:current:dir
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:current:dir ()
+  "Test that `int<imp>:path:current:dir' correctly returns current file's parent."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:current:dir"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should (string= (directory-file-name test<imp/path>:path/dir:this)
+                     test<imp/path>:path/dir::int<imp>:path:current:dir))))
+
+
+;;------------------------------
+;; int<imp>:path:platform-agnostic
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:platform-agnostic ()
+  "Test that `int<imp>:path:platform-agnostic' agnosticises paths."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:platform-agnostic"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let ((path:test:backslash       "C:\\foo\\bar")
+          (path:expected:backslash   "C:/foo/bar")
+          (path:test:insensitive     "/Foo/BAR")
+          (path:expected:insensitive "/foo/bar")
+          path:agnostic)
+
+      ;; Backslashes always replaced.
+      (setq path:agnostic (int<imp>:path:platform-agnostic path:test:backslash))
+      (should path:agnostic)
+      (should (stringp path:agnostic))
+      (should (string= path:expected:backslash
+                       path:agnostic))
+
+      ;; Force to a system that should be case-insensitive.
+      (let ((system-type 'windows-nt))
+        (setq path:agnostic (int<imp>:path:platform-agnostic path:test:insensitive))
+        (should path:agnostic)
+        (should (stringp path:agnostic))
+        (should (string= path:expected:insensitive
+                         path:agnostic)))
+
+      ;; Force to a system that should /NOT/ be case-insensitive.
+      (let ((system-type 'gnu/linux))
+        (setq path:agnostic (int<imp>:path:platform-agnostic path:test:insensitive))
+        (should path:agnostic)
+        (should (stringp path:agnostic))
+        ;; Do not expect a match.
+        (should-not (string= path:expected:insensitive
+                             path:agnostic))
+        ;; Instead, path should have been left unchanged.
+        (should (string= path:test:insensitive
+                         path:agnostic))))))
+
+
+;;------------------------------
+;; int<imp>:path:normalize
+;;------------------------------
+
+(ert-deftest test<imp/path>::int<imp>:path:normalize ()
+  "Test that `int<imp>:path:normalize' normalize paths properly."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/path>::int<imp>:path:normalize"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    ;;------------------------------
+    ;; `assert-exists' == `nil'
+    ;;------------------------------
+
+    ;; Should still error if not absolute path...
+    (should-error (int<imp>:path:normalize "bar" "../other/path"))
+
+    (let ((path (int<imp>:path:normalize "/foo/bar" "../other/path")))
+      (should path)
+      (should (stringp path))
+      (should (string= "/foo/other/path"
+                       path)))
+
+    ;;------------------------------
+    ;; `assert-exists' == `t'
+    ;;------------------------------
+
+    ;;---
+    ;; This just doesn't exist at all.
+    ;;---
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" :file))
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" :file:load))
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" :dir))
+
+    ;;---
+    ;; And these are invalid assert keywords.
+    ;;---
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" :jeff))
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" :error))
+    (should-error (int<imp>:path:normalize "/foo/bar" "../other/path" t))
+
+    ;;---
+    ;; Valid file.
+    ;;---
+    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                           "../path.el"
+                                           :dir))
+    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                     "../path.el"
+                                     :file))
+    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                     "../path"
+                                     :file:load))
+
+    ;;---
+    ;; Valid dir.
+    ;;---
+    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                     ".."
+                                     :dir))
+    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                           ".."
+                                           :file))
+    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+                                           ".."
+                                           :file:load))))

@@ -14,23 +14,6 @@
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
 
-(defconst int<imp>:path:find/regex
-  (rx
-   ;; Prefix
-   (group (optional (or "+"
-                        ;; Any other prefixes?
-                        )))
-   ;; Feature Name to insert
-   "%S"
-   ;; Postfix
-   (group (optional (or ".el"
-                        ".imp.el"))))
-  "Regex to apply to each name in a feature list (except root) when searching
-for a filepath match.
-
-Feature name string will replace the '%S'.")
-
-
 (defconst int<imp>:path:replace:rx
   `(;;------------------------------
     ;; Default/Any/All
@@ -344,20 +327,6 @@ Returns the list of normalized string."
 ;; Path Helpers
 ;;------------------------------------------------------------------------------
 
-;; TODO:test: Make unit test.
-(defun int<imp>:path:rx:file-glob (filepath)
-  "Converts FILEPATH to a regex for filepath + '.*' glob."
-  (rx-to-string
-   (list 'sequence
-         (int<imp>:path:filename filepath)
-         (list 'zero-or-more
-               "."
-               '(one-or-more printing)))
-   :no-group))
-;; (int<imp>:path:rx:file-glob "/foo/bar")
-
-
-;; TODO:test: Make unit test.
 (defun int<imp>:path:dir? (path)
   "Returns non-nil if PATH is a directory path."
   ;; Directory path if the PATH is equal to its path-as-a-directory.
@@ -368,7 +337,6 @@ Returns the list of normalized string."
 ;; (int<imp>:path:dir? nil)
 
 
-;; TODO:test: Make unit test.
 (defun int<imp>:path:parent (path)
   "Returns the parent directory component of PATH."
   (cond
@@ -401,7 +369,6 @@ Returns the list of normalized string."
 ;; (int<imp>:path:parent "/foo/bar.el")
 
 
-;; TODO:test: Make unit test.
 (defun int<imp>:path:filename (path &optional dirname?)
   "Returns the filename component of PATH.
 
@@ -429,7 +396,6 @@ a directory path.
 ;; (int<imp>:path:filename "/foo/bar.el" t)
 
 
-;; TODO:test: Make unit test?
 (defun int<imp>:path:current:file ()
   "Return the emacs lisp file this macro is called from."
   (cond
@@ -453,7 +419,6 @@ a directory path.
 ;; (int<imp>:path:current:file)
 
 
-;; TODO:test: Make unit test?
 (defun int<imp>:path:current:dir ()
   "Returns the directory of the emacs lisp file this macro is called from."
   (when-let (path (int<imp>:path:current:file))
@@ -469,8 +434,7 @@ a directory path.
   "These operating systems have case-insensitive paths.")
 
 
-;; TODO:test: Make unit test?
-(defun int<imp>:path:path:platform-agnostic (path)
+(defun int<imp>:path:platform-agnostic (path)
   "Converts PATH string into a standardized path for the platform.
 
 Replaces backslash with forward slash.
@@ -486,11 +450,11 @@ Downcases path on case-insensitive OSes."
       #'identity)
     path)
    path))
-;; (int<imp>:path:path:platform-agnostic "/foo/bar")
-;; (int<imp>:path:path:platform-agnostic "/FOO/BAR")
-;; (int<imp>:path:path:platform-agnostic "/Foo/Bar")
-;; (int<imp>:path:path:platform-agnostic "C:/Foo/Bar")
-;; (int<imp>:path:path:platform-agnostic "C:\\Foo\\Bar")
+;; (int<imp>:path:platform-agnostic "/foo/bar")
+;; (int<imp>:path:platform-agnostic "/FOO/BAR")
+;; (int<imp>:path:platform-agnostic "/Foo/Bar")
+;; (int<imp>:path:platform-agnostic "C:/Foo/Bar")
+;; (int<imp>:path:platform-agnostic "C:\\Foo\\Bar")
 
 
 (defun int<imp>:path:append (parent next)
@@ -555,7 +519,6 @@ or possibly
 ;; works: (int<imp>:path:normalize:path '(spy system config))
 
 
-;; TODO:test: Make unit test.
 (defun int<imp>:path:normalize (root relative &optional assert-exists)
   "Joins ROOT and RELATIVE paths, normalizes, and returns the path string.
 
@@ -593,6 +556,9 @@ Returns normalized path."
     ;; Normalize & check path.
     ;;------------------------------
     (let ((path (imp:path:join root relative))) ;; Assumes ROOT is already normalized.
+      ;;------------------------------
+      ;; Signal error?
+      ;;------------------------------
       (cond
        ;;---
        ;; Sanity Check?
@@ -609,34 +575,38 @@ Returns normalized path."
        ;; ASSERT-EXISTS != nil
        ;;---
        ((eq assert-exists :file)
-        ;; Return `nil' if file doesn't exist or is not readable.
-        (if (file-readable-p path)
+        ;; Signal an error if file doesn't exist or is not readable.
+        (if (and (file-regular-p path)
+                 (file-readable-p path))
             path
           (int<imp>:error func.name
                           "File does not exist: %s"
                           path)))
 
        ((eq assert-exists :file:load)
-        ;; Check in the ordering that `load' checks: .elc, .el, <order of `load-suffixes'>, no-suffix
-        (cond ((file-readable-p (concat path ".elc"))
-               path)
-              ((file-readable-p (concat path ".el"))
-               path)
-              ((and load-suffixes
-                    (seq-some (lambda (ext)
-                                "Is PATH + EXT a readable file?"
-                                (file-readable-p (concat path ext)))
-                              load-suffixes))
-               path)
-              ((file-readable-p path)
-               path)
-              (t
-               (int<imp>:error func.name
-                               "No (readable) files exist to load: %s"
-                               path))))
+        (let ((file:valid? (lambda (ext)
+                             "Is FILEPATH a file and readable?"
+                             (let ((check (concat path ext)))
+                               (and (file-regular-p  check)
+                                    (file-readable-p check))))))
+          ;; Check in the ordering that `load' checks: .elc, .el, <order of `load-suffixes'>, no-suffix
+          (cond ((funcall file:valid? ".elc")
+                 path)
+                ((funcall file:valid? ".el")
+                 path)
+                ((and load-suffixes
+                      (seq-some file:valid? load-suffixes))
+                 path)
+                ((funcall file:valid? path "")
+                 path)
+                ;; Assert failed; signal error.
+                (t
+                 (int<imp>:error func.name
+                                 "No (readable) files exist to load: %s"
+                                 path)))))
 
        ((eq assert-exists :dir)
-        ;; Return `nil' if directory doesn't exist.
+        ;; Signal an error if directory doesn't exist.
         (if (file-directory-p path)
             path
           (int<imp>:error func.name
@@ -647,7 +617,18 @@ Returns normalized path."
        ;; ASSERT-EXISTS == `nil'
        ;;---
        (t
-        path)))))
+        ;; Do not signal an error; just return path.
+        path))
+
+      ;;------------------------------
+      ;; Normalize/Canonicalize path.
+      ;;------------------------------
+      (if (not (file-name-absolute-p path))
+          (int<imp>:error func.name
+                          "Path is not absolute: %s"
+                          path)
+        ;; Actually normalize it before returning.
+        (expand-file-name path)))))
 ;; Just Normalize:
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load")
 ;; Error:
@@ -670,35 +651,6 @@ presumably by having called `imp:root'."
                         (int<imp>:path:normalize:path (cdr feature))))
 ;; (int<imp>:path:get '(:imp test feature))
 ;; (int<imp>:path:get '(:config spy system config))
-
-
-(defun int<imp>:path:find (feature)
-  "Convert FEATURE (a list of keywords/symbols) to a load path.
-
-1) Converts FEATURE into a load path regex string.
-2) Searches for a load path that matches.
-   - Fails if more than one match: nil return.
-   - Fails if zero matches: nil return.
-3) Returns load path string if it exists, nil if not.
-
-NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
-presumably by having called `imp:root'.
-
-Example:
-  (int<imp>:path:find :imp 'foo 'bar 'baz)
-  Could return:
-    -> \"/path/to/imp-root/foo/bar/baz.el\"
-    -> \"/path/to/imp-root/+foo/bar/baz.el\"
-    -> \"/path/to/imp-root/foo/+bar/baz.el\"
-    -> \"/path/to/imp-root/+foo/bar/+baz.el\"
-    -> etc, depending on `int<imp>:path:find/regex' settings."
-  ;; TODO:find: implement this.
-  ;; Features to strings.
-  ;; For each string except first:
-  ;;   - turn into regex
-  ;; Search for path that matches regex somehow.
-  ;; Return if found.
-  nil)
 
 
 ;;------------------------------------------------------------------------------
@@ -773,6 +725,56 @@ Must be called after 'provide.el' is loaded."
   ;; Provide feature symbol for 'path.el'.
   ;;---
   (imp:provide:with-emacs :imp 'path))
+
+
+;;------------------------------------------------------------------------------
+;; TODO: Implement or delete?
+;;------------------------------------------------------------------------------
+;;
+;; (defconst int<imp>:path:find/regex
+;; (rx
+;; ;; Prefix
+;; (group (optional (or "+"
+;;                         ;; Any other prefixes?
+;;                         )))
+;; ;; Feature Name to insert
+;; "%S"
+;; ;; Postfix
+;; (group (optional (or ".el"
+;;                         ".imp.el"))))
+;; "Regex to apply to each name in a feature list (except root) when searching
+;; for a filepath match.
+;;
+;; Feature name string will replace the '%S'.")
+;;
+;;
+;; (defun int<imp>:path:find (feature)
+;; "Convert FEATURE (a list of keywords/symbols) to a load path.
+;;
+;; 1) Converts FEATURE into a load path regex string.
+;; 2) Searches for a load path that matches.
+;; - Fails if more than one match: nil return.
+;; - Fails if zero matches: nil return.
+;; 3) Returns load path string if it exists, nil if not.
+;;
+;; NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
+;; presumably by having called `imp:root'.
+;;
+;; Example:
+;; (int<imp>:path:find :imp 'foo 'bar 'baz)
+;; Could return:
+;; -> \"/path/to/imp-root/foo/bar/baz.el\"
+;; -> \"/path/to/imp-root/+foo/bar/baz.el\"
+;; -> \"/path/to/imp-root/foo/+bar/baz.el\"
+;; -> \"/path/to/imp-root/+foo/bar/+baz.el\"
+;; -> etc, depending on `int<imp>:path:find/regex' settings."
+;; ;; TODO:find: implement this.
+;; ;; Features to strings.
+;; ;; For each string except first:
+;; ;;   - turn into regex
+;; ;; Search for path that matches regex somehow.
+;; ;; Return if found.
+;; nil)
 
 
 ;;------------------------------------------------------------------------------

@@ -27,4 +27,17 @@
        (:prefix ("r" . "Treemacs")
         :desc "Select Treemacs Window"    "r" #'treemacs-select-window
         :desc "Toggle Treemacs Window"    "t" #'treemacs
-        :desc "Edit Workspaces Org File"  "e" #'treemacs-edit-workspaces)))
+        :desc "Edit Workspaces Org File"  "e" #'treemacs-edit-workspaces
+
+        (:prefix ("p" . "Project")
+         :desc "Add Project..."            "a" #'treemacs-add-project-to-workspace
+         :desc "Remove Project"            "r" #'treemacs-remove-project-from-workspace)
+
+        (:prefix ("o" . "Open")
+         :desc "Open - Default"              "d" #'treemacs-visit-node-default
+         :desc "Open - No Split"             "o" #'treemacs-visit-node-no-split
+
+         :desc "Open - New Split Vertical"   "v" #'treemacs-visit-node-vertical-split
+         :desc "Open - New Split Horizontal" "h" #'treemacs-visit-node-horizontal-split
+
+         :desc "Open - Most Recent Window"   "m" #'treemacs-visit-node-in-most-recently-used-window))))

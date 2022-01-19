@@ -11,6 +11,55 @@
 
 
 ;;------------------------------------------------------------------------------
+;; A random list function.
+;;------------------------------------------------------------------------------
+
+(defun int<imp>:list:flatten:recurse (recurse &rest input)
+  "Flatten INPUT list to a single list.
+
+If RECURSE is an integer greater than zero, flattens by that many levels.
+If RECURSE `:recursive', flattens recursively until flat.
+Else, flattens by one level."
+  (let ((recurse (if (integerp recurse)
+                     ;; We always flatten by one; find out how many extra levels
+                     ;; of flattening they want.
+                     (1- recurse)
+                   recurse)))
+    (mapcan (lambda (item)
+              "Return item as a list."
+              (if (listp item)
+                  ;; List & needs flattening; check for special `recurse' cases.
+                  (cond ((integerp recurse)
+                         ;; Flatten by a certain number of levels?
+                         (if (> recurse 0)
+                             (apply #'int<imp>:list:flatten:recurse (1- recurse) item)
+                           item))
+                        ((eq :recursive recurse)
+                         ;; Flatten until flat or stack overflow.
+                         (apply #'int<imp>:list:flatten:recurse :recursive item))
+                        (t
+                         item))
+                ;; Just an item, turn into a list so it can be
+                ;; concatenated by `mapcan'.
+                (list item)))
+            input)))
+;; (int<imp>:list:flatten:recurse 1 '(foo bar (baz) (qux (quux))))
+;; (int<imp>:list:flatten:recurse 1 'foo 'bar '(baz) '(qux (quux)))
+;; (int<imp>:list:flatten:recurse :recursive '(foo bar (baz) (qux (quux (quuux)))))
+
+
+(defun int<imp>:list:flatten (&rest input)
+  "Flatten INPUT list to a single list.
+
+Flattens by a max of 10 levels."
+  ;; &rest wrapped our INPUT in a list, and `int<imp>:list:flatten:recurse' will
+  ;; do the same, so +2 to our max of 10.
+  (int<imp>:list:flatten:recurse 12 input))
+;; (int<imp>:list:flatten '(foo bar (baz) (qux (quux))))
+;; (int<imp>:list:flatten '(foo bar (baz) (qux (quux (quuux)))))
+
+
+;;------------------------------------------------------------------------------
 ;; A-list Functions
 ;;------------------------------------------------------------------------------
 
@@ -30,19 +79,20 @@ If ERROR? is non-nil, raises an error for invalid keys. Else returns t/nil."
 ;; (int<imp>:alist:valid/key "test" "foo" t)
 
 
-(defun int<imp>:alist:get/value (key alist)
+(defun int<imp>:alist:get/value (key alist &optional equal-fn)
   "Get value of KEY's entry in ALIST."
   (int<imp>:alist:valid/key "int<imp>:alist:get/value" key :error)
-  (alist-get key alist))
+  (alist-get key alist nil nil equal-fn))
+;; (int<imp>:alist:get/value :foo test-foo #'equal)
 
 
-(defun int<imp>:alist:get/pair (key alist)
+(defun int<imp>:alist:get/pair (key alist &optional equal-fn)
   "Get KEY's entire entry (`car' is KEY, `cdr' is value) from ALIST."
   (int<imp>:alist:valid/key "int<imp>:alist:get/pair" key :error)
-  (assoc key alist))
+  (assoc key alist equal-fn))
 
 
-(defun int<imp>:alist:update/helper (key value alist)
+(defun int<imp>:alist:update/helper (key value alist &optional equal-fn)
   "Set/overwrite an entry in the ALIST. Return the new alist.
 
 If VALUE is nil, it will be set as KEY's value. Use
@@ -56,7 +106,7 @@ Returns a new alist, which isn't ALIST."
       (list (cons key value))
 
     ;; `setf' creates a new alist sometimes, so buyer beware!
-    (setf (alist-get key alist) value)
+    (setf (alist-get key alist nil nil equal-fn) value)
     alist))
 ;; (setq test-alist nil)
 ;; (setq test-alist (int<imp>:alist:update/helper :k :v test-alist))
@@ -65,7 +115,7 @@ Returns a new alist, which isn't ALIST."
 ;; test-alist
 
 
-(defmacro int<imp>:alist:update (key value alist)
+(defmacro int<imp>:alist:update (key value alist &optional equal-fn)
   "Set/overwrite an entry in the ALIST.
 
 SYMBOL/ALIST should be a (quoted) symbol so that this can update it directly.
@@ -78,10 +128,10 @@ Returns ALIST."
      (cond
       ((listp macro<imp>:alist)
        (setq ,alist
-             (int<imp>:alist:update/helper ,key ,value ,alist)))
+             (int<imp>:alist:update/helper ,key ,value ,alist ,equal-fn)))
       ((symbolp macro<imp>:alist)
        (set macro<imp>:alist
-            (int<imp>:alist:update/helper ,key ,value (eval macro<imp>:alist))))
+            (int<imp>:alist:update/helper ,key ,value (eval macro<imp>:alist) ,equal-fn)))
 
       (t
        (int<imp>:error "int<imp>:alist:update"
@@ -93,7 +143,7 @@ Returns ALIST."
 ;; test<imp>:alist
 
 
-(defun int<imp>:alist:delete/helper (key alist)
+(defun int<imp>:alist:delete/helper (key alist &optional equal-fn)
   "Removes KEY from ALIST.
 
 Returns alist without the key."
@@ -101,23 +151,23 @@ Returns alist without the key."
 
   ;; If it's null, no need to do anything.
   (unless (null alist)
-    (setf (alist-get key alist nil 'remove) nil))
+    (setf (alist-get key alist nil 'remove equal-fn) nil))
 
   ;; Return the alist.
   alist)
 
 
-(defmacro int<imp>:alist:delete (key alist)
+(defmacro int<imp>:alist:delete (key alist &optional equal-fn)
   "Removes KEY from ALIST.
 
 Returns ALIST."
   `(let ((macro<imp>:alist ,alist))
      (cond ((listp macro<imp>:alist)
             (setq ,alist
-                  (int<imp>:alist:delete/helper ,key ,alist)))
+                  (int<imp>:alist:delete/helper ,key ,alist ,equal-fn)))
            ((symbolp macro<imp>:alist)
             (set macro<imp>:alist
-                 (int<imp>:alist:delete/helper ,key (eval macro<imp>:alist))))
+                 (int<imp>:alist:delete/helper ,key (eval macro<imp>:alist) ,equal-fn)))
 
            (t
             (int<imp>:error "int<imp>:alist:delete"

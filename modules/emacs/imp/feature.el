@@ -60,6 +60,8 @@ For example:
 (defvar imp:features:locate nil
   "Alist of imp features to paths/filenames.
 
+NOTE: Use `equal' for the `imp<alist>:[...]' EQUAL-FN params!
+
 '(normalized-feature . (file-path-0 ...))
 
 Example:
@@ -75,14 +77,20 @@ Example:
 ;; (setq imp:path:roots nil)
 
 
+(defconst int<imp>:features:locate:equal #'equal
+  "Supply as EQUAL-FN param to all 'imp/alist.el' functions used
+by `imp:features:locate'.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Feature Helpers
 ;;------------------------------------------------------------------------------
 
-;; TODO:test: Make unit test.
 (defun int<imp>:feature:exists? (features)
   "Checks for list of FEATURES in the `imp:features' tree."
-  (not (null (int<imp>:tree:contains? features imp:features))))
+  ;; When not `imp:features', always return `nil'.
+  (when imp:features
+    (not (null (int<imp>:tree:contains? features imp:features)))))
 ;; (int<imp>:feature:exists? '(:imp))
 ;; (int<imp>:feature:exists? '(:imp path))
 
@@ -128,7 +136,7 @@ appropriate for Emacs' `provide'."
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
 
 
-(defun int<imp>:feature:normalize (&rest input)
+(defun int<imp>:feature:normalize (input)
   "Normalize INPUT to a list of feature symbols/keywords.
 
 If INPUT item is:
@@ -140,8 +148,9 @@ E.g.
   2) `feature' -> `feature'
   3) \"str-4874\" -> `:str-4874'"
   (let ((func.name "int<imp>:feature:normalize")
+        (flattened (int<imp>:list:flatten input)) ;; Flatten max of 10 times.
         output)
-    (dolist (item input)
+    (dolist (item flattened)
       (push
        ;; Keyword or symbol? -> no-op
        (cond ((symbolp item)
@@ -182,7 +191,8 @@ E.g.
 ;; (int<imp>:feature:normalize :spydez)
 ;; (int<imp>:feature:normalize "spydez")
 ;; (int<imp>:feature:normalize "+spydez")
-;; (int<imp>:feature:normalize "+spydez" "foo" "bar")
+;; (int<imp>:feature:normalize '("+spydez" "foo" "bar"))
+;; (int<imp>:feature:normalize '(("+spydez" "foo" "bar")))
 
 
 (defun imp:feature:normalize (&rest input)
@@ -200,8 +210,8 @@ E.g.
   1) `:modules' -> `:modules'
   2) `feature' -> `feature'
   3) \"str-4874\" -> `:str-4874'"
-  (let ((normalized (apply #'int<imp>:feature:normalize input)))
-    ;; Return the list, the one item, or what?
+  (let* ((normalized (int<imp>:feature:normalize input)))
+    ;; Return the list, the one item, or error?
     (cond ((null normalized)
            (int<imp>:error "imp:feature:normalize"
                            "No normalized features produced from INPUT: %S"
@@ -217,6 +227,7 @@ E.g.
 ;; (imp:feature:normalize "spydez")
 ;; (imp:feature:normalize "+spydez")
 ;; (imp:feature:normalize "+spydez" "foo" "bar")
+;; (imp:feature:normalize '("+spydez" "foo" "bar"))
 
 
 (defalias 'imp:feature 'imp:feature:normalize)
@@ -253,7 +264,6 @@ E.g.
 ;; Demand Features Exist!
 ;;------------------------------------------------------------------------------
 
-;; TODO:test: Make unit test.
 (defun imp:feature:assert (feature:base &rest feature)
   "A \"soft require\"; error if the feature is not already loaded.
 
@@ -267,14 +277,13 @@ Only checks `imp:features' variable; does not check Emacs' `features' list."
       t
     (int<imp>:error "imp:feature:assert"
                     "No `%S' feature exists in imp's features!"
-                    (apply #'imp:feature:normalize feature:base feature))))
+                    (imp:feature:normalize (list feature:base feature)))))
 
 
 ;;------------------------------------------------------------------------------
 ;; Features & Paths to them
 ;;------------------------------------------------------------------------------
 
-;; TODO:test: Make unit test.
 (defun int<imp>:feature:paths (feature:base &rest feature)
   "Find (relative) path(s) to files for FEATURE:BASE + FEATURE.
 
@@ -286,15 +295,15 @@ Returns list of: '(path:root . (paths:relative))
 Errors if:
   - No root path for FEATURE:BASE.
   - No paths found for input parameters."
-  (let ((func.name "int<imp>:feature:get")
-        (check (apply #'int<imp>:feature:normalize feature:base feature)))
+  (let ((func.name "int<imp>:feature:paths")
+        (check (int<imp>:feature:normalize (list feature:base feature))))
 
     ;;------------------------------
     ;; Error Check Inputs
     ;;------------------------------
     ;; FEATURE:BASE must:
     ;; 1) Be an imp feature.
-    (apply #'imp:feature:assert feature:base)
+    (imp:feature:assert feature:base)
 
     ;; 2) Have registered a root path.
     (unless (int<imp>:path:root/contains? feature:base)
@@ -305,9 +314,14 @@ Errors if:
     ;;------------------------------
     ;; Get the paths and load them?
     ;;------------------------------
-    (let* ((path:root (int<imp>:path:get feature:base))
-           (feature:locations (int<imp>:alist:get/value feature:base imp:features:locate))
-           (paths (int<imp>:alist:get/value check imp:features:locate)))
+    (let* ((path:root (int<imp>:path:root/dir feature:base))
+           ;; TODO: Fix alist to work for lists of keywords/symbols
+           (feature:locations (int<imp>:alist:get/value feature:base
+                                                        imp:features:locate
+                                                        int<imp>:features:locate:equal))
+           (paths (int<imp>:alist:get/value check
+                                            feature:locations
+                                            int<imp>:features:locate:equal)))
 
       ;;---
       ;; Error Checks
@@ -328,45 +342,28 @@ Errors if:
       (cons path:root paths))))
 
 
-;; TODO:test: Make unit test.
-(defun int<imp>:feature:load (feature:base &rest feature)
-  "Load files for FEATURE:BASE + FEATURE.
-
-This only provides the paths for the feature itself, each of which may
-`imp:require' more features.
-
-Returns or'd result of loading feature's files if feature is found;
-returns non-nil if feature's files were all loaded successfully.
-
-Raises an error if feature was not found."
-  (let ((feature:paths (apply #'int<imp>:feature:paths feature:base feature))
-        (feature:full (apply #'int<imp>:feature:normalize feature:base feature)))
-    ;; Error checks done by `int<imp>:feature:paths'.
-
-    ;; Load all the feature paths.
-    (int<imp>:load:paths feature:full
-                         (car feature:paths)
-                         (cdr feature:paths))))
-
-
-;; TODO:test: Make unit test.
 (defun imp:feature:at (feature:base feature:alist)
   "Provide imp with an alist of imp features to paths/filenames.
 
 This is used when `imp:require' is called for a sub-feature that isn't loaded.
 imp will look in the `imp:path:roots' entry for the features file, load that
 file, and then use the provided alist to find what files are required for said
-sub-feature. If there is no features file, imp will load the root file. If there
-is no root file, imp will attempt to load based on path.
-  TODO: Do we want to have the path loading thing in still?
+sub-feature. If there is no features file, imp will load the root file.
 
 FEATURE:BASE should be your base feature's keyword.
   example: `:imp' is imp's FEATURE:BASE.
 
 FEATURE:ALIST should be an alist with each entry in this format:
-  '(normalized-feature . (file-path-0 ...))
+  '(feature-keyword-or-list . (file-path-0 ...))
   Which is equal to:
-  '(normalized-feature file-path-0 ...)
+  '(feature-keyword-or-list file-path-0 ...)
+
+Features in the FEATURE:ALIST should:
+  1) Not be normalized:
+     e.g. '(:imp path) instead of (imp:feature :imp path)
+  2) Be either:
+     a) The base feature keyword (e.g. `:imp').
+     b) A list of the base feature keyword plus other symbols (e.g. `(:imp path)').
 
 Paths in the FEATURE:ALIST should be relative to your `imp:path:root'.
 
@@ -374,12 +371,83 @@ The paths will be loaded in the order provided.
 
 For example:
   (list (list :imp \"init.el\")
-        (list (imp:feature :imp path) \"path.el\")
-        (list (imp:feature :imp multiple)
-              \"multiple/foo.el\"
-              \"multiple/subdir/bar.el\"
+        (list '(:imp path) \"path.el\")
+        (list '(:imp multiple)
+              \"common/foo.el\"
+              \"multiple/bar.el\"
               \"multiple/subdir/baz.el\"
-              \"common/baz.el\")
+              \"multiple/subdir/qux.el\")
         ...)"
-  ;; TODO: Verify alist formatting?
-  (int<imp>:alist:update feature:base feature:alist imp:features:locate))
+  (let ((func.name "imp:feature:at")
+        features:at)
+    ;;------------------------------
+    ;; Verify Inputs.
+    ;;------------------------------
+
+    ;;---
+    ;; FEATURE:BASE root path needs to exist already.
+    ;;---
+    (unless (keywordp feature:base)
+      (int<imp>:error func.name
+                      "FEATURE:BASE must be a keyword! Got: %S"
+                      feature:base))
+    (if-let ((feature:base:path (int<imp>:path:root/dir feature:base)))
+        (unless (stringp feature:base:path)
+          (int<imp>:error func.name
+                          "Registered root path for FEATURE:BASE must be a string! Got: %S"
+                          feature:base:path))
+      (int<imp>:error func.name
+                      '("FEATURE:BASE must have a registered root path! "
+                        "Did not find it in `imp:path:roots'.")))
+
+    ;;---
+    ;; FEATURE:ALIST must be valid format.
+    ;;---
+    ;; Massage into shape for adding to alist while we verify.
+    (dolist (entry feature:alist)
+      (let ((feature (car entry))
+            (paths   (cdr entry)))
+        ;; Must have either just a keyword, or a list of symbols (starting with keyword).
+        (unless (or (keywordp feature)
+                    (and (listp feature)
+                         (keywordp (car feature))
+                         (seq-each #'symbolp feature)))
+          (int<imp>:error func.name
+                          '("FEATURE:ALIST entry `%S' has an invalid feature! "
+                            "Must be a keyword or list of symbols (starting w/ keyword). "
+                            "Got: %S")
+                          entry
+                          feature))
+        ;; Must have one string or list of strings for the paths.
+        (unless (or (stringp paths)
+                    (and (listp paths)
+                         (seq-each #'stringp paths)))
+          (int<imp>:error func.name
+                          '("FEATURE:ALIST entry `%S' has invalid path(s)! "
+                            "Must be a path string or a list of path strings. "
+                            "Got: %S")
+                          entry
+                          paths))
+
+        ;; Valid; finalize and add to alist.
+        (push (cons (int<imp>:feature:normalize feature)
+                    paths)
+              features:at)))
+
+    ;; We should have created something. Error if not.
+    (unless features:at
+      (int<imp>:error func.name
+                      '("Nothing created to be added.. No input? FEATURE:ALIST: %S -> `features:at': %S")
+                      feature:alist
+                      features:at))
+
+    ;;------------------------------
+    ;; Add to the features locations alist.
+    ;;------------------------------
+    ;; Return their created alist if we succeeded. `nil' if failed.
+    (if (int<imp>:alist:update feature:base
+                               features:at
+                               imp:features:locate
+                               int<imp>:features:locate:equal)
+        features:at
+      nil)))

@@ -60,10 +60,12 @@ Returns non-nil if loaded."
   (cond ((apply #'imp:provided? feature:base feature)
          t)
 
-        ;; Not loaded, but we know where to find it?
-        ((int<imp>:path:root/contains? feature:base)
-         ;; imp knows about this - let's try to load it.
-         (int<imp>:load:file (int<imp>:path:get (cons feature:base feature))))
+        ;; TODO: Check for `imp:features:locate' entry.
+        ;;   - If no, check for `imp:feature:at' file to load, then check again if loaded.
+        ;; ;; Not loaded, but we know where to find it?
+        ;; ((int<imp>:path:root/contains? feature:base)
+        ;;  ;; imp knows about this - let's try to load it.
+        ;;  (int<imp>:load:file (int<imp>:path:get (cons feature:base feature))))
 
         ;; Fallback: Try to let emacs require it:
         (t
@@ -246,7 +248,7 @@ Returns a plist:
     ;; Process FEATURE.
     ;;---
     ;; Normalize to a list.
-    (setq out:feature (apply #'int<imp>:feature:normalize in:feature))
+    (setq out:feature (int<imp>:feature:normalize in:feature))
     (int<imp>:debug caller "out:feature: %S" out:feature)
 
     ;;---

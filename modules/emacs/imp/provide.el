@@ -40,7 +40,9 @@ If FILE-NAME is a string, returns true if loading that exact
 ;; (imp:providedp :imp)
 ;; (imp:feature? :imp)
 ;; (imp:featurep :imp)
-
+;; Should just say `nil' if `imp:features' is nil.
+;;   (let (imp:features)
+;;     (imp:provided? :foo))
 
 (defalias 'imp:feature? 'imp:provided?)
 (defalias 'imp:featurep 'imp:provided?)
@@ -61,7 +63,7 @@ If you want to provide the feature to emacs as well, you can either:
      - imp will translate the FEATURE symbol chain via `int<imp>:feature:normalize:imp->emacs'.
   2. Do it yourself by also calling Emacs' `provide' with a symbol of your
      choosing."
-  (let ((feature/imp (apply #'int<imp>:feature:normalize feature)))
+  (let ((feature/imp (int<imp>:feature:normalize feature)))
     (if (null feature/imp)
         (int<imp>:error "imp:provide"
                         '("No features to provide? "

@@ -34,9 +34,13 @@
       ;; Disallowed by all:
       ;;---
       ("/"
-       "")
+       "-")
       ,(list (rx-to-string `control)
-             ""))
+             "")
+      ;; Unit test name -> filename that doesn't require quoting if in shell.
+      ,(list (rx-to-string `(sequence (or "<" ">" ":")) ;; "/" already done.
+                           :no-group)
+             "-"))
 
     ;;------------------------------
     ;; Linux/Unix/Etc.
@@ -368,11 +372,13 @@ KWARGS should be a plist. All default to `t':
         (int<imp>:debug "int<imp>:path:normalize:string" "  rx: %S" regex)
         (int<imp>:debug "int<imp>:path:normalize:string" "  ->: %S" replacement)
         (setq name (replace-regexp-in-string regex replacement name))))))
-;; (int<imp>:path:normalize:string :imp)
+;;   (int<imp>:path:normalize:string :imp)
 ;; Should lose both slashes and ~:
-;; (int<imp>:path:normalize:string "~/doom.d/")
+;;   (int<imp>:path:normalize:string "~/doom.d/")
 ;; Should remain the same:
-;; (int<imp>:path:normalize:string "config")
+;;   (int<imp>:path:normalize:string "config")
+;; Test func name -> valid path:
+;;   (int<imp>:path:normalize:string "test<imp/feature/at>::int<imp>:feature:paths")
 
 
 (defun int<imp>:path:normalize:list (feature)
@@ -698,19 +704,20 @@ Returns normalized path."
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load.el" :file:load)
 
 
-;;------------------------------------------------------------------------------
-;; Load Symbols -> Load Path
-;;------------------------------------------------------------------------------
+;; TODO: delete, or rename the path:root getter to this?
+;; ;;------------------------------------------------------------------------------
+;; ;; Load Symbols -> Load Path
+;; ;;------------------------------------------------------------------------------
 
-(defun int<imp>:path:get (feature)
-  "Convert FEATURE (a list of keywords/symbols) to a load path string.
+;; (defun int<imp>:path:get (feature)
+;;   "Convert FEATURE (a list of keywords/symbols) to a load path string.
 
-NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
-presumably by having called `imp:root'."
-  (int<imp>:path:append (int<imp>:path:root/dir (car feature))
-                        (int<imp>:path:normalize:path (cdr feature))))
-;; (int<imp>:path:get '(:imp test feature))
-;; (int<imp>:path:get '(:config spy system config))
+;; NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
+;; presumably by having called `imp:root'."
+;;   (int<imp>:path:append (int<imp>:path:root/dir (car feature))
+;;                         (int<imp>:path:normalize:path (cdr feature))))
+;; ;; (int<imp>:path:get '(:imp test feature))
+;; ;; (int<imp>:path:get '(:config spy system config))
 
 
 ;;------------------------------------------------------------------------------

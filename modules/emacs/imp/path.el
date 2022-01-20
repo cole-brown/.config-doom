@@ -564,28 +564,17 @@ NEXT and PARENT are expected to be strings."
 ;; (imp:path:join "foo")
 
 
-(defun int<imp>:path:normalize:path (feature)
-  "Combine FEATURE (a list of keywords/symbols) together into a path
-platform-agnostically.
+(defun int<imp>:path:sans-extension (&rest path)
+  "Combinse PATH elements together and then removes any extension.
 
-(int<imp>:path:normalize:path :jeff 'jill)
-  -> \"jeff/jill\"
-or possibly
-  -> \"jeff\\jill\""
-  (int<imp>:debug "int<imp>:path:normalize:path" "--input: %S" feature)
-  (unless (seq-every-p #'symbolp feature)
-    (int<imp>:error "int<imp>:path:normalize:path"
-                    "FEATURE list must only contain symbols/keywords. Got: %S"
-                    feature))
-  (seq-reduce #'int<imp>:path:append
-              (int<imp>:path:normalize:list feature)
-              nil))
-;; works: (int<imp>:path:normalize:path '(:jeff jill))
-;; fails: (int<imp>:path:normalize:path '("~/.doom.d/" "modules"))
-;; works: (int<imp>:path:normalize:path '(spy system config))
+(int<imp>:path:sans-extension \"jeff\" \"jill.el\")
+  ->\"jeff/jill\""
+  (file-name-sans-extension (apply #'imp:path:join path)))
+;; (int<imp>:path:sans-extension "foo" "bar/")
+;; (int<imp>:path:sans-extension "foo" "bar/" "baz.el")
 
 
-(defun int<imp>:path:normalize (root relative &optional assert-exists)
+(defun int<imp>:path:normalize (root relative &optional assert-exists sans-extension)
   "Joins ROOT and RELATIVE paths, normalizes, and returns the path string.
 
 If ASSERT-EXISTS is `:file', raises an error if normalized path is not an
@@ -597,10 +586,23 @@ plus an extension glob (\".*\") is not an existing, readable file.
 If ASSERT-EXISTS is `:dir', raises an error if normalized path is not an
 existing directory.
 
-Returns normalized path."
+If SANS-EXTENSION is non-nil, returns a path without an extension
+(e.g. suitable for loading '.elc' or '.el' files.).
 
+Returns normalized path."
   (let ((func.name "int<imp>:path:normalize")
         (valid:assert-exists '(nil :file :file:load :dir)))
+    (int<imp>:debug func.name
+                    '("inputs:\n"
+                      "  - root: %s\n"
+                      "  - relative: %s\n"
+                      "  - assert-exists: %S\n"
+                      "  - sans-extension: %S")
+                    root
+                    relative
+                    assert-exists
+                    sans-extension)
+
     ;;------------------------------
     ;; Error Check Inputs
     ;;------------------------------
@@ -622,6 +624,10 @@ Returns normalized path."
     ;; Normalize & check path.
     ;;------------------------------
     (let ((path (imp:path:join root relative))) ;; Assumes ROOT is already normalized.
+      (int<imp>:debug func.name
+                      "path: %s"
+                      path)
+
       ;;------------------------------
       ;; Signal error?
       ;;------------------------------
@@ -663,7 +669,7 @@ Returns normalized path."
                 ((and load-suffixes
                       (seq-some file:valid? load-suffixes))
                  path)
-                ((funcall file:valid? path "")
+                ((funcall file:valid? "")
                  path)
                 ;; Assert failed; signal error.
                 (t
@@ -694,30 +700,22 @@ Returns normalized path."
                           "Path is not absolute: %s"
                           path)
         ;; Actually normalize it before returning.
-        (expand-file-name path)))))
+        (expand-file-name (if sans-extension
+                              ;; Take out the extension if requested.
+                              (file-name-sans-extension path)
+                            path))))))
 ;; Just Normalize:
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load")
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load.el")
+;;   (int<imp>:path:normalize "loading" "dont-load.el")
+;; Normalize w/o extension:
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load.el" nil t)
+;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load" nil t)
 ;; Error:
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load" :file)
 ;; Ok:
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load" :file:load)
 ;;   (int<imp>:path:normalize "/home/work/.config/doom/modules/emacs/imp/test/loading" "dont-load.el" :file:load)
-
-
-;; TODO: delete, or rename the path:root getter to this?
-;; ;;------------------------------------------------------------------------------
-;; ;; Load Symbols -> Load Path
-;; ;;------------------------------------------------------------------------------
-
-;; (defun int<imp>:path:get (feature)
-;;   "Convert FEATURE (a list of keywords/symbols) to a load path string.
-
-;; NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
-;; presumably by having called `imp:root'."
-;;   (int<imp>:path:append (int<imp>:path:root/dir (car feature))
-;;                         (int<imp>:path:normalize:path (cdr feature))))
-;; ;; (int<imp>:path:get '(:imp test feature))
-;; ;; (int<imp>:path:get '(:config spy system config))
 
 
 ;;------------------------------------------------------------------------------

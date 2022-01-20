@@ -73,8 +73,8 @@ Example:
               \"multiple/subdir/baz.el\"
               \"common/baz.el\")
         ...)")
-;; imp:path:roots
-;; (setq imp:path:roots nil)
+;; (pp imp:features:locate)
+;; (setq imp:features:locate nil)
 
 
 (defconst int<imp>:features:locate:equal #'equal
@@ -116,9 +116,19 @@ chain into one symbol for Emacs.")
 an Emacs symbol.")
 
 
-(defun int<imp>:feature:normalize:imp->emacs (feature)
-  "Translate the FEATURE (a list of keywords/symbols) to a single symbol
-appropriate for Emacs' `provide'."
+(defun int<imp>:feature:normalize:imp->emacs (feature &rest features)
+  "Translate the feature to a single symbol appropriate for Emacs' `provide'.
+
+FEATURE should be:
+  1) A keyword/symbol,
+  2) or a list of keywords/symbols.
+
+FEATURES should be:
+  1) A keyword/symbol,
+  2) or a list of keywords/symbols.
+
+FEATURE & FEATURES will be combined & flattened into a single list of keywords
+and/or symbols."
   ;; Create the symbol.
   (intern
    ;; Create the symbol's name.
@@ -130,13 +140,16 @@ appropriate for Emacs' `provide'."
                           (replace-regexp-in-string (nth 0 pair)
                                                     (nth 1 pair)
                                                     symbol/string)))))
-              feature
+              (int<imp>:list:flatten feature features)
               int<imp>:feature:replace:separator)))
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp test symbols))
+;; (int<imp>:feature:normalize:imp->emacs '(:imp test) 'symbols)
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
+;; (int<imp>:feature:normalize:imp->emacs :imp 'provide)
+;; (int<imp>:feature:normalize:imp->emacs '(((:imp))) '((provide)))
 
 
-(defun int<imp>:feature:normalize (input)
+(defun int<imp>:feature:normalize (&rest input)
   "Normalize INPUT to a list of feature symbols/keywords.
 
 If INPUT item is:
@@ -193,6 +206,7 @@ E.g.
 ;; (int<imp>:feature:normalize "+spydez")
 ;; (int<imp>:feature:normalize '("+spydez" "foo" "bar"))
 ;; (int<imp>:feature:normalize '(("+spydez" "foo" "bar")))
+;; (int<imp>:feature:normalize '(((:test))) '(("+spydez" "foo" "bar")))
 
 
 (defun imp:feature:normalize (&rest input)
@@ -296,14 +310,16 @@ Errors if:
   - No root path for FEATURE:BASE.
   - No paths found for input parameters."
   (let ((func.name "int<imp>:feature:paths")
-        (check (int<imp>:feature:normalize (list feature:base feature))))
+        (check (int<imp>:feature:normalize feature:base feature)))
 
     ;;------------------------------
     ;; Error Check Inputs
     ;;------------------------------
     ;; FEATURE:BASE must:
     ;; 1) Be an imp feature.
-    (imp:feature:assert feature:base)
+    ;; (imp:feature:assert feature:base)
+    ;;   ...must it be a feature? Not so sure. All I /think/ we need is the entries in
+    ;;   `imp:path:roots' and `imp:features:locate' and the
 
     ;; 2) Have registered a root path.
     (unless (int<imp>:path:root/contains? feature:base)
@@ -370,14 +386,14 @@ Paths in the FEATURE:ALIST should be relative to your `imp:path:root'.
 The paths will be loaded in the order provided.
 
 For example:
-  (list (list :imp \"init.el\")
-        (list '(:imp path) \"path.el\")
-        (list '(:imp multiple)
-              \"common/foo.el\"
-              \"multiple/bar.el\"
-              \"multiple/subdir/baz.el\"
-              \"multiple/subdir/qux.el\")
-        ...)"
+  '((:imp        \"init.el\")
+    ((:imp path) \"path.el\")
+    ((:imp multiple)
+     \"common/foo.el\"
+     \"multiple/bar.el\"
+     \"multiple/subdir/baz.el\"
+     \"multiple/subdir/qux.el\")
+    ...)"
   (let ((func.name "imp:feature:at")
         features:at)
     ;;------------------------------
@@ -431,7 +447,7 @@ For example:
 
         ;; Valid; finalize and add to alist.
         (push (cons (int<imp>:feature:normalize feature)
-                    paths)
+                    (seq-map #'int<imp>:path:sans-extension paths))
               features:at)))
 
     ;; We should have created something. Error if not.

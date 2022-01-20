@@ -570,7 +570,7 @@ look for the features chain if `imp:features' was nil."
 ;;------------------------------
 
 (ert-deftest test<imp/feature>::imp:feature:at::features-register ()
-  "Test that `imp:feature:at' can find & load a feature registered with it."
+  "Test that `imp:feature:at' can find a load path for a feature registered with it."
   (let ((path:root (imp:path:join test<imp/feature>:path/dir:this
                                   "loading"
                                   "features")))
@@ -599,11 +599,11 @@ look for the features chain if `imp:features' was nil."
                                      "multiple/subdir/init.el"
                                      "multiple/subdir/final.el")))
             (features:expected '(((:feature multiple)
-                                  "common/common.el" "multiple/base.el" "multiple/subdir/init.el" "multiple/subdir/final.el")
+                                  "common/common" "multiple/base" "multiple/subdir/init" "multiple/subdir/final")
                                  ((:feature path)
-                                  "path.el")
+                                  "path")
                                  ((:feature)
-                                  "init.el")))
+                                  "init")))
             features:created)
 
         ;;------------------------------
@@ -631,6 +631,8 @@ look for the features chain if `imp:features' was nil."
             (should path:created)
             ;; Check paths are correct.
             (dolist (path path:expect)
+              (should path)
+              (should (stringp path))
               (should (seq-contains-p path:created path #'string=)))))))))
 
 
@@ -654,11 +656,11 @@ look for the features chain if `imp:features' was nil."
                                  "multiple/subdir/init.el"
                                  "multiple/subdir/final.el")))
         (features:expected '(((:feature multiple)
-                              "common/common.el" "multiple/base.el" "multiple/subdir/init.el" "multiple/subdir/final.el")
+                              "common/common" "multiple/base" "multiple/subdir/init" "multiple/subdir/final")
                              ((:feature path)
-                              "path.el")
+                              "path")
                              ((:feature)
-                              "init.el")))
+                              "init")))
         features:created)
 
     (test<imp>:fixture

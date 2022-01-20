@@ -148,7 +148,7 @@ Args to this format string are:
 
 
 ;; TODO:load: a load timing feature?
-;;   - One in `int<imp>:load' that will:
+;;   - One in `int<imp>:load:feature' that will:
 ;;     1. start timer, output: "loading xxx..."?
 ;;     2. stop timer, output:  "└─yy.zzz seconds"
 ;;     3. Look nice when cascading?
@@ -157,7 +157,7 @@ Args to this format string are:
 ;;        "│ └─cc.dd seconds"
 ;;        "└─aa.bb seconds"
 ;;     4. Output to some buffer named by defcustom (default "*Messages*").
-;;  - One or two stand-alone, external-api-named funcs (that `int<imp>:load' calls?).
+;;  - One or two stand-alone, external-api-named funcs (that `int<imp>:load:feature' calls?).
 ;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
 ;; TODO:load: Think that would be an optional file '+output.el'?
 ;; TODO:load: Or like debug - triggers off of a module flag or a toggle var?

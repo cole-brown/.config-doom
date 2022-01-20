@@ -42,39 +42,104 @@ Returns result of `load' or signals error."
                              err)))))
 
 
-;; TODO: Rename `int<imp>:load:feature'?
-;; TODO: Delete entirely and just use newer `imp:feature:at' stuff?
-;;         - Or rework into `int<imp>:load:all'?
-(defun int<imp>:load (feature:base &rest feature)
-  "Load a file relative to FEATURE:BASE based on FEATURE list of keywords/symbols.
+(defun int<imp>:load:feature (feature:base &rest feature)
+  "Load a feature.
 
-FEATURE:BASE must be a keyword which exists in `imp:path:roots' (set via the
+Loads the feature based on its entries in `imp:path:roots' and
+`imp:features:locate'.
+
+FEATURE:BASE must be an entry in the `imp:path:roots' alist (set via the
 `imp:path:root'function).
 
-E.g. (int<imp>:load :imp 'provide)
-  Will try to load: \"/path/to/imp-root/provide.el\"
+FEATURE:BASE must be an entry in the `imp:features:locate' alist, and the value
+should be an alist.
+  - (cons FEATURE:BASE FEATURE) must exist as an entry of that sub-alist.
+
+For Example:
+  When:
+    (imp:path:root :imp \"/path/to/imp-root\")
+    (imp:feature:at :imp
+                    (list (list :imp \"init.el\")
+                            (list '(:imp 'provide) \"provide.el\")
+                            ...))
+  Then this:
+    (int<imp>:load:feature :imp 'provide)
+  Will try to load:
+    \"/path/to/imp-root/provide.el\"
+
+
+Does nothing if:
+  1) `imp' already has the feature, or
+  2) Emacs already has a feature named:
+     `(int<imp>:feature:normalize:imp->emacs FEATURE:BASE FEATURE)'
 
 Returns non-nil if loaded."
-  ;; TODO:load: 'load-all' functionality?
+  (let ((func.name "int<imp>:load:feature")
+        (feature:emacs (int<imp>:feature:normalize:imp->emacs feature:base feature))
+        (feature:emacs/base (int<imp>:feature:normalize:imp->emacs feature:base))
+        (feature:emacs/sub (int<imp>:feature:normalize:imp->emacs feature)))
+    (int<imp>:debug func.name
+                    '("Inputs:\n"
+                      "  feature:base: %S\n"
+                      "  feature:      %S")
+                    feature:base
+                    feature)
+    (cond
+     ;;------------------------------
+     ;; Already Loaded?
+     ;;------------------------------
+     ;; Does imp already have the feature loaded?
+     ((apply #'imp:provided? feature:base feature)
+      (int<imp>:debug func.name
+                      "Feature is already provided by imp: %S"
+                      feature:emacs)
+      t)
+     ;; Does Emacs already have full feature name?
+     ;; Does Emacs already have feature:base with subfeature?
+     ((featurep feature:emacs)
+      (int<imp>:debug func.name
+                      "Feature is already provided by Emacs (not imp): %S"
+                      feature:emacs)
+      t)
+     ((featurep feature:emacs/base feature:emacs/sub)
+      (int<imp>:debug func.name
+                      "Feature & subfeature are already provided by Emacs (not imp): %S w/ %S"
+                      feature:emacs/base
+                      feature:emacs/sub)
+      t)
 
-  (cond ((apply #'imp:provided? feature:base feature)
-         t)
+     ;;------------------------------
+     ;; imp: Attempt Loading...
+     ;;------------------------------
+     ((if-let ((path:root (int<imp>:path:root/dir feature:base :no-error))
+               (paths:load (int<imp>:feature:paths feature:base feature)))
+          ;; Required path(s) present; try to load the feature.
+          (progn
+            ;;TODO YOU ARE HERE!!!
+            (int<imp>:debug func.name
+                            "Required feature paths not found: root: %S, load-paths: %S"
+                            path:root
+                            paths:load)
+            (int<imp>:load:paths (int<imp>:feature:normalize feature:base feature)
+                                 path:root
+                                 paths:load))
+        ;; Required paths not present; can't load.
+        (int<imp>:debug func.name
+                      "Required feature paths not found: root: %S, load-paths: %S"
+                      path:root
+                      paths:load)
+        nil))
 
-        ;; TODO: Check for `imp:features:locate' entry.
-        ;;   - If no, check for `imp:feature:at' file to load, then check again if loaded.
-        ;; ;; Not loaded, but we know where to find it?
-        ;; ((int<imp>:path:root/contains? feature:base)
-        ;;  ;; imp knows about this - let's try to load it.
-        ;;  (int<imp>:load:file (int<imp>:path:get (cons feature:base feature))))
-
-        ;; Fallback: Try to let emacs require it:
-        (t
-         (require (int<imp>:feature:normalize:imp->emacs feature)
-                 ;; TODO:load: guess at a file/path based on 'feature:base/feature-0/...'?
-                 nil
-                 'noerror))))
-;; (int<imp>:load :imp 'something)
-;; (int<imp>:load :config 'spy 'system 'config)
+     ;;------------------------------
+     ;; Emacs (fallback): Try to just `require' it.
+     ;;------------------------------
+     (t
+      (require feature:emacs
+               ;; TODO:load: guess at a file/path based on 'feature:base/feature-0/...'?
+               nil
+               'noerror)))))
+;; (int<imp>:load:feature :imp 'something)
+;; (int<imp>:load:feature :config 'spy 'system 'config)
 
 
 (defun int<imp>:load:paths (feature path:root paths:relative)

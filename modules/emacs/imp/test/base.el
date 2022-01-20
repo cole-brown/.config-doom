@@ -43,6 +43,14 @@
   "Save `imp:features' after a test so we can check it for debugging if needed.")
 
 
+(defvar test<imp>:features:locate:backup nil
+  "Backup `imp:features:locate' so we can test it and then restore to its actual values.")
+
+
+(defvar test<imp>:features:locate:test nil
+  "Save `imp:features:locate' after a test so we can check it for debugging if needed.")
+
+
 (defvar test<imp>:path:roots:backup nil
   "Backup `imp:path:roots' so we can test it and then restore to its actual values.")
 
@@ -202,18 +210,22 @@ FUNC/TEARDOWN will run as first step in tear-down."
 
 (defun test<imp>:setup/vars ()
   "Any setup of consts/vars needed per test."
-  ;; Generally, reset vars at start of test so they can be manually inspected after a test is run.
-  ;; Except `imp:features' & `imp:path:roots', which needs to be reverted back to valid after every test.
-  ;;   - In that case, save the test's values off to `test<imp>:path:roots:test'.
-
+  ;; Generally, reset vars at start of test so they can be manually inspected
+  ;; after a test is run. Except `imp:features', `imp:features:locate' &
+  ;; `imp:path:roots', which needs to be reverted back to valid after every
+  ;; test.
+  ;;   - In that case, save the test's values off to `test<imp>:[...]:test'.
 
   ;; Backup `imp:features' & `imp:path:roots' and clear it out for any tests that need to use it.
-  (setq test<imp>:features:backup   imp:features
-        test<imp>:path:roots:backup imp:path:roots
-        imp:features                nil
-        imp:path:roots              nil
-        test<imp>:features:test     nil
-        test<imp>:path:roots:test   nil))
+  (setq test<imp>:features:backup        imp:features
+        test<imp>:features:locate:backup imp:features:locate
+        test<imp>:path:roots:backup      imp:path:roots
+        imp:features                     nil
+        imp:features:locate              nil
+        imp:path:roots                   nil
+        test<imp>:features:test          nil
+        test<imp>:features:locate:test   nil
+        test<imp>:path:roots:test        nil))
 
 
 (defun test<imp>:setup (name func/setup func/teardown)
@@ -240,18 +252,23 @@ FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
 (defun test<imp>:teardown/vars ()
   "Clear out/clean up vars used during testing so next test or normal Emacs
 usage isn't affected."
-  ;; Generally, reset vars at start of test so they can be manually inspected after a test is run.
-  ;; Except `imp:features' & `imp:path:roots', which needs to be reverted back to valid after every test.
-  ;;   - In that case, save the test's values off to `test<imp>:path:roots:test'.
+  ;; Generally, reset vars at start of test so they can be manually inspected
+  ;; after a test is run. Except `imp:features', `imp:features:locate' &
+  ;; `imp:path:roots', which needs to be reverted back to valid after every
+  ;; test.
+  ;;   - In that case, save the test's values off to `test<imp>:[...]:test'.
 
   ;; Restore `imp:path:roots', but save whatever testing did to the `test<imp>:path:roots:test' var.
-  (setq test<imp>:features:test     imp:features
-        test<imp>:path:roots:test   imp:path:roots
+  (setq test<imp>:features:test          imp:features
+        test<imp>:features:locate:test   imp:features:locate
+        test<imp>:path:roots:test        imp:path:roots
         ;; Restore `imp:features' & `imp:path:roots'.
-        imp:features                test<imp>:features:backup
-        imp:path:roots              test<imp>:path:roots:backup
-        test<imp>:features:backup   nil
-        test<imp>:path:roots:backup nil))
+        imp:features                     test<imp>:features:backup
+        imp:features:locate              test<imp>:features:locate:backup
+        imp:path:roots                   test<imp>:path:roots:backup
+        test<imp>:features:backup        nil
+        test<imp>:features:locate:backup nil
+        test<imp>:path:roots:backup      nil))
 
 
 (defun test<imp>:teardown (name)

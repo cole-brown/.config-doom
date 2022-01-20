@@ -34,7 +34,7 @@ Returns non-nil on success."
          t)
 
         ;; Can we load it?
-        ((apply #'int<imp>:load feature:base feature)
+        ((apply #'int<imp>:load:feature feature:base feature)
          ;; Yes; so add to imp's feature tree.
          (int<imp>:feature:add (cons feature:base feature)))
 

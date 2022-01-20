@@ -89,16 +89,17 @@
 
 
 ;;------------------------------
-;; int<imp>:load
+;; int<imp>:load:feature
 ;;------------------------------
 
-(ert-deftest test<imp/load>::int<imp>:load ()
-  "Test that `int<imp>:load' behaves appropriately."
+;; TODO: retest
+(ert-deftest test<imp/load>::int<imp>:load:feature ()
+  "Test that `int<imp>:load:feature' behaves appropriately."
   (test<imp>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<imp/load>::int<imp>:load"
+      "test<imp/load>::int<imp>:load:feature"
       nil
       nil
 
@@ -123,6 +124,12 @@
                    test<imp/load>:loading:root)
 
     ;;---
+    ;; Supply feature paths:
+    ;;---
+    (int<imp>:load:file (imp:path:join test<imp/load>:loading:root
+                                       imp:path:filename:features))
+
+    ;;---
     ;; Load a feature:
     ;;---
     ;; For testing that nothing happens when it's already loaded.
@@ -142,8 +149,8 @@
     ;; If feature is alredy loaded, nothing should happen.
     ;;---
     (should-not test<imp>:loading:dont-load:loaded)
-    ;; Call `int<imp>:load on it's feature; shouldn't be loaded since we've loaded it already.
-    (should (apply #'int<imp>:load
+    ;; Call `int<imp>:load:feature on it's feature; shouldn't be loaded since we've loaded it already.
+    (should (apply #'int<imp>:load:feature
                      test<imp/load>:loading:dont-load:feature))
     (should-not test<imp>:loading:dont-load:loaded)
 
@@ -151,7 +158,7 @@
     ;; If we know the base feature, we should be able to load the file by the feature name.
     ;;---
     (should-not test<imp>:loading:load:loaded)
-    (should (apply #'int<imp>:load
+    (should (apply #'int<imp>:load:feature
                      test<imp/load>:loading:load:feature))
     (should test<imp>:loading:load:loaded)
     (should test<imp>:file:loading?)
@@ -164,7 +171,7 @@
     ;; Know the base feature, but can't find anything to load.
     ;;---
     (should-error test<imp>:loading:load:doesnt-exist)
-    (should-error (apply #'int<imp>:load
+    (should-error (apply #'int<imp>:load:feature
                            test<imp/load>:loading:doesnt-exist:feature))
     (should-error test<imp>:loading:load:doesnt-exist)
 
@@ -173,7 +180,11 @@
     ;;---
     ;; We fallback to asking Emacs to `load' it, but it doesn't know anything about this either.
     ;; This won't error; it'll just return nil.
-    (should-not (int<imp>:load 'something-that-doesnt-exist-in-emacs))))
+    (should-not (int<imp>:load:feature 'something-that-doesnt-exist-in-emacs))))
+
+
+;; TODO: Another `test<imp/load>::int<imp>:load:feature' without explicitly loading the 'imp-loading' file.
+;;   - test that imp can find and load it if it's named correctly.
 
 
 ;;------------------------------
@@ -212,7 +223,7 @@
     ;;---
     ;; Load a feature:
     ;;---
-    ;; Unlike `int<imp>:load', `int<imp>:load:paths' does not care about
+    ;; Unlike `int<imp>:load:feature', `int<imp>:load:paths' does not care about
     ;; provided features and will load regardless, and we'll test for that.
     (apply #'imp:provide test<imp/load>:loading:dont-load:feature)
 
@@ -626,3 +637,73 @@ EXPECTED should be a plist with keys:
     (should-error (eval (imp:load :feature  test<imp/load>:loading:doesnt-exist:feature
                                   :path     test<imp/load>:loading:root
                                   :filename test<imp/load>:loading:load:file)))))
+
+
+;; TODO: this `imp:load:feature' test, or whatever we'll call the load-using-imp:feature:at-hints.
+;; ;;------------------------------
+;; ;; imp:load:feature
+;; ;;------------------------------
+
+;; (ert-deftest test<imp/feature>::imp:feature:at::features-load ()
+;;   "Test that `imp:feature:at' can find features if only root path and
+;; features filepath provided."
+;;   (let ((path:root (imp:path:join test<imp/feature>:path/dir:this
+;;                                   "loading"
+;;                                   "features"))
+;;         (feature:base :feature)
+;;         (features:at (list (list :feature
+;;                                  "init.el")
+;;                            (list '(:feature path)
+;;                                  "path.el")
+;;                            (list '(:feature multiple)
+;;                                  "common/common.el"
+;;                                  "multiple/base.el"
+;;                                  "multiple/subdir/init.el"
+;;                                  "multiple/subdir/final.el")))
+;;         (features:expected '(((:feature multiple)
+;;                               "common/common.el" "multiple/base.el" "multiple/subdir/init.el" "multiple/subdir/final.el")
+;;                              ((:feature path)
+;;                               "path.el")
+;;                              ((:feature)
+;;                               "init.el")))
+;;         features:created)
+
+;;     (test<imp>:fixture
+;;         ;;===
+;;         ;; Test name, setup & teardown func.
+;;         ;;===
+;;         "test<imp/feature>::imp:feature:at::features-load"
+;;         ;; Set-up with our variables.
+;;         (lambda (name)
+;;           "Set-up for testing `imp:feature:at' loading."
+;;           (test<imp/feature/at>:setup name
+;;                                       feature:base
+;;                                       path:root
+;;                                       features:at))
+;;         #'test<imp/feature/at>:teardown
+
+;;       ;;===
+;;       ;; Run the test.
+;;       ;;===
+
+;;       ;;------------------------------
+;;       ;; They should not be loaded/provided yet.
+;;       ;;------------------------------
+;;       (dolist (entry features:at)
+;;         (let ((feature (imp:feature (car entry))))
+;;           (should-not (imp:provided? feature))))
+
+;;       ;;------------------------------
+;;       ;; Test loading the feature.
+;;       ;;------------------------------
+
+;;       ;; TODO: this bit here.
+
+;;       ;;------------------------------
+;;       ;; They should all be loaded/provided now.
+;;       ;;------------------------------
+;;       (dolist (entry features:at)
+;;         (let ((feature (imp:feature (car entry))))
+;;           (should (imp:provided? feature))))
+
+;;       )))

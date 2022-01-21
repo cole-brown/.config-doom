@@ -193,47 +193,88 @@ Then checks that:
 ;; (int<imp>:path:file:exists? default-directory "init.el")
 
 
-(defun int<imp>:path:root/file/init (keyword)
-  "Get the init file from `imp:path:roots' for KEYWORD."
-  (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
-      (let ((root    (nth 0 paths))
-            (init    (or (nth 1 paths) "")))
+(defun int<imp>:path:strings? (root &rest paths)
+  "Returns canonical path to file if ROOT and PATHS are strings, else nil."
+  (if (and (stringp root)
+           (seq-every-p #'stringp paths))
+      (expand-file-name (apply #'imp:path:join paths) root)
+    nil))
 
-        (cond
-         ;; Do we have an entry?
-         ((int<imp>:path:file:exists? root init))
-         ;; Not found; check for default.
-         ((int<imp>:path:file:exists? root imp:path:filename:init))
-         ;; Still not found; error.
-         (t
-          (int<imp>:error "int<imp>:path:root/file/init"
-                    "No imp init file found for `%S'!"
-                    keyword))))
 
-    ;; Error when no entry in `imp:path:roots'.
-    (int<imp>:error "int<imp>:path:root/file/init"
-                    "Root keyword '%S' unknown."
-                    keyword)))
+(defun int<imp>:path:root/file/init (keyword &optional no-exist-check)
+  "Get the init file from `imp:path:roots' for KEYWORD.
+
+Looks for the init file's name/path in `imp:path:roots' first, then if that is
+nil looks for the default init filename in the root directory.
+
+Raises an error signal if no init file exists.
+Or if NO-EXIST-CHECK is non-nil, skips file existance check."
+  (let ((func.name "int<imp>:path:root/file/init"))
+    (int<imp>:debug func.name
+                    '("inputs:\n"
+                      "  - keyword:  %S\n"
+                      "  - no-exist-check: %S")
+                    keyword
+                    no-exist-check)
+    (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
+        (let ((root    (nth 0 paths))
+              (init    (or (nth 1 paths) ""))
+              (verify-fn (if no-exist-check
+                             #'int<imp>:path:strings?
+                           #'int<imp>:path:file:exists?)))
+          (int<imp>:debug func.name
+                          '("paths: %S\n"
+                            "  - root: %S\n"
+                            "  - init: %S\n"
+                            "verify-fn: %S")
+                          paths
+                          root
+                          init
+                          verify-fn)
+          (cond
+           ;; Do we have an entry?
+           ((funcall verify-fn root init))
+           ;; Not found; check for default.
+           ((funcall verify-fn root imp:path:filename:init))
+           ;; Still not found; error.
+           (t
+            (int<imp>:error "int<imp>:path:root/file/init"
+                            "No imp init file found for `%S'!"
+                            keyword))))
+
+      ;; Error when no entry in `imp:path:roots'.
+      (int<imp>:error "int<imp>:path:root/file/init"
+                      "Root keyword '%S' unknown."
+                      keyword))))
 ;; (int<imp>:path:root/file/init :imp)
 ;; (int<imp>:path:root/file/init :modules)
 
 
-(defun int<imp>:path:root/file/features (keyword)
-  "Get the features file from `imp:path:roots' for KEYWORD."
+(defun int<imp>:path:root/file/features (keyword &optional no-exist-check)
+  "Get the features file from `imp:path:roots' for KEYWORD.
+
+Looks for the features file's name/path in `imp:path:roots' first, then if that
+is nil looks for the default features filename in the root directory.
+
+Raises an error signal if no features file exists.
+Or if NO-EXIST-CHECK is non-nil, skips file existance check."
   (if-let ((paths (int<imp>:alist:get/value keyword imp:path:roots)))
       (let ((root     (nth 0 paths))
-            (features (or (nth 2 paths) "")))
+            (features (or (nth 2 paths) ""))
+            (verify-fn (if no-exist-check
+                           #'int<imp>:path:strings?
+                         #'int<imp>:path:file:exists?)))
 
         (cond
          ;; Do we have an entry?
-         ((int<imp>:path:file:exists? root features))
+         ((funcall verify-fn root features))
          ;; Not found; check for default.
-         ((int<imp>:path:file:exists? root imp:path:filename:features))
+         ((funcall verify-fn root imp:path:filename:features))
          ;; Still not found; error.
          (t
           (int<imp>:error "int<imp>:path:root/file/features"
-                    "No imp features file found for `%S'!"
-                    keyword))))
+                          "No imp features file found for `%S'!"
+                          keyword))))
 
     ;; Error when no entry in `imp:path:roots'.
     (int<imp>:error "int<imp>:path:root/file/features"

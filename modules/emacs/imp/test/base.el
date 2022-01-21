@@ -87,7 +87,7 @@
 
 
 (defvar test<imp>:path:root:loading (concat (test<imp>:path/dir:this)
-                                            "loading")
+                                            "loading/")
   "The filename (or filepath) for our 'imp/test/loading/imp-init.el' file.")
 
 
@@ -322,7 +322,7 @@ FUNC/TEARDOWN will run as first step in tear-down."
         test<imp>:path:roots:test        nil)
 
   ;; Clear out vars loaded from 'imp/test/loading/...' files.
-  (test<imp>:setup:vars:loading))
+  (test<imp>:setup/vars:loading))
 
 
 (defun test<imp>:setup (name func/setup func/teardown)

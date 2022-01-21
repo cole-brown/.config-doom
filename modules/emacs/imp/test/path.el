@@ -43,10 +43,17 @@
 (defun test<imp/path>:setup:roots (&optional no-default-values &rest alist-entries)
   "Manually set `imp:path:roots' so we can test getting things out of it."
   (unless no-default-values
-    ;; Add in a few defaults.
-    (setq imp:path:roots
-          '((:imp "/path/to/imp/"  "/path/to/imp/init.el")
-            (:test "/another/path" "set-up.el"))))
+    ;; Add in some defaults that do exist.
+    (test<imp>:setup/root:loading)
+
+    ;; Add in some defaults that don't exist.
+    ;; Can't add normally via `imp:path:root' since it gets verified during the call.
+    (push (list :test:no-dirs-or-files
+                (concat test<imp>:path:root:test
+                        "does-not-exist")
+                "imp-init.el"
+                "imp-features.el")
+          imp:path:roots))
 
   ;; And add in whatever the test wants (if provided).
   (when alist-entries
@@ -86,18 +93,21 @@
     ;; Manually set `imp:path:roots' so we can test the getter.
     (test<imp/path>:setup:roots)
 
-    (let ((dir (int<imp>:path:root/dir :imp)))
+    (let ((dir (int<imp>:path:root/dir :loading)))
       (should dir)
       (should (stringp dir))
-      ;; `int<imp>:path:root/dir' should normalize "/path/to/imp/" to "/path/to/imp".
-      (should (string= "/path/to/imp" ; "/path/to/imp/init.el"
+      ;; `int<imp>:path:root/dir' should normalize "[...]/imp/test/loading/"
+      ;; to "[...]/imp/test/loading".
+      (should (string= (string-trim-right test<imp>:path:root:loading "/")
                        dir)))
 
-    (let ((dir (int<imp>:path:root/dir :test)))
+    (let ((dir (int<imp>:path:root/dir :test:no-dirs-or-files)))
       (should dir)
       (should (stringp dir))
-      ;; `int<imp>:path:root/dir' should leave "/another/path" as-is.
-      (should (string= "/another/path"
+      ;; `int<imp>:path:root/dir' should leave the path as we made it
+      ;; in `test<imp/path>:setup:roots'.
+      (should (string= (concat test<imp>:path:root:test
+                               "does-not-exist")
                        dir)))
 
     ;; Test that non-existant keyword throws an error.
@@ -124,22 +134,20 @@
 
     ;; Manually set `imp:path:roots' so we can test this function.
     (test<imp/path>:setup:roots)
-
-    (let ((dir (int<imp>:path:root/file/init :imp)))
-      (should dir)
-      (should (stringp dir))
+    (let ((path (int<imp>:path:root/file/init :loading)))
+      (should path)
+      (should (stringp path))
       ;; `int<imp>:path:root/file/init' should just return the absolute path "/path/to/imp/init.el".
-      (should (string= "/path/to/imp/init.el"
-                       dir)))
+      (should (string= (concat test<imp>:path:root:loading
+                               test<imp>:file:loading:init)
+                       path)))
 
-    (let ((dir (int<imp>:path:root/file/init :test)))
-      (should dir)
-      (should (stringp dir))
-      ;; `int<imp>:path:root/file/init' should add the root to relative file path.
-      (should (string= "/another/path/set-up.el"
-                       dir)))
+    ;; Test that existant feature/root for non-existant dir/file throws an error.
+    (should (int<imp>:alist:get/value :test:no-dirs-or-files imp:path:roots))
+    (should-error (int<imp>:path:root/file/init :test:no-dirs-or-files))
 
     ;; Test that non-existant keyword throws an error.
+    (should-not (int<imp>:alist:get/value :dne imp:path:roots))
     (should-error (int<imp>:path:root/file/init :dne))))
 
 
@@ -165,9 +173,8 @@
     (test<imp/path>:setup:roots)
 
     ;; Should return true for keywords that exist.
-    (should (int<imp>:path:root/contains? :imp))
-
-    (should (int<imp>:path:root/contains? :test))
+    (should (int<imp>:path:root/contains? :loading))
+    (should (int<imp>:path:root/contains? :test:no-dirs-or-files))
 
     ;; Should just return false for keywords that do not exist.
     (should-not (int<imp>:path:root/contains? :dne))
@@ -369,21 +376,29 @@
                                 (list :imp
                                       (expand-file-name ".."
                                                         )
-                                      "init.el")
+                                      "init.el"
+                                      nil)
                                 (list :test
                                       test<imp/path>:path/dir:this
-                                      (file-name-nondirectory test<imp/path>:path/file:this))
+                                      (file-name-nondirectory test<imp/path>:path/file:this)
+                                      nil)
                                 ;;---
                                 ;; DNE/Invalid
                                 ;;---
                                 ;; Valid directory, but file doesn't exist.
                                 (list :dne/file
                                       test<imp/path>:path/dir:this
-                                      "abcdefghijklmno.dne")
+                                      "abcdefghijklm.dne"
+                                      "nopqrstuvwxyz.dne")
                                 ;; Directory and file don't exist.
                                 (list :dne/dir
                                       "/tmp/path/to/nowhere"
-                                      "/tmp/path/to/nowhere/set-up.el"))
+                                      "/tmp/path/to/nowhere/set-up.el"
+                                      "/tmp/path/to/nowhere/set-features.el"))
+    (should (int<imp>:alist:get/value :imp      imp:path:roots))
+    (should (int<imp>:alist:get/value :test     imp:path:roots))
+    (should (int<imp>:alist:get/value :dne/file imp:path:roots))
+    (should (int<imp>:alist:get/value :dne/dir  imp:path:roots))
 
     ;;------------------------------
     ;; Test: `:imp' keyword's file validity.
@@ -395,17 +410,17 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :imp)
+                                       (int<imp>:path:root/file/init :imp :no-exist-check)
                                        :dir nil
                                        :exists nil))
 
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :imp)
+                                       (int<imp>:path:root/file/init :imp :no-exist-check)
                                        :dir nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :imp)
+                                       (int<imp>:path:root/file/init :imp :no-exist-check)
                                        :dir nil
                                        :exists t))
 
@@ -414,7 +429,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :imp)
+                                             (int<imp>:path:root/file/init :imp :no-exist-check)
                                              :dir t))
 
     ;;------------------------------
@@ -427,16 +442,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :test)
+                                       (int<imp>:path:root/file/init :test :no-exist-check)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :test)
+                                       (int<imp>:path:root/file/init :test :no-exist-check)
                                        :dir nil))
     ;; Path must exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :test)
+                                       (int<imp>:path:root/file/init :test :no-exist-check)
                                        :dir nil
                                        :exists t))
 
@@ -445,7 +460,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :test)
+                                             (int<imp>:path:root/file/init :test :no-exist-check)
                                              :dir t))
 
     ;;------------------------------
@@ -458,16 +473,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :dne/file)
+                                       (int<imp>:path:root/file/init :dne/file :no-exist-check)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist. It does not, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file :no-exist-check)
                                              :dir nil))
     ;; Path must exist. It does not, so expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file :no-exist-check)
                                              :dir nil
                                              :exists t))
 
@@ -476,7 +491,7 @@
     ;;---
     ;; Path must exist and be a dir. It's a file, so expect an error. It also doesn't exist, so also expect an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/file)
+                                             (int<imp>:path:root/file/init :dne/file :no-exist-check)
                                              :dir t))
 
     ;;------------------------------
@@ -489,16 +504,16 @@
     ;;---
     ;; Path may or may not exist.
     (should (int<imp>:path:root/valid? test-name
-                                       (int<imp>:path:root/file/init :dne/dir)
+                                       (int<imp>:path:root/file/init :dne/dir :no-exist-check)
                                        :dir nil
                                        :exists nil))
     ;; Path must exist.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir :no-exist-check)
                                              :dir nil))
     ;; Path must exist.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir :no-exist-check)
                                              :dir nil
                                              :exists t))
 
@@ -510,7 +525,7 @@
     ;;   - It also doesn't exist, so also expect an error.
     ;;   - And it's not a directory, so... keep expecting an error.
     (should-error (int<imp>:path:root/valid? test-name
-                                             (int<imp>:path:root/file/init :dne/dir)
+                                             (int<imp>:path:root/file/init :dne/dir :no-exist-check)
                                              :dir t))))
 
 
@@ -536,8 +551,8 @@ to paths properly."
     (should (string= "imp"
                      (int<imp>:path:normalize:string :imp)))
 
-    ;; Should lose both slashes and ~:
-    (should (string= "doom.d"
+    ;; Should lose ~ and convert both slashes to hyphens:
+    (should (string= "-doom.d-"
                      (int<imp>:path:normalize:string "~/doom.d/")))
 
     ;; Should remain the same:
@@ -582,7 +597,7 @@ to paths properly."
                          (nth i output)))))
 
     ;; Should lose both slashes and ~:
-    (let* ((expected '("doom.d"))
+    (let* ((expected '("-doom.d-"))
            (input    '("~/doom.d/"))
            (output   (int<imp>:path:normalize:list input)))
       (should expected)
@@ -599,7 +614,7 @@ to paths properly."
                          (nth i output)))))
 
     ;; Now do an actual list...
-    (let* ((expected '("imp" "test" "normalize" "list"))
+    (let* ((expected '("imp" "test-" "normalize" "list"))
            (input    '(:imp "test/" "~normalize" :list))
            (output   (int<imp>:path:normalize:list input)))
       (should expected)
@@ -761,46 +776,6 @@ to a path properly."
 
 
 ;;------------------------------
-;; int<imp>:path:get
-;;------------------------------
-
-(ert-deftest test<imp/path>::int<imp>:path:get ()
-  "Test that `int<imp>:path:get' gets/normalizes a path from a list of features."
-  (test<imp>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<imp/path>::int<imp>:path:get"
-      nil
-      nil
-
-    ;;===
-    ;; Run the test.
-    ;;===
-
-    ;; Manually set `imp:path:roots' so we can test `int<imp>:path:get'.
-    (test<imp/path>:setup:roots)
-
-    ;;------------------------------
-    ;; Invalid:
-    ;;------------------------------
-
-    ;; Must have the root feature.
-    (should-not (int<imp>:path:root/contains? :foo))
-    (should-error (int<imp>:path:get '(:foo)))
-
-    ;; Must have valid features (for `int<imp>:path:normalize:path') after root.
-    (should-error (int<imp>:path:get '(:imp "invalid")))
-    (should-error (int<imp>:path:get '(:imp 'invalid)))
-
-    ;;------------------------------
-    ;; Valid:
-    ;;------------------------------
-    (should (string= (imp:path:join (int<imp>:path:root/dir :imp) "foo" "bar" "baz")
-                     (int<imp>:path:get '(:imp foo bar baz))))))
-
-
-;;------------------------------
 ;; imp:path:root
 ;;------------------------------
 
@@ -825,9 +800,9 @@ to a path properly."
     ;; Invalid:
     ;;------------------------------
 
-    ;; Must not the root feature.
-    (should (int<imp>:path:root/contains? :test))
-    (should-error (imp:path:root :test "."))
+    ;; Must not allow overwriting a feature root.
+    (should (int<imp>:path:root/contains? :loading))
+    (should-error (imp:path:root :loading test<imp>:path:root:test))
 
     ;; Root must be a keyword.
     (should-error (imp:path:root 'foo "."))
@@ -836,8 +811,8 @@ to a path properly."
 
     ;; Dir must exist.
     (should-error (int<imp>:path:root/valid? test-name
-                                             "./does-not/exist"))
-    (should-error (imp:path:root "/foo" "."))
+                                             "/foo"))
+    (should-error (imp:path:root :foo "/foo"))
 
     ;;------------------------------
     ;; Valid:

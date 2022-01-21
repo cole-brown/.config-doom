@@ -11,6 +11,24 @@
 (load! "../debug")
 
 
+
+;;------------------------------------------------------------------------------
+;; Current test's file/dir.
+;;------------------------------------------------------------------------------
+
+(defun test<imp>:path/file:this ()
+  "Filepath of caller file, depending on if this is being loaded or looked at."
+  (if load-in-progress
+      load-file-name
+    (buffer-file-name)))
+;; (test<imp>:path/file:this)
+
+
+(defun test<imp>:path/dir:this ()
+  "Filepath of caller file, depending on if this is being loaded or looked at."
+  (file-name-directory (test<imp>:path/file:this)))
+
+
 ;;------------------------------------------------------------------------------
 ;; Constants & Variables
 ;;------------------------------------------------------------------------------
@@ -60,8 +78,70 @@
 
 
 ;;------------------------------
-;; "ERT List of Should Forms" buffer help
+;; Testing Dirs & Files
 ;;------------------------------
+
+;; TODO: Change all tests to use these.
+(defvar test<imp>:path:root:test (test<imp>:path/dir:this)
+  "The 'imp/test' \"root\" directory.")
+
+
+(defvar test<imp>:path:root:loading (concat (test<imp>:path/dir:this)
+                                            "loading")
+  "The filename (or filepath) for our 'imp/test/loading/imp-init.el' file.")
+
+
+(defvar test<imp>:file:loading:init "imp-init.el"
+  "The filename (or filepath) for our 'imp/test/loading/imp-init.el' file.
+
+NOTE: Should be `imp:path:filename:init', but can't load/require 'path.el' here.")
+
+
+(defvar test<imp>:feature:loading :loading
+  "The feature name for our 'imp/test/loading/' files.
+
+NOTE: Provided by `test<imp>:file:loading:init'.")
+
+
+(defvar test<imp>:file:loading:features "imp-features.el"
+  "The filename (or filepath) for our 'imp/test/loading/imp-features.el' file.
+
+NOTE: Should be `imp:path:filename:features', but can't load/require 'path.el' here.")
+
+
+(defvar test<imp>:feature:loading:features '(:loading features)
+  "The feature name for our 'imp/test/loading/imp-features' files.
+
+NOTE: Provided by `test<imp>:file:loading:features'.")
+
+
+(defvar test<imp>:file:loading:load "load"
+  "The filename (or filepath) for our 'imp/test/loading/load.el' file.")
+
+
+(defvar test<imp>:feature:loading:load '(:loading load)
+  "The feature name for our 'imp/test/loading/load.el' file.")
+
+
+(defvar test<imp>:file:loading:dont-load "dont-load"
+  "The filename (or filepath) for our 'imp/test/loading/dont-load.el' file.")
+
+
+(defvar test<imp>:feature:loading:dont-load '(:loading dont-load)
+  "The feature name for our 'imp/test/loading/dont-load.el' file.")
+
+
+(defvar test<imp>:feature:loading:doesnt-exist '(:loading doesnt-exist)
+  "A feature name for 'imp/test/loading/doesnt-exist.el', which doesn't exist.")
+
+
+(defvar test<imp>:file:loading:doesnt-exist "doesnt-exist"
+  "A file name for 'imp/test/loading/doesnt-exist.el', which doesn't exist.")
+
+
+;;------------------------------------------------------------------------------
+;; "ERT List of Should Forms" buffer help
+;;------------------------------------------------------------------------------
 
 (defun test<imp>:should:marker (test-name &rest args)
   "Put a `should' in the test which will evaluate to some searchable output for
@@ -171,17 +251,31 @@ Search for \"[MARK-\[0-9\]+]:\"."
 ;; Test Helpers
 ;;------------------------------------------------------------------------------
 
-(defun test<imp>:path/file:this ()
-  "Filepath of caller file, depending on if this is being loaded or looked at."
-  (if load-in-progress
-      load-file-name
-    (buffer-file-name)))
-;; (test<imp>:path/file:this)
+
+;;------------------------------
+;; 'test/loading/' files
+;;------------------------------
+
+(defun test<imp>:setup/vars:loading ()
+  "Deletes variable from 'test/loading/*.el' files."
+  ;; `makunbound' is fine to call even if the vars don't exist.
+  (makunbound 'test<imp>:file:loading?)
+
+  (makunbound 'test<imp>:loading:init:loaded)
+  (makunbound 'test<imp>:loading:features:loaded)
+  (makunbound 'test<imp>:loading:load:loaded)
+  (makunbound 'test<imp>:loading:dont-load:loaded))
 
 
-(defun test<imp>:path/dir:this ()
-  "Filepath of caller file, depending on if this is being loaded or looked at."
-  (file-name-directory (test<imp>:path/file:this)))
+(defun test<imp>:setup/root:loading ()
+  "Puts the 'test/loading' stuff into `imp:path:roots'."
+  ;; Need to have 'imp/path.el' functions, obviously, so do not use in tests
+  ;; before 'imp/path.el' has been tested.
+  (load! "../path")
+  (imp:path:root test<imp>:feature:loading
+                 test<imp>:path:root:loading
+                 test<imp>:file:loading:init
+                 test<imp>:file:loading:features))
 
 
 ;;------------------------------------------------------------------------------
@@ -225,7 +319,10 @@ FUNC/TEARDOWN will run as first step in tear-down."
         imp:path:roots                   nil
         test<imp>:features:test          nil
         test<imp>:features:locate:test   nil
-        test<imp>:path:roots:test        nil))
+        test<imp>:path:roots:test        nil)
+
+  ;; Clear out vars loaded from 'imp/test/loading/...' files.
+  (test<imp>:setup:vars:loading))
 
 
 (defun test<imp>:setup (name func/setup func/teardown)

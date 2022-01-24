@@ -42,106 +42,6 @@ Returns result of `load' or signals error."
                              err)))))
 
 
-(defun int<imp>:load:feature (feature:base &rest feature)
-  "Load a feature.
-
-Loads the feature based on its entries in `imp:path:roots' and
-`imp:features:locate'.
-
-FEATURE:BASE must be an entry in the `imp:path:roots' alist (set via the
-`imp:path:root'function).
-
-FEATURE:BASE must be an entry in the `imp:features:locate' alist, and the value
-should be an alist.
-  - (cons FEATURE:BASE FEATURE) must exist as an entry of that sub-alist.
-
-For Example:
-  When:
-    (imp:path:root :imp \"/path/to/imp-root\")
-    (imp:feature:at :imp
-                    (list (list :imp \"init.el\")
-                            (list '(:imp 'provide) \"provide.el\")
-                            ...))
-  Then this:
-    (int<imp>:load:feature :imp 'provide)
-  Will try to load:
-    \"/path/to/imp-root/provide.el\"
-
-
-Does nothing if:
-  1) `imp' already has the feature, or
-  2) Emacs already has a feature named:
-     `(int<imp>:feature:normalize:imp->emacs FEATURE:BASE FEATURE)'
-
-Returns non-nil if loaded."
-  (let ((func.name "int<imp>:load:feature")
-        (feature:emacs (int<imp>:feature:normalize:imp->emacs feature:base feature))
-        (feature:emacs/base (int<imp>:feature:normalize:imp->emacs feature:base))
-        (feature:emacs/sub (int<imp>:feature:normalize:imp->emacs feature)))
-    (int<imp>:debug func.name
-                    '("Inputs:\n"
-                      "  feature:base: %S\n"
-                      "  feature:      %S")
-                    feature:base
-                    feature)
-    (cond
-     ;;------------------------------
-     ;; Already Loaded?
-     ;;------------------------------
-     ;; Does imp already have the feature loaded?
-     ((apply #'imp:provided? feature:base feature)
-      (int<imp>:debug func.name
-                      "Feature is already provided by imp: %S"
-                      feature:emacs)
-      t)
-     ;; Does Emacs already have full feature name?
-     ;; Does Emacs already have feature:base with subfeature?
-     ((featurep feature:emacs)
-      (int<imp>:debug func.name
-                      "Feature is already provided by Emacs (not imp): %S"
-                      feature:emacs)
-      t)
-     ((featurep feature:emacs/base feature:emacs/sub)
-      (int<imp>:debug func.name
-                      "Feature & subfeature are already provided by Emacs (not imp): %S w/ %S"
-                      feature:emacs/base
-                      feature:emacs/sub)
-      t)
-
-     ;;------------------------------
-     ;; imp: Attempt Loading...
-     ;;------------------------------
-     ((if-let ((path:root (int<imp>:path:root/dir feature:base :no-error))
-               (paths:load (int<imp>:feature:paths feature:base feature)))
-          ;; Required path(s) present; try to load the feature.
-          (progn
-            ;;TODO YOU ARE HERE!!!
-            (int<imp>:debug func.name
-                            "Required feature paths not found: root: %S, load-paths: %S"
-                            path:root
-                            paths:load)
-            (int<imp>:load:paths (int<imp>:feature:normalize feature:base feature)
-                                 path:root
-                                 paths:load))
-        ;; Required paths not present; can't load.
-        (int<imp>:debug func.name
-                      "Required feature paths not found: root: %S, load-paths: %S"
-                      path:root
-                      paths:load)
-        nil))
-
-     ;;------------------------------
-     ;; Emacs (fallback): Try to just `require' it.
-     ;;------------------------------
-     (t
-      (require feature:emacs
-               ;; TODO:load: guess at a file/path based on 'feature:base/feature-0/...'?
-               nil
-               'noerror)))))
-;; (int<imp>:load:feature :imp 'something)
-;; (int<imp>:load:feature :config 'spy 'system 'config)
-
-
 (defun int<imp>:load:paths (feature path:root paths:relative)
   "Load PATHS:RELATIVE files (list of path strings relative to PATH:ROOT path string).
 
@@ -180,6 +80,142 @@ FEATURE is only for `imp:timing' use."
                                   (int<imp>:path:filename path:absolute)
                                   (int<imp>:path:parent   path:absolute)
                                 (int<imp>:load:file path:absolute))))))))
+
+
+(defun int<imp>:load:feature (&rest feature)
+  "Load a FEATURE.
+
+Loads the feature based on its entries in `imp:path:roots' and
+`imp:features:locate'.
+
+FEATURE must be a keyword or list of keywords/symbols.
+
+Let `feature:base' be FEATURE (if just a keyword) or `(car FEATURE)' if a list.
+Let `feature:rest' be nil (if FEATURE is just a keyword), or `(cdr FEATURE)'.
+  - `feature:base' must be an entry in the `imp:path:roots' alist
+    (set via the `imp:path:root'function).
+  - `feature:base' must be an entry in the `imp:features:locate' alist, its
+     value should be an alist, and `feature:rest' must exist in that value's
+     alist.
+
+For Example:
+  When:
+    (imp:path:root :imp \"/path/to/imp-root\")
+    (imp:feature:at :imp
+                    '((:imp           \"init.el\")
+                      ((:imp provide) \"provide.el\")
+                      ...))
+  Then this:
+    (int<imp>:load:feature :imp 'provide)
+  Will try to load:
+    \"/path/to/imp-root/provide.el\"
+
+Does nothing if:
+  1) `imp' already has the feature, or
+  2) Emacs already has a feature named:
+     `(int<imp>:feature:normalize:imp->emacs FEATURE:BASE FEATURE)'
+
+Returns non-nil if loaded."
+  (let* ((func.name "int<imp>:load:feature")
+         (feature:normal (int<imp>:feature:normalize feature))
+         (feature:base (car feature:normal))
+         (feature:rest (cdr feature:normal))
+         (feature:emacs (int<imp>:feature:normalize:imp->emacs feature:normal))
+         (feature:emacs/base (int<imp>:feature:normalize:imp->emacs feature:base))
+         (feature:emacs/rest (if feature:rest
+                                 (int<imp>:feature:normalize:imp->emacs feature:rest)
+                               nil)))
+    (int<imp>:debug func.name
+                    '("Inputs:\n"
+                      "  - feature: %S\n"
+                      "Normalized:\n"
+                      "  - feature: %S\n"
+                      "  - base:    %S\n"
+                      "  - rest:    %S\n"
+                      "  - emacs:   %S\n"
+                      "    - feature:    %S\n"
+                      "    - subfeature: %S")
+                    feature
+                    feature:normal
+                    feature:base
+                    feature:rest
+                    feature:emacs
+                    feature:emacs/base
+                    feature:emacs/rest)
+    (cond
+     ;;------------------------------
+     ;; Already Loaded?
+     ;;------------------------------
+     ;; Does imp already have the feature loaded?
+     ((imp:provided? feature:normal)
+      (int<imp>:debug func.name
+                      "Feature is already provided by imp: %S"
+                      feature:emacs)
+      t)
+     ;; Does Emacs already have full feature name?
+     ((featurep feature:emacs)
+      (int<imp>:debug func.name
+                      "Feature is already provided by Emacs (not imp): %S"
+                      feature:emacs)
+      t)
+     ;; Does Emacs already have `feature:base' with subfeature `feature:rest'?
+     ((and feature:emacs/rest
+           (featurep feature:emacs/base feature:emacs/rest))
+      (int<imp>:debug func.name
+                      "Feature & subfeature are already provided by Emacs (not imp): %S w/ %S"
+                      feature:emacs/base
+                      feature:emacs/rest)
+      t)
+
+     ;;------------------------------
+     ;; imp: Attempt Loading...
+     ;;------------------------------
+     ((if-let* ((paths:feature (int<imp>:feature:paths feature:base feature:rest))
+                (path:root (car paths:feature))
+                (paths:load (cdr paths:feature)))
+          ;; Required path(s) present; try to load the feature.
+          (progn
+            (int<imp>:debug func.name
+                            '("Found feature paths for `%S': \n"
+                            "  - root: %s\n"
+                            "  - load-paths: %S")
+                            feature:base
+                            path:root
+                            paths:load)
+            ;; Try to load full feature using paths we found.
+            (if-let ((result (int<imp>:load:paths feature:normal
+                                                  path:root
+                                                  paths:load)))
+                (progn
+                  (int<imp>:debug func.name
+                                  "loaded `%S'"
+                                  feature:normal)
+                  result)
+
+              (int<imp>:debug func.name
+                              "failed loading `%S'"
+                              feature:normal)
+              result))
+        ;; Required paths not present; can't load.
+        (int<imp>:debug func.name
+                        '("Required feature paths not found for `%S':\n"
+                          "  - root: %s\n"
+                          "  - load-paths: %S")
+                        feature:base
+                        path:root
+                        paths:load)
+        nil))
+
+     ;;------------------------------
+     ;; Final attempt: Try to just `require' it.
+     ;;------------------------------
+     ;; TODO: Not sure how to get here right now? Test doesn't reach this.
+     (t
+      (require feature:emacs
+               nil
+               'noerror)))))
+;; (int<imp>:load:feature :imp 'something)
+;; (int<imp>:load:feature :config 'spy 'system 'config)
 
 
 ;;------------------------------------------------------------------------------
@@ -298,13 +334,29 @@ Returns a plist:
               ((eq key :filename)
                (setq in:filename value))
               ((eq key :feature)
-               ;; Allow input FEATURE to be e.g. `:imp' instead of `(:imp)';
-               ;; normalize to a list.
-               (setq in:feature (if (listp value)
-                                    value
-                                  (list value))))
+               ;; Allow FEATURE to be a single thing, a flat list, or a list that needs flattened...
+               (setq in:feature (int<imp>:list:flatten value)))
               ((eq key :error)
                (setq in:error value)))))
+
+    ;;------------------------------
+    ;; Check for required inputs.
+    ;;------------------------------
+
+    (unless (memq :feature keys:parsed)
+      (int<imp>:error caller
+                      '("Required `:feature' keyword not present in plist "
+                        "`%s': %S")
+                      plist-symbol-name
+                      plist))
+    (unless (or (memq :path keys:parsed)
+                (memq :filename keys:parsed))
+      (int<imp>:error caller
+                      '("No file inputs? "
+                        "Either `:path', `:filename', or both are required in plist "
+                        "`%s': %S")
+                      plist-symbol-name
+                      plist))
 
     ;;------------------------------
     ;; Prep Outputs:
@@ -312,7 +364,15 @@ Returns a plist:
     ;;---
     ;; Process FEATURE.
     ;;---
-    ;; Normalize to a list.
+    (unless in:feature
+      (int<imp>:error caller
+                        '("Required `:feature' value not present."
+                          "PATH and current directory are not strings. path: %S, current-dir: %S")
+                        in:filename
+                        in:path
+                        path:current-dir))
+
+    ;; Normalize FEATURE to a list.
     (setq out:feature (int<imp>:feature:normalize in:feature))
     (int<imp>:debug caller "out:feature: %S" out:feature)
 
@@ -394,6 +454,9 @@ LOAD-ARGS-PLIST is a plist of load args:
   - Optional:
     + `:error'
       - Defaults to `t'; supply `:error nil' to change.
+
+`:feature' value should be a list of keywords and symbols.
+  - example: '(:imp load)
 
 `:filename' value (aka FILENAME) can be:
   - A path string (to a file).

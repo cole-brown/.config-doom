@@ -204,6 +204,10 @@ First symbol in output list will be a keyword; rest will be symbols.
 ;; (int<imp>:feature:normalize '("+spydez" "foo" "bar"))
 ;; (int<imp>:feature:normalize '(("+spydez" "foo" "bar")))
 ;; (int<imp>:feature:normalize '(((:test))) '(("+spydez" "foo" "bar")))
+;; (int<imp>:feature:normalize 'something-that-doesnt-exist-in-emacs)
+;; (int<imp>:feature:normalize '(something-that-doesnt-exist-in-emacs))
+;; (let ((feature 'something-that-doesnt-exist-in-emacs))
+;;   (int<imp>:feature:normalize (list feature)))
 
 
 (defun int<imp>:feature:normalize:imp->emacs (&rest feature)
@@ -348,13 +352,21 @@ Errors if:
     ;; Get the paths and load them?
     ;;------------------------------
     (let* ((path:root (int<imp>:path:root/dir feature:base))
-           ;; TODO: Fix alist to work for lists of keywords/symbols
            (feature:locations (int<imp>:alist:get/value feature:base
-                                                        imp:features:locate
-                                                        int<imp>:features:locate:equal))
+                                                        imp:features:locate))
            (paths (int<imp>:alist:get/value check
                                             feature:locations
                                             int<imp>:features:locate:equal)))
+      (int<imp>:debug func.name
+                      '("Get feature paths:\n"
+                        "  - feature:base: %S\n"
+                        "  - path:root:    %s\n"
+                        "  - feature:locations: %S\n"
+                        "  - paths: %S")
+                      feature:base
+                      path:root
+                      feature:locations
+                      paths)
 
       ;;---
       ;; Error Checks
@@ -372,6 +384,13 @@ Errors if:
       ;;---
       ;; Done; return.
       ;;---
+      (int<imp>:debug func.name
+                      '("Return feature paths for `%S':\n"
+                        "  - path:root:    %s\n"
+                        "  - paths: %S")
+                      feature:base
+                      path:root
+                      paths)
       (cons path:root paths))))
 
 

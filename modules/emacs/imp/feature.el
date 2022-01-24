@@ -90,9 +90,11 @@ by `imp:features:locate'.")
   "Checks for list of FEATURES in the `imp:features' tree."
   ;; When not `imp:features', always return `nil'.
   (when imp:features
-    (not (null (int<imp>:tree:contains? features imp:features)))))
+    (not (null (int<imp>:tree:contains? (int<imp>:list:flatten features)
+                                        imp:features)))))
 ;; (int<imp>:feature:exists? '(:imp))
-;; (int<imp>:feature:exists? '(:imp path))
+;; (int<imp>:feature:exists? '(:imp provide))
+;; (int<imp>:feature:exists? '(:imp (provide)))
 
 
 ;;------------------------------------------------------------------------------
@@ -100,7 +102,8 @@ by `imp:features:locate'.")
 ;;------------------------------------------------------------------------------
 
 (defconst int<imp>:feature:replace:rx
-  '((":" ""))
+  '((":" "")
+    ("+" ""))
   "Alist of regexs to replace and their replacement strings.
 
 Using lists instead of cons for alist entries because `cons' doesn't like
@@ -116,90 +119,84 @@ chain into one symbol for Emacs.")
 an Emacs symbol.")
 
 
-(defun int<imp>:feature:normalize:imp->emacs (feature &rest features)
-  "Translate the feature to a single symbol appropriate for Emacs' `provide'.
+(defun int<imp>:feature:name:normalize (input)
+  "Normalize INPUT to a symbol.
 
-FEATURE should be:
-  1) A keyword/symbol,
-  2) or a list of keywords/symbols.
+Uses `int<imp>:feature:replace:rx' to replace invalid characters in the INPUT
+string or symbol name.
 
-FEATURES should be:
-  1) A keyword/symbol,
-  2) or a list of keywords/symbols.
-
-FEATURE & FEATURES will be combined & flattened into a single list of keywords
-and/or symbols."
-  ;; Create the symbol.
-  (intern
-   ;; Create the symbol's name.
-   (mapconcat (lambda (symbol)
-                "Translates each symbol based on replacement regexes."
-                (let ((symbol/string (symbol-name symbol)))
-                  (dolist (pair int<imp>:feature:replace:rx symbol/string)
-                    (setq symbol/string
-                          (replace-regexp-in-string (nth 0 pair)
-                                                    (nth 1 pair)
-                                                    symbol/string)))))
-              (int<imp>:list:flatten feature features)
-              int<imp>:feature:replace:separator)))
-;; (int<imp>:feature:normalize:imp->emacs '(:imp test symbols))
-;; (int<imp>:feature:normalize:imp->emacs '(:imp test) 'symbols)
-;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
-;; (int<imp>:feature:normalize:imp->emacs :imp 'provide)
-;; (int<imp>:feature:normalize:imp->emacs '(((:imp))) '((provide)))
+Returns a keyword if KEYWORD is non-nil, else returns a symbol."
+  (let ((value (if (stringp input)
+                   input
+                 (symbol-name input))))
+    ;; Replace each regex, return normalized string.
+    (dolist (pair int<imp>:feature:replace:rx value)
+      (setq value
+            (replace-regexp-in-string (nth 0 pair)
+                                      (nth 1 pair)
+                                      value)))))
+;; (int<imp>:feature:name:normalize "foo")
+;; (int<imp>:feature:name:normalize :foo)
 
 
-(defun int<imp>:feature:normalize (&rest input)
-  "Normalize INPUT to a list of feature symbols/keywords.
+(defun int<imp>:feature:normalize:string (&rest input)
+  "Normalize INPUT to a list of strings.
 
-If INPUT item is:
-  - Keyword: Return as-is.
-  - Symbol:  Return as-is.
-  - String:  Convert to a keyword.
-E.g.
-  1) `:modules' -> `:modules'
-  2) `feature' -> `feature'
-  3) \"str-4874\" -> `:str-4874'"
-  (let ((func.name "int<imp>:feature:normalize")
-        (flattened (int<imp>:list:flatten input)) ;; Flatten max of 10 times.
+Always returns a backwards list.
+  Example:
+    (int<imp>:feature:normalize :foo)
+      -> '(\"foo\")
+    (int<imp>:feature:normalize '(:foo))
+      -> '(\"foo\")
+    (int<imp>:feature:normalize '(:foo bar) 'baz)
+      -> '(\"baz\" \"bar\" \"foo\")"
+  (let ((func.name "int<imp>:feature:normalize:string")
         output)
-    (dolist (item flattened)
-      (push
-       ;; Keyword or symbol? -> no-op
-       (cond ((symbolp item)
-              item)
-
-             ;; String? Convert to keyword and return.
-             ((and (stringp item)
-                   (not (string-empty-p item)))
-              (message "string->symbol: %S->%S"
-                       item
-                       (intern
-                        ;; Add leading ":" to make it a keyword.
-                        (if (not (string-prefix-p ":" item))
-                            (concat ":" item)
-                          item)))
-              (intern
-               ;; Add leading ":" to make it a keyword.
-               (if (not (string-prefix-p ":" item))
-                   (concat ":" item)
-                 item)))
-
-             ;; Other? Error.
-             (t
-              (int<imp>:error func.name
-                              (concat "Cannot convert INPUT item type to a symbol. "
-                                      "Need a string or symbol/keyword. Got: %S")
-                              item)))
-       output))
+    (dolist (item (int<imp>:list:flatten input))
+      (push (int<imp>:feature:name:normalize item)
+            output))
 
     ;; Return the list or raise an error.
     (if (null output)
         (int<imp>:error func.name
                         "No normalized features produced from INPUT: %S"
                         input))
+    output))
+;; (int<imp>:feature:normalize:string "+spydez" "foo" "bar")
 
-    (nreverse output)))
+
+(defun int<imp>:feature:normalize (&rest input)
+  "Normalize INPUT to a list of feature keyword/symbols.
+
+Always returns a list.
+First symbol in output list will be a keyword; rest will be symbols.
+  Example:
+    (int<imp>:feature:normalize :foo)
+      -> '(:foo)
+    (int<imp>:feature:normalize '(:foo))
+      -> '(:foo)
+    (int<imp>:feature:normalize '(foo :bar) 'baz)
+      -> '(:foo bar baz)"
+  (let ((func.name "int<imp>:feature:normalize")
+        (strings:reversed (int<imp>:feature:normalize:string input))
+        output)
+    (while strings:reversed
+      (let ((item (pop strings:reversed)))
+        (push (intern
+               ;; If this is the last item we're processing, it should be the
+               ;; keyword as it'll be first in the output list.
+               (concat (if (null strings:reversed)
+                                ":"
+                              "")
+                            item))
+            output)))
+
+    ;; Return the list or raise an error.
+    (if (null output)
+        (int<imp>:error func.name
+                        "No normalized features produced from INPUT: %S"
+                        input))
+    output))
 ;; (int<imp>:feature:normalize '+layout/spydez)
 ;; (int<imp>:feature:normalize :spydez)
 ;; (int<imp>:feature:normalize "spydez")
@@ -207,6 +204,26 @@ E.g.
 ;; (int<imp>:feature:normalize '("+spydez" "foo" "bar"))
 ;; (int<imp>:feature:normalize '(("+spydez" "foo" "bar")))
 ;; (int<imp>:feature:normalize '(((:test))) '(("+spydez" "foo" "bar")))
+
+
+(defun int<imp>:feature:normalize:imp->emacs (&rest feature)
+  "Translate the feature to a single symbol appropriate for Emacs' `provide'.
+
+FEATURE should be:
+  1) A keyword/symbol,
+  2) or a list of keywords/symbols.
+
+FEATURE will be normalized, then converted into a single symbol
+(not a keyword)."
+  (intern
+   (mapconcat #'identity
+              (nreverse (int<imp>:feature:normalize:string feature))
+              int<imp>:feature:replace:separator)))
+;; (int<imp>:feature:normalize:imp->emacs '(:imp test symbols))
+;; (int<imp>:feature:normalize:imp->emacs '(:imp test) 'symbols)
+;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
+;; (int<imp>:feature:normalize:imp->emacs :imp 'provide)
+;; (int<imp>:feature:normalize:imp->emacs '(((:imp))) '((provide)))
 
 
 (defun imp:feature:normalize (&rest input)

@@ -44,6 +44,47 @@
 
 
 ;;------------------------------
+;; Feature Normalization
+;;------------------------------
+
+(defun test<imp/feature>:assert:seq-equal (func:equal sequence:test sequence:expected)
+  "Assert that SEQUENCE:TEST and SEQUENCE:EXPECTED are equal.
+
+Each element in SEQUENCE:TEST must equal (via FUNC:EQUAL) the element at
+the same index in SEQUENCE:EXPECTED."
+  ;;------------------------------
+  ;; Verify inputs.
+  ;;------------------------------
+  (should func:equal)
+  (should (listp sequence:expected))
+  (should (listp sequence:test))
+
+  ;;------------------------------
+  ;; Assert nothing?
+  ;;------------------------------
+  (if (null sequence:expected)
+      ;; Expected value is nothing so test result should be nothing.
+      (should-not sequence:test)
+
+    ;;------------------------------
+    ;; Assert each element is equal.
+    ;;------------------------------
+
+    ;; Need the lists to be the same length.
+    (should (= (length sequence:expected)
+               (length sequence:test)))
+
+    ;; And now each test value should match its expected value.
+    (dotimes (i (length sequence:expected))
+      (should (funcall func:equal
+                       (nth i sequence:expected)
+                       (nth i sequence:test)))))
+
+  ;; `nil' return for "everything's good" confused me; return true instead.
+  t)
+
+
+;;------------------------------
 ;; Set-Up / Tear-Down: General
 ;;------------------------------
 
@@ -300,137 +341,8 @@ Example:
 
 
 ;;------------------------------------------------------------------------------
-;; Tests: Imp Feature Functions
+;; Tests: Feature Helpers
 ;;------------------------------------------------------------------------------
-
-;;------------------------------
-;; int<imp>:feature:normalize:imp->emacs
-;;------------------------------
-
-(ert-deftest test<imp/feature>::int<imp>:feature:normalize:imp->emacs ()
-  "Test that `int<imp>:feature:normalize:imp->emacs' behaves appropriately."
-  (test<imp>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<imp/feature>::int<imp>:feature:normalize:imp->emacs"
-      #'test<imp/feature>:setup
-      #'test<imp/feature>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-    (should (equal 'imp:test:symbols
-                   (int<imp>:feature:normalize:imp->emacs '(:imp test symbols))))
-
-    (should (equal 'imp:provide
-                   (int<imp>:feature:normalize:imp->emacs '(:imp provide))))
-
-    (should-error (int<imp>:feature:normalize:imp->emacs '("imp" "strings")))))
-
-
-;;------------------------------
-;; int<imp>:feature:normalize
-;;------------------------------
-
-(ert-deftest test<imp/feature>::int<imp>:feature:normalize ()
-  "Test that `int<imp>:feature:normalize' behaves appropriately."
-  (test<imp>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<imp/feature>::int<imp>:feature:normalize"
-      #'test<imp/feature>:setup
-      #'test<imp/feature>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-    ;; Main difference between `int<imp>:feature:normalize' and `imp:feature:normalize':
-    ;; Always get a list back, even for single feature.
-    (should (equal '(:imp)
-                   (int<imp>:feature:normalize :imp)))
-
-    (should (equal '(:imp test symbols)
-                   (int<imp>:feature:normalize :imp 'test 'symbols)))
-
-    (should (equal '(:imp provide)
-                   (int<imp>:feature:normalize :imp 'provide)))
-
-    (should (equal '(:imp :strings)
-                   (int<imp>:feature:normalize "imp" "strings")))))
-
-
-;;------------------------------
-;; imp:feature:normalize
-;;------------------------------
-
-(ert-deftest test<imp/feature>::imp:feature:normalize ()
-  "Test that `imp:feature:normalize' behaves appropriately."
-  (test<imp>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<imp/feature>::imp:feature:normalize"
-      #'test<imp/feature>:setup
-      #'test<imp/feature>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-    ;; Main difference between `int<imp>:feature:normalize' and `imp:feature:normalize':
-    ;; Get a single symbol back if gave a single feature keyword/symbol.
-    (should (equal :imp
-                   (imp:feature:normalize :imp)))
-
-    (should (equal '(:imp test symbols)
-                   (imp:feature:normalize :imp 'test 'symbols)))
-
-    (should (equal '(:imp provide)
-                   (imp:feature:normalize :imp 'provide)))
-
-    (should (equal '(:imp :strings)
-                   (imp:feature:normalize "imp" "strings")))))
-
-
-;;------------------------------
-;; int<imp>:feature:add
-;;------------------------------
-
-(ert-deftest test<imp/feature>::int<imp>:feature:add ()
-  "Test that `int<imp>:feature:add' behaves appropriately."
-  (test<imp>:fixture
-      ;;===
-      ;; Test name, setup & teardown func.
-      ;;===
-      "test<imp/feature>::int<imp>:feature:add"
-      #'test<imp/feature>:setup
-      #'test<imp/feature>:teardown
-
-    ;;===
-    ;; Run the test.
-    ;;===
-    (let (features)
-      ;; We should have nothing right now.
-      (should-not imp:features)
-      (should (equal features imp:features))
-
-      ;; Add a feature.
-      (setq features '((:imp (test (symbols)))))
-      (should (equal features
-                     (int<imp>:feature:add '(:imp test symbols))))
-      (should (equal features imp:features))
-
-      ;; Another feature.
-      (setq features '((:imp (provide) (test (symbols)))))
-      (should (equal features
-                     (int<imp>:feature:add '(:imp provide))))
-      (should (equal features imp:features))
-
-      ;; And another?
-      ;; Errors because features should be normalized before calling `int<imp>:feature:add'.
-      (should-error (int<imp>:feature:add '("imp" "strings"))))))
-
 
 ;;------------------------------
 ;; int<imp>:feature:exists?
@@ -508,6 +420,263 @@ look for the features chain if `imp:features' was nil."
     ;; Should just get `nil' when we have no features at all.
     (should-not imp:features)
     (should-not (int<imp>:feature:exists? '(:test)))))
+
+
+
+;;------------------------------------------------------------------------------
+;; Tests: Normalization
+;;------------------------------------------------------------------------------
+
+;;------------------------------
+;; int<imp>:feature:name:normalize
+;;------------------------------
+
+(ert-deftest test<imp/feature>::int<imp>:feature:name:normalize ()
+  "Test that `int<imp>:feature:name:normalize' correctly normalizes to a string."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::int<imp>:feature:name:normalize"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    ;; Test stringify.
+    (should (string= (int<imp>:feature:name:normalize "foo")
+                     "foo"))
+    (should (string= (int<imp>:feature:name:normalize :foo)
+                     "foo"))
+    (should (string= (int<imp>:feature:name:normalize 'foo)
+                     (int<imp>:feature:name:normalize :foo)))
+
+    (should (string= (int<imp>:feature:name:normalize "foo-bar")
+                     "foo-bar"))
+    (should (string= (int<imp>:feature:name:normalize :foo-bar)
+                     "foo-bar"))
+    (should (string= (int<imp>:feature:name:normalize 'foo-bar)
+                     (int<imp>:feature:name:normalize :foo-bar)))
+
+    ;; Also, it should replace some things according to
+    ;; `int<imp>:feature:replace:rx'.
+    (should (string= (int<imp>:feature:name:normalize "foo:bar")
+                     "foobar"))
+    (should (string= (int<imp>:feature:name:normalize :foo:bar)
+                     "foobar"))
+    (should (string= (int<imp>:feature:name:normalize 'foo:bar)
+                     (int<imp>:feature:name:normalize :foo:bar)))
+
+    (should (string= (int<imp>:feature:name:normalize "+foo:bar")
+                     "foobar"))
+    (should (string= (int<imp>:feature:name:normalize :+foo:bar)
+                     "foobar"))
+    (should (string= (int<imp>:feature:name:normalize '+foo+bar)
+                     (int<imp>:feature:name:normalize :+foo:bar)))))
+
+
+;;------------------------------
+;; int<imp>:feature:normalize:string
+;;------------------------------
+
+(ert-deftest test<imp/feature>::int<imp>:feature:normalize:string ()
+  "Test that `int<imp>:feature:normalize:string' correctly normalizes inputs
+to a list of string."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::int<imp>:feature:normalize:string"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    ;; NOTE: `int<imp>:feature:normalize:string' returns the list in reverse order.
+
+    ;; Test stringify.
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string "foo")
+                                        '("foo"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string :foo)
+                                        '("foo"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string 'foo)
+                                        (int<imp>:feature:normalize:string :foo))
+
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string "foo" "bar")
+                                        ;; Expect reverse order.
+                                        '("bar" "foo"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string :foo-bar "baz")
+                                        '("baz" "foo-bar"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        ;; Expect it to flatten the inputs into one output list.
+                                        (int<imp>:feature:normalize:string :foo-bar "baz" '(qux ((quux))))
+                                        '("quux" "qux" "baz" "foo-bar"))
+
+    ;; Also, it should replace some things according to
+    ;; `int<imp>:feature:replace:rx'.
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string "foo" "b:a:r")
+                                        ;; Expect reverse order.
+                                        '("bar" "foo"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        (int<imp>:feature:normalize:string :foo-bar "+baz")
+                                        '("baz" "foo-bar"))
+    (test<imp/feature>:assert:seq-equal #'string=
+                                        ;; Expect it to flatten the inputs into one output list.
+                                        (int<imp>:feature:normalize:string :foo-bar "baz" '(:qux ((qu+ux))))
+                                        '("quux" "qux" "baz" "foo-bar"))))
+
+
+;;------------------------------
+;; int<imp>:feature:normalize
+;;------------------------------
+
+(ert-deftest test<imp/feature>::int<imp>:feature:normalize ()
+  "Test that `int<imp>:feature:normalize' behaves appropriately."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::int<imp>:feature:normalize"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    ;; Only difference between `int<imp>:feature:normalize' and `imp:feature:normalize':
+    ;; Always get a list back, even for single feature.
+
+    (should (equal '(:imp)
+                   (int<imp>:feature:normalize :imp)))
+
+    (should (equal '(:imp test symbols)
+                   (int<imp>:feature:normalize :imp 'test 'symbols)))
+
+    (should (equal '(:imp provide)
+                   (int<imp>:feature:normalize :imp 'provide)))
+
+    ;; First item in returned list should be a keyword; rest should be symbols.
+    (should (equal '(:imp strings are stringy)
+                   (int<imp>:feature:normalize "imp" "strings" :are '+stringy)))))
+
+
+;;------------------------------
+;; int<imp>:feature:normalize:imp->emacs
+;;------------------------------
+
+(ert-deftest test<imp/feature>::int<imp>:feature:normalize:imp->emacs ()
+  "Test that `int<imp>:feature:normalize:imp->emacs' behaves appropriately."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::int<imp>:feature:normalize:imp->emacs"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (should (equal 'imp:test:symbols
+                   (int<imp>:feature:normalize:imp->emacs '(:imp test symbols))))
+
+    (should (equal 'imp:test:symbols
+                   (int<imp>:feature:normalize:imp->emacs '(:imp test) 'symbols)))
+
+    (should (equal 'imp:provide
+                   (int<imp>:feature:normalize:imp->emacs '(:imp provide))))
+
+    (should (equal (int<imp>:feature:normalize:imp->emacs '(:imp provide))
+                   (int<imp>:feature:normalize:imp->emacs :imp 'provide)))
+
+    (should (equal (int<imp>:feature:normalize:imp->emacs '(:imp provide))
+                   (int<imp>:feature:normalize:imp->emacs '(((:imp))) '((provide)))))
+
+    (should (equal 'imp:strings
+                   (int<imp>:feature:normalize:imp->emacs '("imp" "strings"))))))
+
+
+;;------------------------------
+;; imp:feature:normalize
+;;------------------------------
+
+(ert-deftest test<imp/feature>::imp:feature:normalize ()
+  "Test that `imp:feature:normalize' behaves appropriately."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::imp:feature:normalize"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    ;; Main difference between `int<imp>:feature:normalize' and `imp:feature:normalize':
+    ;; Get a single symbol back if gave a single feature keyword/symbol.
+
+    (should (equal :imp
+                   (imp:feature:normalize :imp)))
+
+    (should (equal '(:imp test symbols)
+                   (imp:feature:normalize :imp 'test 'symbols)))
+
+    (should (equal '(:imp provide)
+                   (imp:feature:normalize :imp 'provide)))
+
+    ;; First item in returned list should be a keyword; rest should be symbols.
+    (should (equal '(:imp strings are stringy)
+                   (imp:feature:normalize "imp" "strings" :are '+stringy)))))
+
+
+;;------------------------------
+;; int<imp>:feature:add
+;;------------------------------
+
+(ert-deftest test<imp/feature>::int<imp>:feature:add ()
+  "Test that `int<imp>:feature:add' behaves appropriately."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/feature>::int<imp>:feature:add"
+      #'test<imp/feature>:setup
+      #'test<imp/feature>:teardown
+
+    ;;===
+    ;; Run the test.
+    ;;===
+    (let (features)
+      ;; We should have nothing right now.
+      (should-not imp:features)
+      (should (equal features imp:features))
+
+      ;; Add a feature.
+      (setq features '((:imp (test (symbols)))))
+      (should (equal features
+                     (int<imp>:feature:add '(:imp test symbols))))
+      (should (equal features imp:features))
+
+      ;; Another feature.
+      (setq features '((:imp (provide) (test (symbols)))))
+      (should (equal features
+                     (int<imp>:feature:add '(:imp provide))))
+      (should (equal features imp:features))
+
+      ;; And another?
+      ;; Errors because features should be normalized before calling `int<imp>:feature:add'.
+      (should-error (int<imp>:feature:add '("imp" "strings"))))))
 
 
 ;;------------------------------

@@ -127,6 +127,7 @@ the same index in SEQUENCE:EXPECTED."
          ;; `delete-directory' just returns nil?... so, can't check anything more.
          (delete-directory path:root :recursive))))
 
+
 (defun test<imp/feature/at>:create (test-name root features paths)
   "Create PATHS files for FEATURES at ROOT path."
   (let ((func.name "test<imp/feature/at>:create"))
@@ -142,7 +143,7 @@ the same index in SEQUENCE:EXPECTED."
                     paths
                     (car (last paths)))
 
-    (let ((path:final (car (last paths))))
+    (let ((path:final (imp:path:join root (car (last paths)))))
       (test<imp>:should:marker:small (format "path:final: %s" path:final))
       (dolist (path paths)
         (let ((path:full (imp:path:join root path)))
@@ -152,26 +153,35 @@ the same index in SEQUENCE:EXPECTED."
                           "Create path '%s'..."
                           path:full)
           ;; Create the file at path.
-          (make-empty-file path :make-parents)
+          (make-empty-file path:full :make-parents)
 
-          (let ((buffer (get-buffer-create path)))
+          (let ((buffer (get-buffer-create path:full)))
             ;; Add a var we can check for.
             (with-current-buffer buffer
               (test<imp>:should:marker:small (format "Write file var: '%s'..."
                                                      path:full))
               (insert (format "(setq test<imp/feature/at>::%s t)\n"
-                              (imp:feature:normalize features))))
+                              (int<imp>:feature:normalize:imp->emacs features))))
 
             ;; Put our feature definition in the last file in the list?
-            (when (eq path path:final)
+            (when (string= path:full path:final)
               (with-current-buffer buffer
                 (test<imp>:should:marker:small (format "Write `imp:provide': %s: '%s'..."
                                                        features
                                                        path:full))
                 (insert (format "\n(imp:provide %s)\n"
-                                features))))
+                                (mapconcat (lambda (feature-symbol)
+                                             ;; Quote symbols, leave keywords alone.
+                                             (concat (if (keywordp feature-symbol)
+                                                         ""
+                                                       "'")
+                                                     (symbol-name feature-symbol)))
+                                           (int<imp>:feature:normalize features)
+                                           " ")))))
 
-            ;; Close file's buffer.
+            ;; Finish up.
+            (with-current-buffer buffer
+              (write-file path:full))
             (kill-buffer buffer)))))))
 
 
@@ -236,7 +246,8 @@ Example:
     ;; Delete previous test's data if test didn't clean up somehow.
     (when (file-directory-p path:root)
       (test<imp>:should:marker:small (format "Delete old temp test dir '%s'..." path:root))
-      (test<imp/feature/at>:delete test-name path:root))
+      (test<imp/feature/at>:delete test-name path:root)
+      (should-not (file-directory-p path:root)))
 
     (test<imp>:should:marker:small (format "Create temp test dir '%s'..." path:root))
     (make-directory path:root :parents)

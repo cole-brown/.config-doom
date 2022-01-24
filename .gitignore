@@ -31,6 +31,9 @@ code/instance/*
 # Zip for sending in:
 *.zip
 
+# 'imp' unit test temporary files
+modules/emacs/imp/test/loading/features/*
+
 #                                  ---END!---                                  #
 #----------------------- Custom, Actual, For-This-Repo ------------------------#
 #------------------------------------------------------------------------------#

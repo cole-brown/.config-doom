@@ -227,6 +227,7 @@ FEATURE will be normalized, then converted into a single symbol
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp test) 'symbols)
 ;; (int<imp>:feature:normalize:imp->emacs '(:imp provide))
 ;; (int<imp>:feature:normalize:imp->emacs :imp 'provide)
+;; (int<imp>:feature:normalize:imp->emacs :imp)
 ;; (int<imp>:feature:normalize:imp->emacs '(((:imp))) '((provide)))
 
 
@@ -266,6 +267,24 @@ E.g.
 
 
 (defalias 'imp:feature 'imp:feature:normalize)
+
+
+(defun int<imp>:feature:normalize:display (&rest feature)
+  "Normalizes FEATURE down into a single keyword with separators.
+
+Similar output to `int<imp>:feature:normalize:imp->emacs'."
+  ;; Prepend ":" and turn into a keyword.
+  (intern (concat ":"
+                  ;; Compress feature list down into a single string w/ separators.
+                  (mapconcat #'identity
+                             (nreverse (int<imp>:feature:normalize:string feature))
+                             int<imp>:feature:replace:separator))))
+;; (int<imp>:feature:normalize:display '(:imp test symbols))
+;; (int<imp>:feature:normalize:display '(:imp test) 'symbols)
+;; (int<imp>:feature:normalize:display '(:imp provide))
+;; (int<imp>:feature:normalize:display :imp 'provide)
+;; (int<imp>:feature:normalize:display :imp)
+;; (int<imp>:feature:normalize:display '(((:imp))) '((provide)))
 
 
 ;;------------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 ;; -*- no-byte-compile: t; lexical-binding: t; -*-
-;; -*- no-byte-compile: t; -*-
 ;;; emacs/imp/test/load.el
 
 

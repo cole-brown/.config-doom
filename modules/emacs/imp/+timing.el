@@ -146,23 +146,6 @@ Args to this format string are:
 ;; Indentation
 ;;------------------------------------------------------------------------------
 
-
-;; TODO:load: a load timing feature?
-;;   - One in `int<imp>:load:feature' that will:
-;;     1. start timer, output: "loading xxx..."?
-;;     2. stop timer, output:  "└─yy.zzz seconds"
-;;     3. Look nice when cascading?
-;;        "loading xxx..."
-;;        "├─loading yyy..."
-;;        "│ └─cc.dd seconds"
-;;        "└─aa.bb seconds"
-;;     4. Output to some buffer named by defcustom (default "*Messages*").
-;;  - One or two stand-alone, external-api-named funcs (that `int<imp>:load:feature' calls?).
-;;  - An easy way to defadvice-wrap Emacs' `load' in the timing thing.
-;; TODO:load: Think that would be an optional file '+output.el'?
-;; TODO:load: Or like debug - triggers off of a module flag or a toggle var?
-;;       - Also should trigger off of Emacs' "--debug-init" command line arg.
-
 (defun int<imp>:timing:tree:type (type indent)
   "Get tree type string for current TYPE and INDENT level.
 
@@ -202,7 +185,7 @@ indention levels."
      ;; Need to loop at least once (for indent 0), so 1+ indent level.
      (dotimes (i (1+ int<imp>:timing:indent) prefix)
        (push
-        (imp:timing:tree:type type i)
+        (int<imp>:timing:tree:type type i)
         prefix)))
    ;; Join w/ no padding.
    ""))
@@ -291,7 +274,9 @@ does nothing instead."
 
 (defun int<imp>:timing:buffer:insert (string)
   "Inserts finalized message STRING into output buffer."
-  (let ((name (imp:timing:buffer:name)))
+  ;; Don't do anything unless enabled.
+  (when-let ((enabled? (imp:timing:enabled?))
+             (name (imp:timing:buffer:name)))
     (cond
      ;;------------------------------
      ;; Buffers
@@ -307,7 +292,11 @@ does nothing instead."
       (with-current-buffer (get-buffer-create name)
         ;; We are now in BUFFER, so just insert the formatted string on a new line at the end.
         (goto-char (point-max))
-        (insert (concat "\n" string))))
+        ;; Prepend a newline, unless this is a new/empty buffer.
+        (insert (concat (if (= (buffer-size) 0)
+                            ""
+                          "\n")
+                        string))))
 
      ;;------------------------------
      ;; Errors
@@ -325,7 +314,7 @@ does nothing instead."
 
 
 (defun int<imp>:timing:message (type formatting &rest args)
-  "Appends indentatimn and prints timing message for FORMATTING string and ARGS.
+  "Prepends indentation and prints timing message for FORMATTING string and ARGS.
 
 TYPE should be either `:root' or `:leaf'. Uses TYPE to get the indent string."
   (int<imp>:timing:buffer:insert
@@ -340,7 +329,7 @@ TYPE should be either `:root' or `:leaf'. Uses TYPE to get the indent string."
 Message depends on `imp:timing:format:load'."
   (int<imp>:timing:message :root
                            imp:timing:format:load
-                           feature
+                           (int<imp>:feature:normalize:display feature)
                            filename
                            path))
 
@@ -381,7 +370,7 @@ Message depends on `imp:timing:format:skip'."
   (when (imp:timing:enabled?)
     (int<imp>:timing:message :root
                              imp:timing:format:already-provided
-                             feature
+                             (int<imp>:feature:normalize:display feature)
                              filename
                              path)))
 

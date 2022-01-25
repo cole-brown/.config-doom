@@ -90,7 +90,7 @@ imp will translate the FEATURE symbol chain via `int<imp>:feature:normalize:imp-
 the result for the call to Emacs' `provide'.
 
 Returns the Emacs feature symbol created/used."
-  (apply #'imp:provide feature)
+  (imp:provide feature)
   (let ((feature/emacs (int<imp>:feature:normalize:imp->emacs feature)))
     (int<imp>:debug "imp:provide:with-emacs" "Providing to emacs as '%S'..."
                     feature/emacs)

@@ -546,7 +546,7 @@ Only loads the file if the FEATURE is not already provided in `imp:features'."
        ;; Provide Check
        ;;------------------------------
        ;; Only load if it's not provided already.
-       (if (apply #'imp:provided? macro:feature)
+       (if (imp:provided? macro:feature)
            ;; Skip w/ optional timing message.
            (progn
              (imp:timing:already-provided macro:feature
@@ -574,7 +574,7 @@ Only loads the file if the FEATURE is not already provided in `imp:features'."
          ;; Does that feature exists now?
          ;;   - Prevent feature name drift, since this doesn't actually require
          ;;     the feature name for the actual loading.
-         (when (not (apply #'imp:provided? macro:feature))
+         (when (not (imp:provided? macro:feature))
            (if macro:error?
                (int<imp>:error macro:func.name
                                '("Feature is still not defined after loading the file!\n"

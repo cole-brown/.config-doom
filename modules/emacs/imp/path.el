@@ -184,7 +184,7 @@ Then checks that:
   1) It exists as a file.
   2) The file is readable."
   ;; Join PATHS, canonicalize at ROOT.
-  (let ((filepath (expand-file-name (apply #'imp:path:join paths) root)))
+  (let ((filepath (expand-file-name (imp:path:join paths) root)))
     ;; Check that it exists.
     (if (and (file-regular-p  filepath)
              (file-readable-p filepath))
@@ -197,7 +197,7 @@ Then checks that:
   "Returns canonical path to file if ROOT and PATHS are strings, else nil."
   (if (and (stringp root)
            (seq-every-p #'stringp paths))
-      (expand-file-name (apply #'imp:path:join paths) root)
+      (expand-file-name (imp:path:join paths) root)
     nil))
 
 
@@ -598,9 +598,10 @@ NEXT and PARENT are expected to be strings."
 (imp:path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
   (seq-reduce #'int<imp>:path:append
-              path
+              (int<imp>:list:flatten path)
               nil))
 ;; (imp:path:join "/foo" "bar.el")
+;; (imp:path:join '("/foo" ("bar.el")))
 ;; (imp:path:join "foo" "bar.el")
 ;; (imp:path:join "foo")
 
@@ -610,7 +611,7 @@ NEXT and PARENT are expected to be strings."
 
 (int<imp>:path:sans-extension \"jeff\" \"jill.el\")
   ->\"jeff/jill\""
-  (file-name-sans-extension (apply #'imp:path:join path)))
+  (file-name-sans-extension (imp:path:join path)))
 ;; (int<imp>:path:sans-extension "foo" "bar/")
 ;; (int<imp>:path:sans-extension "foo" "bar/" "baz.el")
 
@@ -836,56 +837,6 @@ Must be called after 'provide.el' is loaded."
   ;; Provide feature symbol for 'path.el'.
   ;;---
   (imp:provide:with-emacs :imp 'path))
-
-
-;;------------------------------------------------------------------------------
-;; TODO: Implement or delete?
-;;------------------------------------------------------------------------------
-;;
-;; (defconst int<imp>:path:find/regex
-;; (rx
-;; ;; Prefix
-;; (group (optional (or "+"
-;;                         ;; Any other prefixes?
-;;                         )))
-;; ;; Feature Name to insert
-;; "%S"
-;; ;; Postfix
-;; (group (optional (or ".el"
-;;                         ".imp.el"))))
-;; "Regex to apply to each name in a feature list (except root) when searching
-;; for a filepath match.
-;;
-;; Feature name string will replace the '%S'.")
-;;
-;;
-;; (defun int<imp>:path:find (feature)
-;; "Convert FEATURE (a list of keywords/symbols) to a load path.
-;;
-;; 1) Converts FEATURE into a load path regex string.
-;; 2) Searches for a load path that matches.
-;; - Fails if more than one match: nil return.
-;; - Fails if zero matches: nil return.
-;; 3) Returns load path string if it exists, nil if not.
-;;
-;; NOTE: the first element in FEATURE must exist as a root in `imp:path:roots',
-;; presumably by having called `imp:root'.
-;;
-;; Example:
-;; (int<imp>:path:find :imp 'foo 'bar 'baz)
-;; Could return:
-;; -> \"/path/to/imp-root/foo/bar/baz.el\"
-;; -> \"/path/to/imp-root/+foo/bar/baz.el\"
-;; -> \"/path/to/imp-root/foo/+bar/baz.el\"
-;; -> \"/path/to/imp-root/+foo/bar/+baz.el\"
-;; -> etc, depending on `int<imp>:path:find/regex' settings."
-;; ;; TODO:find: implement this.
-;; ;; Features to strings.
-;; ;; For each string except first:
-;; ;;   - turn into regex
-;; ;; Search for path that matches regex somehow.
-;; ;; Return if found.
-;; nil)
 
 
 ;;------------------------------------------------------------------------------

@@ -15,7 +15,7 @@
 ;;------------------------------------------------------------------------------
 
 
-(defun imp:require (feature:base &rest feature)
+(defun imp:require (&rest feature)
   "Ensures file(s) for FEATURE:BASE keyword & FEATURE symbols are provided.
 
 Examples:
@@ -28,19 +28,19 @@ Examples:
     (imp:require :mis 'code)
 
 Returns non-nil on success."
-  ;; TODO:load: the load-all functionality
-  ;; Already provided?
-  (cond ((apply #'imp:provided? feature:base feature)
-         t)
+  (let ((feature:normal (int<imp>:feature:normalize feature)))
+    ;; Already provided?
+    (cond ((imp:provided? feature:normal)
+           t)
 
-        ;; Can we load it?
-        ((apply #'int<imp>:load:feature feature:base feature)
-         ;; Yes; so add to imp's feature tree.
-         (int<imp>:feature:add (cons feature:base feature)))
+          ;; Can we load it?
+          ((int<imp>:load:feature feature:normal)
+           ;; Yes; so add to imp's feature tree.
+           (int<imp>:feature:add feature:normal))
 
-        ;; Nope; return nil.
-        (t
-         nil)))
+          ;; Nope; return nil.
+          (t
+           nil))))
 ;; (imp:require 'test 'this)
 
 

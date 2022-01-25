@@ -215,7 +215,7 @@ If LOAD is non-nil, loads 'test/loading/load.el' to set-up the
 
     (let* ((feature '(:test one two three))
            (feature/emacs (int<imp>:feature:normalize:imp->emacs feature)))
-      (apply #'imp:provide:with-emacs feature)
+      (imp:provide:with-emacs feature)
       ;; Feature should have been added to `imp'.
       (should (equal imp:features
                      '((:test (one (two (three)))))))
@@ -227,7 +227,7 @@ If LOAD is non-nil, loads 'test/loading/load.el' to set-up the
 
     (let* ((feature '(:test one and uh more))
            (feature/emacs (int<imp>:feature:normalize:imp->emacs feature)))
-      (apply #'imp:provide:with-emacs feature)
+      (imp:provide:with-emacs feature)
       ;; Feature should have been added to `imp'.
       (should (equal imp:features
                    '((:test (one
@@ -241,7 +241,7 @@ If LOAD is non-nil, loads 'test/loading/load.el' to set-up the
 
     (let* ((feature '(:test one and done))
            (feature/emacs (int<imp>:feature:normalize:imp->emacs feature)))
-      (apply #'imp:provide:with-emacs feature)
+      (imp:provide:with-emacs feature)
       ;; Feature should have been added to `imp'.
       (should (equal imp:features
                      '((:test (one

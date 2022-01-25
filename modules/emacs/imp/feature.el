@@ -272,15 +272,19 @@ E.g.
 ;; Add Feature.
 ;;------------------------------------------------------------------------------
 
-(defun int<imp>:feature:add (feature)
-  "Add the FEATURE (a list of keywords/symbols) to the `imp:features' tree."
+(defun int<imp>:feature:add (normalized)
+  "Add the NORMALIZED features to the `imp:features' tree.
+
+NORMALIZED must already be a normalized (by `int<imp>:feature:normalize')
+list of keywords/symbols."
   (int<imp>:debug "int<imp>:feature:add" "Adding to imp:features...")
-  (int<imp>:debug "int<imp>:feature:add" "  feature: %S" feature)
+  (int<imp>:debug "int<imp>:feature:add" "  feature: %S" normalized)
   (int<imp>:debug "int<imp>:feature:add" "imp:features before:\n%S"
                   (pp-to-string imp:features))
 
-  ;; Add features to `imp:features' tree & set updated tree back to `imp:features'.
-  (int<imp>:tree:update feature nil imp:features)
+  ;; Add normalized features to `imp:features' tree & set updated tree back
+  ;; to `imp:features'.
+  (int<imp>:tree:update normalized nil imp:features)
 
   (int<imp>:debug "int<imp>:feature:add" "imp:features after:\n%S"
                   (pp-to-string imp:features))

@@ -887,7 +887,7 @@ to a list of string."
       (dolist (entry features:expected)
         (let* ((feature:expected (car entry))
                (paths:expected (cdr entry))
-               (result (apply #'int<imp>:feature:paths feature:expected)))
+               (result (int<imp>:feature:paths feature:expected)))
           ;; Should have a list as a result.
           (should result)
           (should (listp result))

@@ -175,7 +175,6 @@ BRANCH."
 ;;------------------------------------------------------------------------------
 
 
-;; TODO:tree: make this update `tree' so caller doesn't have to do: (setq tree (int<imp>:tree:update ...))
 (defun int<imp>:tree:update/helper (chain value tree)
   "Adds CHAIN with final VALUE to TREE.
 

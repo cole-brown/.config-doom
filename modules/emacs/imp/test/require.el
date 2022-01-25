@@ -112,7 +112,7 @@
     ;; Require a feature:
     ;;---
     ;; For testing that nothing happens when it's already required.
-    (apply #'imp:provide test<imp/require>:loading:dont-load:feature)
+    (imp:provide test<imp/require>:loading:dont-load:feature)
 
     ;;---
     ;; Set up variables:
@@ -130,20 +130,18 @@
     ;;---
     (should-not test<imp>:loading:dont-load:loaded)
     ;; Call `imp:require on it's feature; shouldn't be loaded since we've required it already.
-    (should (apply #'imp:require
-                   test<imp/require>:loading:dont-load:feature))
+    (should (imp:require test<imp/require>:loading:dont-load:feature))
     (should-not test<imp>:loading:dont-load:loaded)
 
     ;;---
     ;; If we know the base feature, we should be able to load the file by the feature name.
     ;;---
     (should-not test<imp>:loading:load:loaded)
-    (should (apply #'imp:require
-                   test<imp/require>:loading:load:feature))
+    (should (imp:require test<imp/require>:loading:load:feature))
     (should test<imp>:loading:load:loaded)
     (should test<imp>:file:loading?)
     ;; And it should now be provided.
-    (should (apply #'imp:provided? test<imp/require>:loading:load:feature))
+    (should (imp:provided? test<imp/require>:loading:load:feature))
 
     ;;------------------------------
     ;; Errors:
@@ -153,8 +151,7 @@
     ;; Know the base feature, but can't find anything to load.
     ;;---
     (should-error test<imp>:loading:load:doesnt-exist)
-    (should-error (apply #'imp:require
-                         test<imp/require>:loading:doesnt-exist:feature))
+    (should-error (imp:require test<imp/require>:loading:doesnt-exist:feature))
     (should-error test<imp>:loading:load:doesnt-exist)
 
     ;;---

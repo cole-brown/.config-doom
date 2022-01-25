@@ -18,16 +18,13 @@
 ;; Test Debugging Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar test<imp/path>:path/dir:this (test<imp>:path/dir:this)
-  "This file's directory path.")
-
-
 (defvar test<imp/path>:path/dir::int<imp>:path:current:dir
   (int<imp>:path:current:dir)
   "Value to use when testing `int<imp>:path:current:dir'.")
 
 
-(defvar test<imp/path>:path/file:this (test<imp>:path/file:this)
+(defvar test<imp/path>:path/file:this
+  (test<imp>:path/file:this)
   "This file's path.")
 
 
@@ -212,14 +209,14 @@
                                                         )
                                       "init.el")
                                 (list :test
-                                      test<imp/path>:path/dir:this
+                                      test<imp>:path:root:test
                                       (file-name-nondirectory test<imp/path>:path/file:this))
                                 ;;---
                                 ;; DNE/Invalid
                                 ;;---
                                 ;; Valid directory, but file doesn't exist.
                                 (list :dne/file
-                                      test<imp/path>:path/dir:this
+                                      test<imp>:path:root:test
                                       "abcdefghijklmno.dne")
                                 ;; Directory and file don't exist.
                                 (list :dne/dir
@@ -379,7 +376,7 @@
                                       "init.el"
                                       nil)
                                 (list :test
-                                      test<imp/path>:path/dir:this
+                                      test<imp>:path:root:test
                                       (file-name-nondirectory test<imp/path>:path/file:this)
                                       nil)
                                 ;;---
@@ -387,7 +384,7 @@
                                 ;;---
                                 ;; Valid directory, but file doesn't exist.
                                 (list :dne/file
-                                      test<imp/path>:path/dir:this
+                                      test<imp>:path:root:test
                                       "abcdefghijklm.dne"
                                       "nopqrstuvwxyz.dne")
                                 ;; Directory and file don't exist.
@@ -835,7 +832,7 @@ to a path properly."
     ;; Valid path and file.
     ;; Returns new `imp:path:roots', so check for the thing we're adding.
     (let* ((feature :bar)
-           (path    test<imp/path>:path/dir:this)
+           (path    test<imp>:path:root:test)
            (file    test<imp/path>:path/file:this)
            (result  (imp:path:root feature path file)))
       (should result)
@@ -976,7 +973,7 @@ to a path properly."
     ;; Run the test.
     ;;===
 
-    (should (string= (directory-file-name test<imp/path>:path/dir:this)
+    (should (string= (directory-file-name test<imp>:path:root:test)
                      test<imp/path>:path/dir::int<imp>:path:current:dir))))
 
 
@@ -1083,25 +1080,25 @@ to a path properly."
     ;;---
     ;; Valid file.
     ;;---
-    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should-error (int<imp>:path:normalize test<imp>:path:root:test
                                            "../path.el"
                                            :dir))
-    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should (int<imp>:path:normalize test<imp>:path:root:test
                                      "../path.el"
                                      :file))
-    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should (int<imp>:path:normalize test<imp>:path:root:test
                                      "../path"
                                      :file:load))
 
     ;;---
     ;; Valid dir.
     ;;---
-    (should (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should (int<imp>:path:normalize test<imp>:path:root:test
                                      ".."
                                      :dir))
-    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should-error (int<imp>:path:normalize test<imp>:path:root:test
                                            ".."
                                            :file))
-    (should-error (int<imp>:path:normalize test<imp/path>:path/dir:this
+    (should-error (int<imp>:path:normalize test<imp>:path:root:test
                                            ".."
                                            :file:load))))

@@ -22,35 +22,6 @@
 ;; Test Debugging Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar test<imp/require>:loading:root (imp:path:join (test<imp>:path/dir:this)
-                                                      "loading")
-  "The \"root\" directory for our 'imp/test/loading/load.el' file.")
-
-
-(defvar test<imp/require>:loading:feature :loading
-  "The feature name for our 'imp/test/loading/' files.")
-
-
-(defvar test<imp/require>:loading:load:file "load"
-  "The \"root\" filename (or filepath) for our 'imp/test/loading/load.el' file.")
-
-
-(defvar test<imp/require>:loading:load:feature '(:loading load)
-  "The feature name for our 'imp/test/loading/load.el' file.")
-
-
-(defvar test<imp/require>:loading:dont-load:file "dont-load"
-  "The \"root\" filename (or filepath) for our 'imp/test/loading/dont-load.el' file.")
-
-
-(defvar test<imp/require>:loading:dont-load:feature '(:loading dont-load)
-  "The feature name for our 'imp/test/loading/dont-load.el' file.")
-
-
-(defvar test<imp/require>:loading:doesnt-exist:feature '(:loading doesnt-exist)
-  "A feature name for 'imp/test/loading/doesnt-exist.el', which doesn't exist.")
-
-
 ;;------------------------------
 ;; Set-Up / Tear-Down
 ;;------------------------------
@@ -105,14 +76,14 @@
     ;; Supply a root:
     ;;---
     ;; For testing that it can load something it knows about but that hasn't been required.
-    (imp:path:root test<imp/require>:loading:feature
-                   test<imp/require>:loading:root)
+    (imp:path:root test<imp>:feature:loading
+                   test<imp>:path:root:loading)
 
     ;;---
     ;; Require a feature:
     ;;---
     ;; For testing that nothing happens when it's already required.
-    (imp:provide test<imp/require>:loading:dont-load:feature)
+    (imp:provide test<imp>:feature:loading:dont-load)
 
     ;;---
     ;; Set up variables:
@@ -130,18 +101,18 @@
     ;;---
     (should-not test<imp>:loading:dont-load:loaded)
     ;; Call `imp:require on it's feature; shouldn't be loaded since we've required it already.
-    (should (imp:require test<imp/require>:loading:dont-load:feature))
+    (should (imp:require test<imp>:feature:loading:dont-load))
     (should-not test<imp>:loading:dont-load:loaded)
 
     ;;---
     ;; If we know the base feature, we should be able to load the file by the feature name.
     ;;---
     (should-not test<imp>:loading:load:loaded)
-    (should (imp:require test<imp/require>:loading:load:feature))
+    (should (imp:require test<imp>:feature:loading:load))
     (should test<imp>:loading:load:loaded)
     (should test<imp>:file:loading?)
     ;; And it should now be provided.
-    (should (imp:provided? test<imp/require>:loading:load:feature))
+    (should (imp:provided? test<imp>:feature:loading:load))
 
     ;;------------------------------
     ;; Errors:
@@ -151,7 +122,7 @@
     ;; Know the base feature, but can't find anything to load.
     ;;---
     (should-error test<imp>:loading:load:doesnt-exist)
-    (should-error (imp:require test<imp/require>:loading:doesnt-exist:feature))
+    (should-error (imp:require test<imp>:feature:loading:doesnt-exist))
     (should-error test<imp>:loading:load:doesnt-exist)
 
     ;;---

@@ -81,7 +81,6 @@
 ;; Testing Dirs & Files
 ;;------------------------------
 
-;; TODO: Change all tests to use these.
 (defvar test<imp>:path:root:test (test<imp>:path/dir:this)
   "The 'imp/test' \"root\" directory.")
 

@@ -15,10 +15,6 @@
 ;; Test Debugging Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar test<imp/feature>:path/dir:this (test<imp>:path/dir:this)
-  "This file's directory path.")
-
-
 ;;------------------------------
 ;; `imp:features'
 ;;------------------------------
@@ -751,8 +747,7 @@ to a list of string."
 
 (ert-deftest test<imp/feature>::imp:feature:at::features-register ()
   "Test that `imp:feature:at' can find a load path for a feature registered with it."
-  (let ((path:root (imp:path:join test<imp/feature>:path/dir:this
-                                  "loading"
+  (let ((path:root (imp:path:join test<imp>:path:root:loading
                                   "features")))
     (test<imp>:fixture
         ;;===
@@ -822,8 +817,7 @@ to a list of string."
 
 (ert-deftest test<imp/feature>::int<imp>:feature:paths ()
   "Test that `int<imp>:feature:paths' creates paths correctly."
-  (let ((path:root (imp:path:join test<imp/feature>:path/dir:this
-                                  "loading"
+  (let ((path:root (imp:path:join test<imp>:path:root:loading
                                   "features"))
         (feature:base :feature)
         (features:at (list (list :feature

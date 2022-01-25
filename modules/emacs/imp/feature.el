@@ -319,6 +319,12 @@ Only checks `imp:features' variable; does not check Emacs' `features' list."
 ;; Features & Paths to them
 ;;------------------------------------------------------------------------------
 
+(defun int<imp>:feature:locations (feature:base)
+  "Returns FEATURE:BASE's entry in `imp:features:locate' or nil."
+  (int<imp>:alist:get/value feature:base
+                            imp:features:locate))
+
+
 (defun int<imp>:feature:paths (feature:base &rest feature)
   "Find (relative) path(s) to files for FEATURE:BASE + FEATURE.
 
@@ -352,8 +358,7 @@ Errors if:
     ;; Get the paths and load them?
     ;;------------------------------
     (let* ((path:root (int<imp>:path:root/dir feature:base))
-           (feature:locations (int<imp>:alist:get/value feature:base
-                                                        imp:features:locate))
+           (feature:locations (int<imp>:feature:locations feature:base))
            (paths (int<imp>:alist:get/value check
                                             feature:locations
                                             int<imp>:features:locate:equal)))

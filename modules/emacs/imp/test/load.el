@@ -227,8 +227,90 @@
     (should-error (int<imp>:load:feature (list test<imp>:feature:loading :unknown-feature)))))
 
 
-;; TODO: Another `test<imp/load>::int<imp>:load:feature' without explicitly loading the 'imp-loading' file.
-;;   - test that imp can find and load it if it's named correctly.
+(ert-deftest test<imp/load>::int<imp>:load:feature::find-features ()
+  "Test that `int<imp>:load:feature' behaves appropriately and can
+find/load 'imp-features.el'."
+  (test<imp>:fixture
+      ;;===
+      ;; Test name, setup & teardown func.
+      ;;===
+      "test<imp/load>::int<imp>:load:feature"
+      nil
+      nil
+
+    ;;===
+    ;; Run the test.
+    ;;===
+
+    (should-error test<imp>:file:loading?)
+    (should-error test<imp>:loading:load:loaded)
+    (should-error test<imp>:loading:dont-load:loaded)
+
+    ;;------------------------------
+    ;; Cannot load without a root.
+    ;;------------------------------
+
+    ;; Before we supply the root, test that we error trying to load a feature.
+    (should-error (int<imp>:load:feature test<imp>:feature:loading:features))
+
+    ;;------------------------------
+    ;; Load feature & root.
+    ;;------------------------------
+
+    ;;---
+    ;; Supply a root:
+    ;;---
+    ;; For testing that it can load something it knows about but that hasn't been loaded yet.
+    (test<imp>:setup/root:loading)
+
+    ;;---
+    ;; Do _NOT_ supply feature paths:
+    ;;---
+    (should-not imp:features:locate)
+    ;; (should (int<imp>:load:file (imp:path:join test<imp>:path:root:loading
+    ;;                                            imp:path:filename:features)))
+    ;; (should imp:features:locate)
+
+    ;; But do make sure the expected file is present.
+    (should (file-exists-p (imp:path:join test<imp>:path:root:loading
+                                          imp:path:filename:features)))
+
+    ;;---
+    ;; Load a feature:
+    ;;---
+    (should-not imp:features)
+    ;; These shouldn't be defined since we haven't loaded anything at all yet.
+    (should-error test<imp>:loading:features:loaded)
+    (should-not (imp:provided? test<imp>:feature:loading:features))
+
+    ;; Don't want to test that it can load the features file directly.
+    ;; Test that it will load it while trying to load an actual feature.
+    ;; ;; Should return `t' but not actually load the file.
+    ;; (should (int<imp>:load:feature test<imp>:feature:loading:features))
+    ;; (should-not test<imp>:loading:features:loaded)
+
+    ;;---
+    ;; Set up variables:
+    ;;---
+    ;; First, set these variable to `nil' so they exist.
+    (setq test<imp>:loading:load:loaded      nil  ;; If 'test/loading/load.el' is loaded, it will be set to `t'.
+          test<imp>:loading:dont-load:loaded nil  ;; If 'test/loading/dont-load.el' is loaded, it will be set to `t'.
+          test<imp>:loading:features:loaded  nil) ;; If 'test/loading/imp-features.el' is loaded, it will be set to `t'.
+
+    ;;------------------------------
+    ;; Load:
+    ;;------------------------------
+
+    ;;---
+    ;; Trying to load by feature name should find/load the features file so
+    ;; that it can find/load the feature named.
+    ;;---
+    (should-not test<imp>:loading:load:loaded)
+    (should (int<imp>:load:feature test<imp>:feature:loading:load))
+    ;; Should have the vars from both 'load.el' and 'imp-features.el' now.
+    (should test<imp>:loading:load:loaded)
+    (should test<imp>:loading:features:loaded)
+    (should test<imp>:file:loading?)))
 
 
 ;;------------------------------

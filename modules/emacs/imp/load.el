@@ -142,6 +142,31 @@ Returns non-nil if loaded."
                     feature:emacs
                     feature:emacs/base
                     feature:emacs/rest)
+
+    ;;------------------------------
+    ;; No path root?
+    ;;------------------------------
+    ;; If we don't even have the root, we can't really do anything. So just ask
+    ;; for the root directory and allow the error if it's not in
+    ;; `imp:path:roots'.
+    (int<imp>:path:root/dir feature:base)
+
+    ;;------------------------------
+    ;; Load the features file?
+    ;;------------------------------
+    (unless (int<imp>:feature:locations feature:base)
+      (int<imp>:debug func.name
+                      "No feature locations for `%S'; looking for features file..."
+                      feature:base)
+      ;; `int<imp>:path:root/file/features' will error if no suitable file exists.
+      (let ((path:features (int<imp>:path:root/file/features feature:base)))
+        ;; This should error if file fails to load.
+        (int<imp>:load:file path:features)
+        (int<imp>:debug func.name
+                        "Loaded features for `%S' from: %s"
+                        feature:base
+                        path:features)))
+
     (cond
      ;;------------------------------
      ;; Already Loaded?

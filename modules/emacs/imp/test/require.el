@@ -6,16 +6,16 @@
 ;; Test Requirements
 ;;------------------------------------------------------------------------------
 
-(load! "base.el")
+(test<imp>:init:load "base.el")
 
-(load! "../feature.el")
-(load! "../alist.el")
-(load! "../tree.el")
-(load! "../path.el")
-(load! "../+timing.el")
-(load! "../provide.el")
-(load! "../load.el")
-(load! "../require.el")
+(test<imp>:init:load "../feature.el")
+(test<imp>:init:load "../alist.el")
+(test<imp>:init:load "../tree.el")
+(test<imp>:init:load "../path.el")
+(test<imp>:init:load "../+timing.el")
+(test<imp>:init:load "../provide.el")
+(test<imp>:init:load "../load.el")
+(test<imp>:init:load "../require.el")
 
 
 ;;------------------------------------------------------------------------------

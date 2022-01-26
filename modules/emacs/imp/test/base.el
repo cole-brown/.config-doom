@@ -2,14 +2,20 @@
 ;;; imp/test/base.el
 
 
+;;==============================================================================
+;; Hello there.
+;;==============================
+;; Evaluate 'init.el' before evaluating test files and running tests.
+;;==============================================================================
+
+
 ;;------------------------------------------------------------------------------
 ;; Base Functionality for Testing
 ;;------------------------------------------------------------------------------
 
 ;; Load whatever should always be loaded for all tests.
-(load! "../error")
-(load! "../debug")
-
+(test<imp>:init:load "../error")
+(test<imp>:init:load "../debug")
 
 
 ;;------------------------------------------------------------------------------
@@ -270,7 +276,7 @@ Search for \"[MARK-\[0-9\]+]:\"."
   "Puts the 'test/loading' stuff into `imp:path:roots'."
   ;; Need to have 'imp/path.el' functions, obviously, so do not use in tests
   ;; before 'imp/path.el' has been tested.
-  (load! "../path")
+  (test<imp>:init:load "../path")
   (imp:path:root test<imp>:feature:loading
                  test<imp>:path:root:loading
                  test<imp>:file:loading:init

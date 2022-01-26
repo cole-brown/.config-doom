@@ -62,11 +62,13 @@ If MSG is non-nil, it is output just before the status but in the same
     (message (mapconcat #'identity
                         status
                         "\n")
-             (if (featurep! +debug)
-                 "[--SET--]"
+             ;; NOTE: Doom Emacs only, protected by `fboundp' check for the `featurep!' macro.
+             (if (and (fboundp 'featurep!)
+                      (featurep! +debug))
+                 "[FEATURE]"
                "[-------]")
              (if int<imp>:debug:flag
-                 "[ENABLED]"
+                 "[FLAGGED]"
                "[-------]")
              (if (int<imp>:debug:enabled?)
                  "[ENABLED]"
@@ -87,8 +89,10 @@ Flags:
   - `int<imp>:debugging' toggle variable."
   ;; Is a debug flag enabled?
   (cond
+   ;; NOTE: Doom Emacs only, protected by `fboundp' check for the `featurep!' macro.
    ;; The `+debug' flag in the `doom!' macro in user's "<doom-dir>/init.el".
-   ((featurep! +debug)
+   ((and (fboundp 'featurep!)
+         (featurep! +debug))
     t)
 
    ;; `:imp' debugging toggle:

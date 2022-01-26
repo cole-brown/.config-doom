@@ -41,6 +41,26 @@
 ;;; Code:
 
 
+;;------------------------------------------------------------------------------
+;; Function for to Load our Files...
+;;------------------------------------------------------------------------------
+
+(defun int<imp>:init:load (filename)
+  "Load a FILENAME relative to the current file."
+  (let (file-name-handler-alist)
+    (load (expand-file-name
+           filename
+           (directory-file-name
+            (file-name-directory
+             (cond ((bound-and-true-p byte-compile-current-file))
+                   (load-file-name)
+                   ((stringp (car-safe current-load-list))
+                    (car current-load-list))
+                   (buffer-file-name)
+                   ((error "Cannot get this file-path"))))))
+          nil
+          'nomessage)))
+
 
 ;;------------------------------------------------------------------------------
 ;; Load our files...
@@ -50,27 +70,27 @@
 ;; Required by debug.
 ;;------------------------------
 ;; Try not to have too many things here.
-(load! "error")
+(int<imp>:init:load "error")
 
 
 ;;------------------------------
 ;; Debug ASAP!..
 ;;------------------------------
-(load! "debug")
+(int<imp>:init:load "debug")
 
 
 ;;------------------------------
 ;; Order matters.
 ;;------------------------------
-(load! "feature")
-(load! "alist")
-(load! "tree")
-(load! "path")
-(load! "+timing") ;; Optional, but always load it - it'll time or not time based on settings.
-(load! "provide")
-(load! "load")
-(load! "require")
-(load! "commands")
+(int<imp>:init:load "feature")
+(int<imp>:init:load "alist")
+(int<imp>:init:load "tree")
+(int<imp>:init:load "path")
+(int<imp>:init:load "+timing") ;; Optional, but always load it - it'll time or not time based on settings.
+(int<imp>:init:load "provide")
+(int<imp>:init:load "load")
+(int<imp>:init:load "require")
+(int<imp>:init:load "commands")
 
 
 ;;------------------------------------------------------------------------------

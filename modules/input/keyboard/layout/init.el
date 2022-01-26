@@ -14,8 +14,8 @@
 ;; Layout Building Functions
 ;;------------------------------------------------------------------------------
 
-(load! "derive")
 (load! "types/init")
+(load! "derive")
 (load! "layout")
 (load! "bind")
 (load! "bind-debug")
@@ -24,14 +24,3 @@
 ;; The End.
 ;;------------------------------------------------------------------------------
 (imp:provide :input 'keyboard 'layout)
-
-
-;;------------------------------------------------------------------------------
-;; Layout Inits
-;;------------------------------------------------------------------------------
-
-;; Find our active keyboard layout and load its init if it has one.
-(when (int<keyboard>:load:allowed? :init)
-  (keyboard:load:active "init" :init))
-
-

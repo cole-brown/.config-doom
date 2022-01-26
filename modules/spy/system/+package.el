@@ -1,6 +1,6 @@
 ;;; spy/system/+package.el -*- lexical-binding: t; -*-
 
-(imp:require :modules 'spy 'strings)
+(imp:require :str)
 (imp:require :path)
 (imp:require :jerky)
 

@@ -1,6 +1,6 @@
 ;;; spy/system/+init.el -*- lexical-binding: t; -*-
 
-(imp:require :modules 'spy 'strings 'normalize)
+(imp:require :str 'normalize)
 (imp:require :path)
 (imp:require :jerky)
 

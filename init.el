@@ -217,13 +217,14 @@
        ;; Has to Be After jerky:
        datetime            ; spy:datetime: For dates, times, datetimes, timedates...
 
+       ;; Run init/config after `:spy' modules.
+       :taskspace
+       taskspace           ; Note files templates and structured note-data folders (requires `emacs/dlv' unless `-dlv' flag present).
+
+       :spy
        ;; System Setup Init
        system              ; spy:system:  For one-to-many config-to-computers setup.
        io                  ; spy:io:      Input and output stuff (e.g. inserting signatures).
        secret              ; spy:secret:  For per-system things, secret keys, etc.
-
-       ;; Run init/config after `:spy' modules.
-       :taskspace
-       taskspace           ; Note files templates and structured note-data folders (requires `emacs/dlv' unless `-dlv' flag present).
 
        )

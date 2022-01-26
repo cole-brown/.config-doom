@@ -9,7 +9,7 @@
 
 (require 's)
 (require 'dash)
-(imp:require :modules 'spy 'strings)
+(imp:require :str)
 (imp:require :modules 'spy 'lisp)
 (imp:require :jerky 'debug)
 

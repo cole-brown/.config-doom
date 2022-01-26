@@ -31,6 +31,13 @@
 ;; Load: Required Code Files
 ;;------------------------------------------------------------------------------
 
+(imp:path:root :input
+               (imp:path:join doom-private-dir
+                              "modules"
+                              "input")
+               "init.el")
+
+
 ;; NOTE: Order could matter - take care if modifying.
 (load! "command")
 (load! "output")

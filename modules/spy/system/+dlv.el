@@ -1,7 +1,7 @@
 ;;; spy/system/+dlv.el -*- lexical-binding: t; -*-
 
 (imp:require :dlv)
-(imp:require 'taskspace)
+(imp:require :taskspace)
 (imp:require :jerky '+dlv)
 
 

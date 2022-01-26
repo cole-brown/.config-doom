@@ -431,4 +431,4 @@ VALUE is optional and should be:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:require :input 'keyboard 'debug)
+(imp:provide :input 'keyboard 'debug)

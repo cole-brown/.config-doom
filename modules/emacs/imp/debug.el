@@ -18,6 +18,14 @@
   "Debug flag.")
 
 
+(defun imp:debug (enabled?)
+  "Set imp debugging flag.
+
+Turns on debugging if ENABLED? is non-nil.
+Turns off debugging if ENABLED? is nil."
+  (setq int<imp>:debug:flag (not (null enabled?))))
+
+
 (defun imp:debug:toggle ()
   "Toggle debugging for imp."
   (interactive)

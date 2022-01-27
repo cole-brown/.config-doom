@@ -900,5 +900,4 @@ Example:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; TODO: Rename this - remove "+". This is not an optional file.
 (imp:provide:with-emacs :jerky 'jerky)

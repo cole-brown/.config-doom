@@ -6,20 +6,20 @@
 ;;------------------------------------------------------------------------------
 
 ;; Always load unless specifically removed.
-(unless (featurep! -delete)
-   (load! "+delete"))
-(unless (featurep! -point)
-   (load! "+eval"))
-(unless (featurep! -line)
-   (load! "+line"))
-(unless (featurep! -manage)
-   (load! "+manage"))
-(unless (featurep! -name)
-   (load! "+name"))
-(unless (featurep! -point)
-   (load! "+point"))
-(unless (featurep! -search)
-   (load! "+search"))
+(imp:load :feature  '(:modules spy buffer delete)
+          :filename "delete")
+(imp:load :feature  '(:modules spy buffer eval)
+          :filename "eval")
+(imp:load :feature  '(:modules spy buffer line)
+          :filename "line")
+(imp:load :feature  '(:modules spy buffer manage)
+          :filename "manage")
+(imp:load :feature  '(:modules spy buffer name)
+          :filename "name")
+(imp:load :feature  '(:modules spy buffer point)
+          :filename "point")
+(imp:load :feature  '(:modules spy buffer search)
+          :filename "search")
 
 
 ;;------------------------------------------------------------------------------

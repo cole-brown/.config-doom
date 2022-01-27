@@ -32,13 +32,15 @@
 ;; Load Jerky Files.
 ;;------------------------------------------------------------------------------
 
-;; TODO: Remove plus from these required ones?
-(load! "+debug")
-(load! "+jerky")
+(imp:load :feature  '(:jerky debug)
+          :filename "debug")
+(imp:load :feature  '(:jerky jerky)
+          :filename "jerky")
 
 ;; Always load `dlv' unless specifically removed.
 (unless (featurep! -dlv)
-  (load! "+dlv"))
+  (imp:load :feature  '(:jerky +dlv)
+            :filename "+dlv"))
 
 
 ;;------------------------------------------------------------------------------

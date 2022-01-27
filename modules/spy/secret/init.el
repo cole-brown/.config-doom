@@ -10,8 +10,10 @@
 ;; :spy:secret requirements
 ;;------------------------------------------------------------------------------
 
-(load! "functions")
-(load! "load")
+(imp:load :feature  '(:modules spy secret functions)
+          :filename "functions")
+(imp:load :feature  '(:modules spy secret load)
+          :filename "load")
 
 
 ;;------------------------------------------------------------------------------

@@ -43,21 +43,28 @@
 ;; Load files.
 ;;------------------------------------------------------------------------------
 
-(load! "normalize")
-(load! "regex")
-(load! "string")
-(load! "hash")
+(imp:load :feature  '(:str normalize)
+          :filename "normalize")
+(imp:load :feature  '(:str regex)
+          :filename "regex")
+(imp:load :feature  '(:str string)
+          :filename "string")
+(imp:load :feature  '(:str hash)
+          :filename "hash")
 
- ;; Requires 'normalize', 'regex', and 'string'.
+;; Requires 'normalize', 'regex', and 'string'.
 (unless (featurep! -case)
-  (load! "+case")
+  (imp:load :feature  '(:str +case)
+            :filename "+case")
 
   (unless (featurep! -hydra)
-    (load! "+case-hydra")))
+    (imp:load :feature  '(:str +hydra +case)
+              :filename "+case-hydra")))
 
 ;; Requires 'string'.
 (unless (featurep! -random)
-  (load! "+random"))
+  (imp:load :feature  '(:str +random)
+            :filename "+random"))
 
 
 ;;------------------------------------------------------------------------------

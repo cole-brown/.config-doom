@@ -7,9 +7,11 @@
 
 ;; Always load unless specifically removed.
 (unless (featurep! -format)
-   (load! "+format"))
+  (imp:load :feature  '(:dot emacs init systems)
+            :filename "+format"))
 (unless (featurep! -timestamp)
-   (load! "+timestamp"))
+  (imp:load :feature  '(:dot emacs init systems)
+            :filename "+timestamp"))
 
 
 ;;------------------------------------------------------------------------------

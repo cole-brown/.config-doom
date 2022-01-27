@@ -6,9 +6,11 @@
 
 ;; Always load unless specifically removed.
 (unless (featurep! -functions)
-   (load! "+functions"))
+  (imp:load :feature  '(:modules spy lisp +functions)
+            :filename "+functions"))
 (unless (featurep! -types)
-   (load! "+types"))
+  (imp:load :feature  '(:modules spy lisp +types)
+            :filename "+types"))
 
 
 ;;------------------------------------------------------------------------------

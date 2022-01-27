@@ -560,7 +560,7 @@ Only loads the file if the FEATURE is not already provided in `imp:features'."
          ;;------------------------------
          ;; Load w/ timing info if desired.
          (imp:timing
-             macro:feature:list
+             macro:feature
              macro:path:filename
              macro:path:parent
            ;; Actually do the load.

@@ -15,7 +15,7 @@
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
-;; - `load!' for loading external *.el files relative to this one
+;; - `imp:load' for loading external *.el files relative to this one
 ;; - `use-package!' for configuring packages
 ;; - `after!' for running code after a package has loaded
 ;; - `add-load-path!' for adding directories to the `load-path', relative to
@@ -39,7 +39,8 @@
 ;;------------------------------------------------------------------------------
 
 ;; Everything required before the config step is run.
-(load! "init/init")
+(imp:load :feature '(:dot-emacs init)
+          :filename "init/init")
 
 
 ;;------------------------------------------------------------------------------
@@ -213,3 +214,4 @@
 
 ;; Show warnings if mis0 got any during init.
 (mis0/init/complete 'show-warning)
+

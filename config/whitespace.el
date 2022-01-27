@@ -1,7 +1,7 @@
 ;;; cconfig/whitespace.el -*- lexical-binding: t; -*-
 
 
-(imp:require :modules 'spy 'hook 'def)
+(imp:require :modules 'spy 'hook)
 
 
 ;;------------------------------------------------------------------------------

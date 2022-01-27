@@ -7,7 +7,7 @@
 
 (imp:require :jerky)
 (imp:require :path)
-(imp:require :modules 'spy 'hook 'def)
+(imp:require :modules 'spy 'hook)
 (imp:require :modules 'spy 'buffer 'search)
 (imp:require :modules 'spy 'buffer 'name)
 (imp:require :modules 'spy 'datetime 'format)

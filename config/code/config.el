@@ -1,7 +1,7 @@
 ;;; config/code/config.el -*- lexical-binding: t; -*-
 
 
-(imp:require :modules 'spy 'hook 'def)
+(imp:require :modules 'spy 'hook)
 (imp:require :jerky)
 
 

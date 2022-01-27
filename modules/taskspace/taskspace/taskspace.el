@@ -2036,5 +2036,5 @@ It should only be set via `taskspace/group/dlv'")
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(provide 'taskspace)
+(imp:provide :taskspace 'taskspace)
 ;;; taskspace.el ends here

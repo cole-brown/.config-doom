@@ -143,4 +143,4 @@ Use this over `spy:hook/defun-and-hooker' only in cases where you aren't
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'hook 'def)
+(imp:provide :modules 'spy 'hook 'hook)

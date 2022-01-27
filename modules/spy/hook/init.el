@@ -5,9 +5,8 @@
 ;; Hook Helpers
 ;;------------------------------------------------------------------------------
 
-;; Always load `def' unless specifically removed.
-(unless (featurep! -def)
-   (load! "+def"))
+(imp:load :feature  '(:modules spy hook hook)
+          :filename "hook")
 
 
 ;;------------------------------------------------------------------------------

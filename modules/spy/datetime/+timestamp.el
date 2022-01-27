@@ -54,4 +54,4 @@ spy:datetime/timestamp FORMAT string.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'datetime 'timestamp)
+(imp:provide :modules 'spy 'datetime '+timestamp)

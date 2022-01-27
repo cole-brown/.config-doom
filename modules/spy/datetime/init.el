@@ -7,10 +7,10 @@
 
 ;; Always load unless specifically removed.
 (unless (featurep! -format)
-  (imp:load :feature  '(:dot emacs init systems)
+  (imp:load :feature  '(:modules spy datetime +format)
             :filename "+format"))
 (unless (featurep! -timestamp)
-  (imp:load :feature  '(:dot emacs init systems)
+  (imp:load :feature  '(:modules spy datetime +timestamp)
             :filename "+timestamp"))
 
 

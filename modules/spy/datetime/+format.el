@@ -121,4 +121,4 @@ Keywords are:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'datetime 'format)
+(imp:provide :modules 'spy 'datetime '+format)

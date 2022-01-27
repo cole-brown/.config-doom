@@ -26,4 +26,4 @@ https://emacs.stackexchange.com/questions/10489/predicate-function-for-dotted-pa
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'lisp 'types)
+(imp:provide :modules 'spy 'lisp '+types)

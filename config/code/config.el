@@ -171,11 +171,11 @@
 ;; Programming Mode Configs
 ;;------------------------------------------------------------------------------
 
-(imp:load :feature '(:dot-emacs config code +c-and-cpp)
+(imp:load :feature  '(:dot-emacs config code +c-and-cpp)
           :filename "+c-and-cpp")
-(imp:load :feature '(:dot-emacs config code +c-sharp)
+(imp:load :feature  '(:dot-emacs config code +c-sharp)
           :filename "+c-sharp")
-(imp:load :feature '(:dot-emacs config code +python)
+(imp:load :feature  '(:dot-emacs config code +python)
           :filename "+python")
 
 

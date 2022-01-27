@@ -39,7 +39,7 @@
 ;;------------------------------------------------------------------------------
 
 ;; Everything required before the config step is run.
-(imp:load :feature '(:dot-emacs init)
+(imp:load :feature  '(:dot-emacs init)
           :filename "init/init")
 
 

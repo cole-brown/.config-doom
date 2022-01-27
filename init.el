@@ -18,6 +18,7 @@
        imp               ; `require'/`provide' with more than one symbol
        str               ; Strings and Things
        path              ; Helpful path/file/dir functions.
+       alist             ; Helpful alist functions.
 
        :input
        ;;chinese

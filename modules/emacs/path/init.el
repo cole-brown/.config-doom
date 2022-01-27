@@ -37,8 +37,10 @@
 ;;------------------------------------------------------------------------------
 
 ;; Always load.
-(load! "path")
-(load! "files")
+(imp:load :feature '(:path path)
+          :filename "path")
+(imp:load :feature '(:path files)
+          :filename "files")
 
 
 ;;------------------------------------------------------------------------------

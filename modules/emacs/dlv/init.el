@@ -56,16 +56,20 @@
 ;; Debugging
 ;;------------------------------
 
-(load! "debug")
+(imp:load :feature '(:dlv debug)
+          :filename "debug")
 
 ;;------------------------------
 ;; Actual Functions
 ;;------------------------------
 
-(load! "path")
-(load! "class") ;; requires path
+(imp:load :feature '(:dlv path)
+          :filename "path")
+(imp:load :feature '(:dlv class)
+          :filename "class") ;; requires path
 
-(load! "dlv") ;; requires path, class,
+(imp:load :feature '(:dlv dlv)
+          :filename "dlv") ;; requires path, class,
 
 ;;------------------------------
 ;; Optional Files
@@ -73,7 +77,8 @@
 
 ;; Always load unless specifically removed.
 (unless (featurep! -display)
-  (load! "+display"))
+  (imp:load :feature '(:dlv +display)
+             :filename  "+display"))
 
 
 ;;------------------------------------------------------------------------------

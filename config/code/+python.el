@@ -28,3 +28,9 @@
     ;; pycodestyle insists 79 is the One True Fill Column...
     ;; We'll try it for all our python in general.
     (setq fill-column 79)))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'code '+python)

@@ -171,6 +171,15 @@
 ;; Programming Mode Configs
 ;;------------------------------------------------------------------------------
 
-(load! "+c-and-cpp")
-(load! "+csharp")
-(load! "+python")
+(imp:load :feature '(:dot-emacs config code +c-and-cpp)
+          :filename "+c-and-cpp")
+(imp:load :feature '(:dot-emacs config code +c-sharp)
+          :filename "+c-sharp")
+(imp:load :feature '(:dot-emacs config code +python)
+          :filename "+python")
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'code)

@@ -5,6 +5,11 @@
 ;; Load our sub-module thingies.
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -nesting)
-   (load! "+nesting"))
+(imp:load :feature  '(:dot-emacs init)
+          :filename "nesting")
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :modules 'spy 'hydra)

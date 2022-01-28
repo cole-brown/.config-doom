@@ -5,11 +5,10 @@
 ;; Org-Mode Stuff
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -keyword)
-   (load! "+keyword"))
-(unless (featurep! -link)
-   (load! "+link"))
+(imp:load :feature  '(:modules spy org keyword)
+          :filename "keyword")
+(imp:load :feature  '(:modules spy org link)
+          :filename "link")
 
 
 ;;------------------------------------------------------------------------------

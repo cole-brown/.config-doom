@@ -5,11 +5,10 @@
 ;; Load our sub-module thingies.
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -alist)
-   (load! "+alist"))
-(unless (featurep! -hash-table)
-   (load! "+hash-table"))
+(imp:load :feature  '(:modules spy collections alist)
+          :filename "alist")
+(imp:load :feature  '(:modules spy collections hash-table)
+          :filename "hash-table")
 
 
 ;;------------------------------------------------------------------------------

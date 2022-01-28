@@ -24,6 +24,7 @@
 ;; Load Files During Config
 ;;------------------------------------------------------------------------------
 
+;; TODO: replace with `imp:load'
 (defmacro spy:package (&rest path)
   "Creates a relative filepath from PATH elements then looks under jerky key
 \"path/doom/package/root\" for the (relative) root to that path.

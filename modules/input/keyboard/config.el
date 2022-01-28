@@ -30,6 +30,7 @@
 ;; Configure a Specific Layout?
 ;;------------------------------
 (imp:load :feature  '(:input keyboard +layouts config)
+          :path     "keyboard"
           :filename "+layouts/config")
 
 

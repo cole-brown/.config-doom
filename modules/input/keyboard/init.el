@@ -40,20 +40,28 @@
 
 ;; NOTE: Order could matter - take care if modifying.
 (imp:load :feature  '(:input keyboard command)
+          :path     "keyboard"
           :filename "command")
 (imp:load :feature  '(:input keyboard output)
+          :path     "keyboard"
           :filename "output")
 (imp:load :feature  '(:input keyboard utils)
+          :path     "keyboard"
           :filename "utils")
 (imp:load :feature  '(:input keyboard alist)
+          :path     "keyboard"
           :filename "alist")
 (imp:load :feature  '(:input keyboard debug)
+          :path     "keyboard"
           :filename "debug")
 (imp:load :feature  '(:input keyboard vars)
+          :path     "keyboard"
           :filename "vars")
 (imp:load :feature  '(:input keyboard load)
+          :path     "keyboard"
           :filename "load")
 (imp:load :feature  '(:input keyboard registrars)
+          :path     "keyboard"
           :filename "registrars")
 
 
@@ -100,6 +108,7 @@
 ;; Layout Builder
 ;;------------------------------
 (imp:load :feature  '(:input keyboard layout init)
+          :path     "keyboard"
           :filename "layout/init")
 
 
@@ -113,6 +122,7 @@
 ;; Init a Specific Layout?
 ;;------------------------------
 (imp:load :feature  '(:input keyboard +layouts init)
+          :path     "keyboard"
           :filename "+layouts/init")
 
 

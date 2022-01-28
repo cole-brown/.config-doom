@@ -425,6 +425,11 @@ Returns a plist:
                         in:filename
                         in:path
                         path:current-dir))
+      ;; Do we have an absolute path?
+      (unless (file-name-absolute-p path)
+        ;; Not absolute; assume it's relative to the root.
+        (setq path (imp:path:join (int<imp>:path:root/dir (nth 0 out:feature) :no-error)
+                                  path)))
       ;; Update input path to final value.
       (setq in:path path))
 

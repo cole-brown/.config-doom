@@ -29,7 +29,8 @@
 ;;------------------------------
 ;; Configure a Specific Layout?
 ;;------------------------------
-(load! "+layouts/config")
+(imp:load :feature  '(:input keyboard +layouts config)
+          :filename "+layouts/config")
 
 
 ;;------------------------------------------------------------------------------

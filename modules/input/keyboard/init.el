@@ -39,14 +39,22 @@
 
 
 ;; NOTE: Order could matter - take care if modifying.
-(load! "command")
-(load! "output")
-(load! "utils")
-(load! "alist")
-(load! "debug")
-(load! "vars")
-(load! "load")
-(load! "registrars")
+(imp:load :feature  '(:input keyboard command)
+          :filename "command")
+(imp:load :feature  '(:input keyboard output)
+          :filename "output")
+(imp:load :feature  '(:input keyboard utils)
+          :filename "utils")
+(imp:load :feature  '(:input keyboard alist)
+          :filename "alist")
+(imp:load :feature  '(:input keyboard debug)
+          :filename "debug")
+(imp:load :feature  '(:input keyboard vars)
+          :filename "vars")
+(imp:load :feature  '(:input keyboard load)
+          :filename "load")
+(imp:load :feature  '(:input keyboard registrars)
+          :filename "registrars")
 
 
 ;;------------------------------------------------------------------------------
@@ -91,7 +99,8 @@
 ;;------------------------------
 ;; Layout Builder
 ;;------------------------------
-(load! "layout/init")
+(imp:load :feature  '(:input keyboard layout init)
+          :filename "layout/init")
 
 
 ;;------------------------------
@@ -103,7 +112,8 @@
 ;;------------------------------
 ;; Init a Specific Layout?
 ;;------------------------------
-(load! "+layouts/init")
+(imp:load :feature  '(:input keyboard +layouts init)
+          :filename "+layouts/init")
 
 
 ;;------------------------------------------------------------------------------
@@ -115,4 +125,4 @@
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-;; No additional `imp:provide' for this file.
+;; No additional `imp:provide' for this file; already provided it, above.

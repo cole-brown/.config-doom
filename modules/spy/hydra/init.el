@@ -5,7 +5,7 @@
 ;; Load our sub-module thingies.
 ;;------------------------------------------------------------------------------
 
-(imp:load :feature  '(:dot-emacs init)
+(imp:load :feature  '(:modules spy hydra nesting)
           :filename "nesting")
 
 

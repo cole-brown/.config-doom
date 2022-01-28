@@ -14,13 +14,18 @@
 ;; Layout Building Functions
 ;;------------------------------------------------------------------------------
 
-(load! "types/init")
-(load! "derive")
-(load! "layout")
-(load! "bind")
-(load! "bind-debug")
+(imp:load :feature  '(:input keyboard layout types)
+          :filename "types/init")
+(imp:load :feature  '(:input keyboard layout derive)
+          :filename "derive")
+(imp:load :feature  '(:input keyboard layout layout)
+          :filename "layout")
+(imp:load :feature  '(:input keyboard layout bind)
+          :filename "bind")
+(imp:load :feature  '(:input keyboard layout bind-debug)
+          :filename "bind-debug")
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :input 'keyboard 'layout)
+(imp:provide :input 'keyboard 'layout 'init)

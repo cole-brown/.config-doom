@@ -159,10 +159,11 @@ Always returns a backwards list.
     ;; Return the list or raise an error.
     (if (null output)
         (int<imp>:error func.name
-                        "No normalized features produced from INPUT: %S"
+                        "No normalized strings produced from INPUT: %S"
                         input))
     output))
 ;; (int<imp>:feature:normalize:string "+spydez" "foo" "bar")
+;; (int<imp>:feature:normalize:string '((nil)))
 
 
 (defun int<imp>:feature:normalize (&rest input)
@@ -250,7 +251,7 @@ E.g.
     ;; Return the list, the one item, or error?
     (cond ((null normalized)
            (int<imp>:error "imp:feature:normalize"
-                           "No normalized features produced from INPUT: %S"
+                           "Error normalizing features from INPUT; no features produced: %S"
                            input))
 
           ((= 1 (length normalized))

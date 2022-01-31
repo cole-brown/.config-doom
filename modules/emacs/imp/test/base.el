@@ -330,16 +330,99 @@ FUNC/TEARDOWN will run as first step in tear-down."
   (test<imp>:setup/vars:loading))
 
 
+(defun test<imp>:debug:marker:create (caller name:test type name:type)
+  "Create strings for `test<imp>:debug:marker:begin' and/or
+`test<imp>:debug:marker:end'.
+
+TYPE should be `:top' or `:bottom'."
+  (let* ((width:header 60)
+         (border:char:horizontal ?═)
+         (border:left  "╠══╣")
+         (border:right "╠══╣")
+         (length:middle:padding:min (+ (length border:left)
+                                       1
+                                       (length name:test)
+                                       1
+                                       (length border:right)))
+         (name:truncated (if (> length:middle:padding:min width:header)
+                             ;; Truncate name to fit.
+                             ;; Truncate the head of the string? Tail is which test, exactly, it is...
+                             (substring name:test
+                                        (- length:middle:padding:min width:header)
+                                        (length name:test))
+                           ;; Name is fine as-is.
+                           name:test))
+         (width:padding (- width:header
+                           (length border:left)
+                           (length border:right)
+                           (length name:truncated)))
+         ;; Have at least one space on either side.
+         (width:padding:centered (max 1 (/ width:padding 2.0)))
+         (padding:left  (make-string (ceiling width:padding:centered) ? ))
+         (padding:right (make-string (floor width:padding:centered)   ? ))
+         ;; Top/Bottom with room for connection to Type
+         (border:fill:top/bottom (make-string (- width:header 3) ?═ :multibyte)))
+    (int<imp>:debug caller
+                    '("\n\n" ;; decent amount of space from previous output
+                      ;; "" or top type - no hard-coded "\n" in case of "".
+                      "%s"
+                      ;; "═" or "╧" and border:fill:top/bottom
+                      "╔%s%s╗\n"
+                      ;; left border, left padding, name (truncated?), right padding, right border: 5 "%s" fields
+                      "%s%s%s%s%s\n"
+                      ;; "═" or "╧" and border:fill:top/bottom
+                      "╚%s%s╝\n"
+                      ;; "" or bottom type - no hard-coded "\n" in case of "".
+                      "%s")
+                    ;; Top: Type
+                    (if (eq type :top)
+                        (format  " ┌──┤ %s\n" name:type)
+                      "")
+                    ;; Top: Border
+                    ;;   - Connect to top type or no.
+                    (if (eq type :top)
+                        "╧"
+                      "═")
+                    ;;   - Rest of border.
+                    border:fill:top/bottom
+                    ;; Middle: Name
+                    border:left
+                    padding:left
+                    name:truncated
+                    padding:right
+                    border:right
+                    ;; Bottom: Border
+                    ;;   - Connect to bottom type or no.
+                    (if (eq type :bottom)
+                        "╤"
+                      "═")
+                    ;;   - Rest of border.
+                    border:fill:top/bottom
+                    ;; Bottom: Type
+                    (if (eq type :bottom)
+                        (format  " └──┤ %s\n" name:type)
+                      "")
+                    ;;   - Leave to caller to fill.
+                    "%s")))
+;; (test<imp>:debug:marker:create "test" "test<imp>:test:debug:marker:create" :bottom "START")
+;; (test<imp>:debug:marker:create "test" "test<imp>:test:debug:marker:create" :top "END")
+
+
 (defun test<imp>:setup (name func/setup func/teardown)
   "Run setup for test named NAME.
 
 FUNC/SETUP and FUNC/TEARDOWN will be run during set-up/tear-down if provided."
+  ;; If debugging, give a nice marker in the debug output buffer:
+  (test<imp>:debug:marker:create "test<imp>:setup"
+                                 name
+                                 :bottom
+                                 "START")
+
   ;; Create user from test name if no user provided.
   (test<imp>:setup/suite func/setup
                          func/teardown)
 
   (test<imp>:setup/vars)
-
 
   ;; Always last:
   (when test<imp>:suite:func/setup
@@ -375,6 +458,12 @@ usage isn't affected."
 
 (defun test<imp>:teardown (name)
   "Run teardown for tests."
+  ;; If debugging, give a nice marker in the debug output buffer:
+  (test<imp>:debug:marker:create "test<imp>:teardown"
+                                 name
+                                 :top
+                                 "END")
+
   ;; Always first in actual tear-down:
   (when test<imp>:suite:func/teardown
     (unwind-protect

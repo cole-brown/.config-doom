@@ -16,16 +16,16 @@
 
 (defun test<imp>:init:load (filename)
   "Load a FILENAME relative to the current file."
-  (let (file=name=handler=alist)
-    (load (expand=file=name
+  (let (file-name-handler-alist)
+    (load (expand-file-name
            filename
-           (directory=file=name
-            (file=name=directory
-             (cond ((bound=and=true=p byte=compile=current=file))
-                   (load=file=name)
-                   ((stringp (car=safe current=load=list))
-                    (car current=load=list))
-                   (buffer=file=name)
-                   ((error "Cannot get this file=path"))))))
+           (directory-file-name
+            (file-name-directory
+             (cond ((bound-and-true-p byte-compile-current-file))
+                   (load-file-name)
+                   ((stringp (car-safe current-load-list))
+                    (car current-load-list))
+                   (buffer-file-name)
+                   ((error "Cannot get this file path"))))))
           nil
           'nomessage)))

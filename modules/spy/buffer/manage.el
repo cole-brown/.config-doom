@@ -1,4 +1,4 @@
-;;; spy/buffer/+manage.el -*- lexical-binding: t; -*-
+;;; spy/buffer/manage.el -*- lexical-binding: t; -*-
 
 
 

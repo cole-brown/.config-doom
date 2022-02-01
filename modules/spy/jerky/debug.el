@@ -1,4 +1,4 @@
-;;; spy/jerky/+debug.el -*- lexical-binding: t; -*-
+;;; spy/jerky/debug.el -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 

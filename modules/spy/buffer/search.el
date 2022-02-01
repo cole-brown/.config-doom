@@ -1,4 +1,4 @@
-;;; spy/buffer/+search.el -*- lexical-binding: t; -*-
+;;; spy/buffer/search.el -*- lexical-binding: t; -*-
 
 ;;------------------------------------------------------------------------------
 ;; Constants

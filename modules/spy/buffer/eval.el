@@ -1,4 +1,4 @@
-;;; spy/buffer/+eval.el -*- lexical-binding: t; -*-
+;;; spy/buffer/eval.el -*- lexical-binding: t; -*-
 
 (defun spy:buffer:eval ()
   "Execute the current buffer as Lisp code.

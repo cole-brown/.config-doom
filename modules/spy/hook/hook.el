@@ -1,4 +1,4 @@
-;;; spy/zero/+hook.el -*- lexical-binding: t; -*-
+;;; spy/zero/hook.el -*- lexical-binding: t; -*-
 
 (require 'dash)
 (imp:require :path)

@@ -1,4 +1,4 @@
-;;; spy/buffer/+delete.el -*- lexical-binding: t; -*-
+;;; spy/buffer/delete.el -*- lexical-binding: t; -*-
 
 
 

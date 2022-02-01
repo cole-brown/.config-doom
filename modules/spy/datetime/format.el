@@ -1,4 +1,4 @@
-;;; spy/datetime/+format.el -*- lexical-binding: t; -*-
+;;; spy/datetime/format.el -*- lexical-binding: t; -*-
 
 
 ;;-----------------------------------who?---------------------------------------
@@ -121,4 +121,4 @@ Keywords are:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'datetime '+format)
+(imp:provide :modules 'spy 'datetime 'format)

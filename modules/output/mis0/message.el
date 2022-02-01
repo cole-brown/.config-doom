@@ -1,4 +1,4 @@
-;;; mis0/init/+message.el -*- lexical-binding: t; -*-
+;;; mis0/init/message.el -*- lexical-binding: t; -*-
 
 (-m//require 'internal 'mlist)
 

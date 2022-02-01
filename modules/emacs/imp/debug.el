@@ -1,4 +1,4 @@
-;;; emacs/imp/+debug.el -*- lexical-binding: t; -*-
+;;; emacs/imp/debug.el -*- lexical-binding: t; -*-
 
 
 ;;                                 ──────────                                 ;;

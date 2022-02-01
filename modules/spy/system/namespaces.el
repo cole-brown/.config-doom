@@ -1,4 +1,4 @@
-;;; spy/system/+namespaces.el -*- lexical-binding: t; -*-
+;;; spy/system/namespaces.el -*- lexical-binding: t; -*-
 
 ;;---------------------Jerky Namespaces for the System(s)-----------------------
 ;;--                           Default Namespaces                             --

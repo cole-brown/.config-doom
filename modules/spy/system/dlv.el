@@ -1,4 +1,4 @@
-;;; spy/system/+dlv.el -*- lexical-binding: t; -*-
+;;; spy/system/dlv.el -*- lexical-binding: t; -*-
 
 (imp:require :dlv)
 (imp:require :taskspace)

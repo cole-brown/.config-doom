@@ -1,4 +1,4 @@
-;;; spy/datetime/+timestamp.el -*- lexical-binding: t; -*-
+;;; spy/datetime/timestamp.el -*- lexical-binding: t; -*-
 
 (imp:require :modules 'spy 'datetime 'format)
 
@@ -54,4 +54,4 @@ spy:datetime/timestamp FORMAT string.
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'datetime '+timestamp)
+(imp:provide :modules 'spy 'datetime 'timestamp)

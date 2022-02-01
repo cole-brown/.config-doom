@@ -1,4 +1,4 @@
-;;; spy/org/+link.el -*- lexical-binding: t; -*-
+;;; spy/org/link.el -*- lexical-binding: t; -*-
 
 
 ;; Easy paste of e.g. URLs.

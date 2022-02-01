@@ -1,4 +1,4 @@
-;;; spy/lisp/+functions.el -*- lexical-binding: t; -*-
+;;; spy/lisp/functions.el -*- lexical-binding: t; -*-
 
 
 
@@ -102,4 +102,4 @@ Returns a list of lists:
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(imp:provide :modules 'spy 'lisp '+functions)
+(imp:provide :modules 'spy 'lisp 'functions)

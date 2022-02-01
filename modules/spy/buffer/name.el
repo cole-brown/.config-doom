@@ -1,4 +1,4 @@
-;;; spy/buffer/+name.el -*- lexical-binding: t; -*-
+;;; spy/buffer/name.el -*- lexical-binding: t; -*-
 
 
 ;;----------------------------------Buffers------------------------------------

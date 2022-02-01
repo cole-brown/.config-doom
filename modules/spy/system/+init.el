@@ -13,8 +13,7 @@
 
 
 (defun spy:init.root/set (path)
-  "Set the root path (can be relative) that `spy:init' will use.
-"
+  "Set the root path (can be relative) that `spy:init' will use."
   (jerky/set sss:init.jerky.key
              :value path
              :docstr "Root (can be relative) path for `spy:init'."))
@@ -36,8 +35,7 @@ For example:
   (jerky/set \"path/doom/init/root\" :value \"init\")
   (spy:init \"jeff\" \"jill\")
 
-This will load file: \"init/jeff/jill.el(c)\"
-"
+This will load file: \"init/jeff/jill.el(c)\""
   (declare (indent defun))
 
   ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Surprising-Local-Vars.html#Surprising-Local-Vars

@@ -35,9 +35,9 @@
 ;; ...Load The Rest
 ;;------------------------------------------------------------------------------
 
-;; ;; Always load `strings' unless specifically removed.
-;; (unless (featurep! -strings)
-;;   (load! "+strings"))
+;; ...of which there are none, currently, but:
+;;   (imp:load :feature  '(:modules spy zero something)
+;;             :filename "something")
 
 
 ;;------------------------------------------------------------------------------

@@ -11,40 +11,34 @@
 ;; Namespaces
 ;;------------------------------------------------------------------------------
 
-;; Always load `namespaces' unless specifically removed.
-(unless (featurep! -namespaces)
-  ;; Set-up Jerky namespaces for systems.
-  (load! "+namespaces"))
+;; Set-up Jerky namespaces for systems.
+(imp:load :feature  '(:modules spy system namespaces)
+          :filename "namespaces")
 
 
 ;;------------------------------------------------------------------------------
 ;; Multiple systems (computers) able to use this same Doom Config.
 ;;------------------------------------------------------------------------------
 
-;; Always load `multiplex' unless specifically removed.
-(unless (featurep! -multiplex)
-  (load! "+multiplex"))
+(imp:load :feature  '(:modules spy system multiplex)
+          :filename "multiplex")
 
 
 ;;------------------------------------------------------------------------------
 ;; Loading Helpers.
 ;;------------------------------------------------------------------------------
 
-;; Always load `init' unless specifically removed.
-(unless (featurep! -init)
-  (load! "+init"))
+(imp:load :feature  '(:modules spy system init)
+          :filename "+init")
 
-;; Always load `config' unless specifically removed.
-(unless (featurep! -config)
-  (load! "+config"))
+(imp:load :feature  '(:modules spy system config)
+          :filename "+config")
 
-;; Always load `dlv' unless specifically removed.
-(unless (featurep! -dlv)
-  (load! "+dlv"))
+(imp:load :feature  '(:modules spy system dlv)
+          :filename "dlv")
 
-;; Always load `package' unless specifically removed.
-(unless (featurep! -package)
-  (load! "+package"))
+(imp:load :feature  '(:modules spy system package)
+          :filename "+package")
 
 
 ;;------------------------------------------------------------------------------

@@ -5,9 +5,8 @@
 ;; Load our sub-module thingies.
 ;;------------------------------------------------------------------------------
 
-;; Always load unless specifically removed.
-(unless (featurep! -signature)
-   (load! "+signature"))
+(imp:load :feature  '(:modules spy io signature)
+          :filename "+signature")
 
 
 ;;------------------------------------------------------------------------------

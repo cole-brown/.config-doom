@@ -7,11 +7,16 @@
 ;;------------------------------------------------------------------------------
 
 ;; Load our files.
-(load! "../alist")
-(load! "../utils")
-(load! "../variables")
-(load! "../output")
-(load! "../debug")
+(imp:load :feature  '(:nub alist)
+          :filename "../alist")
+(imp:load :feature  '(:nub utils)
+          :filename "../utils")
+(imp:load :feature  '(:nub variables)
+          :filename "../variables")
+(imp:load :feature  '(:nub output)
+          :filename "../output")
+(imp:load :feature  '(:nub debug)
+          :filename "../debug")
 
 
 ;;------------------------------------------------------------------------------

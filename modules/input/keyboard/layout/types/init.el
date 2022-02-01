@@ -15,6 +15,7 @@
 ;;------------------------------------------------------------------------------
 
 (imp:load :feature  '(:input keyboard layout types define)
+          :path     "keyboard/layout/types"
           :filename "define")
 
 
@@ -28,13 +29,16 @@
 
 ;; Always include the common ones.
 (imp:load :feature  '(:input keyboard layout types common)
+          :path     "keyboard/layout/types"
           :filename "common")
 
 ;; Include either evil or emacs keybinds, depending on if evil-mode is being used.
 (if (featurep! :editor evil)
     (imp:load :feature  '(:input keyboard layout types evil)
+              :path     "keyboard/layout/types"
               :filename "evil")
   (imp:load :feature  '(:input keyboard layout types emacs)
+            :path     "keyboard/layout/types"
             :filename "emacs"))
 
 

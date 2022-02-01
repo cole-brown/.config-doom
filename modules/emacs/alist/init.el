@@ -58,11 +58,11 @@
 ;;---
 ;; Typed Alists
 ;;---
-(imp:load :feature  '(:alist default)
+(imp:load :feature  '(:alist type default)
           :filename "type/default")
-(imp:load :feature  '(:alist keyword)
+(imp:load :feature  '(:alist type keyword)
           :filename "type/keyword")
-(imp:load :feature  '(:alist string)
+(imp:load :feature  '(:alist type string)
           :filename "type/string")
 
 

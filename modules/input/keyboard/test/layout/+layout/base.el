@@ -9,16 +9,26 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load! "../base.el")
+(imp:test:load :filename "../base.el")
 
 ;;---
 ;; Keyboard Files:
 ;;---
-(test<keyboard>:utils/path:load "layout/types/define.el")
-(test<keyboard>:utils/path:load "layout/bind.el")
-(test<keyboard>:utils/path:load "layout/bind-debug.el")
-(test<keyboard>:utils/path:load "layout/derive.el")
-(test<keyboard>:utils/path:load "layout/layout.el")
+(imp:test:load :feature:post '(:input keyboard layout define)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/types/define.el")
+(imp:test:load :feature:post '(:input keyboard layout bind)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/bind.el")
+(imp:test:load :feature:post '(:input keyboard layout bind-debug)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/bind-debug.el")
+(imp:test:load :feature:post '(:input keyboard layout derive)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/derive.el")
+(imp:test:load :feature:post '(:input keyboard layout layout)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/layout.el")
 
 
 ;;------------------------------------------------------------------------------
@@ -45,9 +55,15 @@
           (int<keyboard>:registrar:set registrar keyword nil)))))
 
   ;; Define the types and their keywords.
-  (test<keyboard>:utils/path:load "layout/types/common.el")
-  (test<keyboard>:utils/path:load "layout/types/emacs.el")
-  (test<keyboard>:utils/path:load "layout/types/evil.el")
+  (imp:test:load :feature:post '(:input keyboard layout types common)
+                 :path         int<keyboard>:path:dir/root
+                 :filename     "layout/types/common.el")
+  (imp:test:load :feature:post '(:input keyboard layout types emacs)
+                 :path         int<keyboard>:path:dir/root
+                 :filename     "layout/types/emacs.el")
+  (imp:test:load :feature:post '(:input keyboard layout types evil)
+                 :path         int<keyboard>:path:dir/root
+                 :filename     "layout/types/evil.el")
 
   ;; Set the layout if it's valid.
   (setq int<keyboard>:layout:desired nil) ;; Unset desired so `int<keyboard>:layout:valid?' is checking less.

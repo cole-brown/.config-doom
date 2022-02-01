@@ -8,13 +8,15 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load! "base.el")
+(imp:test:load :filename "base.el")
 
 ;;---
 ;; Keyboard Files:
 ;;---
-(load! "../alist.el")
-(load! "../vars.el")
+(imp:test:load :feature:post '(:input keyboard alist)
+               :filename      "../alist.el")
+(imp:test:load :feature:post '(:input keyboard vars)
+               :filename      "../vars.el")
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗

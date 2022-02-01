@@ -6,11 +6,22 @@
 ;; Base Functionality for Testing
 ;;------------------------------------------------------------------------------
 
-;; Get all the keyboard files we know all tests want.
-(load! "../command.el")
-(load! "../output.el")
-(load! "../debug.el")
-(load! "../utils.el")
+;;---
+;; Testing Files:
+;;---
+(imp:test:load :filename "base.el")
+
+;;---
+;; Keyboard Files:
+;;---
+(imp:test:load :feature:post '(:input keyboard command)
+               :filename      "../command.el")
+(imp:test:load :feature:post '(:input keyboard output)
+               :filename      "../output.el")
+(imp:test:load :feature:post '(:input keyboard debug)
+               :filename      "../debug.el")
+(imp:test:load :feature:post '(:input keyboard utils)
+               :filename      "../utils.el")
 
 
 ;;------------------------------------------------------------------------------

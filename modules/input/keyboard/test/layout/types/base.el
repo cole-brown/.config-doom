@@ -9,15 +9,7 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load! "../base.el")
-
-;;---
-;; Keyboard Files:
-;;---
-
-;; (test<keyboard>:utils/path:load "something.el")
-;; (test<keyboard>:utils/path:load "layout/something.el")
-;; (test<keyboard>:utils/path:load "layout/types/something.el")
+(imp:test:load :filename "../base.el")
 
 
 ;;------------------------------------------------------------------------------

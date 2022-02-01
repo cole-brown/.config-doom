@@ -14,7 +14,7 @@
 ;; Test Files:
 ;;---
 ;; "test/layout/base.el" will load "test/base.el" and all tested files from "test/__.el" level.
-(load! "base.el")
+(imp:test:load :filename "base.el")
 
 ;;---
 ;; Keyboard Layout Files:

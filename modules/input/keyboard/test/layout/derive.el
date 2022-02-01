@@ -9,12 +9,14 @@
 ;; Test Files:
 ;;---
 ;; "test/layout/base.el" will load "test/base.el" and all tested files from "test/__.el" level.
-(load! "base.el")
+(imp:test:load :filename "base.el")
 
 ;;---
 ;; Keyboard Layout Files:
 ;;---
-(test<keyboard>:utils/path:load "layout/derive.el")
+(imp:test:load :feature:post '(:input keyboard layout derive)
+               :path         int<keyboard>:path:dir/root
+               :filename     "layout/derive.el")
 
 
 ;; ╔═════════════════════════════╤═══════════╤═════════════════════════════════╗

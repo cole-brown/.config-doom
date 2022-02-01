@@ -8,7 +8,7 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load! "base.el")
+(imp:test:load :filename "base.el")
 
 ;;---
 ;; Keyboard Files:

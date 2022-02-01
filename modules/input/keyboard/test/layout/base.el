@@ -9,32 +9,25 @@
 ;;---
 ;; Testing Files:
 ;;---
-(load! "../base.el")
+(imp:test:load :filename  "../base.el")
 
 ;;---
 ;; Keyboard Files:
 ;;---
-(load! "../../output.el")
-(load! "../../debug.el")
-(load! "../../utils.el")
-(load! "../../alist.el")
-(load! "../../vars.el")
-(load! "../../load.el")
-(load! "../../registrars.el")
-
-
-;;------------------------------------------------------------------------------
-;; Loading Files...
-;;------------------------------------------------------------------------------
-
-;; Couldn't make this until after we'd tested load.el, so:
-(defun test<keyboard>:utils/path:load (filepath)
-    "Load FILENAME, an ':input/keyboard' code file, without having to worry about
-the relative path up.
-
-FILENAME should be a path relative to the root of ':input/layout'."
-    ;; We already have `int<keyboard>:path:join', which will default to our root for relative paths.
-    (load (int<keyboard>:path:join filepath)))
+(imp:test:load :feature:post '(:input keyboard output)
+               :filename      "../../output.el")
+(imp:test:load :feature:post '(:input keyboard debug)
+               :filename      "../../debug.el")
+(imp:test:load :feature:post '(:input keyboard utils)
+               :filename      "../../utils.el")
+(imp:test:load :feature:post '(:input keyboard alist)
+               :filename      "../../alist.el")
+(imp:test:load :feature:post '(:input keyboard vars)
+               :filename      "../../vars.el")
+(imp:test:load :feature:post '(:input keyboard load)
+               :filename      "../../load.el")
+(imp:test:load :feature:post '(:input keyboard registars)
+               :filename      "../../registrars.el")
 
 
 ;;------------------------------------------------------------------------------

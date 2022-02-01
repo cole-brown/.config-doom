@@ -207,11 +207,13 @@ Set to `nil' if not desired in output.")
 ;;------------------------------------------------------------------------------
 
 ;; Order may matter...
-(load! "internal")
-(load! "commands")
+(imp:load :feature  '(:autogit internal)
+          :filename "internal")
+(imp:load :feature  '(:autogit commands)
+          :filename "commands")
 
 
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(provide 'autogit)
+(imp:provide:with-emacs :autogit)

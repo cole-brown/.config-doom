@@ -736,4 +736,4 @@ so it must be used inside the `autogit//macro:with-buffer' macro body!"
 ;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
-(provide 'autogit)
+(imp:provide :autogit 'internal)

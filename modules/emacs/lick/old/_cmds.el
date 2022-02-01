@@ -4,7 +4,8 @@
 (require 'cl-lib)
 
 ;; Need stuff from here.
-(load! "_suites.el")
+(imp:load :feature  '(:emacs lick suites)
+          :filename "_suites.el")
 
 
 ;;------------------------------------------------------------------------------

@@ -343,3 +343,9 @@ If no region is active, fills current line."
        :desc "Copy Buffer's File Name"    "k" #'spy:cmd:file-or-dir-name/clipboard
        :desc "Copy Buffer's Dir Name"     "K" (cmd!! #'spy:cmd:file-or-dir-name/clipboard '(4)) ;; Call with simulated C-u prefix arg.
        ))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'spy-leader)

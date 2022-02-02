@@ -662,3 +662,9 @@ It uses TITLE and the current timestamp to form a unique title.
 ;;     '(("^ *\\([-]\\) "
 ;;        (0 (prog1 () (compose-region (match-beginning 1)
 ;;                                     (match-end 1) "•")))))))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'org-mode)

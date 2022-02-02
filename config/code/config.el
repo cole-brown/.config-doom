@@ -132,8 +132,6 @@
     (setq fill-column 140))
 
 
-
-
 ;;------------------------------------------------------------------------------
 ;; Metasyntatic Variables
 ;;------------------------------------------------------------------------------
@@ -172,10 +170,13 @@
 ;;------------------------------------------------------------------------------
 
 (imp:load :feature  '(:dot-emacs config code +c-and-cpp)
+          :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "+c-and-cpp")
 (imp:load :feature  '(:dot-emacs config code +c-sharp)
+          :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "+c-sharp")
 (imp:load :feature  '(:dot-emacs config code +python)
+          :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "+python")
 
 

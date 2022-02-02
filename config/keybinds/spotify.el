@@ -512,3 +512,9 @@ This allows you to create your docstring like so:
 
 
 ;; (bind-key "a" #'hydra-spotify/body some-map)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'spotify)

@@ -36,3 +36,9 @@
 (customize-set-variable 'sp-autodelete-pair nil)
 (customize-set-variable 'sp-autodelete-closing-pair nil)
 (customize-set-variable 'sp-autodelete-opening-pair nil)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'parenthesis)

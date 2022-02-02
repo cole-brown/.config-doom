@@ -157,3 +157,9 @@ Find out next time...")
   ;;---
   ;; positive: enable, other: disable
   (global-whitespace-mode +1))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'whitespace)

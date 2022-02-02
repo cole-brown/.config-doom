@@ -73,3 +73,9 @@
   ;;   - `deadgrep-project-root-overrides'
   ;;   - `deadgrep-project-root-function'
   )
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'search)

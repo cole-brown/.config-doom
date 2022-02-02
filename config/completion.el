@@ -1,5 +1,10 @@
 ;;; config/completion.el -*- lexical-binding: t; -*-
 
+
+;;------------------------------------------------------------------------------
+;; Company
+;;------------------------------------------------------------------------------
+
 (after! company
 
   (customize-set-variable 'company-dabbrev-ignore-case t
@@ -13,3 +18,9 @@
   ;; dabbrev-case-fold-search <- looks at case-fold-search currently?
   ;; case-fold-search <- is `t'
   )
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'completion)

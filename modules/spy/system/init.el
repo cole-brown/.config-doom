@@ -28,17 +28,11 @@
 ;; Loading Helpers.
 ;;------------------------------------------------------------------------------
 
-(imp:load :feature  '(:modules spy system init)
-          :filename "+init")
-
-(imp:load :feature  '(:modules spy system config)
-          :filename "+config")
-
 (imp:load :feature  '(:modules spy system dlv)
           :filename "dlv")
 
-(imp:load :feature  '(:modules spy system package)
-          :filename "+package")
+(imp:load :feature  '(:modules spy system config)
+          :filename "+config")
 
 
 ;;------------------------------------------------------------------------------

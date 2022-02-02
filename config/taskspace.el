@@ -173,3 +173,9 @@ sss:taskspace/generate' and see what file it's defined in."
                           '((:work    "Work Taskspace" sss:taskspace/custom.work)
                             (:home    "Home Taskspace" sss:taskspace/custom.home)
                             (:default "Defaults"       taskspace/group/default))))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'taskspace)

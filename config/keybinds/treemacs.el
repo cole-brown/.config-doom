@@ -41,3 +41,9 @@
          :desc "Open - New Split Horizontal" "h" #'treemacs-visit-node-horizontal-split
 
          :desc "Open - Most Recent Window"   "m" #'treemacs-visit-node-in-most-recently-used-window))))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'treemacs)

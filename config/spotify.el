@@ -137,3 +137,9 @@ have 11 zombie connections to spotify api tomorrow..."
 ;; TODO: Create a pretty hydra with 'Now Playing' info.
 ;;   - ugly: https://github.com/cole-brown/spotify.el/blob/6c5b3eb9aa35723d04b2126fea36f9cb241bf5c9/spotify-hydra.el
 ;;   - old spotify.el setup: https://github.com/cole-brown/spotify.el/tree/6c5b3eb9aa35723d04b2126fea36f9cb241bf5c9
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'spotify)

@@ -63,3 +63,9 @@
   (customize-set-variable 'grip-preview-use-webkit nil
                           (concat "Use Emacs' embedded browser. "
                                   "Requires Emacs version >= 26, built with the `--with-xwidgets` flag.")))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'markdown)

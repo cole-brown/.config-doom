@@ -42,3 +42,9 @@ If prefix ARG is set, include ignored/hidden files."
         :desc "Deadgrep"                  "/" #'deadgrep
         :desc "Search from here..."       "h" #'spy:cmd:search/project/here
         :desc "Search from directory..."  "s" #'spy:cmd:search/project/dir)))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'search)

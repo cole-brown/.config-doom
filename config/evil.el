@@ -8,3 +8,9 @@
 (setq evil-snipe-scope 'whole-visible
       evil-snipe-spillover-scope 'whole-buffer
       evil-snipe-repeat-scope 'whole-buffer)
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'evil)

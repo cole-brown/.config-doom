@@ -98,4 +98,12 @@
 
 ;; Zenburn Customizations:
 (when (eq doom-theme 'doom-zenburn)
-  (spy:config 'theme 'zenburn))
+  (imp:load :feature  '(:dot-emacs config theme zenburn)
+            :path     (imp:path:current:dir/relative :dot-emacs)
+            :filename "zenburn"))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'theme 'config)

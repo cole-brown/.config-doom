@@ -503,6 +503,7 @@ a directory path.
 ;; (int<imp>:path:filename "/foo/bar.el" t)
 
 
+;; TODO: change current:dir and current:file names to public.
 (defun int<imp>:path:current:file ()
   "Return the emacs lisp file this macro is called from."
   (cond
@@ -526,11 +527,58 @@ a directory path.
 ;; (int<imp>:path:current:file)
 
 
+;; TODO: change current:dir and current:file names to public.
 (defun int<imp>:path:current:dir ()
-  "Returns the directory of the emacs lisp file this macro is called from."
+  "Returns the directory of the emacs lisp file this is called from."
   (when-let (path (int<imp>:path:current:file))
     (directory-file-name (file-name-directory path))))
 ;; (int<imp>:path:current:dir)
+
+
+(defun imp:path:current:dir/relative (feature:base)
+  "Returns the relative path from feature's path root to the dir this is called.
+
+Could just return
+
+Raises an error if FEATURE:BASE does not have a path root.
+
+Raises an error if `(imp:path:current:dir)' (i.e. the absolute path)
+has no relation to FEATURE:BASE's root path.
+
+Example (assuming `:dot-emacs' has root path initialized as \"~/.config\":
+  ~/.config/emacs/init.el:
+    (imp:path:current:dir)
+      -> \"/home/<username>/.config/emacs/init.el\"
+    (imp:path:current:dir/relative :dot-emacs)
+      -> \"emacs\""
+  ;; Make sure both paths are equivalent (directory paths) for the regex replace.
+  (let* ((path:root (file-name-as-directory (int<imp>:path:root/dir feature:base)))
+         (path:here (file-name-as-directory (int<imp>:path:current:dir)))
+         ;; Don't like `file-relative-name' as it can return wierd things when it
+         ;; goes off looking for actual directories and files...
+         (path:relative (replace-regexp-in-string
+                         ;; Make sure root dir has ending slash.
+                         path:root ;; Look for root directory path...
+                         ""        ;; Replace with nothing to get a relative path.
+                         path:here
+                         :fixedcase
+                         :literal)))
+    ;; End up with the same thing? Not a relative path - signal error.
+    (when (string= path:relative path:here)
+      (int<imp>:error "imp:path:current:dir/relative"
+                      '("Current directory is not relative to FEATURE:BASE!\n"
+                        "  FEATURE:BASE: %S\n"
+                        "  root path:    %s\n"
+                        "  curr path:    %s\n"
+                        "---> result:    %s")
+                      feature:base
+                      path:root
+                      path:here
+                      path:relative))
+    ;; Return relative path, sans final slash.
+    (directory-file-name path:relative)))
+;; Should be "" since we're at the root dir for imp:
+;;   (imp:path:current:dir/relative :imp)
 
 
 (defvar int<imp>:path:path:platform:case-insensitive

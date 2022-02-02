@@ -187,3 +187,9 @@
           ;; and copy the above 'map!':
           :desc "Kill roam info buffer" "K" #'sss:org-roam/buffer/deactivate
           :desc "Delete roam info window" "k" #'org-roam-buffer-deactivate)))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'org-mode)

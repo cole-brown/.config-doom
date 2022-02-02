@@ -128,3 +128,9 @@
 
   ;; Set `uniquify-buffer-name-style' back to desired style.
   (setq uniquify-buffer-name-style sss:emacs:uniquify-buffer-name-style))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'emacs)

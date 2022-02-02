@@ -61,3 +61,9 @@
   (mapc (apply-partially #'add-to-list 'so-long-variable-overrides)
         '((show-trailing-whitespace . nil)
           (truncate-lines . nil))))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'long-lines)

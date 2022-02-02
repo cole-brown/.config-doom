@@ -30,7 +30,6 @@
 (imp:require :path)
 (imp:require :jerky)
 (imp:require :modules 'spy 'system 'config)
-(imp:require :modules 'spy 'system 'package)
 (imp:require :modules 'spy 'secret)
 
 
@@ -39,6 +38,7 @@
 ;;------------------------------------------------------------------------------
 
 (imp:load :feature  '(:dot-emacs init systems)
+          :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "systems")
 
 
@@ -47,6 +47,7 @@
 ;;------------------------------------------------------------------------------
 
 (imp:load :feature  '(:dot-emacs init secrets)
+          :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "secrets")
 
 

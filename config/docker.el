@@ -78,3 +78,9 @@
 ;;   ;;  'docker-image-run-custom-args
 ;;   ;;  `("^postgres" ("-e POSTGRES_PASSWORD=postgres" . ,docker-run-default-args)))
 ;;  )
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'docker)

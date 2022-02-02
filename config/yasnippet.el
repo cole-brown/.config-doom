@@ -116,3 +116,9 @@ to prevent yas from calling too many times."
 ;; (spy:yas/number/parse-or-default "jeff" 80)
 ;; (spy:yas/number/parse-or-default :input 80)
 ;; (spy:yas/number/parse-or-default :input 80 "Width: ")
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'yasnippet)

@@ -44,3 +44,9 @@
         (:prefix "p" ;; add to "project" prefix
          :desc "Replace in project"          "/"  #'projectile-replace
          :desc "Replace in project (regex)"  "\\" #'projectile-replace-regexp)))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'keybinds 'misc)

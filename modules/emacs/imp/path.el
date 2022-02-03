@@ -503,8 +503,7 @@ a directory path.
 ;; (int<imp>:path:filename "/foo/bar.el" t)
 
 
-;; TODO: change current:dir and current:file names to public.
-(defun int<imp>:path:current:file ()
+(defun imp:path:current:file ()
   "Return the emacs lisp file this macro is called from."
   (cond
    ;;------------------------------
@@ -522,17 +521,16 @@ a directory path.
    ;;------------------------------
    ;; Error: Didn't find anything valid.
    ;;------------------------------
-   ((int<imp>:error "int<imp>:path:current:file"
+   ((int<imp>:error "imp:path:current:file"
                     "Cannot get this file-path"))))
-;; (int<imp>:path:current:file)
+;; (imp:path:current:file)
 
 
-;; TODO: change current:dir and current:file names to public.
-(defun int<imp>:path:current:dir ()
+(defun imp:path:current:dir ()
   "Returns the directory of the emacs lisp file this is called from."
-  (when-let (path (int<imp>:path:current:file))
+  (when-let (path (imp:path:current:file))
     (directory-file-name (file-name-directory path))))
-;; (int<imp>:path:current:dir)
+;; (imp:path:current:dir)
 
 
 (defun imp:path:current:dir/relative (feature:base)
@@ -553,7 +551,7 @@ Example (assuming `:dot-emacs' has root path initialized as \"~/.config\":
       -> \"emacs\""
   ;; Make sure both paths are equivalent (directory paths) for the regex replace.
   (let* ((path:root (file-name-as-directory (int<imp>:path:root/dir feature:base)))
-         (path:here (file-name-as-directory (int<imp>:path:current:dir)))
+         (path:here (file-name-as-directory (imp:path:current:dir)))
          ;; Don't like `file-relative-name' as it can return wierd things when it
          ;; goes off looking for actual directories and files...
          (path:relative (replace-regexp-in-string

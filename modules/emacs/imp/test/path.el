@@ -18,9 +18,9 @@
 ;; Test Debugging Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar test<imp/path>:path/dir::int<imp>:path:current:dir
-  (int<imp>:path:current:dir)
-  "Value to use when testing `int<imp>:path:current:dir'.")
+(defvar test<imp/path>:path/dir::imp:path:current:dir
+  (imp:path:current:dir)
+  "Value to use when testing `imp:path:current:dir'.")
 
 
 (defvar test<imp/path>:path/file:this
@@ -28,9 +28,9 @@
   "This file's path.")
 
 
-(defvar test<imp/path>:path/file::int<imp>:path:current:file
-  (int<imp>:path:current:file)
-  "Value to use when testing `int<imp>:path:current:file'.")
+(defvar test<imp/path>:path/file::imp:path:current:file
+  (imp:path:current:file)
+  "Value to use when testing `imp:path:current:file'.")
 
 
 ;;------------------------------
@@ -934,16 +934,16 @@ to a path properly."
 
 
 ;;------------------------------
-;; int<imp>:path:current:file
+;; imp:path:current:file
 ;;------------------------------
 
-(ert-deftest test<imp/path>::int<imp>:path:current:file ()
-  "Test that `int<imp>:path:current:file' correctly returns current file's path."
+(ert-deftest test<imp/path>::imp:path:current:file ()
+  "Test that `imp:path:current:file' correctly returns current file's path."
   (test<imp>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<imp/path>::int<imp>:path:current:file"
+      "test<imp/path>::imp:path:current:file"
       nil
       nil
 
@@ -952,20 +952,20 @@ to a path properly."
     ;;===
 
     (should (string= test<imp/path>:path/file:this
-                     test<imp/path>:path/file::int<imp>:path:current:file))))
+                     test<imp/path>:path/file::imp:path:current:file))))
 
 
 ;;------------------------------
-;; int<imp>:path:current:dir
+;; imp:path:current:dir
 ;;------------------------------
 
-(ert-deftest test<imp/path>::int<imp>:path:current:dir ()
-  "Test that `int<imp>:path:current:dir' correctly returns current file's parent."
+(ert-deftest test<imp/path>::imp:path:current:dir ()
+  "Test that `imp:path:current:dir' correctly returns current file's parent."
   (test<imp>:fixture
       ;;===
       ;; Test name, setup & teardown func.
       ;;===
-      "test<imp/path>::int<imp>:path:current:dir"
+      "test<imp/path>::imp:path:current:dir"
       nil
       nil
 
@@ -974,7 +974,7 @@ to a path properly."
     ;;===
 
     (should (string= (directory-file-name test<imp>:path:root:test)
-                     test<imp/path>:path/dir::int<imp>:path:current:dir))))
+                     test<imp/path>:path/dir::imp:path:current:dir))))
 
 
 ;;------------------------------

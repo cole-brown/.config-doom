@@ -252,7 +252,7 @@ Returns non-nil if loaded."
 
 CALLER should be \"imp:load\".
 
-PATH:CURRENT-DIR should be the return value of `(int<imp>:path:current:dir)',
+PATH:CURRENT-DIR should be the return value of `(imp:path:current:dir)',
 executed in the context of the file calling CALLER.
   - That is, CALLER is probably a macro.
 
@@ -466,7 +466,7 @@ Returns a plist:
 ;;                          )))
 ;;   ;; (message "%S" load-args-plist))
 ;;   (int<imp>:load:parse "imp:load"
-;;                        (int<imp>:path:current:dir)
+;;                        (imp:path:current:dir)
 ;;                        (upcase "load-args-plist")
 ;;                        load-args-plist))
 
@@ -519,7 +519,7 @@ It will still raise an error if:
   - It cannot determine where to /look/ for the file.
 
 Only loads the file if the FEATURE is not already provided in `imp:features'."
-  (let ((macro:path:current-dir (int<imp>:path:current:dir)))
+  (let ((macro:path:current-dir (imp:path:current:dir)))
     `(let* ((macro:func.name "imp:load")
             (macro:parsed (int<imp>:load:parse macro:func.name
                                                ,macro:path:current-dir

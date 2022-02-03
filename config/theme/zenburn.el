@@ -167,3 +167,9 @@
     (list 'whitespace-space-before-tab :foreground (doom-color 'bg-alt)
           :background (doom-color 'violet)) ;; less eyebleed
     ))
+
+
+;;------------------------------------------------------------------------------
+;; The End.
+;;------------------------------------------------------------------------------
+(imp:provide :dot-emacs 'config 'theme 'zenburn)

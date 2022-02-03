@@ -29,7 +29,6 @@
 ;; These /should/ all be loaded already via Doom's module init.
 (imp:require :path)
 (imp:require :jerky)
-(imp:require :modules 'spy 'system 'config)
 (imp:require :modules 'spy 'secret)
 
 

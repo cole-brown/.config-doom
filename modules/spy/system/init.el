@@ -31,9 +31,6 @@
 (imp:load :feature  '(:modules spy system dlv)
           :filename "dlv")
 
-(imp:load :feature  '(:modules spy system config)
-          :filename "+config")
-
 
 ;;------------------------------------------------------------------------------
 ;; The End.

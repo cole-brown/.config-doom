@@ -6,8 +6,15 @@
 
 (imp:require :modules 'spy 'io 'signature)
 (imp:require :str 'hydra 'case)
-(spy:config 'spy 'art)
-(spy:config 'spy 'join)
+
+(imp:load :feature  '(:dot-emacs config spy art)
+          :path     (imp:path:join dot-emacs:path:config "spy")
+          :filename "art")
+
+(imp:load :feature  '(:dot-emacs config spy join)
+          :path     (imp:path:join dot-emacs:path:config "spy")
+          :filename "join")
+
 
 
 ;;------------------------------------------------------------------------------

@@ -390,33 +390,6 @@ Message depends on `imp:timing:format:time'."
       (setq imp:timing:sum (+ imp:timing:sum elapsed)))))
 
 
-;; TODO: move
-(defun imp:timing:restart ()
-  "'Restart' timing.
-
-1) Print a starting separator to the timing buffer if needed.
-2) Reset `imp:timing:sum' to zero.
-
-If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
-  ;; Reset timing sum variable.
-  (setq imp:timing:sum 0.0)
-
-  ;; Broken up because it's too early for this... :|
-  (cond
-   ;; Not enabled = no output.
-   ((not (imp:timing:enabled?))
-    nil)
-   ;; *Messages* buffer = no output.
-   ((int<imp>:timing:buffer:messages?)
-    nil)
-   ;; Not *Messages* and exists = output!
-   ((get-buffer (imp:timing:buffer:name))
-    (int<imp>:timing:buffer:insert imp:timing:separator:launch))
-   ;; Else, no output.
-   (t
-    nil)))
-
-
 (defun imp:timing:already-provided (feature filename path)
   "Prints out a message about skipping this FEATURE / FILENAME / PATH.
 
@@ -473,6 +446,30 @@ Returns result of evaluating BODY."
 ;;------------------------------------------------------------------------------
 ;; Output: Init / Finalize
 ;;------------------------------------------------------------------------------
+
+(defun imp:timing:restart ()
+  "'Restart' timing.
+
+1) Reset `imp:timing:sum' to zero.
+2) Print a starting separator to the timing buffer if needed.
+   - If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
+  ;; Reset timing sum variable.
+  (setq imp:timing:sum 0.0)
+
+  ;; Broken up because it's too early for this... :|
+  (cond
+   ;; Not enabled = no output.
+   ((not (imp:timing:enabled?))
+    nil)
+   ;; *Messages* buffer = no output.
+   ((int<imp>:timing:buffer:messages?)
+    nil)
+   ;; Not *Messages* and exists = output!
+   ((get-buffer (imp:timing:buffer:name))
+    (int<imp>:timing:buffer:insert imp:timing:separator:launch))
+   ;; Else, no output.
+   (t
+    nil)))
 
 
 (defun imp:timing:final ()

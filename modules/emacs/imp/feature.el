@@ -125,7 +125,7 @@ an Emacs symbol.")
 Uses `int<imp>:feature:replace:rx' to replace invalid characters in the INPUT
 string or symbol name.
 
-Returns a keyword if KEYWORD is non-nil, else returns a symbol."
+Returns a string."
   (let ((value (if (stringp input)
                    input
                  (symbol-name input))))

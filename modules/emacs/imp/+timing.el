@@ -78,6 +78,10 @@ Example:
   └─aa.bb seconds    : level 0")
 
 
+(defvar imp:timing:sum 0.0
+  "Sum of all timings at indent 0 level.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Custom Variables
 ;;------------------------------------------------------------------------------
@@ -118,6 +122,41 @@ Args to this format string are:
   :group 'imp:group
   :type '(string)
   :risky t)
+
+
+(defcustom imp:timing:format:time:total
+  (concat "\n"
+          ;;---
+          ;; Open Box.
+          ;;---
+          "┌───────┬──────────────────┐\n"
+          "│ total │ "
+          ;;---
+          ;; Start of Line
+          ;;---
+
+          ;;---
+          ;; Elapsed Seconds Format
+          ;;---
+          ;; Format total elapsed time like: "111.2345", "  1.2345", etc.
+          "%"                                      ;; Fill with spaces.
+          (number-to-string
+           (+ 3 1 int<imp>:timing:precision:time)) ;; Full seconds precision + "." + fractional seconds precision
+          "."
+          (number-to-string
+           int<imp>:timing:precision:time)         ;; Fractional seconds precision
+          "f"                                      ;; Format as a floating point.
+
+          ;;---
+          ;; End of Line
+          ;;---
+          " seconds │\n"
+
+          ;;---
+          ;; Close Box.
+          ;;---
+          "└───────┴──────────────────┘")
+  "String format for total elapsed time according to `imp:timing:sum'.")
 
 
 (defcustom imp:timing:format:time
@@ -192,6 +231,8 @@ indention levels."
    ;; Join w/ no padding.
    ""))
 ;; (int<imp>:timing:tree:string :root)
+;; (let ((int<imp>:timing:indent 2))
+;;   (int<imp>:timing:tree:string :root))
 
 
 ;;------------------------------------------------------------------------------
@@ -340,15 +381,26 @@ Message depends on `imp:timing:format:load'."
   "Print the time since TIME:START.
 
 Message depends on `imp:timing:format:time'."
-  (int<imp>:timing:message :leaf
-                           imp:timing:format:time
-                           (float-time (time-since time:start))))
+  (let ((elapsed (float-time (time-since time:start))))
+    (int<imp>:timing:message :leaf
+                             imp:timing:format:time
+                             elapsed)
+    ;; Add `elapsed' to running sum if at base indent level.
+    (when (= int<imp>:timing:indent 0)
+      (setq imp:timing:sum (+ imp:timing:sum elapsed)))))
 
 
-(defun imp:timing:launch ()
-  "Print a starting separator to the timing buffer if needed.
+;; TODO: move
+(defun imp:timing:restart ()
+  "'Restart' timing.
+
+1) Print a starting separator to the timing buffer if needed.
+2) Reset `imp:timing:sum' to zero.
 
 If `imp:timing:buffer:name' doesn't exists or is *Messages*, does nothing."
+  ;; Reset timing sum variable.
+  (setq imp:timing:sum 0.0)
+
   ;; Broken up because it's too early for this... :|
   (cond
    ;; Not enabled = no output.
@@ -416,3 +468,16 @@ Returns result of evaluating BODY."
 ;;   (imp:timing :test "+timing.el" ".config/doom/modules/emacs/imp"
 ;;               (imp:timing :test/foo "+foo.el" ".config/doom/modules/emacs/imp"
 ;;                           (message "Double Time!"))))
+
+
+;;------------------------------------------------------------------------------
+;; Output: Init / Finalize
+;;------------------------------------------------------------------------------
+
+
+(defun imp:timing:final ()
+  "Print out total timing summary."
+  (when (imp:timing:enabled?)
+    (int<imp>:timing:buffer:insert
+     (format imp:timing:format:time:total
+             imp:timing:sum))))

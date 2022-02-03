@@ -420,6 +420,8 @@ This allows you to create your docstring like so:
 ;; Hydra for Smudge package for controlling Spotify
 ;;------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
 ;; TODO: How does that pretty hydra package thingy work compared to this?
 (defhydra hydra:spotify (:hint none)
   (format "%s" (int<spy>:spotify:hydra/description))
@@ -441,15 +443,15 @@ This allows you to create your docstring like so:
    :exit t)
 
   ("m" smudge-my-playlists
-   (int<spy>:spotify:hydra/get.name :lists/my)
+   (int<spy>:spotify:hydra/get.name :lists:my)
    :exit t)
 
   ("f" smudge-featured-playlists
-   (int<spy>:spotify:hydra/get.name :lists/featured)
+   (int<spy>:spotify:hydra/get.name :lists:featured)
    :exit t)
 
   ("u" smudge-user-playlists
-   (int<spy>:spotify:hydra/get.name :lists/user)
+   (int<spy>:spotify:hydra/get.name :lists:user)
    :exit t)
 
   ("SPC" smudge-controller-toggle-play
@@ -473,15 +475,15 @@ This allows you to create your docstring like so:
    :exit nil)
 
   ("+" smudge-controller-volume-up
-   (int<spy>:spotify:hydra/get.name :volume/up)
+   (int<spy>:spotify:hydra/get.name :volume:up)
    :exit nil)
 
   ("-" smudge-controller-volume-down
-   (int<spy>:spotify:hydra/get.name :volume/down)
+   (int<spy>:spotify:hydra/get.name :volume:down)
    :exit nil)
 
   ("x" smudge-controller-volume-mute-unmute
-   (int<spy>:spotify:hydra/get.name :volume/mute)
+   (int<spy>:spotify:hydra/get.name :volume:mute)
    :exit nil)
 
   ("d" smudge-select-device
@@ -508,7 +510,7 @@ This allows you to create your docstring like so:
        ;;------------------------------
        ;; Spotify:
        ;;------------------------------
-       :desc "Spotify Remote"    "<apps>" #'hydra:spotify/body))
+       :desc "Spotify Remote"    "<menu>" #'hydra:spotify/body))
 
 
 ;; (bind-key "a" #'hydra-spotify/body some-map)

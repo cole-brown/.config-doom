@@ -38,7 +38,13 @@
 ;; Pre-Config Init, Includes
 ;;------------------------------------------------------------------------------
 
-;; Step 00: Set the root path to our init files for Emacs.
+;;------------------------------
+;; Step Zero:
+;;------------------------------
+;; Enable imp timing.
+(customize-set-variable 'imp:timing:enabled? t)
+
+;; Set the root path to our init files for Emacs.
 (imp:path:root :dot-emacs
                ;;------------------------------
                ;; Figure out what kind of Emacs this is.
@@ -69,10 +75,18 @@
                ;; Could set here if I wanted different names/paths.
                )
 
+;;------------------------------
+;; Step 01: Load the Pre-Config Init.
+;;------------------------------
+
 ;; Everything required before the config step is run.
 (imp:load :feature  '(:dot-emacs init)
           :filename "init/init")
 
+
+;;------------------------------
+;; Step 02: Prep for Config.
+;;------------------------------
 
 (defconst dot-emacs:path:config "config"
   "Relative path from `:dot-emacs' root directory to the config directory.")
@@ -289,7 +303,12 @@
 ;; The End
 ;;------------------------------------------------------------------------------
 
-;; Show warnings if mis0 got any during init.
-(mis0/init/complete 'show-warning)
+;; Gives me double warning buffers in Doom, maybe?
+;; ;; Show warnings if mis0 got any during init.
+;; (mis0/init/complete 'show-warning)
 
+;; Output final time for imp loads.
+(imp:timing:final)
+
+;; Done; provide this feature.
 (imp:provide :dot-emacs 'config)

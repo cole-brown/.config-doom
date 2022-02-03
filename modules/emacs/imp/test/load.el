@@ -645,6 +645,23 @@ EXPECTED should be a plist with keys:
       (should-not test<imp>:loading:dont-load:loaded))
 
     ;;---
+    ;; If feature is alredy provided, but `:skip nil' is set, load anyways.
+    ;;---
+    (let (result)
+      (should-not test<imp>:loading:dont-load:loaded)
+      (should (file-exists-p (imp:path:join test<imp>:path:root:loading
+                                            (concat test<imp>:file:loading:dont-load ".el"))))
+      ;; Call `imp:load on it's feature... with `:skip nil' this time.
+      (setq result (imp:load :feature  test<imp>:feature:loading:dont-load
+                             :path     test<imp>:path:root:loading
+                             :filename test<imp>:file:loading:dont-load
+                             :error    nil
+                             :skip     nil))
+      ;; Should load this time.
+      (should result)
+      (should test<imp>:loading:dont-load:loaded))
+
+    ;;---
     ;; If feature is not provided, load it.
     ;;---
     (let (result)

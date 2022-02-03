@@ -436,7 +436,7 @@ It will still raise an error if:
   - It cannot parse the inputs.
   - It cannot determine where to /look/ for the file.
 
-Only loads the file if the FEATURE is not already provided in `imp:features'."
+Always loads the file."
   (let ((macro:path:current-dir (imp:path:current:dir)))
     `(let* ((macro:func.name "imp:test:load")
             (macro:parsed (int<imp>:test/load:parse macro:func.name

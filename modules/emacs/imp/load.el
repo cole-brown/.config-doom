@@ -265,9 +265,11 @@ Returns a plist:
   - :feature
     + imp feature keyword/symbol list
   - :error
+    - t/nil
+  - :skip
     - t/nil"
   ;; Valid keys:
-  (let ((keys:valid '(:path :filename :feature :error))
+  (let ((keys:valid '(:path :filename :feature :error :skip))
         ;; Parsing vars.
         keys:parsed
         parsing:done
@@ -276,10 +278,12 @@ Returns a plist:
         in:filename
         in:feature
         in:error
+        in:skip
         ;; Output default values:
         out:path
         out:feature
-        (out:error t))
+        (out:error t)
+        (out:skip  t))
 
     (int<imp>:debug caller
                     '("inputs:\n"
@@ -362,7 +366,9 @@ Returns a plist:
                ;; Allow FEATURE to be a single thing, a flat list, or a list that needs flattened...
                (setq in:feature (int<imp>:list:flatten value)))
               ((eq key :error)
-               (setq in:error value)))))
+               (setq in:error value))
+              ((eq key :skip)
+               (setq in:skip value)))))
 
     ;;------------------------------
     ;; Check for required inputs.
@@ -452,17 +458,33 @@ Returns a plist:
       (setq out:error (not (null in:error)))
       (int<imp>:debug caller "out:error:   %S (parsed)" out:error))
 
+    ;;---
+    ;; SKIP
+    ;;---
+    ;; It just needs to be nil or not.
+    ;; NOTE: Make sure to use existing `out:skip' as default value if no in:skip!
+    ;;   - So we need to know if that key was encountered.
+    (if (not (memq :skip keys:parsed))
+        ;; Not encountered; leave as the default.
+        (int<imp>:debug caller "out:skip:    %S (default)" out:skip)
+
+      ;; Parsed explicitly - set exactly.
+      (setq out:skip (not (null in:skip)))
+      (int<imp>:debug caller "out:skip:    %S (parsed)" out:skip))
+
     ;;------------------------------
     ;; Return:
     ;;------------------------------
     (list :path     out:path
           :feature  out:feature
-          :error    out:error)))
+          :error    out:error
+          :skip     out:skip)))
 ;; (let ((load-args-plist '(:feature (:foo bar)
 ;;                          :path "init.el"
 ;;                          ;; :path
 ;;                          ;; :filename
 ;;                          ;; :error nil
+;;                          ;; :skip nil
 ;;                          )))
 ;;   ;; (message "%S" load-args-plist))
 ;;   (int<imp>:load:parse "imp:load"
@@ -484,6 +506,8 @@ LOAD-ARGS-PLIST is a plist of load args:
   - Optional:
     + `:error'
       - Defaults to `t'; supply `:error nil' to change.
+    + `:skip'
+      - Defaults to `t'; supply `:skip nil' to change.
 
 `:feature' value should be a list of keywords and symbols.
   - example: '(:imp load)
@@ -518,7 +542,13 @@ It will still raise an error if:
   - It cannot parse the inputs.
   - It cannot determine where to /look/ for the file.
 
-Only loads the file if the FEATURE is not already provided in `imp:features'."
+`:skip' value (aka SKIP) can be:
+  - non-nil (default)
+  - nil
+If SKIP is non-nil:
+  - Only loads the file if the FEATURE is not already provided in `imp:features'.
+If SKIP is nil:
+  - Always loads the file."
   (let ((macro:path:current-dir (imp:path:current:dir)))
     `(let* ((macro:func.name "imp:load")
             (macro:parsed (int<imp>:load:parse macro:func.name
@@ -528,9 +558,10 @@ Only loads the file if the FEATURE is not already provided in `imp:features'."
             (macro:path          (plist-get macro:parsed :path))
             (macro:path:filename (int<imp>:path:filename macro:path))
             (macro:path:parent   (int<imp>:path:parent   macro:path))
-            (macro:feature (plist-get macro:parsed :feature))
+            (macro:feature       (plist-get macro:parsed :feature))
+            (macro:skip?         (plist-get macro:parsed :skip))
             ;; Invert for `load' parameter NO-ERROR.
-            (macro:error? (plist-get macro:parsed :error))
+            (macro:error?        (plist-get macro:parsed :error))
             ;; Set `file-name-handler-alist' to nil to speed up loading.
             file-name-handler-alist
             load-result)
@@ -540,18 +571,21 @@ Only loads the file if the FEATURE is not already provided in `imp:features'."
                          "    -> dir:  %s\n"
                          "    -> file: %s\n"
                          "  feature: %S\n"
+                         "  skip?:   %S\n"
                          "  error?:  %S")
                        macro:path
                        macro:path:parent
                        macro:path:filename
                        macro:feature
+                       macro:skip?
                        macro:error?)
 
        ;;------------------------------
        ;; Provide Check
        ;;------------------------------
-       ;; Only load if it's not provided already.
-       (if (imp:provided? macro:feature)
+       ;; Load if `:skip' set to `t' and it's not provided already.
+       (if (and (eq macro:skip? t)
+               (imp:provided? macro:feature))
            ;; Skip w/ optional timing message.
            (progn
              (imp:timing:already-provided macro:feature

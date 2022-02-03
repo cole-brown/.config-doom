@@ -490,7 +490,7 @@ ERROR?, if non-nil, will signal an error if the file does not exist.
 and if its LOAD-NAME file exists on the filesystem.
   - And only if `int<keyboard>:testing:disable-start-up-init' is nil.
 
-LOAD-NAME should be filename (without extension) to be passed to `load!' as:
+LOAD-NAME should be filename (without extension) to be passed to `load' as:
 (concat (file-name-as-directory \"layout\")
         (file-name-as-directory DIRECTORY)
         LOAD-NAME)

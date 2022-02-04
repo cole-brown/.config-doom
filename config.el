@@ -169,6 +169,10 @@
           :path     dot-emacs:path:config
           :filename "whitespace")
 
+(imp:load :feature  '(:dot-emacs config hydra)
+          :path     dot-emacs:path:config
+          :filename "hydra")
+
 
 ;;------------------------------------------------------------------------------
 ;; Cole Brown, Multi-pass.

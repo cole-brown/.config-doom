@@ -5,6 +5,35 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Helpers
+;;------------------------------------------------------------------------------
+
+(defun spy:evil:replace-state:toggle ()
+  "Toggle overwrite mode.
+
+Toggles between 'insert' and 'replace' evil states."
+  (if (evil-replace-state-p)
+      (evil-append 0)
+    (evil-replace-state)))
+
+
+;; TODO: Move to buffer.el...
+(defun spy:buffer:insert-or-overwrite (character)
+  "Insert or overwrite CHARACTER into active buffer at point.
+
+Need to fix the hydra's deleting before figuring out the integration into
+evil's replace state backspace 'undo' functionality."
+  ;; If overwriting, first delete a character at point so we end up "replacing" it.
+  (when (evil-replace-state-p)
+    ;; TODO: Will this let evil's backspace/delete 'undo' functionality work?
+    ;; (evil-replace-pre-command)
+
+    ;; TODO: Will this work on its own to allow evil's 'undo' functionality?
+    (evil-delete-char (point) (1+ (point))))
+  (insert character))
+
+
+;;------------------------------------------------------------------------------
 ;; Manual Unicode Box Drawing Chars That Don't Work Right Now
 ;;------------------------------------------------------------------------------
 ;; Don't work with current font(s)....
@@ -149,9 +178,9 @@ Draw box characters.
 _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   ^ ^  ^ ^     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
 _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   ^ ^  ^ ^     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ?<SPC>?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _x_: ?x?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _X_: ?X?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _<SPC>_: ?<SPC>?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        _x_: ?x?   ^ ^            ^ ^   ^^^^^^^^_<insert>_: ?<insert>?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        _X_: ?X?
 "
   ;; NOTE: You _MUST_ start off with a newline in docstr, otherwise you will get:
   ;;  > Debugger entered--Lisp error: (error "Not enough arguments for format string")
@@ -161,20 +190,20 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Box Characters
   ;;------------------------------
-  ("'" (funcall #'insert "┌") "┌") ;; down and right
-  ("," (funcall #'insert "┬") "┬") ;; down and horizontal
-  ("." (funcall #'insert "┐") "┐") ;; down and left
+  ("'" (spy:buffer:insert-or-overwrite "┌") "┌") ;; down and right
+  ("," (spy:buffer:insert-or-overwrite "┬") "┬") ;; down and horizontal
+  ("." (spy:buffer:insert-or-overwrite "┐") "┐") ;; down and left
 
-  ("a" (funcall #'insert "├") "├") ;; vertical and right
-  ("o" (funcall #'insert "┼") "┼") ;; vertical and horizontal
-  ("e" (funcall #'insert "┤") "┤") ;; vertical and left
+  ("a" (spy:buffer:insert-or-overwrite "├") "├") ;; vertical and right
+  ("o" (spy:buffer:insert-or-overwrite "┼") "┼") ;; vertical and horizontal
+  ("e" (spy:buffer:insert-or-overwrite "┤") "┤") ;; vertical and left
 
-  (";" (funcall #'insert "└") "└") ;; up and right
-  ("q" (funcall #'insert "┴") "┴") ;; up and horizontal
-  ("j" (funcall #'insert "┘") "┘") ;; up and left
+  (";" (spy:buffer:insert-or-overwrite "└") "└") ;; up and right
+  ("q" (spy:buffer:insert-or-overwrite "┴") "┴") ;; up and horizontal
+  ("j" (spy:buffer:insert-or-overwrite "┘") "┘") ;; up and left
 
-  ("p" (funcall #'insert "─") "─") ;; horizontal
-  ("u" (funcall #'insert "│") "│") ;; vertical
+  ("p" (spy:buffer:insert-or-overwrite "─") "─") ;; horizontal
+  ("u" (spy:buffer:insert-or-overwrite "│") "│") ;; vertical
 
   ;;---
   ;; Not Working in Emacs w/ Current Fonts:
@@ -188,20 +217,20 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;; _A_: ?A?  ^ ^  ^ ^  _E_: ?E?   _U_: ?U?   _I_: ?I?     ^ ^        ^ ^        ^ ^            _X_: ?X?
   ;; ^ ^  ^ ^  _Q_: ?Q?  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
   ;;
-  ;; ("y" (funcall #'insert "┄") "┄") ;; triple dash horizontal
-  ;; ("i" (funcall #'insert "┆") "┆") ;; triple dash vertical
+  ;; ("y" (spy:buffer:insert-or-overwrite "┄") "┄") ;; triple dash horizontal
+  ;; ("i" (spy:buffer:insert-or-overwrite "┆") "┆") ;; triple dash vertical
   ;;
   ;; ;; These are named backwards by Unicode - don't blame me.
-  ;; ("<" (funcall #'insert "╷") "╷") ;; down
-  ;; ("A" (funcall #'insert "╶") "╶") ;; right
-  ;; ("Q" (funcall #'insert "╵") "╵") ;; up
-  ;; ("E" (funcall #'insert "╴") "╴") ;; left
+  ;; ("<" (spy:buffer:insert-or-overwrite "╷") "╷") ;; down
+  ;; ("A" (spy:buffer:insert-or-overwrite "╶") "╶") ;; right
+  ;; ("Q" (spy:buffer:insert-or-overwrite "╵") "╵") ;; up
+  ;; ("E" (spy:buffer:insert-or-overwrite "╴") "╴") ;; left
   ;;
-  ;; ("P" (funcall #'insert "╌") "╌") ;; double dash horizontal
-  ;; ("U" (funcall #'insert "╎") "╎") ;; double dash vertical
+  ;; ("P" (spy:buffer:insert-or-overwrite "╌") "╌") ;; double dash horizontal
+  ;; ("U" (spy:buffer:insert-or-overwrite "╎") "╎") ;; double dash vertical
   ;;
-  ;; ("Y" (funcall #'insert "┈") "┈") ;; quadruple dash horizontal
-  ;; ("I" (funcall #'insert "┊") "┊") ;; quadruple dash vertical
+  ;; ("Y" (spy:buffer:insert-or-overwrite "┈") "┈") ;; quadruple dash horizontal
+  ;; ("I" (spy:buffer:insert-or-overwrite "┊") "┊") ;; quadruple dash vertical
 
 
   ;;------------------------------
@@ -215,7 +244,12 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
-  ("<SPC>" (funcall #'insert " ") "insert space")
+  ("<SPC>" (spy:buffer:insert-or-overwrite " ") "insert space")
+  ("<insert>"
+   (funcall #'spy:evil:replace-state:toggle)
+   (if (evil-replace-state-p)
+       "insert state"
+     "replace state"))
   ("x" #'evil-delete-char "delete char")
   ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")
@@ -244,9 +278,9 @@ Draw box characters.
 _'_: ?'?  _,_: ?,?  _._: ?.?   _p_: ?p?   ^ ^  ^ ^     ^ ^        _c_: up    ^ ^            _-_: undo     _d_: ?d?
 _a_: ?a?  _o_: ?o?  _e_: ?e?   _u_: ?u?   ^ ^  ^ ^     _h_: left  _t_: down  _n_: right     ^ ^           _g_: ?g?
 _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _G_: ?G?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            SPC: ?<SPC>?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _x_: ?x?
-^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            _X_: ?X?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           _<SPC>_: ?<SPC>?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        _x_: ?x?   ^ ^            ^ ^   ^^^^^^^^_<insert>_: ?<insert>?
+^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        _X_: ?X?
 "
   ;; If ever the single line hydra gets its dotted lines and/or line-termination chars working, add this to the keymap string:
   ;; ^ ^  ^ ^  ^ ^  ^ ^  ^ ^  ^ ^   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^            ^ ^           ^ ^  (hi)
@@ -260,20 +294,20 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;; Box Characters:
   ;; Double Lines! Double Lines!
   ;;------------------------------
-  ("'" (funcall #'insert "╔") "╔") ;; double down and right
-  ("," (funcall #'insert "╦") "╦") ;; double down and horizontal
-  ("." (funcall #'insert "╗") "╗") ;; double down and left
+  ("'" (spy:buffer:insert-or-overwrite "╔") "╔") ;; double down and right
+  ("," (spy:buffer:insert-or-overwrite "╦") "╦") ;; double down and horizontal
+  ("." (spy:buffer:insert-or-overwrite "╗") "╗") ;; double down and left
 
-  ("a" (funcall #'insert "╠") "╠") ;; double vertical and right
-  ("o" (funcall #'insert "╬") "╬") ;; double vertical and horizontal
-  ("e" (funcall #'insert "╣") "╣") ;; double vertical and left
+  ("a" (spy:buffer:insert-or-overwrite "╠") "╠") ;; double vertical and righ
+  ("o" (spy:buffer:insert-or-overwrite "╬") "╬") ;; double vertical and horizontal
+  ("e" (spy:buffer:insert-or-overwrite "╣") "╣") ;; double vertical and left
 
-  (";" (funcall #'insert "╚") "╚") ;; double up and right
-  ("q" (funcall #'insert "╩") "╩") ;; double up and horizontal
-  ("j" (funcall #'insert "╝") "╝") ;; double up and left
+  (";" (spy:buffer:insert-or-overwrite "╚") "╚") ;; double up and right
+  ("q" (spy:buffer:insert-or-overwrite "╩") "╩") ;; double up and horizontal
+  ("j" (spy:buffer:insert-or-overwrite "╝") "╝") ;; double up and left
 
-  ("p" (funcall #'insert "═") "═") ;; double horizontal
-  ("u" (funcall #'insert "║") "║") ;; double vertical
+  ("p" (spy:buffer:insert-or-overwrite "═") "═") ;; double horizontal
+  ("u" (spy:buffer:insert-or-overwrite "║") "║") ;; double vertical
 
   ;;------------------------------
   ;; Movement Keys
@@ -286,7 +320,12 @@ _;_: ?;?  _q_: ?q?  _j_: ?j?   ^ ^  ^ ^   ^ ^  ^ ^     ^ ^        ^ ^        ^ ^
   ;;------------------------------
   ;; Misc.
   ;;------------------------------
-  ("<SPC>" (funcall #'insert " ") "insert space")
+  ("<SPC>" (spy:buffer:insert-or-overwrite " ") "insert space")
+  ("<insert>"
+   (funcall #'spy:evil:replace-state:toggle)
+   (if (evil-replace-state-p)
+       "insert state"
+     "replace state"))
   ("x" #'evil-delete-char "delete char")
   ("X" #'evil-delete-char "delete backwards char")
   ("-" #'undo "undo")

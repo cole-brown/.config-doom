@@ -24,6 +24,11 @@
   (not (path:directory? path)))
 
 
+(defun path:absolute? (path)
+  "Returns non-nil if PATH is an absolute path."
+  (file-name-absolute-p path))
+
+
 ;;------------------------------------------------------------------------------
 ;; Traversal
 ;;------------------------------------------------------------------------------
@@ -61,12 +66,130 @@ keywords or symbol names can be used as well as strings."
   "Combines PATH elements together into a path platform-agnostically.
 
 (path:join \"jeff\" \"jill.el\")
-  ->\"jeff/jill.el\"
-"
+  ->\"jeff/jill.el\""
   (-reduce #'int<path>:append path))
 ;; (path:join "jeff" "jill")
 ;; (path:join "jeff" "jill/")
 ;; (path:join "jeff")
+
+
+;;------------------------------------------------------------------------------
+;; Split
+;;------------------------------------------------------------------------------
+
+
+(defvar int<path>:separators:rx (rx-to-string '(one-or-more (or ?/ ?\\)) ;; '(or ?/ ?\\)
+                                              :no-group)
+  "Separators for Windows and Linux paths.")
+
+
+(defun int<path>:filter:strings:keep (item)
+  "`-keep' needs the item itself returned, so you can't just use `stringp'."
+  (and (stringp item) item))
+
+
+;;------------------------------
+;; Path Segments
+;;------------------------------
+
+(defun path:segments (&rest path)
+  "Splits all PATH strings by directory separators, returns a plist.
+
+Returned PLIST will have these keys (if their values are non-nil).
+  :drive   - Drive letter / name
+           - \"C:/foo/bar\" -> \"C:\"
+  :root    - Root of the path (\"/\", \"C:\\\", etc.)
+           - \"C:/foo/bar\" -> \"/\"
+           - \"/foo/bar\" -> \"/\"
+  :parents - Parent directory ancestors of PATH.
+           - \"/foo/bar/baz\" -> '(\"foo\" \"bar\")
+  :name    - Name of the final path element.
+           - \"/foo/bar/baz\" -> \"baz\"
+           - \"/foo/bar/\" -> \"bar\"
+           - \"/foo/bar.tar.gz\" -> \"bar.tar.gz\""
+  (let (drive
+        root
+        ;; `segments' will get split into `parents' and `name'.
+        segments
+        parents
+        name
+        output
+        ;; Get rid of any nulls or invalid segments.
+        (paths (-keep #'int<path>:filter:strings:keep path)))
+    (if (null paths)
+        (error "path:segments: PATH has no strings to split: %S"
+               path)
+
+      ;;------------------------------
+      ;; Parse input.
+      ;;------------------------------
+      ;; Path is absolute if first/only segment is absolute.
+      (when (path:absolute? (car paths))
+
+        ;; If absolute, set the root directory.
+        (setq root "/")
+
+        ;; If on windows, set the root drive.
+        (when (eq system-type 'windows-nt)
+          (save-match-data
+            (when (string-match (rx-to-string '(and string-start letter ":")
+                                              :no-group)
+                                (car paths))
+              (setq drive (match-string 0 (car paths)))))))
+
+      ;; Split each input into segments.
+      (dolist (path paths)
+        (dolist (segment (split-string path
+                                       int<path>:separators:rx
+                                       t
+                                       split-string-default-separators))
+          (push segment segments)))
+
+      ;; `segments' is backwards, so first item is file/dir `name',
+      ;; rest need to be reversed into the `parents'.
+      (setq name    (car segments)
+            parents (nreverse (cdr segments)))
+
+      ;;------------------------------
+      ;; Build output plist (in reverse).
+      ;;------------------------------
+      (when name
+        (push name output)
+        (push :name output))
+
+      (when parents
+        (push parents output)
+        (push :parents output))
+
+      (when root
+        (push root output)
+        (push :root output))
+
+      (when drive
+        (push drive output)
+        (push :drive output))
+
+      ;; Return segments plist.
+      output)))
+;; (path:segments "/foo/bar" "/baz")
+
+
+;;------------------------------
+;; Split on Dir Separators
+;;------------------------------
+
+(defun path:split (&rest path-segments)
+  "Splits all PATH strings by directory separators, returns one list."
+  ;; `path:segments' will do the heavy lifting.
+  (let ((segments (apply #'path:segments path-segments)))
+    ;; Now just convert the plist into a list, and drop any nulls.
+    (-keep #'int<path>:filter:strings:keep
+           (-flatten (list
+                      (plist-get segments :drive)
+                      (plist-get segments :root)
+                      (plist-get segments :parents)
+                      (plist-get segments :name))))))
+;; (path:split "/foo/bar" "/baz")
 
 
 ;;------------------------------------------------------------------------------

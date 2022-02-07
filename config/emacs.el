@@ -8,6 +8,18 @@
 ;; Emacs Itself
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Font
+;;------------------------------
+
+;; TODO: Is there any way to check if a font exists before setting it?
+;; TODO: Make this a per-system setting if not?
+(set-face-attribute 'default
+                    nil
+                    :font "CaskaydiaCove Nerd Font Mono"
+                    ;; integers -> absolute font height in 1/10th font point (pt) units.
+                    :height 94)
+
 
 ;;------------------------------
 ;; Quitting

@@ -131,7 +131,6 @@ Does not fix or validate PATH or SEGMENT components; they are expected to be val
 ;; Relative Paths
 ;;------------------------------------------------------------------------------
 
-;; TODO: Rename to `path:canonicalize:relative'?
 (defun path:canonicalize:relative (&optional path root)
   "Returns a file path to PATH relative to ROOT.
 
@@ -167,6 +166,52 @@ Raises an error if ROOT is not nil and not a string."
 
 (defalias 'path:relative           'path:canonicalize:relative)
 (defalias 'path:rel                'path:canonicalize:relative)
+
+
+;;------------------------------------------------------------------------------
+;; Current Paths
+;;------------------------------------------------------------------------------
+
+(defun path:current:file ()
+  "Return the emacs lisp file this function is called from.
+
+Works when:
+  - byte compiling
+    - `byte-compile-current-file'
+  - loading
+    - `load-file-name'
+    - `current-load-list'
+  - visiting/evaluating
+    - `buffer-file-name'
+
+Raises an error signal if it cannot find a file path."
+  (cond
+   ;;------------------------------
+   ;; Look for a valid "current file" variable.
+   ;;------------------------------
+   ((bound-and-true-p byte-compile-current-file))
+
+   (load-file-name)
+
+   ((stringp (car-safe current-load-list))
+    (car current-load-list))
+
+   (buffer-file-name)
+
+   ;;------------------------------
+   ;; Error: Didn't find anything valid.
+   ;;------------------------------
+   ((error "path:current:file: Cannot get the current file's path."))))
+;; (path:current:file)
+
+
+(defun path:current:dir ()
+  "Returns the directory of the emacs lisp file this function is called from.
+
+Uses `path:current:file' and just chops off the filename."
+  (when-let (path (path:current:file))
+    (directory-file-name (file-name-directory path))))
+;; (path:current:dir)
 
 
 ;;------------------------------------------------------------------------------

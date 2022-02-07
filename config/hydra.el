@@ -36,19 +36,44 @@
 ;; except they don't exist... So I found a GitHub Gist that defines them:
 ;;   https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325"
 
-(defun with-faicon (icon str &optional height v-adjust)
+
+
+
+;; TODO: Move to mis.
+(defun with-faicon (icon str &rest plist)
   "Return string of Font Awesome ICON and STR.
+
+Optional PLIST's optional keys:
+  - `:height'     - HEIGHT
+  - `:v-adjust'   - V-ADJUST
+  - `:color:icon' - ICON-COLOR
 
 Passes HEIGHT and V-ADJUST to `all-the-icons-faicon'.
 
+Uses ICON-COLOR's font to color the icon character.
+
 [2022-02-04] https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325"
-  (s-concat (all-the-icons-faicon icon
-                                  :v-adjust (or v-adjust 0)
-                                  :height (or height 1))
-            " "
-            str))
+  ;; Only bother propertizing if we need to.
+  (let ((properties
+         output))
+    (when-let ((color:icon (plist-get plist :color:icon)))
+      ;; figure out font or color to use?
+      ;; Figure out what to call to propertize string w/ color/font.
+      (setq properties (list :foreground color:icon)))
+
+    (s-concat
+     (all-the-icons-faicon icon
+                           :face properties
+                           :v-adjust (or (plist-get plist :v-adjust) 0)
+                           :height (or (plist-get plist :height) 1))
+     " "
+     str)))
+;; (with-faicon "spotify" "Spotify" :color:icon "limegreen" :height 1 :v-adjust -0.05)
+;; (insert (with-faicon "spotify" "Spotify" :color:icon "limegreen" :height 1 :v-adjust -0.05))
 
 
+;; TODO: Move to mis.
+;; TODO: Change to plist like `with-faicon'.
 (defun with-fileicon (icon str &optional height v-adjust)
   "Return string of File ICON and STR.
 
@@ -62,6 +87,8 @@ Passes HEIGHT and V-ADJUST to `all-the-icons-fileicon'.
             str))
 
 
+;; TODO: Move to mis.
+;; TODO: Change to plist like `with-faicon'.
 (defun with-octicon (icon str &optional height v-adjust)
   "Return string of Octicon ICON and STR.
 
@@ -75,6 +102,8 @@ Passes HEIGHT and V-ADJUST to `all-the-icons-octicon'.
             str))
 
 
+;; TODO: Move to mis.
+;; TODO: Change to plist like `with-faicon'.
 (defun with-material (icon str &optional height v-adjust)
   "Return string of Material ICON and STR.
 
@@ -88,6 +117,8 @@ Passes HEIGHT and V-ADJUST to `all-the-icons-material'.
             str))
 
 
+;; TODO: Move to mis.
+;; TODO: Change to plist like `with-faicon'.
 (defun with-mode-icon (mode str &optional height no-space face)
   "Return string of MODE's icon and STR.
 

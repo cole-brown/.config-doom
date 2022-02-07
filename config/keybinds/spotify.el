@@ -34,6 +34,156 @@
 ;; See also:
 ;;   http://xahlee.info/comp/unicode_computing_symbols.html
 
+
+;;------------------------------------------------------------------------------
+;; Pretty Spotify Hydra
+;;------------------------------------------------------------------------------
+
+(defvar int<spy>:spotify:pretty-hydra/title
+  ;; TODO: Need any height/v-adjust?
+  (with-faicon "spotify" ;; Font Awesome icon name
+               "Spotify" ;; Text after icon
+               ;; Icon Settings
+               :color:icon "limegreen"
+               ;; :height 1
+               ;; :v-adjust -0.05
+               ))
+;; (insert int<spy>:spotify:pretty-hydra/title)
+
+;; - :track              "t"   nil  "Search for Track"
+;; - :lists:my           "m"   nil  "My Playlists"
+;; - :lists:featured     "f"   nil  "Featured Playlists"
+;; - :lists:user         "u"   nil  "User Playlists"
+;; - :device             "d"   nil  "Device"
+;; - :quit               "q"   nil  "Quit"
+;; - :volume:mute        "x"   "🔇" "Mute"
+;; - :volume:unmute      "x"   "🔈" "Unmute"
+;; - :volume:mute/unmute "x"   "🔇" "Mute/Unmute"
+;; - :volume:up          "+"   "🔊" "Volume Up"
+;; - :volume:down        "-"   "🔉" "Volume Down"
+;; - :play               nil   "▶" "Play"
+;; - :pause              nil   "⏸" "Pause"
+;; - :play/pause         "SPC" "⏯" "Play/Pause"
+;; - :skip:next          "p"   "⏮" "Previous Track" ;; aka "Skip Backwards"
+;; - :skip:previous      "n"   "⏭" "Next Track"     ;; aka "Skip Forwards"
+;; - :shuffle            "s"   "🔀" "Shuffle"
+;; - :repeat             "r"   "🔁" "Repeat"
+;; - :refresh            nil   "🔄" "Refresh"
+
+
+(defvar int<spy>:spotify:device:default system-name
+  "Default to \"The computer I'm on right now.\"")
+
+
+(when nil
+  ;; TODO: how do I get current state from smudge??
+  ;; (defun int<spy>:hydra:head-name (func states &optional default)
+;;     "Get a head-name string from STATES give FUNC return value.
+
+;; FUNC should be a function with no params that returns keywords.
+
+;; STATES should be a plist of head name strings.
+
+;; Returns a string or DEFAULT."
+;;     (let ((state:current (funcall func)))
+;;       ;; Let things like `nil' be in the plist.
+;;       ;; Return plist's value as-is if found, else return DEFAULT.
+;;       (if (plist-member states state:current)
+;;           (plist-get states state:current)
+;;         default)))
+
+  ;; TODO: select this computer as the Spotify device if none is active.
+  ;; (unless (request-response-status-code (smudge-connect-when-device-active t))
+  ;;   (smudge-
+  ;;   int<spy>:spotify:device:default
+
+  (pretty-hydra-define int<spy>:spotify:pretty-hydra/title
+    (:quit-key "q" :title int<spy>:spotify:pretty-hydra/title)
+
+    ;;------------------------------
+    ;; Control: Play, Volume, etc.
+    ;;------------------------------
+    ("Control"
+
+     (("p"
+       smudge-controller-toggle-play
+       "⏯")
+      ;; Could do?:
+      ;;   :toggle #'func-that-gets-current-state
+      ;;   :exit nil
+
+      ("u" ;; character forward
+       smudge-controller-next-track
+       "⏭"
+       :exit nil)
+
+      ("o" ;; character backwards
+       smudge-controller-previous-track
+       "⏮"
+       :exit nil)
+
+      ;; ("r" smudge-controller-toggle-repeat
+      ;;  (int<spy>:spotify:hydra/get.name :repeat)
+      ;;  :exit nil)
+
+      ;; ("s" smudge-controller-toggle-shuffle
+      ;;  (int<spy>:spotify:hydra/get.name :shuffle)
+      ;;  :exit nil)
+
+      ("." ;; line previous
+       smudge-controller-volume-up
+       "🔊"
+       :exit nil)
+
+      ("-" ;; line next
+       smudge-controller-volume-down
+       "🔉"
+       :exit nil)
+
+      ;; ("x" smudge-controller-volume-mute-unmute
+      ;;  (int<spy>:spotify:hydra/get.name :volume:mute)
+      ;;  :exit nil)
+
+      )
+
+     ;; ;;------------------------------
+     ;; ;; Search: Playlists, Artist, etc.
+     ;; ;;------------------------------
+     ;; "Search"
+     ;; (("s" symbol-overlay-mode "symbol" :toggle t)
+     ;;  ("l" hl-line-mode "line" :toggle t)
+     ;;  ("x" highlight-sexp-mode "sexp" :toggle t)
+     ;;  ("t" hl-todo-mode "todo" :toggle t))
+
+     ;; ;; ("t" smudge-track-search
+     ;; ;;  (int<spy>:spotify:hydra/get.name :track)
+     ;; ;;  :exit t)
+
+     ;; ;; ("m" smudge-my-playlists
+     ;; ;;  (int<spy>:spotify:hydra/get.name :lists:my)
+     ;; ;;  :exit t)
+
+     ;; ;; ("f" smudge-featured-playlists
+     ;; ;;  (int<spy>:spotify:hydra/get.name :lists:featured)
+     ;; ;;  :exit t)
+
+     ;; ;; ("u" smudge-user-playlists
+     ;; ;;  (int<spy>:spotify:hydra/get.name :lists:user)
+     ;; ;;  :exit t)
+
+
+     ;;------------------------------
+     ;; Manage: Devices
+     ;;------------------------------
+     "Manage"
+     (("d" smudge-select-device
+       "Device"
+       :exit nil))
+     ))
+  ;; (int<spy>:spotify:pretty-hydra/title/body)
+  )
+
+
 ;;------------------------------------------------------------------------------------------------------------------------------------------
 ;; Hydra Formatting
 ;;------------------------------------------------------------------------------------------------------------------------------------------

@@ -57,7 +57,7 @@
 
   ;; smudge-player-status-format: default is "[%p: %a - %t ◷ %l %r%s]"
   ;;   - https://github.com/danielfm/smudge#customizing-the-player-status
-  (customize-set-variable 'smudge-player-status-format "╠ <Spotify: [%r%s %p: %a - %t (◷%l)]> ╣")
+  (customize-set-variable 'smudge-player-status-format "╠ <Spotify: [%r%s%p: %a - %t (◷%l)]> ╣")
   (customize-set-variable 'smudge-title-bar-separator "      ┅┅      ")
   ;; frame-title-format
 
@@ -85,9 +85,9 @@
   (customize-set-variable 'smudge-player-status-paused-text        "⏸")
   (customize-set-variable 'smudge-player-status-stopped-text       "⏹")
   (customize-set-variable 'smudge-player-status-repeating-text     "🔁")
-  (customize-set-variable 'smudge-player-status-not-repeating-text "◻️")
+  (customize-set-variable 'smudge-player-status-not-repeating-text "")   ;; "◻️")
   (customize-set-variable 'smudge-player-status-shuffling-text     "🔀")
-  (customize-set-variable 'smudge-player-status-not-shuffling-text "◻")
+  (customize-set-variable 'smudge-player-status-not-shuffling-text "")   ;; "◻")
 
   ;; ASCII:
   ;; (customize-set-variable 'smudge-player-status-playing-text       "p")

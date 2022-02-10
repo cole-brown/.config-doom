@@ -178,6 +178,10 @@
 (imp:load :feature  '(:dot-emacs config code +python)
           :path     (imp:path:current:dir/relative :dot-emacs)
           :filename "+python")
+(imp:load :feature  '(:dot-emacs config code +fish)
+          :path     (imp:path:current:dir/relative :dot-emacs)
+          :filename "+fish")
+
 
 
 ;;------------------------------------------------------------------------------

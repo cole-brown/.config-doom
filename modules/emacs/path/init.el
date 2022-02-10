@@ -41,6 +41,8 @@
           :filename "path")
 (imp:load :feature  '(:path files)
           :filename "files")
+(imp:load :feature  '(:path regex)
+          :filename "regex")
 
 
 ;;------------------------------------------------------------------------------

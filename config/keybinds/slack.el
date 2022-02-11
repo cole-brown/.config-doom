@@ -9,32 +9,6 @@
 (imp:require :modules 'spy 'collections 'alist)
 
 
-;; TODO: These in a `pretty-hydra-define' or just in a `map!':
-;;   (evil-define-key 'normal slack-info-mode-map
-;;     ",u" 'slack-room-update-messages)
-;;   (evil-define-key 'normal slack-mode-map
-;;     ",c" 'slack-buffer-kill
-;;     ",ra" 'slack-message-add-reaction
-;;     ",rr" 'slack-message-remove-reaction
-;;     ",rs" 'slack-message-show-reaction-users
-;;     ",pl" 'slack-room-pins-list
-;;     ",pa" 'slack-message-pins-add
-;;     ",pr" 'slack-message-pins-remove
-;;     ",mm" 'slack-message-write-another-buffer
-;;     ",me" 'slack-message-edit
-;;     ",md" 'slack-message-delete
-;;     ",u" 'slack-room-update-messages
-;;     ",2" 'slack-message-embed-mention
-;;     ",3" 'slack-message-embed-channel
-;;     "\C-n" 'slack-buffer-goto-next-message
-;;     "\C-p" 'slack-buffer-goto-prev-message)
-;;    (evil-define-key 'normal slack-edit-message-mode-map
-;;     ",k" 'slack-message-cancel-edit
-;;     ",s" 'slack-message-send-from-buffer
-;;     ",2" 'slack-message-embed-mention
-;;     ",3" 'slack-message-embed-channel)
-
-
 ;; TODO: Decide between pretty hydra and Doom leader.
 ;;   - Doom leader is Doom specific... so hydra for now maybe?
 ;;   - Does Major Mode Hydra work in this case?
@@ -124,7 +98,7 @@
 
 
 ;;------------------------------------------------------------------------------
-;; The Actual Keybind
+;; Doom Keybind
 ;;------------------------------------------------------------------------------
 
 (map! :leader       ; Be under the Doom SPC leader.
@@ -145,6 +119,36 @@
         :desc int<spy>:slack:hydra/title "s" #'int<spy>:slack:hydra/body)))
 
 ;; (bind-key "a" #'int<spy>:slack:hydra/body some-map)
+
+
+;;------------------------------------------------------------------------------
+;; Emacs / Evil Keybind
+;;------------------------------------------------------------------------------
+
+;; TODO: These in a `pretty-hydra-define' or just in a `map!':
+;;   (evil-define-key 'normal slack-info-mode-map
+;;     ",u" 'slack-room-update-messages)
+;;   (evil-define-key 'normal slack-mode-map
+;;     ",c" 'slack-buffer-kill
+;;     ",ra" 'slack-message-add-reaction
+;;     ",rr" 'slack-message-remove-reaction
+;;     ",rs" 'slack-message-show-reaction-users
+;;     ",pl" 'slack-room-pins-list
+;;     ",pa" 'slack-message-pins-add
+;;     ",pr" 'slack-message-pins-remove
+;;     ",mm" 'slack-message-write-another-buffer
+;;     ",me" 'slack-message-edit
+;;     ",md" 'slack-message-delete
+;;     ",u" 'slack-room-update-messages
+;;     ",2" 'slack-message-embed-mention
+;;     ",3" 'slack-message-embed-channel
+;;     "\C-n" 'slack-buffer-goto-next-message
+;;     "\C-p" 'slack-buffer-goto-prev-message)
+;;    (evil-define-key 'normal slack-edit-message-mode-map
+;;     ",k" 'slack-message-cancel-edit
+;;     ",s" 'slack-message-send-from-buffer
+;;     ",2" 'slack-message-embed-mention
+;;     ",3" 'slack-message-embed-channel)
 
 
 ;;------------------------------------------------------------------------------

@@ -38,17 +38,6 @@
 ;; Smudge/Spotify Helpers
 ;;------------------------------------------------------------------------------
 
-(defvar int<spy>:spotify:pretty-hydra/title
-  ;; TODO: Need any height/v-adjust?
-  (with-faicon "spotify" ;; Font Awesome icon name
-               "Spotify" ;; Text after icon
-               ;; Icon Settings
-               :color:icon "limegreen"
-               ;; :height 1
-               ;; :v-adjust -0.05
-               ))
-;; (insert int<spy>:spotify:pretty-hydra/title)
-
 
 (defun int<spy>:spotify:response (keyword msg &rest args)
   "Print MSG and ARGS via `message' for a response from a `smudge' async func.
@@ -182,6 +171,7 @@ Always returns nil."
                )
   "Propertized string with icon & name for Spotify pretty-hydra.")
 ;; int<spy>:spotify:pretty-hydra/title
+;; (insert int<spy>:spotify:pretty-hydra/title)
 
 
 ;; Could have plist args if I need to customize?
@@ -304,9 +294,14 @@ Always returns nil."
       (:prefix ("-" . "spy")
 
        ;;------------------------------
-       ;; Spotify:
+       ;; Apps Prefix:
        ;;------------------------------
-       :desc "Spotify Remote"    "u" #'int<spy>:spotify:hydra/body))
+       (:prefix ("u" . "Apps")
+
+        ;;------------------------------
+        ;; Spotify:
+        ;;------------------------------
+        :desc "Spotify Remote"    "u" #'int<spy>:spotify:hydra/body)))
 
 ;; (bind-key "a" #'int<spy>:spotify:hydra/body some-map)
 

@@ -82,9 +82,14 @@
 
 
 ;;---
-;; Spotify management.
+;; Apps inside Emacs.
 ;;---
+;; Spotify Remote Control
+;;   https://github.com/danielfm/smudge
 (package! smudge)
+;; Slack Client
+;;   https://github.com/yuya373/emacs-slack
+(package! slack)
 
 
 ;;---

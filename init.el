@@ -17,8 +17,8 @@
 (doom! :emacs            ; Load These First!
        imp               ; `require'/`provide' with more than one symbol
        str               ; Strings and Things
-       path              ; Helpful path/file/dir functions.
        alist             ; Helpful alist functions.
+       path              ; Helpful path/file/dir functions. Requires `:emacs/alist'.
 
        :input
        ;;chinese

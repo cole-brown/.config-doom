@@ -160,7 +160,7 @@ Always returns nil."
 ;; Pretty Spotify Hydra
 ;;------------------------------------------------------------------------------
 
-(defvar int<spy>:spotify:pretty-hydra/title
+(defvar int<spy>:spotify:hydra/title
   ;; TODO: Need any height/v-adjust?
   (with-faicon "spotify" ;; Font Awesome icon name
                "Spotify" ;; Text after icon
@@ -170,15 +170,15 @@ Always returns nil."
                ;; :v-adjust -0.05
                )
   "Propertized string with icon & name for Spotify pretty-hydra.")
-;; int<spy>:spotify:pretty-hydra/title
-;; (insert int<spy>:spotify:pretty-hydra/title)
+;; int<spy>:spotify:hydra/title
+;; (insert int<spy>:spotify:hydra/title)
 
 
 ;; Could have plist args if I need to customize?
 (defun int<spy>:spotify:title ()
   "Get title string for `pretty-hydra'."
   ;; Icon & "Spotify"
-  (concat int<spy>:spotify:pretty-hydra/title
+  (concat int<spy>:spotify:hydra/title
           "\n"
           ;; Player Status formatted string.
           smudge-controller-player-status))
@@ -194,7 +194,7 @@ Always returns nil."
 ;;   - Use `:formatter' arg/function?
 ;;     - https://github.com/jerrypnz/major-mode-hydra.el#pretty-hydra-define
 (pretty-hydra-define int<spy>:spotify:hydra
-  (:quit-key "g" :title (int<spy>:spotify:title)) ;; (format "%s" (int<spy>:spotify:title))
+  (:quit-key "g" :title (int<spy>:spotify:title))
 
   ;;------------------------------
   ;; Search: Playlists, Artist, etc.
@@ -301,7 +301,8 @@ Always returns nil."
         ;;------------------------------
         ;; Spotify:
         ;;------------------------------
-        :desc "Spotify Remote"    "u" #'int<spy>:spotify:hydra/body)))
+        :desc (concat int<spy>:spotify:hydra/title " Remote")
+        "u" #'int<spy>:spotify:hydra/body)))
 
 ;; (bind-key "a" #'int<spy>:spotify:hydra/body some-map)
 

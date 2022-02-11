@@ -237,12 +237,23 @@
 
 
 ;;------------------------------------------------------------------------------
-;; Music & Entertainment
+;; Apps
 ;;------------------------------------------------------------------------------
 
+;;------------------------------
+;; Music: Spotify
+;;------------------------------
 (imp:load :feature  '(:dot-emacs config spotify)
           :path     dot-emacs:path:config
           :filename "spotify")
+
+
+;;------------------------------
+;; Comms: Slack
+;;------------------------------
+(imp:load :feature  '(:dot-emacs config slack)
+          :path     dot-emacs:path:config
+          :filename "slack")
 
 
 ;;------------------------------------------------------------------------------
@@ -292,6 +303,10 @@
 (imp:load :feature  '(:dot-emacs config keybinds spotify)
           :path     (imp:path:join dot-emacs:path:config "keybinds")
           :filename "spotify")
+
+(imp:load :feature  '(:dot-emacs config keybinds slack)
+          :path     (imp:path:join dot-emacs:path:config "keybinds")
+          :filename "slack")
 
 (imp:load :feature  '(:dot-emacs config keybinds treemacs)
           :path     (imp:path:join dot-emacs:path:config "keybinds")

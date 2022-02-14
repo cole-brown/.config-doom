@@ -10,9 +10,85 @@
 ;;   - file-name-as-directory == path->dir ?
 ;;     - and some inverse: path->file ?
 
+
+;;------------------------------------------------------------------------------
+;; Constants
+;;------------------------------------------------------------------------------
+
+(defconst path:types
+  ;; Directory
+  '(:dir
+
+    ;; File
+    :file
+
+    ;; Symbolic Link
+    :symlink)
+  "Types of files that Emacs can reason about.
+
+https://www.gnu.org/software/emacs/manual/html_node/elisp/Kinds-of-Files.html")
+
+
+(defconst path:rx:names:ignore
+  (list
+   ;; Ignore "." and ".." entries.
+   (rx-to-string '(sequence
+                   string-start
+                   (repeat 1 2 ".")
+                   string-end)
+                 :no-group)
+    )
+  "What to ignore when traversing paths, getting children, etc..
+
+NOTE: These should be compiled regex strings.")
+
+
 ;;------------------------------------------------------------------------------
 ;; Predicates
 ;;------------------------------------------------------------------------------
+
+(defun int<path>:type:valid? (caller type &optional nil-invalid?)
+  "Errors if TYPE is invalid. Returns TYPE if valid (can be `nil').
+
+CALLER should be the name of the calling function, for use in the error messages."
+  ;;---
+  ;; Error/OK: `nil' may or may not be valid...
+  ;;---
+  (cond ((null type)
+         ;; Should `nil' be allowed as a type?
+         (if nil-invalid?
+             (error "%s: Invalid TYPE `%S'. TYPE must be one of: %S"
+                caller
+                type
+                path:types)
+
+           ;; `nil' is allowed.
+           type))
+
+         ;;---
+         ;; Error: Not a keyword?
+         ;;---
+         ((not (keywordp type))
+          (error "%s: Invalid TYPE `%S'. TYPE must be a keyword! Valid TYPEs: %S"
+                caller
+                type
+                path:types))
+
+         ;;---
+         ;; Error: Not a valid keyword.
+         ;;---
+         ((not (memq type path:types))
+          (error "%s: Unknown TYPE `%S'. TYPE must be one of: %S"
+                 caller
+                 type
+                 path:types))
+
+         ;;---
+         ;; OK: Anything else? Think we've checked everything.
+         ;;---
+         (t
+          type)))
+
 
 (defun path:directory? (path)
   "Returns non-nil if PATH is a directory name path."
@@ -29,6 +105,48 @@
   (file-name-absolute-p path))
 
 
+(defun path:exists? (path &optional type)
+  "Returns non-nil if PATH exists.
+
+If TYPE is provided, PATH must exist and match."
+  ;;------------------------------
+  ;; Error Cases
+  ;;------------------------------
+  ;; Errors on invaild type.
+  (int<path>:type:valid? "path:exists?" type)
+
+  ;; Sanity check path...
+  (cond ((not (stringp path))
+         (error "path:exists?: PATH must be a string: %S"
+                path))
+
+        ;;------------------------------
+        ;; Check Existance
+        ;;------------------------------
+        ((null type)
+         (file-exists-p path))
+
+        ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Kinds-of-Files.html
+        ((eq :dir type)
+         (file-directory-p path))
+
+        ((eq :file type)
+         (file-regular-p path))
+
+        ((eq :symlink type)
+         (file-symlink-p path))
+
+        ;; Why & how are you here?
+        (t
+         (error "path:exists?: Unhandled TYPE `%S'!!!"
+                type))))
+;; (path:exists? (path:current:file))
+;; (path:exists? (path:current:file) :file)
+;; (path:exists? (path:current:file) :dir)
+;; (path:exists? (path:current:dir) :dir)
+;; (path:exists? (path:current:dir))
+
+
 ;;------------------------------------------------------------------------------
 ;; Traversal
 ;;------------------------------------------------------------------------------
@@ -36,6 +154,122 @@
 (defun path:parent (path)
   "Returns the parent directory of PATH."
   (directory-file-name (file-name-directory path)))
+
+
+;; TODO: Move to regex.el?
+(defun path:ignore? (path regexes)
+  "Returns non-nil if PATH matches any of the REGEXES."
+  (let ((func.name "path:ignore?")
+        (regex:list regexes) ;; Shallow copy so we can pop without possibly changing caller's list.
+        ignore?)
+    (unless (stringp path)
+      (error "%s: PATH must be a string! Got: %S"
+             func.name
+             path))
+    (unless (listp regexes)
+      (error "%s: REGEXES must be a list of regex strings! Got: %S"
+             func.name
+             regexes))
+
+    (while (and (not ignore?) ;; Found a reason to ignore already?
+                regex:list)   ;; Finished the regexes?
+      (let ((regex (pop regex:list)))
+        (unless (stringp regex)
+          (error "%s: Regex must be a string! Got: %S"
+                 func.name
+                 regex))
+
+        (when (string-match regex path)
+          ;; Set our return & stop-looping-early value.
+          (setq ignore? t))))
+
+    ignore?))
+;; (path:ignore? "x.y" path:rx:names:ignore)
+;; (path:ignore? "." path:rx:names:ignore)
+;; (path:ignore? ".." path:rx:names:ignore)
+;; (path:ignore? "..." path:rx:names:ignore)
+
+
+;; TODO: Follow symlinks or no?
+(defun path:children (path:dir &optional absolute-paths? type)
+  "Returns immediate children of PATH:DIR directory.
+
+If TYPE is supplied, returns only children of that type.
+
+If ABSOLUTE-PATHS? is non-nil, returns a list of absolute paths to the children.
+Else returns a list of names of children."
+  ;;------------------------------
+  ;; Error Checking
+  ;;------------------------------
+  ;; Errors on invaild type.
+  (int<path>:type:valid? "path:exists?" type)
+
+  (let ((func.name "path:children"))
+    (unless (stringp path:dir)
+      (error "%s: PATH:DIR must be a string! Got: %S"
+             func.name
+             path:dir))
+
+    (let ((path:root (path:canonicalize:dir path:dir))
+          children)
+      (unless (path:exists? path:root :dir)
+        (error "%s: PATH:DIR does not exist: %s"
+               func.name
+               path:root))
+
+      ;;------------------------------
+      ;; Find Children
+      ;;------------------------------
+      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Contents-of-Directories.html
+      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Attributes.html#Definition-of-file_002dattributes
+      (dolist (child (directory-files-and-attributes path:root))
+        (let* ((child:name  (car child))
+               (child:path  (path:join path:root child:name))
+               (child:attrs (cdr child)))
+
+          ;;---
+          ;; Do we care about this child?
+          ;;---
+          (cond ((path:ignore? child:name path:rx:names:ignore)
+                 nil)
+
+                ;;---
+                ;; Push child; no type check.
+                ;;---
+                ((null type)
+                 (push (if absolute-paths? child:path child:name) children))
+
+                ;;---
+                ;; Push child if correct type.
+                ;;---
+                ((eq :dir type)
+                 (when (eq (file-attribute-type child:attrs) t) ;; `t' is the attr type for directories.
+                   (push (if absolute-paths? child:path child:name) children)))
+
+                ((eq :file type)
+                 (when (eq (file-attribute-type child:attrs) nil) ;; `nil' is the attr type for files.
+                   (push (if absolute-paths? child:path child:name) children)))
+
+                ((eq :symlink type)
+                 (when (stringp (file-attribute-type child:attrs)) ;; The attr type for symlinks is a string of the path they point to.
+                   (push (if absolute-paths? child:path child:name) children)))
+
+                ;;---
+                ;; Error: How did you get here?
+                ;;---
+                (t
+                 (error "%s: Unhandled TYPE `%S'?!"
+                        func.name
+                        type)))))
+
+      ;;------------------------------
+      ;; Return list we've built.
+      ;;------------------------------
+      children)))
+;; (path:children (path:current:dir))
+;; (path:children (path:current:dir) t)
+;; (path:children (path:current:dir) nil :file)
+;; (path:children (path:current:dir) nil :dir)
 
 
 ;;------------------------------------------------------------------------------

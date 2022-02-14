@@ -209,6 +209,8 @@ Set to `nil' if not desired in output.")
 ;; Order may matter...
 (imp:load :feature  '(:autogit internal)
           :filename "internal")
+(imp:load :feature  '(:autogit api)
+          :filename "api")
 (imp:load :feature  '(:autogit commands)
           :filename "commands")
 

@@ -73,11 +73,11 @@
    ;; Message / Channel
    ;;------------------------------
    "Message / Channel"
-   (("sm" slack-message-embed-mention
+   (("2" slack-message-embed-mention
      "Mention <User>")
-    ("sc" slack-message-embed-channel
+    ("3" slack-message-embed-channel
      "Mention <Channel>")
-    ("sf" slack-file-upload
+    ("f" slack-file-upload
      "Upload <file>..."))
 
     ;;------------------------------
@@ -125,30 +125,57 @@
 ;; Emacs / Evil Keybind
 ;;------------------------------------------------------------------------------
 
-;; TODO: These in a `pretty-hydra-define' or just in a `map!':
-;;   (evil-define-key 'normal slack-info-mode-map
-;;     ",u" 'slack-room-update-messages)
-;;   (evil-define-key 'normal slack-mode-map
-;;     ",c" 'slack-buffer-kill
-;;     ",ra" 'slack-message-add-reaction
-;;     ",rr" 'slack-message-remove-reaction
-;;     ",rs" 'slack-message-show-reaction-users
-;;     ",pl" 'slack-room-pins-list
-;;     ",pa" 'slack-message-pins-add
-;;     ",pr" 'slack-message-pins-remove
-;;     ",mm" 'slack-message-write-another-buffer
-;;     ",me" 'slack-message-edit
-;;     ",md" 'slack-message-delete
-;;     ",u" 'slack-room-update-messages
-;;     ",2" 'slack-message-embed-mention
-;;     ",3" 'slack-message-embed-channel
-;;     "\C-n" 'slack-buffer-goto-next-message
-;;     "\C-p" 'slack-buffer-goto-prev-message)
-;;    (evil-define-key 'normal slack-edit-message-mode-map
-;;     ",k" 'slack-message-cancel-edit
-;;     ",s" 'slack-message-send-from-buffer
-;;     ",2" 'slack-message-embed-mention
-;;     ",3" 'slack-message-embed-channel)
+;; TODO: Do I need to get rid of snipe first?
+;; (map!
+;;  ;; Wait for slack to be lazy/auto-loaded.
+;;  (:after slack
+;;
+;;   ;; Get rid of evil-snipe
+;;   :n "," nil))
+
+;; TODO: Some of these functions don't exist (right now? *shrug*) - may need to check & update...
+;;   - `slack-room-update-messages'
+;;   - `slack-buffer-kill'
+;;     - is this supposed to be `slack-buffer-kill-buffer-window'?
+(map!
+ ;; Wait for slack to be lazy/auto-loaded.
+ (:after slack
+
+  (:mode slack-info-mode
+   (:prefix ("," . "slack")
+    :desc "Update Messages" :nm "u" #'slack-room-update-messages))
+
+  (:mode slack-mode
+   (:prefix ("," . "slack")
+    :desc "Kill Buffer"              :nm "c" #'slack-buffer-kill
+    :desc "Update Messages"          :nm "u" #'slack-room-update-messages
+    :desc "Embed Mention (@user)"    :nm "2" #'slack-message-embed-mention
+    :desc "Embed Channel (@channel)" :nm "3" #'slack-message-embed-channel
+
+    ;; TODO: Better like this or with `:prefix'?
+    :desc "Reaction: Add"        :nm "ra" #'slack-message-add-reaction
+    :desc "Reaction: Remove"     :nm "rr" #'slack-message-remove-reaction
+    :desc "Reaction: Show Users" :nm "rs" #'slack-message-show-reaction-users
+
+    (:prefix ("p" . "Pins")
+     :desc "Pin: List Room Pins" :nm "l" #'slack-room-pins-list
+     :desc "Pin: Add"            :nm "a" #'slack-message-pins-add
+     :desc "Pin: Remove"         :nm "r" #'slack-message-pins-remove)
+
+    (:prefix ("m" . "Message")
+     :desc "Compose in Another Buffer" :nm "m" #'slack-message-write-another-buffer
+     :desc "Edit"                      :nm "e" #'slack-message-edit
+     :desc "Delete"                    :nm "d" #'slack-message-delete))
+
+   :desc "Next Message" :nm "M-e" #'slack-buffer-goto-next-message
+   :desc "Prev Message" :nm "M-." #'slack-buffer-goto-prev-message)
+
+  (:mode slack-edit-message-mode
+   (:prefix ("," . "Slack")
+    :desc "Cancel Edit"              :nm "k" #'slack-message-cancel-edit
+    :desc "Send from Buffer"         :nm "s" #'slack-message-send-from-buffer
+    :desc "Embed Mention (@user)"    :nm "2" #'slack-message-embed-mention
+    :desc "Embed Channel (@channel)" :nm "3" #'slack-message-embed-channel))))
 
 
 ;;------------------------------------------------------------------------------

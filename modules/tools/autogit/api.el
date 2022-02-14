@@ -7,6 +7,12 @@
 ;; Repositories
 ;;------------------------------------------------------------------------------
 
+(defun autogit:repo? (path)
+  "Returns non-nil if PATH is a git repository."
+  (and (path:exists? path :dir)
+       (path:exists? (path:join path ".git"))))
+
+
 (defun autogit:repos:list (root)
   "Get all repo directories that are (direct) children of ROOT path.
 
@@ -30,12 +36,12 @@ Returns list of absolute paths or nil."
     ;; Find Git Repos.
     ;;------------------------------
     ;; Is the root itself a repo?
-    (if (magit-git-repo-p path:root)
+    (if (autogit:repo? path:root)
         (list path:root)
       ;; Nope; check its direct children.
       (let (repos)
         (dolist (path:dir (path:children path:root :absolute :dir))
-          (when (magit-git-repo-p path:dir)
+          (when (autogit:repo? path:dir)
             (push path:dir repos)))
         ;; Return absolute path to any repos found.
         repos))))

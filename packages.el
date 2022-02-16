@@ -86,7 +86,12 @@
 ;;---
 ;; Spotify Remote Control
 ;;   https://github.com/danielfm/smudge
-(package! smudge)
+(package! smudge
+  :recipe '(:type git
+            :local-repo "~/.config/emacs-package-repos/smudge"
+            ;; :branch feature/foobar
+            ))
+
 ;; Slack Client
 ;;   https://github.com/yuya373/emacs-slack
 (package! slack)

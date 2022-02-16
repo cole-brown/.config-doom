@@ -112,21 +112,45 @@ Returns `:error' or nil."
 ;; (async<spy>:spotify:device:select)
 
 
-(defun async<spy>:spotify:device:active? (callback &optional name)
-  "Calls CALLBACK with nil/non-nil result of checking if device is active.
+(defun async<spy>:spotify:device:active? (name callback)
+  "Calls CALLBACK with nil/non-nil result of checking if device NAME is active.
 
-Always returns nil."
+CALLBACK should be a function with a signature like:
+  - (defun CALLBACK (boolean) ...)
+  - (lambda (boolean) ...)
+That is, it receives a nil/non-nil result for whether the Spotify device NAME is
+active.
+
+The CALLBACK's nil/non-nil input is based on NAME, which should be `nil',
+`:any', or a string:
+  - If NAME is a string, it is whether that exact Spotify device name is active.
+  - If `:any', it is whether _any_ Spotify device is active.
+  - If `nil', it is whether the Spotify device `(system-name)' active is.
+
+This function always returns nil. Your CALLBACK gets the result."
   (let ((desired:name (or name
                           (system-name))))
+    ;;------------------------------
+    ;; Error Checks
+    ;;------------------------------
+    ;; Invalid CALLBACK?
     (cond ((not (functionp callback))
            (error "async<spy>:spotify:device:active?: CALLBACK must be a function. CALLBACK: %S"
                   callback))
-          ((not (stringp desired:name))
+
+          ;; Invalid NAME input?
+          ((not (or (eq desired:name :any)
+                    (stringp desired:name)))
            (funcall callback
                     (int<spy>:spotify:response nil
-                                               "Desired device name must be a string, got: NAME: %S, DESIRED:NAME: %S"
+                                               "Desired device name must be %s, got: NAME: %S, DESIRED:NAME: %S"
+                                               "a string or `:any'"
                                                name
                                                desired:name)))
+          ;;------------------------------
+          ;; Check if device is active.
+          ;;------------------------------
+          ;; Make the async Smudge calls.
           (t
            ;; Check the Spotify user has enough permissions.
            (smudge-api-current-user
@@ -139,21 +163,43 @@ Always returns nil."
                 ;; Get devices currently known to Spotify.
                 (smudge-api-device-list
                  (lambda (json)
-                   (if-let ((devices (gethash 'devices json)))
-                       (dolist (device devices)
-                         (when-let* ((device:name    (smudge-device-get-device-name device))
-                                     (device:id      (smudge-device-get-device-id device))
-                                     (device:check? (and (stringp device:name)
-                                                         (string= device:name desired:name))))
-                           ;; Return active status of desired device.
-                           (funcall callback (smudge-device-get-device-is-active device))))
+                   (let ((devices (gethash 'devices json))
+                         ;; "Don't care about the rest." flag
+                         device:found
+                         ;; CALLBACK's input.
+                         devices:active)
+                     (dolist (device devices)
+                       ;; Only bother when we need to keep searching and we've got an active device to check.
+                       (when-let ((keep-searching (not device:found))
+                                  (device:name    (smudge-device-get-device-name device))
+                                  (device:id      (smudge-device-get-device-id device))
+                                  (device:active  (smudge-device-get-device-is-active device)))
+                         ;; Any device? Push active device names to CALLBACK's input.
+                         (cond ((eq desired:name :any)
+                                (push device:name devices:active))
 
-                     (funcall callback
-                              (int<spy>:spotify:response nil
-                                                         "No devices are available.")))))
-                desired:active?))))))
+                               ;; Specific device check.
+                               ((and (stringp device:name)
+                                     (string= device:name desired:name))
+                                ;; Mark that we don't care about the rest.
+                                (setq device:found t)
+                                (push device:name devices:active))
+
+                               ;; Don't care about this device.
+                               (t
+                                nil))))
+
+                     ;; Return result.
+                     (if devices:active
+                         (funcall callback devices:active)
+                       (funcall callback
+                                (int<spy>:spotify:response nil
+                                                           "No devices are active."))))))))))))
+
+  ;; Always return nil so I don't confuse myself again with this async func.
   nil)
-;; (async<spy>:spotify:device:active? (lambda (active?) (message "active? %S" active?)))
+;; (async<spy>:spotify:device:active? nil (lambda (active?) (message "active? %S" active?)))
+;; (async<spy>:spotify:device:active? :any (lambda (active?) (message "active? %S" active?)))
 
 
 ;;------------------------------------------------------------------------------

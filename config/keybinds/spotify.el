@@ -202,6 +202,141 @@ This function always returns nil. Your CALLBACK gets the result."
 ;; (async<spy>:spotify:device:active? :any (lambda (active?) (message "active? %S" active?)))
 
 
+(defun async<spy>:spotify:device:activate (name)
+  "Tell Spotify to transfer to/activate device NAME.
+
+Always returns nil."
+  ;; TODO: input validity check
+  (smudge-api-device-list
+   (lambda (json)
+     "Activate NAME device from list, if possible."
+     (let (names:known)
+       (if-let* ((devices     (gethash 'devices json))
+                 (device      (pop devices))
+                 (continue    t))
+           ;;------------------------------
+           ;; Got one or more devices; process them.
+           ;;------------------------------
+           (progn
+             (while (and device continue)
+               ;; Only bother if we have the vars and it's the device name we want.
+               (when-let ((device:name   (smudge-device-get-device-name device))
+                          (device:id     (smudge-device-get-device-id device))
+                          (device:active (smudge-device-get-device-is-active device))
+                          (activate?     (string= name device:name)))
+                 ;; Add to list of known devices.
+                 (if (eq names:known t)
+                     (setq names:known (list device:name))
+                   (push device:name names:known))
+
+                 (if device:active
+                     ;; Already active - just say that?
+                     (progn
+                       ;; NOTE: Could add a "force activate" param or just ignore
+                       ;; `device:active' if there are bugs/issues that need worked
+                       ;; around, but this seems smart right now?
+                       (int<spy>:spotify:response name
+                                                  "Device '%s' already active."
+                                                  name)
+                       (setq continue nil))
+
+                   ;; Activate (transfer to) this desired device.
+                   (smudge-api-transfer-player
+                    device:id
+                    ;; This is what Smudge does in `smudge-device-select-active', so I think we do it here?
+                    (lambda (json)
+                      (setq smudge-selected-device-id device-id)
+                      (int<spy>:spotify:response name
+                                                 "Device '%s' selected" name)))
+                   ;; We've found and activated the device; stop the loop.
+                   (setq continue nil)))
+
+               ;; Finish up by selecting next device to process.
+               (setq device (pop devices)))
+
+             ;;------------------------------
+             ;; Feedback: Did we activate anything?
+             ;;------------------------------
+             (if continue
+                 ;; Device requested wasn't in the list.
+                 (int<spy>:spotify:response nil
+                                            "Desired device '%s' isn't available right now. Available devices: %s"
+                                            name
+                                            (or names:known "none"))
+               (int<spy>:spotify:response name
+                                          "Active Device: '%s'."
+                                          name)))
+
+         ;;------------------------------
+         ;; No devices from Spotify!
+         ;;------------------------------
+         (int<spy>:spotify:response nil
+                                    "No devices.")))))
+
+  ;; Async function - always return nil.
+  nil)
+
+
+(defun async<spy>:spotify:init (&rest plist)
+  "Initialize Smudge & Spotify, as necessary, using PLIST.
+
+PLIST can have:
+  - `:smudge-mode'
+    - non-nil (default if key not supplied)
+      - Enables `global-smudge-remote-mode' if needed.
+    - nil
+      - Don't bother `global-smudge-remote-mode'.
+
+  - `:device'
+    - nil (default if key not supplied)
+      - Activate `system-name' return value as the Spotify device.
+    - `preserve'
+      - If any device is active, leave it. Otherwise activate `system-name'.
+    - STRING
+      - Activate STRING as the Spotify device."
+  (let* ((func.name "async<spy>:spotify:init")
+         (enable:smudge-mode (if (plist-member plist :smudge-mode)
+                                 (plist-get plist :smudge-mode)
+                               ;; Default to enabling the mode if no key supplied.
+                               :enable))
+         (device:this        (system-name))
+         (device:valid       '("DEVICE-NAME-STRING" device nil)) ;; Only for printed in error message.
+         (enable:device      (if (plist-member plist :device)
+                                 (plist-get plist :device)
+                               ;; Default to activating this system if no key supplied.
+                               device:this)))
+
+        ;;------------------------------
+    ;; Activate Device
+    ;;------------------------------
+    ;; If anything is active, ok. Otherwise activate this device.
+    (cond ((eq enable:device 'preserve)
+           (async<spy>:spotify:device:active? :any
+                                              (lambda (active)
+                                                "Activate this device if any device is not ACTIVE."
+                                                (unless active
+                                                  (async<spy>:spotify:device:activate device:this)))))
+
+          ;; Enable a specific device by name.
+          ((stringp enable:device)
+           ;; Activate if not active already.
+           (async<spy>:spotify:device:activate device:this))
+
+          ;; Already converted `nil' into `system-name' string, so...
+          ;; Don't know; error.
+          (t
+           (error "%s: Unknown `:device' option! Allowed: %S, Got: %S"
+                  func.name device:valid enable:device)))
+
+    ;;------------------------------
+    ;; Global Smudge Remote Mode
+    ;;------------------------------
+    (when enable:smudge-mode
+      (global-smudge-remote-mode 1))
+    ;; Just ignore `enable:smudge-mode' == nil; don't disable the mode in an init func.
+    ))
+
+
 ;;------------------------------------------------------------------------------
 ;; Pretty Spotify Hydra
 ;;------------------------------------------------------------------------------
@@ -246,7 +381,7 @@ This function always returns nil. Your CALLBACK gets the result."
   ;; Search: Playlists, Artist, etc.
   ;;------------------------------
   ("Search"
-   (("d"
+   (("h"
      smudge-my-playlists
      "My Playlists")
 
@@ -267,7 +402,13 @@ This function always returns nil. Your CALLBACK gets the result."
    ;;------------------------------
    "Manage"
    (("d" smudge-select-device
-     "Device"
+     "Select Device"
+     :exit nil)
+
+    ("i" (async<spy>:spotify:init)
+     ;; Can't have non-monospaced characters in this column... throws off the later columns.
+     ;; "🚀 Initialize"
+     "Initialize"
      :exit nil)
 
     ;; TODO: A 'refresh' which makes a call to get a new status string, then redraws the hydra when the result comes back?
@@ -328,6 +469,14 @@ This function always returns nil. Your CALLBACK gets the result."
 ;; (int<spy>:spotify:hydra/body)
 
 
+(defun int<spy>:spotify:hydra-maybe-init ()
+  "Initialize to this device if nothing is active, then open the hydra."
+  (interactive)
+  (unless smudge-selected-device-id
+    (async<spy>:spotify:init :device 'preserve))
+  (int<spy>:spotify:hydra/body))
+
+
 ;;------------------------------------------------------------------------------
 ;; The Actual Keybind
 ;;------------------------------------------------------------------------------
@@ -348,7 +497,7 @@ This function always returns nil. Your CALLBACK gets the result."
         ;; Spotify:
         ;;------------------------------
         :desc (concat int<spy>:spotify:hydra/title " Remote")
-        "u" #'int<spy>:spotify:hydra/body)))
+        "u" #'int<spy>:spotify:hydra-maybe-init)))
 
 ;; (bind-key "a" #'int<spy>:spotify:hydra/body some-map)
 

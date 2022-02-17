@@ -57,8 +57,10 @@
 
   ;; smudge-player-status-format: default is "[%p: %a - %t ◷ %l %r%s]"
   ;;   - https://github.com/danielfm/smudge#customizing-the-player-status
-  (customize-set-variable 'smudge-player-status-format "╠ <Spotify: [%r%s%p: %a - %t (◷%l)]> ╣")
-  (customize-set-variable 'smudge-title-bar-separator "      ┅┅      ")
+  (customize-set-variable 'smudge-player-status-format
+                          ;; TODO: Elapsed/current time?
+                          "%r%s%p ╠═ %a ═╬═ %t ═╣ ◷%l")
+  (customize-set-variable 'smudge-title-bar-separator "  ┅┅  ")
   ;; frame-title-format
 
   ;; I got a lot more room in the titlebar than the modeline...

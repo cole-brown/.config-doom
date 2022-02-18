@@ -493,9 +493,6 @@ have 11 zombie connections to spotify api tomorrow..."
 ;; (spy:workday:end/spotify)
 
 
-(add-hook 'secret:work:end/day:hook #'spy:workday:end/spotify)
-
-
 ;;------------------------------------------------------------------------------
 ;; Spotify/Smudge Hydra
 ;;------------------------------------------------------------------------------

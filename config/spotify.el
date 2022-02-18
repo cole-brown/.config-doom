@@ -3,7 +3,7 @@
 ;;------------------------------------------------------------------------------
 ;; Smudge/Spotify Helpers
 ;;------------------------------------------------------------------------------
-
+;; TODO: Make a "smudge-api.el" file and do a pull request?
 
 (defun int<spy>:spotify:response (keyword msg &rest args)
   "Print MSG and ARGS via `message' for a response from a `smudge' async func.
@@ -303,6 +303,47 @@ PLIST can have:
     ))
 
 
+(defmacro async<spy>:spotify:device:when-active (desired:name &rest body)
+  "Evaluate BODY when DESIRED:NAME Spotify device is active.
+
+DESIRED:NAME must be a string of the Spotify device's name.
+
+Variables available during BODY:
+  - `macro:devices'       - list of all devices
+  - `macro:device'        - desired device
+  - `macro:device:name'   - DESIRED:NAME, but from Spotify
+  - `macro:device:id'     - device's ID
+  - `macro:device:active' - boolean
+
+Always returns nil."
+  (declare (indent 1))
+  `(progn
+     (smudge-api-device-list
+      (lambda (macro:json)
+        "Run the BODY if DESIRED:NAME is active."
+        (when-let* ((macro:desired:name ,desired:name)
+                    (macro:devices      (gethash 'devices macro:json))
+                    (macro:device       (pop macro:devices))
+                    (macro:continue     t))
+          ;;------------------------------
+          ;; Got one or more devices; process them.
+          ;;------------------------------
+          (while (and macro:device macro:continue)
+            ;; Only bother if we have the vars and it's the device name we want.
+            (when-let ((macro:device:name   (smudge-device-get-device-name macro:device))
+                       (macro:device:id     (smudge-device-get-device-id macro:device))
+                       (macro:device:active (smudge-device-get-device-is-active macro:device))
+                       (macro:run-body?     (string= macro:desired:name macro:device:name)))
+              ;; Run it.
+              (setq macro:continue nil)
+              ,@body)
+
+            ;; Selecting next device to process in loop.
+            (setq macro:device (pop macro:devices))))))
+     nil))
+;; (async<spy>:spotify:device:when-active (system-name) (message "hello there"))
+
+
 ;;------------------------------------------------------------------------------
 ;; `use-package': Smudge (previously Spotify.el)
 ;;------------------------------------------------------------------------------
@@ -418,19 +459,38 @@ PLIST can have:
   "Cleans up Smudge for the day so it hopefully doesn't
 have 11 zombie connections to spotify api tomorrow..."
   (interactive)
-  (condition-case-unless-debug err
-      (progn
-        (smudge-connect-player-pause)
-        (global-smudge-remote-mode -1)
-        ;; TODO: Do I need to clean up any buffers?
-        ;; (spy:cmd:buffer/kill.matching ...)?
-        )
-    ;; Catch signaled error 'error': downgrade to just message.
-    ;; [2019-10-22]: This is just theory as spotify can get cranky if
-    ;; connected but device was left paused...
-    (error
-     ;; Downgrade.
-     (message "[ERROR]: spy:workday:end/spotify: Received error signal:" err))))
+  (async<spy>:spotify:device:when-active
+      (system-name)
+    ;;---
+    ;; [2022-02-18] Cleaner Version?
+    ;;---
+    (smudge-connect-player-pause)
+
+    ;; TODO: Do I need to clean up any buffers?
+    ;; (spy:cmd:buffer/kill.matching ...)?
+
+    ;; ;;---
+    ;; ;; [2019-10-22] Ye Olde Version
+    ;; ;;   (Do I need the condition case still?
+    ;; ;;---
+    ;; (condition-case-unless-debug err
+    ;;   (progn
+    ;;     (smudge-connect-player-pause)
+    ;;     (global-smudge-remote-mode -1)
+    ;;     ;; TODO: Do I need to clean up any buffers?
+    ;;     ;; (spy:cmd:buffer/kill.matching ...)?
+    ;;     )
+    ;; ;; Catch signaled error 'error': downgrade to just message.
+    ;; ;; [2019-10-22]: This is just theory as spotify can get cranky if
+    ;; ;; connected but device was left paused...
+    ;; (error
+    ;;  ;; Downgrade.
+    ;;  (message "[ERROR]: spy:workday:end/spotify: Received error signal:" err)))
+    )
+
+  ;; Always disable Smudge mode?
+  (global-smudge-remote-mode -1))
+;; (spy:workday:end/spotify)
 
 
 ;;------------------------------------------------------------------------------

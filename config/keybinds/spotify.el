@@ -108,6 +108,10 @@
      "Initialize"
      :exit nil)
 
+    ("x" (spy:workday:end/spotify)
+     "Pause & Quit"
+     :exit nil)
+
     ;; TODO: A 'refresh' which makes a call to get a new status string, then redraws the hydra when the result comes back?
     ;; "🔄 Refresh Status"
     ;;   - TODO: Would putting a zero-width space in there make pretty-hydra align things correctly due to the double-wide glyph?

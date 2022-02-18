@@ -1,10 +1,10 @@
 ;;; config/keybinds/spotify.el -*- lexical-binding: t; -*-
 
-;;                                 ──────────                                ;;
+;;                                 ──────────                                 ;;
 ;; ╔════════════════════════════════════════════════════════════════════════╗ ;;
 ;; ║                                KEYBINDS                                ║ ;;
 ;; ╚════════════════════════════════════════════════════════════════════════╝ ;;
-;;                                 ──────────                                ;;
+;;                                 ──────────                                 ;;
 
 (imp:require :modules 'spy 'collections 'alist)
 
@@ -72,7 +72,9 @@
 ;;   - Use `:formatter' arg/function?
 ;;     - https://github.com/jerrypnz/major-mode-hydra.el#pretty-hydra-define
 (pretty-hydra-define int<spy>:spotify:hydra
-  (:quit-key "g" :title (int<spy>:spotify:title))
+  (:quit-key "g"
+   :color blue ;; Default to `:exit t' for all heads.
+   :title (int<spy>:spotify:title))
 
   ;;------------------------------
   ;; Search: Playlists, Artist, etc.
@@ -99,8 +101,7 @@
    ;;------------------------------
    "Manage"
    (("d" smudge-select-device
-     "Select Device"
-     :exit nil)
+     "Select Device")
 
     ("i" (async<spy>:spotify:init)
      ;; Can't have non-monospaced characters in this column... throws off the later columns.
@@ -109,8 +110,7 @@
      :exit nil)
 
     ("x" (spy:workday:end/spotify)
-     "Pause & Quit"
-     :exit nil)
+     "Pause & Quit")
 
     ;; TODO: A 'refresh' which makes a call to get a new status string, then redraws the hydra when the result comes back?
     ;; "🔄 Refresh Status"
@@ -124,7 +124,8 @@
    ;; TODO: Toggle/choose from play or pause: "▶" "⏸"
    (("p"
      smudge-controller-toggle-play
-     "⏯")
+     "⏯"
+     :exit nil)
     ;; Could do?:
     ;;   :toggle #'func-that-gets-current-state
     ;;   :exit nil
@@ -163,7 +164,8 @@
      :exit nil)
 
     ;; TODO: choose from mute or unmute: "🔇" "🔈"
-    ("x" smudge-controller-volume-mute-unmute
+    ("x"
+     smudge-controller-volume-mute-unmute
      "🔇"
      ;; ??-TODO-??: :toggle #'func-that-gets-current-state
      :exit nil))))

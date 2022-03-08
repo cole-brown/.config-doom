@@ -326,18 +326,26 @@ Else returns a list of names of children."
   "Append NEXT element as-is to parent, adding dir separator between them if
 needed.
 
-NEXT is normalized via `str:normalize:name->list', so
-keywords or symbol names can be used as well as strings."
-  ;; Use next's string value, or symbol name.
-  (let ((next (car (str:normalize:name->list next))))
-    (if (null parent)
-        next
-      (concat (file-name-as-directory parent) next))))
+PARENT & NEXT are normalized via `str:normalize:name', so keywords or symbol
+names can be used as well as strings."
+  (cond ((and (null parent)
+              (null next))
+         (error "int<path>:append: Cannot append nulls! parent: %S, next: %S"
+                parent
+                next))
+        ((null next)
+         (str:normalize:name parent))
+        ((null parent)
+         (str:normalize:name next))
+        (t
+         (concat (file-name-as-directory (str:normalize:name parent))
+                 (str:normalize:name next)))))
 ;; (int<path>:append nil "jeff")
 ;; (str:normalize:name->list "jill")
 ;; (int<path>:append "jeff" "jill")
 ;; (int<path>:append "jeff/" "jill")
-;; (int<path>:append "jeff/" :jill)
+;; (int<path>:append 'jeff :jill)
+;; (int<path>:append 'jeff nil)
 
 
 (defun path:join (&rest path)
@@ -345,7 +353,7 @@ keywords or symbol names can be used as well as strings."
 
 (path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
-  (-reduce #'int<path>:append path))
+  (seq-reduce #'int<path>:append path))
 ;; (path:join "jeff" "jill")
 ;; (path:join "jeff" "jill/")
 ;; (path:join "jeff")

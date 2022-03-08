@@ -436,10 +436,12 @@ Returned PLIST will have these keys (if their values are non-nil).
 Returns an absolute path.
 
 Does not fix or validate PATH or SEGMENT components; they are expected to be valid."
-  (apply #'path:join
-         (expand-file-name "" path)
-         segment))
+  (expand-file-name (apply #'path:join
+                           path
+                           segment)))
 ;; (path:canonicalize:file "~" "personal" "something.exe" "zort.txt")
+;; (path:canonicalize:file "~" "personal" "something.exe" ".")
+;; (path:canonicalize:file "~" "personal" "something.exe" "..")
 
 
 (defalias 'path:absolute:file 'path:canonicalize:file)

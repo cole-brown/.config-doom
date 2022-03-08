@@ -190,6 +190,108 @@ If TYPE is provided, PATH must exist and match."
 ;; (path:ignore? "..." path:rx:names:ignore)
 
 
+(defun path:children:types (path:dir &optional absolute-paths? &rest types)
+  "Returns immediate children of PATH:DIR directory.
+
+Returns an alist of children by type:
+  '((:file . (\"child.ext\" ...))
+    ...)
+
+TYPES should be nil or a list of keywords from `path:types'.
+If TYPES is non-nil, returns only children of those types.
+
+If ABSOLUTE-PATHS? is non-nil, returns absolute paths to the children.
+Else returns names of children."
+  (let ((types (if types
+                   ;; Remove nils & flatten '(nil) to just nil.
+                   (seq-filter (lambda (t) (not (null t)))
+                               types)
+                 ;; nil is any/all types.
+                 nil)))
+    ;;------------------------------
+    ;; Error Checking
+    ;;------------------------------
+    ;; Errors on invaild type.
+    (dolist (type types)
+      (int<path>:type:valid? "path:exists?" type))
+
+    (let ((func.name "path:children"))
+      (unless (stringp path:dir)
+        (error "%s: PATH:DIR must be a string! Got: %S"
+               func.name
+               path:dir))
+
+      (let ((path:root     (path:canonicalize:dir path:dir))
+            (save:dirs     (if types (memq :dir     types) t))
+            (save:files    (if types (memq :file    types) t))
+            (save:symlinks (if types (memq :symlink types) t))
+            children)
+        (unless (path:exists? path:root :dir)
+          (error "%s: PATH:DIR does not exist: %s"
+                 func.name
+                 path:root))
+
+        ;;------------------------------
+        ;; Find Children
+        ;;------------------------------
+        ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Contents-of-Directories.html
+        ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Attributes.html#Definition-of-file_002dattributes
+        (dolist (child (directory-files-and-attributes path:root))
+          (let* ((child:name  (car child))
+                 (child:path  (path:join path:root child:name))
+                 (child:attrs (cdr child))
+                 type)
+
+            ;;------------------------------
+            ;; Ignore / Determine Type
+            ;;------------------------------
+            ;; Explicitly ignore?
+            (cond ((path:ignore? child:name path:rx:names:ignore)
+                   (setq type :ignore))
+
+                  ;;---
+                  ;; Save / Ignore by Type
+                  ;;---
+                  ((eq (file-attribute-type child:attrs) t) ;; `t' is the attr type for directories.
+                   (setq type (if save:dirs :dir :ignore)))
+
+                  ((eq (file-attribute-type child:attrs) nil) ;; `nil' is the attr type for files.
+                   (setq type (if save:files :file :ignore)))
+
+                  ((stringp (file-attribute-type child:attrs)) ;; The attr type for symlinks is a string of the path they point to.(
+                   (setq type (if save:symlinks :symlink :ignore)))
+
+                  ;;---
+                  ;; Error: How did you get here?
+                  ;;---
+                  (t
+                   (error "%s: '%s': Unhandled file-attribute-type: %S"
+                          func.name
+                          child:path
+                          (file-attribute-type child:attrs))))
+
+            ;;------------------------------
+            ;; Save Child?
+            ;;------------------------------
+            (when (and type
+                       (not (eq type :ignore)))
+              (let ((children:type (alist-get type children)))
+                ;; Update type's list of children with this child's path.
+                (push (if absolute-paths? child:path child:name) children:type)
+                (setf (alist-get type children) children:type)))))
+
+        ;;------------------------------
+        ;; Return list we've built.
+        ;;------------------------------
+        children))))
+;; (path:children:types user-emacs-directory)
+;; (path:children:types user-emacs-directory nil)
+;; (path:children:types user-emacs-directory t)
+;; (path:children:types user-emacs-directory nil :file)
+;; (path:children:types user-emacs-directory nil :dir)
+;; (path:children:types (path:current:dir) nil nil)
+
+
 ;; TODO: Follow symlinks or no?
 (defun path:children (path:dir &optional absolute-paths? type)
   "Returns immediate children of PATH:DIR directory.
@@ -198,74 +300,16 @@ If TYPE is supplied, returns only children of that type.
 
 If ABSOLUTE-PATHS? is non-nil, returns a list of absolute paths to the children.
 Else returns a list of names of children."
-  ;;------------------------------
-  ;; Error Checking
-  ;;------------------------------
-  ;; Errors on invaild type.
-  (int<path>:type:valid? "path:exists?" type)
-
-  (let ((func.name "path:children"))
-    (unless (stringp path:dir)
-      (error "%s: PATH:DIR must be a string! Got: %S"
-             func.name
-             path:dir))
-
-    (let ((path:root (path:canonicalize:dir path:dir))
-          children)
-      (unless (path:exists? path:root :dir)
-        (error "%s: PATH:DIR does not exist: %s"
-               func.name
-               path:root))
-
-      ;;------------------------------
-      ;; Find Children
-      ;;------------------------------
-      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Contents-of-Directories.html
-      ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/File-Attributes.html#Definition-of-file_002dattributes
-      (dolist (child (directory-files-and-attributes path:root))
-        (let* ((child:name  (car child))
-               (child:path  (path:join path:root child:name))
-               (child:attrs (cdr child)))
-
-          ;;---
-          ;; Do we care about this child?
-          ;;---
-          (cond ((path:ignore? child:name path:rx:names:ignore)
-                 nil)
-
-                ;;---
-                ;; Push child; no type check.
-                ;;---
-                ((null type)
-                 (push (if absolute-paths? child:path child:name) children))
-
-                ;;---
-                ;; Push child if correct type.
-                ;;---
-                ((eq :dir type)
-                 (when (eq (file-attribute-type child:attrs) t) ;; `t' is the attr type for directories.
-                   (push (if absolute-paths? child:path child:name) children)))
-
-                ((eq :file type)
-                 (when (eq (file-attribute-type child:attrs) nil) ;; `nil' is the attr type for files.
-                   (push (if absolute-paths? child:path child:name) children)))
-
-                ((eq :symlink type)
-                 (when (stringp (file-attribute-type child:attrs)) ;; The attr type for symlinks is a string of the path they point to.
-                   (push (if absolute-paths? child:path child:name) children)))
-
-                ;;---
-                ;; Error: How did you get here?
-                ;;---
-                (t
-                 (error "%s: Unhandled TYPE `%S'?!"
-                        func.name
-                        type)))))
-
-      ;;------------------------------
-      ;; Return list we've built.
-      ;;------------------------------
-      children)))
+  ;; Get by TYPE, then flatten to a single list of all children.
+  (let ((by-types (path:children:types path:dir absolute-paths? type))
+        children)
+    (dolist (type:assoc by-types)
+      (setq children (if children
+                         ;; Append to children.
+                         (cons children (cdr type:assoc))
+                       ;; Create children.
+                       (cdr type:assoc))))
+    children))
 ;; (path:children (path:current:dir))
 ;; (path:children (path:current:dir) t)
 ;; (path:children (path:current:dir) nil :file)

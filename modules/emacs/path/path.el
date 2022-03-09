@@ -330,9 +330,12 @@ PARENT & NEXT are normalized via `str:normalize:name', so keywords or symbol
 names can be used as well as strings."
   (cond ((and (null parent)
               (null next))
-         (error "int<path>:append: Cannot append nulls! parent: %S, next: %S"
-                parent
-                next))
+         ;; Change this to just return nil so `path:join' can be a little more robust?
+         nil
+         ;; (error "int<path>:append: Cannot append nulls! parent: %S, next: %S"
+         ;;        parent
+         ;;        next)
+         )
         ((null next)
          (str:normalize:name parent))
         ((null parent)
@@ -346,6 +349,7 @@ names can be used as well as strings."
 ;; (int<path>:append "jeff/" "jill")
 ;; (int<path>:append 'jeff :jill)
 ;; (int<path>:append 'jeff nil)
+;; (int<path>:append nil nil)
 
 
 (defun path:join (&rest path)
@@ -353,10 +357,14 @@ names can be used as well as strings."
 
 (path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
-  (seq-reduce #'int<path>:append path nil))
+  (seq-reduce #'int<path>:append
+              (apply #'str:normalize:name->list path)
+              nil))
 ;; (path:join "jeff" "jill")
 ;; (path:join "jeff" "jill/")
 ;; (path:join "jeff" nil)
+;; (path:join "" nil)
+;; (path:join nil)
 
 
 ;;------------------------------------------------------------------------------

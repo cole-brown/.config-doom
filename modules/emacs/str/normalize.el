@@ -24,8 +24,14 @@
 Returns a list of strings."
   (let ((output nil))
     (dolist (item inputs output)
-      ;; String? Direct to output.
-      (cond ((stringp item)
+      ;; Filter out (ignore) nils and empty strings.
+      (cond ((or (null item)
+                 (and (stringp item)
+                      (string= "" item)))
+             nil)
+
+            ;; String? Direct to output.
+            ((stringp item)
              (push item output))
 
             ;; Symbol (or function)? Use its name.
@@ -33,7 +39,8 @@ Returns a list of strings."
              (push (str:normalize:symbol->string item) output))))
     ;; `push' pushes to the front of the list, so reverse it for result.
     (nreverse output)))
-;; (str:normalize.name "Test/ing" 'jeff :jeff)
+;; (str:normalize:name->list "Test/ing" 'jeff :jeff)
+;; (str:normalize:name->list nil "Test/ing" 'jeff "" :jeff)
 
 
 (defun str:normalize:name (input)

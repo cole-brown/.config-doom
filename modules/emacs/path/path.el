@@ -316,6 +316,128 @@ Else returns a list of names of children."
 ;; (path:children (path:current:dir) nil :dir)
 
 
+(defun int<path>:walk (root dir callback &optional absolute-paths)
+  "Helper for walking a directory tree.
+
+Gets children from ROOT subdirectory DIR, calls CALLBACk for each child.
+
+CALLBACK should accept params:
+  1) string - path of child
+     - Path is relative to ROOT.
+     - If ABSOLUTE-PATHS is non-nil, path is absolute.
+
+CALLBACK should be a predicate for \"Continue walking?\"; it should return
+non-nil to continue and nil to halt the walk."
+  (let* ((path          (path:canonicalize:dir root dir))
+         (children:type (path:children:types path))
+         (continue t)
+         (child:dirs nil)) ;; Walk down into these dirs.
+
+    ;;------------------------------
+    ;; Deal with children based on how likely to be a directory.
+    ;;------------------------------
+    (when-let ((continue continue) ;; Already done?
+               (files (alist-get :file children:type)))
+      (while (and continue
+                  files)
+        (when-let ((child (pop files)))
+          (setq continue (funcall callback (if absolute-paths
+                                               (path:join path child)
+                                             child))))))
+
+    (when-let ((continue continue) ;; Already done?
+               (symlinks (alist-get :symlink children:type)))
+      (while (and continue
+                  symlinks)
+        (when-let ((child (pop symlinks)))
+          ;; TODO: Push dir symlinks (not file symlinks) into `child:dirs'?
+          (setq continue (funcall callback (if absolute-paths
+                                               (path:join path child)
+                                             child))))))
+
+    (when-let ((continue continue) ;; Already done?
+               (dirs (alist-get :dir children:type)))
+      (while (and continue
+                  dirs)
+        (when-let ((child (pop dirs)))
+          (push child child:dirs)
+          (setq continue (funcall callback (if absolute-paths
+                                               (path:join path child)
+                                             child))))))
+
+    ;;------------------------------
+    ;; Return all our children dirs to walk.
+    ;;------------------------------
+    (cons continue
+          (if child:dirs
+              (cons dir child:dirs)
+            nil))))
+;; (int<path>:walk (path:current:dir) "." (lambda (x) (message "hi %S" x)))
+;; (int<path>:walk (path:current:dir) nil (lambda (x) (message "hi %S" x)))
+;; (int<path>:walk (path:current:dir) ".." (lambda (x) (message "hi %S" x)) t)
+
+
+(defun path:walk (root callback &optional absolute-paths)
+  "Walks the directory tree starting at ROOT, calls CALLBACk for each child.
+
+CALLBACK should accept params:
+  1) string - path of child
+     - Path is relative to ROOT.
+     - If ABSOLUTE-PATHS is non-nil, path is absolute.
+
+CALLBACK should be a predicate for \"Continue walking?\"; it should return
+non-nil to continue and nil to halt the walk."
+  ;;------------------------------
+  ;; Validate input.
+  ;;------------------------------
+  (cond ((null callback)
+         (error "int<path>:walk: Must have a CALLBACK function to walk directory tree! Got: %S"
+                callback))
+        ((not (functionp callback))
+         (error "int<path>:walk: CALLBACK must be a `functionp' to walk directory tree! Got: %S --functionp?--> %S"
+                callback
+                (functionp callback)))
+        (t
+         ;; ok
+         nil))
+
+  ;;------------------------------
+  ;; Walk dirs.
+  ;;------------------------------
+  ;; Start our walk.
+  (let* ((path-root (path:canonicalize:dir root))
+         ;; walked is (continue . (dir . children))
+         (walked   (int<path>:walk root
+                                   nil
+                                   callback
+                                   absolute-paths))
+         (continue (car walked))
+         (next     (list (cdr walked))))
+
+    ;; Walk while we still have entries in `next'.
+    (while (and continue
+                next)
+      (let* ((current  (pop next))
+             (dir      (car current))
+             (children (cdr current)))
+        ;; Walk a child directory.
+        (while (and continue
+                    children)
+          ;; Walk a child directory.
+          (setq walked (int<path>:walk root
+                                       (path:join dir (pop children))
+                                       callback
+                                       absolute-paths)
+                continue (car walked))
+
+          ;; _Append_ to next; don't set/overwrite it.
+          (when (cddr walked) ;; Only append if we have more children directories to walk.
+            ;; Don't push `continue' flag.
+            (push (cdr walked) next)))))))
+;; (path:walk (path:current:dir) (lambda (x) (message "hi %S" x)))
+;; (path:walk (path:parent (path:current:dir)) (lambda (x) (message "hi %S" x)) t)
+
+
 ;;------------------------------------------------------------------------------
 ;; Join
 ;;------------------------------------------------------------------------------

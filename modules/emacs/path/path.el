@@ -353,10 +353,10 @@ names can be used as well as strings."
 
 (path:join \"jeff\" \"jill.el\")
   ->\"jeff/jill.el\""
-  (seq-reduce #'int<path>:append path))
+  (seq-reduce #'int<path>:append path nil))
 ;; (path:join "jeff" "jill")
 ;; (path:join "jeff" "jill/")
-;; (path:join "jeff")
+;; (path:join "jeff" nil)
 
 
 ;;------------------------------------------------------------------------------

@@ -12,11 +12,15 @@
 ;; Font
 ;;------------------------------
 
+;; [2022-03-10] Using "Cascadia Code PL Regular" via `font-use-system-font'.
+;;   - Set in Ubuntu 20.04 via "Gnome Tweaks" app.
+
 ;; If this variable is true, emacs will use the default system font.
 ;;   font-use-system-font
 
-;; ;; TODO: Is there any way to check if a font exists before setting it?
-;; ;; TODO: Make this a per-system setting if not?
+;; ;; NOTE: If using a different font, find out answers to these questions:
+;; ;;   1) Is there any way to check if a font exists before setting it?
+;; ;;   2) Make this a per-system setting if not?
 ;; (set-face-attribute 'default
 ;;                     nil
 ;;                     :font "CaskaydiaCove Nerd Font Mono"

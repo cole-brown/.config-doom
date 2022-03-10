@@ -63,7 +63,7 @@ settings are `:messages'."
 
 
 (defun autogit:buffers:kill ()
-  "Kill the autogit output buffer NAME.
+  "Kill the autogit output buffer(s).
 
 If NAME is `:messages', kills the \"*Messages*\" buffer."
   (interactive)

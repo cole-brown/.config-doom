@@ -361,22 +361,17 @@ execute BODY in its context."
 ;;  (autogit//macro:with-buffer :messages
 ;;                              (message "hello there")))
 
+(defun autogit//buffer:switch (name)
+  "Give focus to the autogit buffer NAME or not, depending on settings."
+  (when autogit:buffer:switch?
+    (pop-to-buffer name)))
+;; (autogit//buffer:switch autogit:buffer:name/status)
 
-(defun autogit//buffer:show (name)
-  "Show message buffer or not, depending on settings.
-
-If in Doom Emacs, set up popup rules first."
-  (display-buffer name)
-
-  ;; (display-buffer-pop-up-window name autogit:doom:popup-rules)
-
-  ;; (if (autogit//emacs:doom?)
-  ;;     (with-popup-rules! autogit:doom:popup-rules
-  ;;       (pop-to-buffer name))
-  ;;   ;; Not using Doom & its popup window system, so just pop to the buffer.
-  ;;   (pop-to-buffer name))
-  )
-;; (autogit//buffer:show autogit:buffer:name/status)
+(defun autogit//buffer:display (name)
+  "Display message buffer NAME or not, depending on settings."
+  (when autogit:buffer:display?
+    (display-buffer name)))
+;; (autogit//buffer:display autogit:buffer:name/status)
 
 
 ;;------------------------------------------------------------------------------
@@ -610,7 +605,7 @@ so it must be used inside the `autogit//macro:with-buffer' macro body!"
 ;;                         (list :prop :face:highlight
 ;;                               :text (list "%d" (length autogit:repos:path/watch)))
 ;;                         " watch locations...")
-;;     (autogit//buffer:show buffer)))
+;;     (autogit//buffer:display buffer)))
 
 
 (defun autogit//output:message/indented (buffer indent &rest args)

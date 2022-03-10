@@ -8,10 +8,10 @@
 ;; Maintainer: Cole Brown <code@brown.dev>
 ;; Created: October 28, 2020
 ;; Modified: October 28, 2020
-;; Version: 0.0.1
-;; Keywords:
+;; Version: 0.9.0
+;; Keywords: vc tools
 ;; Homepage: https://github.com/cole-brown/.config-secret
-;; Package-Requires: ((emacs 27.1) (magit))
+;; Package-Requires: ((emacs "27.1") (magit "3.3.0"))
 ;;
 ;; This file is not part of GNU Emacs.
 ;;
@@ -124,6 +124,18 @@ Options:
 ;; Buffer
 ;;------------------------------
 
+(defcustom autogit:buffer:display? t
+  "Should autogit display the push/status buffers when it starts outputting?"
+  :group 'autogit:group
+  :type '(boolean))
+
+
+(defcustom autogit:buffer:switch? t
+  "Should autogit switch to the push/status buffers when it completes?"
+  :group 'autogit:group
+  :type '(boolean))
+
+
 (defcustom autogit:buffer:name/push
   "ⓘ-autogit:push-ⓘ"
   "Buffer name to print to. If you want it to go to *Messages* with the usual
@@ -142,13 +154,6 @@ minibuffer interaction, set to: `:messages'"
   :type '(choice (string :tag "Name of Buffer")
                  (const :tag "Use `message' to send to *Messages* buffer with the usual minibuffer interactions."
                         :messages)))
-
-
-(defcustom autogit:doom:popup-rules
- '((:ignore t))
-  "Rules to use if running in Doom Emacs for `pop-to-buffer'. See
-`set-popup-rule!' for rules."
-  :group 'autogit:group)
 
 
 ;;------------------------------

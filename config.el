@@ -292,6 +292,10 @@
           :filename "spy-leader")
 
 ;; Specific things:
+(imp:load :feature  '(:dot-emacs config keybinds autogit)
+          :path     (imp:path:join dot-emacs:path:config "keybinds")
+          :filename "autogit")
+
 (imp:load :feature  '(:dot-emacs config keybinds org-mode)
           :path     (imp:path:join dot-emacs:path:config "keybinds")
           :filename "org-mode")

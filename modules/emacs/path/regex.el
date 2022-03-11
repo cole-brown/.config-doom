@@ -26,6 +26,42 @@ NOTE: This is an `rx' forms.")
 
 
 ;;------------------------------------------------------------------------------
+;; Regex: API
+;;------------------------------------------------------------------------------
+
+(defun path:rx (root regex &optional absolute-regex absolute-paths)
+  "Regex searches for paths matching the given REGEX starting at ROOT dir.
+
+If ABSOLUTE-REGEX is non-nil, absolute paths will be matched against REGEX.
+Otherwise paths relative to ROOT will be matched against REGEX.
+
+Returns a list of path strings or nil. If ABSOLUTE-PATHS is non-nil, returned
+paths will be absolute. Else returned paths will be relative to ROOT."
+  (let (matches)
+    ;; Walk directory tree at root, looking for matches.
+    (path:walk root
+               (lambda (root dir child)
+                 "Check path against REGEX, save to `matches' if matched."
+                 (when (string-match-p regex
+                                       ;; What check depends on what kind of regex was supplied.
+                                       (if absolute-regex
+                                           (path:join root dir child)
+                                         (path:join dir child)))
+                   ;; What we depends on what caller wants.
+                   (push (if absolute-paths
+                             (path:join root dir child)
+                           (path:join dir child))
+                         matches))
+                 ;; Always return "continue walking tree".
+                 t))
+
+    ;; Return whatever was found.
+    matches))
+;; (path:rx (path:current:dir) (rx string-start (one-or-more printing) ".el" string-end) t)
+;; (path:rx (path:parent (path:current:dir)) (rx string-start (one-or-more printing) ".el" string-end) t)
+
+
+;;------------------------------------------------------------------------------
 ;; Globs -> Regex: Constants & Variables
 ;;------------------------------------------------------------------------------
 

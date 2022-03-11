@@ -286,40 +286,41 @@
 ;; Keybind Modifications
 ;;------------------------------
 
-;; My additions to the overabundance of keybindings:
-(imp:load :feature  '(:dot-emacs config keybinds spy-leader)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "spy-leader")
+(let ((path/keybinds (imp:path:join dot-emacs:path:config "keybinds")))
+  ;; My additions to the overabundance of keybindings:
+  (imp:load :feature  '(:dot-emacs config keybinds spy-leader)
+            :path     path/keybinds
+            :filename "spy-leader")
 
-;; Specific things:
-(imp:load :feature  '(:dot-emacs config keybinds autogit)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "autogit")
+  ;; Specific things:
+  (imp:load :feature  '(:dot-emacs config keybinds autogit)
+            :path     path/keybinds
+            :filename "autogit")
 
-(imp:load :feature  '(:dot-emacs config keybinds org-mode)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "org-mode")
+  (imp:load :feature  '(:dot-emacs config keybinds org-mode)
+            :path     path/keybinds
+            :filename "org-mode")
 
-(imp:load :feature  '(:dot-emacs config keybinds search)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "search")
+  (imp:load :feature  '(:dot-emacs config keybinds search)
+            :path     path/keybinds
+            :filename "search")
 
-(imp:load :feature  '(:dot-emacs config keybinds spotify)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "spotify")
+  (imp:load :feature  '(:dot-emacs config keybinds spotify)
+            :path     path/keybinds
+            :filename "spotify")
 
-(imp:load :feature  '(:dot-emacs config keybinds slack)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "slack")
+  (imp:load :feature  '(:dot-emacs config keybinds slack)
+            :path     path/keybinds
+            :filename "slack")
 
-(imp:load :feature  '(:dot-emacs config keybinds treemacs)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "treemacs")
+  (imp:load :feature  '(:dot-emacs config keybinds treemacs)
+            :path     path/keybinds
+            :filename "treemacs")
 
-;; Whatever isn't big enough or important enough to warrent its own file.
-(imp:load :feature  '(:dot-emacs config keybinds misc)
-          :path     (imp:path:join dot-emacs:path:config "keybinds")
-          :filename "misc")
+  ;; Whatever isn't big enough or important enough to warrent its own file.
+  (imp:load :feature  '(:dot-emacs config keybinds misc)
+            :path     path/keybinds
+            :filename "misc"))
 
 
 ;;------------------------------------------------------------------------------
@@ -328,7 +329,7 @@
 ;; Have near the end as it could depend on any previous config being done...
 
 (imp:load :feature  '(:dot-emacs config work)
-          :path     (imp:path:join dot-emacs:path:config)
+          :path     dot-emacs:path:config
           :filename "work")
 
 

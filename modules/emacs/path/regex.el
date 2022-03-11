@@ -304,29 +304,29 @@ Returns a plist of the updated STRING:GLOB and STRING:RX with keys:
 ;; Globs -> Regex: API
 ;;------------------------------------------------------------------------------
 
-(defun path:glob->rx (pattern)
-  "Convert glob PATTERN string into a regex string.
+(defun path:glob->rx (glob)
+  "Convert GLOB string into a regex string.
 
-Replace glob strings in PATTERN so that the returned regex string is equivalent.
+Replace glob strings in GLOB so that the returned regex string is equivalent.
 Correctly deals with e.g. \"**\" and \"*\" (that is, replaces things in the correct order.
 
-Raises an error signal if PATTERN is not a string."
+Raises an error signal if GLOB is not a string."
   ;;------------------------------
   ;; Errors?
   ;;------------------------------
-  (cond ((not (stringp pattern))
-         (error "int<path>:glob/rx:alist: PATTERN needs to be a string: %S"
-                pattern))
+  (cond ((not (stringp glob))
+         (error "int<path>:glob/rx:alist: GLOB needs to be a string: %S"
+                glob))
 
-        ((= 0 (length pattern))
-         (error "int<path>:glob/rx:alist: PATTERN needs to be a string of length > 0: %S"
-                pattern))
+        ((= 0 (length glob))
+         (error "int<path>:glob/rx:alist: GLOB needs to be a string of length > 0: %S"
+                glob))
 
         ;;------------------------------
         ;; Replace Globs.
         ;;------------------------------
         (t
-         (let ((string:glob pattern)
+         (let ((string:glob glob)
                (string:rx "")
                plist)
 
@@ -354,6 +354,21 @@ Raises an error signal if PATTERN is not a string."
            ;; Return compiled regex.
            string:rx))))
 ;; (path:glob->rx "/foo/bar*baz")
+
+
+(defun path:glob (root glob &optional absolute-glob absolute-paths)
+  "Searches for paths matching the given GLOB starting at ROOT dir.
+
+If ABSOLUTE-GLOB is non-nil, absolute paths will be matched against GLOB.
+Otherwise paths relative to ROOT will be matched against GLOB.
+
+Returns a list of path strings or nil. If ABSOLUTE-PATHS is non-nil, returned
+paths will be absolute. Else returned paths will be relative to ROOT."
+
+  (path:rx root
+           (path:glob->rx glob)
+           absolute-glob
+           absolute-paths))
 
 
 ;;------------------------------------------------------------------------------

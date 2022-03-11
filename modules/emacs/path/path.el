@@ -215,7 +215,7 @@ Else returns names of children."
     (dolist (type types)
       (int<path>:type:valid? "path:exists?" type))
 
-    (let ((func.name "path:children"))
+    (let ((func.name "path:children:types"))
       (unless (stringp path:dir)
         (error "%s: PATH:DIR must be a string! Got: %S"
                func.name
@@ -316,22 +316,21 @@ Else returns a list of names of children."
 ;; (path:children (path:current:dir) nil :dir)
 
 
-(defun int<path>:walk (root dir callback &optional absolute-paths)
+(defun int<path>:walk (root dir callback)
   "Helper for walking a directory tree.
 
 Gets children from ROOT subdirectory DIR, calls CALLBACk for each child.
 
 CALLBACK should accept params:
-  1) string - path of child
-     - Path is relative to ROOT.
-     - If ABSOLUTE-PATHS is non-nil, path is absolute.
+  1) string - root (absolute)
+  2) string - directory (relative path from root)
+  3) string - child (a file/dir/etc in directory)
 
 CALLBACK should be a predicate for \"Continue walking?\"; it should return
 non-nil to continue and nil to halt the walk."
-  (let* ((path          (path:canonicalize:dir root dir))
-         (children:type (path:children:types path))
-         (continue t)
-         (child:dirs nil)) ;; Walk down into these dirs.
+  (let ((children:type (path:children:types (path:canonicalize:dir root dir)))
+        (continue t)
+        (child:dirs nil)) ;; Walk down into these dirs.
 
     ;;------------------------------
     ;; Deal with children based on how likely to be a directory.
@@ -341,9 +340,10 @@ non-nil to continue and nil to halt the walk."
       (while (and continue
                   files)
         (when-let ((child (pop files)))
-          (setq continue (funcall callback (if absolute-paths
-                                               (path:join path child)
-                                             child))))))
+          (setq continue (funcall callback
+                                  root
+                                  dir
+                                  child)))))
 
     (when-let ((continue continue) ;; Already done?
                (symlinks (alist-get :symlink children:type)))
@@ -351,9 +351,10 @@ non-nil to continue and nil to halt the walk."
                   symlinks)
         (when-let ((child (pop symlinks)))
           ;; TODO: Push dir symlinks (not file symlinks) into `child:dirs'?
-          (setq continue (funcall callback (if absolute-paths
-                                               (path:join path child)
-                                             child))))))
+          (setq continue (funcall callback
+                                  root
+                                  dir
+                                  child)))))
 
     (when-let ((continue continue) ;; Already done?
                (dirs (alist-get :dir children:type)))
@@ -361,9 +362,10 @@ non-nil to continue and nil to halt the walk."
                   dirs)
         (when-let ((child (pop dirs)))
           (push child child:dirs)
-          (setq continue (funcall callback (if absolute-paths
-                                               (path:join path child)
-                                             child))))))
+          (setq continue (funcall callback
+                                  root
+                                  dir
+                                  child)))))
 
     ;;------------------------------
     ;; Return all our children dirs to walk.
@@ -377,13 +379,12 @@ non-nil to continue and nil to halt the walk."
 ;; (int<path>:walk (path:current:dir) ".." (lambda (x) (message "hi %S" x)) t)
 
 
-(defun path:walk (root callback &optional absolute-paths)
+(defun path:walk (root callback)
   "Walks the directory tree starting at ROOT, calls CALLBACk for each child.
 
 CALLBACK should accept params:
-  1) string - path of child
-     - Path is relative to ROOT.
-     - If ABSOLUTE-PATHS is non-nil, path is absolute.
+  1) string - path of child, absolute
+  2) string - path of child, relative to ROOT
 
 CALLBACK should be a predicate for \"Continue walking?\"; it should return
 non-nil to continue and nil to halt the walk."
@@ -409,8 +410,7 @@ non-nil to continue and nil to halt the walk."
          ;; walked is (continue . (dir . children))
          (walked   (int<path>:walk root
                                    nil
-                                   callback
-                                   absolute-paths))
+                                   callback))
          (continue (car walked))
          (next     (list (cdr walked))))
 
@@ -426,8 +426,7 @@ non-nil to continue and nil to halt the walk."
           ;; Walk a child directory.
           (setq walked (int<path>:walk root
                                        (path:join dir (pop children))
-                                       callback
-                                       absolute-paths)
+                                       callback)
                 continue (car walked))
 
           ;; _Append_ to next; don't set/overwrite it.

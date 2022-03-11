@@ -166,8 +166,10 @@
     ;; TODO: choose from mute or unmute: "🔇" "🔈"
     ("x"
      smudge-controller-volume-mute-unmute
-     "🔇"
-     ;; ??-TODO-??: :toggle #'func-that-gets-current-state
+     (if (smudge-cache-is-muted :name (system-name))
+         "🔈 Unmute"
+       "🔇 Mute")
+     :toggle (smudge-cache-is-muted :name (system-name))
      :exit nil))))
 ;; (int<spy>:spotify:hydra/body)
 

@@ -17,25 +17,28 @@
 ;;------------------------------------------------------------------------------
 
 
-(defun spy:cmd:buffer:kill/magit ()
+(defun spy:cmd:buffer:kill/magit (&optional timestamp)
   "Delete all magit buffers."
+  (interactive)
+  (message "[%s] Kill 'magit' buffers..."
+           timestamp)
   ;; Magit buffers shouldn't stick around. They get in the way of saving
   ;; workspaces and can easily be reopened.
-  (spy:cmd:buffer/kill.matching ".*magit.*"
-                                :internal
-                                :no-ask
-                                :delete-process))
-;; (spy:workday:end/magit)
+  (spy:buffer/kill.matching ".*magit.*"
+                            :internal
+                            :modified
+                            :process))
 
 
-(defun spy:cmd:buffer:kill/deadgrep ()
+(defun spy:cmd:buffer:kill/deadgrep (&optional timestamp)
   "Delete all deadgrep buffers."
-  ;; Deadgrep buffers shouldn't stick around. They get in the way of saving
-  ;; workspaces and can easily be reopened.
-  (spy:cmd:buffer/kill.matching ".*deadgrep.*"
-                                :internal
-                                :no-ask
-                                :delete-process))
+  (interactive)
+  (message "[%s] Kill 'deadgrep' buffers..."
+           timestamp)
+  (spy:buffer/kill.matching ".*deadgrep.*"
+                            :internal
+                            :modified
+                            :process))
 
 
 ;;------------------------------------------------------------------------------

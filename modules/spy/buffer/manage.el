@@ -87,84 +87,137 @@ it. BUFFER-OR-NAME must be exact."
 ;; §-TODO-§ [2020-02-13]: A "bury-matching in all windows" like
 ;; `spy:buffer/kill.matching'?
 
-;; I could just grub my meaty hooks into kill-matching-buffers, but... eh.
-;; I'd probably just forget the function that way.
-(defun spy:cmd:buffer/kill.matching (regexp &optional
-                                        internal-too
-                                        no-ask
-                                        delete-process
-                                        quiet)
-  "Kill buffers whose name matches the specified REGEXP.
+(defun spy:buffer/kill.matching (regex &rest keywords)
+  "Kill buffers whose name matches the specified REGEX.
 
-Ignores buffers whose name starts with a space (internal
-buffers), unless optional prefix argument INTERNAL-TOO is
-non-nil.
+KEYWORDS should be nil or keywords. Valid KEYWORDS are:
+  - `:internal'
+    - Don't ignore buffers whose name starts with a space (internal buffers).
+      - Default is to ignore them.
+  - `:modified'
+    - Kill modified buffers without confirmation.
+      - Default is to ask for confirmation for each modified buffer.
+  - `:process'
+    - Kill buffers with attached/associated processes.
+      - Default is to ask for confirmation for each buffer with a process.
+  - `:quiet'
+    - Do not output the informative messages."
+  ;; What KEYWORD flags were set?
+  (let ((kill/internal? (memq :internal keywords))
+        (kill/modified? (memq :modified keywords))
+        (kill/process?  (memq :process  keywords))
+        (quiet?         (memq :quiet    keywords))
+        ;; List: "buffer name matches regex".
+        buffer/matches
+        ;; List: "actually killed buffer name".
+        buffer/killed
+        ;; If not `quiet?', a progress reporter will be created.
+        progress-reporter)
 
-Asks before killing each buffer if it is modified,
-unless NO-ASK is non-nil.
-
-Deletes buffer's process (if any) if DELETE-PROCESS is non-nil."
-  (interactive "sKill buffers matching regex: ")
-  ;; TODO: find all matching buffers and do a "does this look about right?"
-  ;; prompt?
-
-  (let ((killed-names ()))
-    ;; for all open buffers...
+    ;;------------------------------
+    ;; Regex Match Buffer Names
+    ;;------------------------------
+    ;; Basically:
+    ;;   - Find matching buffers first.
+    ;;   - Ask w/ summary if desired.
+    ;;   - Kill w/ progress reporter.
     (dolist (buffer (buffer-list))
       (let ((name (buffer-name buffer)))
-        ;; (message "kill.match plz name:%s e?%s it?%s regex?%s ok?%s"
-        ;;          ;; has a name
-        ;;          name
-        ;;          ;; not empty
-        ;;          (not (string-equal name ""))
-        ;;          ;; internal-too or not internal
-        ;;          (or internal-too (/= (aref name 0) ?\s))
-        ;;          ;; matches regex
-        ;;          (string-match regexp name)
-        ;;          ;; total
-        ;;          (and name (not (string-equal name ""))
-        ;;               (or internal-too (/= (aref name 0) ?\s))
-        ;;               (string-match regexp name)))
-
-        ;; check name obeys `internal-too' type restriction and matches regex
-        (when (and name (not (string-equal name ""))
-                   (or internal-too (/= (aref name 0) ?\s))
+        (when (and (stringp name)
+                   (not (string-equal name ""))
+                   ;; Leading space means "internal buffer" - check name obeys `kill/internal?' type restriction.
+                   (or kill/internal? (/= (aref name 0) ?\s))
+                   ;; ...and matches regex.
                    (string-match regexp name))
-          ;; and kill it maybe
-          (if no-ask
-              ;; either just kill it...
-              (progn
-                (push name killed-names)
-                (when delete-process
-                  (spy:buffer/process.delete buffer))
-                (kill-buffer buffer))
-            ;; ...or probably kill it? Save the name if so.
-            (let ((maybe-kill-name (spy:buffer/kill.ask buffer
-                                                           delete-process)))
-              (unless (null maybe-kill-name)
-                (push maybe-kill-name killed-names)))))))
-    (if quiet
-        ;; return number of buffers killed if quiet Mode
-        (length (or killed-names '()))
-      ;; And finally, give some goddamn output (looking at you,
-      ;; kill-matching-buffers).
-      (cond
-       ((null killed-names)
-        (message "No buffers killed matching '%s'."
-                 regexp))
-       ((>= (length killed-names) 10)
-        (message "Killed %s buffers matching '%s'."
-                 (length killed-names)
-                 regexp))
-       (t
-        (message "Killed %s buffers matching '%s': %s"
-                 (length killed-names)
-                 regexp
-                 killed-names))))))
-;; (spy:buffer/kill.special "§- \\b[[:print:]]+\\b -§")
-;; (string-match-p "§- \\b[[:print:]]+\\b -§" "§- Kill All The Things! -§")
-;; (string-match-p "§- \\b[[:print:]]+\\b -§\\b" "§- Kill All The Things! -§")
-;; (string-match-p "§- [[:print:]]+\\b -§" "§- Kill All The Things! -§")
+          (push name buffer/matches))))
+
+    ;;------------------------------
+    ;; TODO: Confirmation?
+    ;;------------------------------
+    ;; TODO: Find all matching buffers and do a "Does this look about right?" prompt?
+
+    (if (not buffer/matches)
+        ;;------------------------------
+        ;; No matches - inform!
+        ;;------------------------------
+        (unless quiet?
+          (message "Nothing killed; no buffers matching '%s'."
+                   regexp))
+
+      ;;------------------------------
+      ;; Kill!
+      ;;------------------------------
+      ;; But first, set up progress reporter?
+      (unless quiet?
+        (setq progress-reporter
+              (make-progress-reporter (format "Killing all '%s' buffers..."
+                                              regex)
+                                      0
+                                      (length buffer/matches))))
+
+      ;; Annnd... kill buffers!
+      (let ((count 0))
+        (dolist (buffer buffer/matches)
+          (setq count (1+ count))
+          (if kill/modified?
+              ;; Ask if we should kill it if modifed, else just kill it.
+              (when-let ((maybe-kill-name (spy:buffer/kill.ask buffer
+                                                               kill/process?)))
+                (push maybe-kill-name buffer/killed))
+
+            ;; Just kill it.
+            (when kill/process?
+              (spy:buffer/process.delete buffer))
+            (kill-buffer buffer)
+            (push name buffer/killed))
+
+          ;; Update progress.
+          (unless quiet?
+            (progress-reporter-update progress-reporter count))))
+
+      ;;------------------------------
+      ;; Final output.
+      ;;------------------------------
+      (unless quiet?
+        (progress-reporter-done progress-reporter)
+
+        ;; And finally, give some goddamn output (looking at you, kill-matching-buffers).
+        (cond
+         ((null buffer/killed)
+          (message "No buffers killed matching '%s'."
+                   regexp))
+         ((>= (length buffer/killed) 10)
+          (message "Killed %s buffers matching '%s'."
+                   (length buffer/killed)
+                   regexp))
+         (t
+          (message "Killed %s buffers matching '%s': %s"
+                   (length buffer/killed)
+                   regexp
+                   buffer/killed))))
+
+      ;; Return number of buffers killed.
+      (length buffer/killed))))
+
+
+(defun spy:cmd:buffer/kill.matching (regex)
+  "Kill buffers whose name matches the specified REGEX.
+
+If you want to control what gets killed & how, see `spy:buffer/kill.matching'
+for kewords like:
+  - `:internal'
+    - Don't ignore buffers whose name starts with a space (internal buffers).
+      - Default is to ignore them.
+  - `:modified'
+    - Kill modified buffers without confirmation.
+      - Default is to ask for confirmation for each modified buffer.
+  - `:process'
+    - Kill buffers with attached/associated processes.
+      - Default is to ask for confirmation for each buffer with a process.
+  - `:quiet'
+    - Do not output the informative messages."
+  (interactive "sKill buffers matching regex: ")
+  (spy:buffer/kill.matching regex))
 
 
 ;;------------------------------------------------------------------------------

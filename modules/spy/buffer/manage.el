@@ -128,7 +128,7 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
                    ;; Leading space means "internal buffer" - check name obeys `kill/internal?' type restriction.
                    (or kill/internal? (/= (aref name 0) ?\s))
                    ;; ...and matches regex.
-                   (string-match regexp name))
+                   (string-match regex name))
           (push name buffer/matches))))
 
     ;;------------------------------
@@ -142,7 +142,7 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
         ;;------------------------------
         (unless quiet?
           (message "Nothing killed; no buffers matching '%s'."
-                   regexp))
+                   regex))
 
       ;;------------------------------
       ;; Kill!
@@ -157,18 +157,18 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
 
       ;; Annnd... kill buffers!
       (let ((count 0))
-        (dolist (buffer buffer/matches)
+        (dolist (name buffer/matches)
           (setq count (1+ count))
           (if kill/modified?
               ;; Ask if we should kill it if modifed, else just kill it.
-              (when-let ((maybe-kill-name (spy:buffer/kill.ask buffer
+              (when-let ((maybe-kill-name (spy:buffer/kill.ask name
                                                                kill/process?)))
                 (push maybe-kill-name buffer/killed))
 
             ;; Just kill it.
             (when kill/process?
-              (spy:buffer/process.delete buffer))
-            (kill-buffer buffer)
+              (spy:buffer/process.delete name))
+            (kill-buffer name)
             (push name buffer/killed))
 
           ;; Update progress.
@@ -182,19 +182,28 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
         (progress-reporter-done progress-reporter)
 
         ;; And finally, give some goddamn output (looking at you, kill-matching-buffers).
-        (cond
-         ((null buffer/killed)
-          (message "No buffers killed matching '%s'."
-                   regexp))
-         ((>= (length buffer/killed) 10)
-          (message "Killed %s buffers matching '%s'."
-                   (length buffer/killed)
-                   regexp))
-         (t
-          (message "Killed %s buffers matching '%s': %s"
-                   (length buffer/killed)
-                   regexp
-                   buffer/killed))))
+        (let ((num/killed (length buffer/killed)))
+          (cond
+           ((= 0 num/killed)
+            (message "No buffers killed matching '%s'."
+                     regex))
+           ((= 1 num/killed)
+            (message "Killed %s buffer matching '%s': %s"
+                     num/killed
+                     regex
+                     (nth 0 buffer/killed)))
+           ;; ;; 10 or more killed: don't list?
+           ;; ((< 10 num/killed)
+           ;;  (message "Killed %s buffers matching '%s'."
+           ;;           num/killed
+           ;;           regex))
+           (t
+            (message "Killed %s buffers matching '%s':"
+                     (length buffer/killed)
+                     regex)
+            (message (mapconcat (lambda (name) (format "  - %s" name))
+                                buffer/killed
+                                "\n"))))))
 
       ;; Return number of buffers killed.
       (length buffer/killed))))

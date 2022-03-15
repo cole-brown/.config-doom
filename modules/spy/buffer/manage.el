@@ -199,10 +199,11 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
            ;;           num/killed
            ;;           regex))
            (t
-            (message "Killed %s buffers matching '%s':"
+            (message "Killed %s buffers matching '%s':\n%s"
                      (length buffer/killed)
-                     regex)
-            (message (mapconcat (lambda (name) (format "  - %s" name))
+                     regex
+                     ;; List of buffer names.
+                     (mapconcat (lambda (name) (format "  - %s" name))
                                 buffer/killed
                                 "\n"))))))
 

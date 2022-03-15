@@ -7,26 +7,27 @@
 ;;------------------------------------------------------------------------------
 
 ;; Like `kill-buffer-ask' but no confirmation for unmodified buffers.
-(defun spy:buffer/kill.ask (buffer &optional delete-process)
-  "Kill BUFFER if confirmed. No confirm given for unmodified
+(defun spy:buffer/kill.ask (buffer-or-name &optional delete-process)
+  "Kill BUFFER-OR-NAME if confirmed. No confirm given for unmodified
 buffers; just kill.
 
 Returns buffer-name on kill, nil on no kill."
-  ;; so... kill?
-  (if (or
+  (let ((buffer (get-buffer buffer-or-name)))
+    ;; so... kill?
+    (if (or
          ;; just kill it if not modified
          (not (buffer-modified-p buffer))
          ;; or ask first if modded
          (yes-or-no-p (format "Buffer '%s' HAS BEEN EDITED.  Kill? "
-                                 (buffer-name buffer))))
-    ;; ok - kill
-    (prog1
-        ;; return name when killed
-        (buffer-name buffer)
-      (when delete-process (spy:buffer/process.delete buffer))
-      (kill-buffer buffer))
-    ;; else, ret nil when no kill
-    nil))
+                              (buffer-name buffer))))
+        ;; ok - kill
+        (prog1
+            ;; return name when killed
+            (buffer-name buffer)
+          (when delete-process (spy:buffer/process.delete buffer))
+          (kill-buffer buffer))
+      ;; else, ret nil when no kill
+      nil)))
 
 
 (defun spy:buffer/kill.special (arg)
@@ -159,7 +160,7 @@ KEYWORDS should be nil or keywords. Valid KEYWORDS are:
       (let ((count 0))
         (dolist (name buffer/matches)
           (setq count (1+ count))
-          (if kill/modified?
+          (if (not kill/modified?)
               ;; Ask if we should kill it if modifed, else just kill it.
               (when-let ((maybe-kill-name (spy:buffer/kill.ask name
                                                                kill/process?)))

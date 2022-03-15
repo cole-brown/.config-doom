@@ -456,40 +456,52 @@ Always returns nil."
 ;;------------------------------------------------------------------------------
 
 (defun spy:workday:end/spotify ()
-  "Cleans up Smudge for the day so it hopefully doesn't
-have 11 zombie connections to spotify api tomorrow..."
+  "Stop Smudge & do any needed tear-down.
+
+Smudge used to end up with zombie connections when left open overnight... Don't
+know if it still does, but this was the solution:
+  - Stop/pause Spotify
+  - Turn off global Smudge minor mode"
   (interactive)
-  (async<spy>:spotify:device:when-active
-      (system-name)
-    ;;---
-    ;; [2022-02-18] Cleaner Version?
-    ;;---
-    (smudge-connect-player-pause)
 
-    ;; TODO: Do I need to clean up any buffers?
-    ;; (spy:cmd:buffer/kill.matching ...)?
+  (let ((progress-reporter (make-progress-reporter (format "[%s] Spotify clean-up..."
+                                                           (spy:datetime/string.get 'iso-8601 'long))
+                                                   0
+                                                   100)))
 
-    ;; ;;---
-    ;; ;; [2019-10-22] Ye Olde Version
-    ;; ;;   (Do I need the condition case still?
-    ;; ;;---
-    ;; (condition-case-unless-debug err
-    ;;   (progn
-    ;;     (smudge-connect-player-pause)
-    ;;     (global-smudge-remote-mode -1)
-    ;;     ;; TODO: Do I need to clean up any buffers?
-    ;;     ;; (spy:cmd:buffer/kill.matching ...)?
-    ;;     )
-    ;; ;; Catch signaled error 'error': downgrade to just message.
-    ;; ;; [2019-10-22]: This is just theory as spotify can get cranky if
-    ;; ;; connected but device was left paused...
-    ;; (error
-    ;;  ;; Downgrade.
-    ;;  (message "[ERROR]: spy:workday:end/spotify: Received error signal:" err)))
-    )
+    (async<spy>:spotify:device:when-active
+        (system-name)
+      ;;---
+      ;; [2022-02-18] Cleaner Version?
+      ;;---
+      (smudge-connect-player-pause)
+      (progress-reporter-update progress-reporter 50)
 
-  ;; Always disable Smudge mode?
-  (global-smudge-remote-mode -1))
+      ;; TODO: Do I need to clean up any buffers?
+      ;; (spy:cmd:buffer/kill.matching ...)?
+
+      ;; ;;---
+      ;; ;; [2019-10-22] Ye Olde Version
+      ;; ;;   (Do I need the condition case still?
+      ;; ;;---
+      ;; (condition-case-unless-debug err
+      ;;   (progn
+      ;;     (smudge-connect-player-pause)
+      ;;     (global-smudge-remote-mode -1)
+      ;;     ;; TODO: Do I need to clean up any buffers?
+      ;;     ;; (spy:cmd:buffer/kill.matching ...)?
+      ;;     )
+      ;; ;; Catch signaled error 'error': downgrade to just message.
+      ;; ;; [2019-10-22]: This is just theory as spotify can get cranky if
+      ;; ;; connected but device was left paused...
+      ;; (error
+      ;;  ;; Downgrade.
+      ;;  (message "[ERROR]: spy:workday:end/spotify: Received error signal:" err)))
+      )
+
+    ;; Always disable Smudge mode?
+    (global-smudge-remote-mode -1)
+    (progress-reporter-done progress-reporter)))
 ;; (spy:workday:end/spotify)
 
 

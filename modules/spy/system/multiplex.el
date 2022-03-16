@@ -175,14 +175,24 @@ Else, generate a system hash from `system-name' and `system-type'."
 ;; (spy:system/unique-id "jeff" "2020" "compy")
 
 
+(defun spy:system:path/rel (&optional unique-id)
+  "Convert system's UNIQUE-ID to a safe directory path.
+
+If UNIQUE-ID is nil, use this system's ID."
+  (let ((unique-id (or unique-id
+                       (spy:system/get nil 'id))))
+    (replace-regexp-in-string "::" "_"
+                              (replace-regexp-in-string "/" "-"
+                                                        unique-id))))
+;; (spy:system:path/rel)
+;; (spy:system:path/rel (spy:system/unique-id "jeff" "2020" "compy"))
+
+
 (defun spy:system/path (root unique-id)
   "Generate a path to where the secrets file should be, based
 on the UNIQUE-ID of the system and the ROOT path.
 "
-  (path:abs:dir root
-                   (replace-regexp-in-string "::" "_"
-                                             (replace-regexp-in-string "/" "-"
-                                                                       unique-id))))
+  (path:abs:dir root (spy:system:path/rel unique-id)))
 ;; (spy:system/path "c:/foo" ":bar")
 
 

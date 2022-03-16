@@ -107,7 +107,10 @@
 ;; Pretty Hydras
 ;;---
 (package! major-mode-hydra)
-
+(package! hydra-posframe
+  :recipe '(:type git
+            :host github
+            :repo "Ladicle/hydra-posframe"))
 
 ;;---
 ;; Modes

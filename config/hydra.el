@@ -177,6 +177,28 @@ If NO-SPACE is nil, adds a space between MODE's icon and STR.
 
 
 ;;------------------------------------------------------------------------------
+;; Hydra Posframe
+;;------------------------------------------------------------------------------
+
+(use-package hydra-posframe
+  ;;--------------------
+  :hook
+  ;;--------------------
+  (after-init . hydra-posframe-enable)
+
+  ;;--------------------
+  :custom
+  ;;--------------------
+  ;; Defaults to centered, which is a bit far from any feedback printed into the minibuffer...
+  ;; [2022-03-16] Let's see how centered goes. It's on average closer to where I'm looking.
+  (hydra-posframe-poshandler 'posframe-poshandler-frame-center)
+  ;; TODO: If center is no good, try one of these:
+  ;; (hydra-posframe-poshandler 'posframe-poshandler-frame-bottom-center)
+  ;; (hydra-posframe-poshandler 'posframe-poshandler-frame-bottom-left-corner)
+  )
+
+
+;;------------------------------------------------------------------------------
 ;; Original Hydra
 ;;------------------------------------------------------------------------------
 

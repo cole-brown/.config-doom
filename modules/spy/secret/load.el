@@ -23,14 +23,6 @@ Does not check for validity."
   (load (path:abs:file (sss:secret/path/load) file)))
 
 
-(defun sss:secret/load.system (file)
-  "Load FILE (do not include '.el[c]') from this system's secrets
-directory, if it has secrets.
-
-Does not check for validity."
-  (load (path:abs:file (sss:secret/path/system) file)))
-
-
 (defun sss:secret/load.path/required (&rest path)
   "Load an expected/required system-specific secret file.
 

@@ -506,6 +506,7 @@ LOAD-ARGS-PLIST is a plist of load args:
   - Optional:
     + `:error'
       - Defaults to `t'; supply `:error nil' to change.
+    + `:optional'
     + `:skip'
       - Defaults to `t'; supply `:skip nil' to change.
 
@@ -542,6 +543,13 @@ It will still raise an error if:
   - It cannot parse the inputs.
   - It cannot determine where to /look/ for the file.
 
+`:optional' value (aka OPTIONAL) can be:
+  - nil (default)
+  - non-nil
+If OPTIONAL is non-nil, the file load will be considered optional. It will load
+if it exists and not error if it does not exist.
+  - Basically, it is a more specific `:error nil'.
+
 `:skip' value (aka SKIP) can be:
   - non-nil (default)
   - nil
@@ -562,54 +570,91 @@ If SKIP is nil:
             (macro:skip?         (plist-get macro:parsed :skip))
             ;; Invert for `load' parameter NO-ERROR.
             (macro:error?        (plist-get macro:parsed :error))
+            (macro:optional?     (plist-get macro:parsed :optional))
             ;; Set `file-name-handler-alist' to nil to speed up loading.
             file-name-handler-alist
+            (macro:load-file? t)
             load-result)
        (int<imp>:debug macro:func.name
                        '("parsed:\n"
-                         "  path: %s\n"
+                         "  path:      %s\n"
                          "    -> dir:  %s\n"
                          "    -> file: %s\n"
-                         "  feature: %S\n"
-                         "  skip?:   %S\n"
-                         "  error?:  %S")
+                         "  feature:   %S\n"
+                         "  skip?:     %S\n"
+                         "  error?:    %S\n"
+                         "  optional?: %S")
                        macro:path
                        macro:path:parent
                        macro:path:filename
                        macro:feature
                        macro:skip?
-                       macro:error?)
+                       macro:error?
+                       macro:optional?)
 
        ;;------------------------------
-       ;; Provide Check
+       ;; Load/Skip Checks
        ;;------------------------------
-       ;; Load if `:skip' set to `t' and it's not provided already.
-       (if (and (eq macro:skip? t)
-               (imp:provided? macro:feature))
-           ;; Skip w/ optional timing message.
-           (progn
-             (imp:timing:already-provided macro:feature
-                                          macro:path:filename
-                                          macro:path:parent)
-             ;; Return nil for 'did not load'.
-             (setq load-result nil))
+       ;;---
+       ;; Skip?
+       ;;---
+       ;; Skip if `:skip' set to `t' and it's provided already.
+       (cond ((and macro:skip?
+                   (imp:provided? macro:feature))
+              ;; Skip w/ optional timing message.
+              (imp:timing:already-provided macro:feature
+                                           macro:path:filename
+                                           macro:path:parent)
+              (setq macro:load-file? nil)
+              ;; Return nil for 'did not load'.
+              (setq load-result nil))
 
-         ;;------------------------------
+             ;;---
+             ;; Optional?
+             ;;---
+             ;; Skip if optional and file doesn't exist.
+             ((and macro:optional?
+                   (not (file-exists-p macro:path)))
+              ;; Skip w/ optional timing message.
+              (imp:timing:optional-dne macro:feature
+                                       macro:path:filename
+                                       macro:path:parent)
+              (setq macro:load-file? nil)
+              ;; Return nil for 'did not load'.
+              (setq load-result nil))
+
+             ;;---
+             ;; Load!
+             ;;---
+             (t
+              (setq macro:load-file? t)))
+
+       ;;------------------------------
+       ;; Load File
+       ;;------------------------------
+       (if (not macro:load-file?)
+           ;;---
+           ;; Skip!
+           ;;---
+           ;; Return nil for 'did not load'.
+           (setq load-result nil)
+
+         ;;---
          ;; Load!
-         ;;------------------------------
+         ;;---
          ;; Load w/ timing info if desired.
          (imp:timing
              macro:feature
              macro:path:filename
              macro:path:parent
            ;; Actually do the load.
-           (setq load-result (load macro:path
-                                   (not macro:error?)
-                                   'nomessage)))
+           (load macro:path
+                 (not macro:error?)
+                 'nomessage))
 
-         ;;------------------------------
-         ;; Sanity Check: (obey ERROR flag though)
-         ;;------------------------------
+         ;;---
+         ;; Post-Load Sanity Check: (obey ERROR flag though)
+         ;;---
          ;; Does that feature exists now?
          ;;   - Prevent feature name drift, since this doesn't actually require
          ;;     the feature name for the actual loading.
@@ -623,6 +668,7 @@ If SKIP is nil:
                                macro:feature
                                macro:path
                                load-result)
+             ;; Nullify load-result - we have decided we're in error due to the missing feature.
              (setq load-result nil))))
 
        ;;------------------------------

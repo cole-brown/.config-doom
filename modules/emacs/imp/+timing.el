@@ -113,7 +113,19 @@ Args to this format string are:
 
 
 (defcustom imp:timing:format:already-provided "skip %1$S; feature already provided"
-  "Format string for loading a filename.
+  "Format string for skipping loading of a required file.
+
+Args to this format string are:
+  1. Feature symbol: :imp/+timing
+  2. File name:      +timing.el
+  3. File path:      /path/to/imp/+timing.el"
+  :group 'imp:group
+  :type '(string)
+  :risky t)
+
+
+(defcustom imp:timing:format:optional "skip %1$S; optional file does not exist"
+  "Format string for skipping loading of an optional file.
 
 Args to this format string are:
   1. Feature symbol: :imp/+timing
@@ -397,6 +409,18 @@ Message depends on `imp:timing:format:skip'."
   (when (imp:timing:enabled?)
     (int<imp>:timing:message :root
                              imp:timing:format:already-provided
+                             (int<imp>:feature:normalize:display feature)
+                             filename
+                             path)))
+
+
+(defun imp:timing:optional-dne (feature filename path)
+  "Prints out a message about optional FEATURE / FILENAME / PATH that doesn't exist.
+
+Message depends on `imp:timing:format:optional'."
+  (when (imp:timing:enabled?)
+    (int<imp>:timing:message :root
+                             imp:timing:format:optional
                              (int<imp>:feature:normalize:display feature)
                              filename
                              path)))

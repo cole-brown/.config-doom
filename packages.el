@@ -70,6 +70,12 @@
 
 
 ;;---
+;; Shell
+;;---
+(package! shelldon)
+
+
+;;---
 ;; Org-Mode packages.
 ;;---
 (package! ox-gfm) ;; Org-mode exporter for GitHub-Flavored Markdown.

@@ -31,6 +31,30 @@
 
 
 ;;------------------------------------------------------------------------------
+;; Shelldon
+;;------------------------------------------------------------------------------
+
+(use-package! shelldon
+
+  ;; ;;--------------------
+  ;; :custom
+  ;; ;;--------------------
+  ;; ;; (shelldon-prompt-str "???")
+  ;; ;; (shell-command-prompt-show-cwd 'yes-please?)
+
+  ;; ;;--------------------
+  ;; :config
+  ;; ;;--------------------
+  )
+
+;; TODO: Shelldon author highly recommends a Bash (or Fish?) completion package.
+;;   - https://github.com/Overdr0ne/shelldon#autocompletion
+;;
+;; Bash: https://github.com/szermatt/emacs-bash-completion
+;; Fish: https://melpa.org/#/fish-completion
+
+
+;;------------------------------------------------------------------------------
 ;; The End.
 ;;------------------------------------------------------------------------------
 (imp:provide :dot-emacs 'config 'terminal)

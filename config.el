@@ -230,7 +230,7 @@
           :path     dot-emacs:path:config
           :filename "treemacs")
 
-;; vterm and friends
+;; Terminal & Shell Things
 (imp:load :feature  '(:dot-emacs config terminal)
           :path     dot-emacs:path:config
           :filename "terminal")
@@ -312,6 +312,10 @@
   (imp:load :feature  '(:dot-emacs config keybinds slack)
             :path     path/keybinds
             :filename "slack")
+
+  (imp:load :feature  '(:dot-emacs config keybinds terminal)
+            :path     path/keybinds
+            :filename "terminal")
 
   (imp:load :feature  '(:dot-emacs config keybinds treemacs)
             :path     path/keybinds

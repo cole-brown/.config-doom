@@ -278,7 +278,7 @@ If no region is active, fills current line."
        ;; Case Conversion
        ;;------------------------------
        ;; Hydra
-       :desc "Case Conversion"              "c" #'str:hydra:case/body
+       :desc "Case Conversion"              "'" #'str:hydra:case/body
 
 
        ;;------------------------------

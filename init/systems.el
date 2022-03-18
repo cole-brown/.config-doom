@@ -91,18 +91,26 @@
 
 ;; Open Emacs. Check "mis:init:messages" or "*Messages*" buffer. You should see something like:
 ;;   > [WARNING `spy:secret:init`]
-;;   >     [SKIP]: Cannot init; system has no secrets.
-;;   >
-;;   >
-;;   >
+;;   >     [SKIP]: Cannot load secret 'init'; invalid system secrets.
+;;   >     Validation Result:
+;;   >      ...
+;;   >      ...
+;;   >      :hash "012345-abcdef"
+;;   >      ...
 ;;   > [/WARNING `spy:secret:init`]
-
-;; Generate a new system's UID using this:
-;; - "home", "work", other domain
-;; - year, or YYYY-MM-DD
-;; - "desk", "lap", "tablet", other type
 ;;
-;; (spy:system/unique-id "home" "2017" "desk")
+;; Add the new system using strings:
+;;   - `:domain' - "home", "work", other domain
+;;   - `:date'   - year, or YYYY-MM-DD
+;;   - `:type'   - "desk", "lap", "vm", "tablet", etc
+;;
+;; For example:
+;;    (spy:system/define :hash "012345-abcdef"
+;;                       :domain "work"
+;;                       :date "2025"
+;;                       :type "vr"
+;;                       :description "Linux VR Computer"
+;;                       :path/secret/root (path:canonicalize user-emacs-directory ".." "secret"))
 ;;
 ;; Then add the system by creating another `spy:system/define' call with the
 ;; string ID created.

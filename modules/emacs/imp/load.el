@@ -269,7 +269,7 @@ Returns a plist:
   - :skip
     - t/nil"
   ;; Valid keys:
-  (let ((keys:valid '(:path :filename :feature :error :skip))
+  (let ((keys:valid '(:path :filename :feature :optional :error :skip))
         ;; Parsing vars.
         keys:parsed
         parsing:done

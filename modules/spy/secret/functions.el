@@ -19,45 +19,45 @@
 ;; Identity
 ;;------------------------------
 
-(defun spy:secret/hash ()
+(defun spy:secret:hash ()
   "Get this system's secret hash, which is the same as the system's hash."
   (spy:system/hash))
-;; (spy:secret/hash)
-;; (string= (spy:secret/hash) (spy:system/hash))
+;; (spy:secret:hash)
+;; (string= (spy:secret:hash) (spy:system/hash))
 
 
-(defun spy:secret/id ()
+(defun spy:secret:id ()
   "Get this system's secrets ID.
 
 Returns nil if no secrets ID for this system."
   (spy:system/get (spy:system/hash) 'id))
-;; (spy:secret/id)
+;; (spy:secret:id)
 
 
 ;;------------------------------
 ;; Paths
 ;;------------------------------
 
-(defun sss:secret/path/root ()
+(defun spy:secret:path/root ()
   "Get secrets' base root dir for all systems."
-  (spy:system/get (spy:secret/hash) 'path 'secret 'root))
+  (spy:system/get (spy:secret:hash) 'path 'secret 'root))
 
 
-(defun sss:secret/path/load ()
+(defun spy:secret:path/load ()
   "Get secrets' load root dir for all systems."
-  (spy:system/get (spy:secret/hash) 'path 'secret 'emacs))
+  (spy:system/get (spy:secret:hash) 'path 'secret 'emacs))
 
 
-(defun sss:secret/path/system ()
+(defun spy:secret:path/system ()
   "Get this system's secrets' load dir."
-  (spy:system/get (spy:secret/hash) 'path 'secret 'system))
+  (spy:system/get (spy:secret:hash) 'path 'secret 'system))
 
 
 ;;------------------------------------------------------------------------------
 ;; Validation
 ;;------------------------------------------------------------------------------
 
-(defun sss:secret/validate (path/type filepath)
+(defun spy:secret:validate (path/type filepath)
   "Validate that secrets exist for this system.
 
 PATH/TYPE should be one of:
@@ -73,10 +73,10 @@ Validate that:
   - FILEPATH exists"
   (let* ((success t)
          reason
-         (hash           (spy:secret/hash))
-         (id             (spy:secret/id))
-         (path/root      (sss:secret/path/root))
-         (path/system    (sss:secret/path/system))
+         (hash           (spy:secret:hash))
+         (id             (spy:secret:id))
+         (path/root      (spy:secret:path/load)) ;; Root for Emacs init purposes.
+         (path/system    (spy:secret:path/system))
          path/file/load
          path/file/name)
 
@@ -178,7 +178,7 @@ Validate that:
           :path/dir/system path/system
           :path/file/load  path/file/load
           :path/file/name  path/file/name)))
-;; (sss:secret/validate "init")
+;; (spy:secret:validate "init")
 
 
 ;;------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ The system is considered to have secrets if:
   - It has an ID.
   - And it has a secrets 'init.el' file."
   (condition-case _
-      (not (null (plist-get (sss:secret/validate "init") :success)))
+      (not (null (plist-get (spy:secret:validate "init") :success)))
     (error nil)))
 ;; (spy:secret/has)
 

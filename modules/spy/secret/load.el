@@ -29,7 +29,7 @@ CALLER should be a string of calling function's name.
 
 Returns nil/non-nil for loading success.
 Outputs warning to `mis0' warning buffer if secret fail validation."
-  (let* ((plist (sss:secret/validate file)))
+  (let* ((plist (spy:secret:validate file)))
     (if-let* ((plist plist)
               (success   (plist-get plist :success))
               (path/load (plist-get plist :path/file/load)))

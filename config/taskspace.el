@@ -55,124 +55,130 @@ sss:taskspace/generate' and see what file it's defined in."
 ;;------------------------------------------------------------------------------
 
 (after! taskspace
-  ;;------------------------------
-  ;; Configuration
-  ;;------------------------------
+  ;; Ignore unless we have a bare minimum to even try configuring.
+  (when (or (and (jerky/get 'path 'lily :namespace :home)
+                 (jerky/get 'path 'taskspace 'root :namespace :home))
+            (and (jerky/get 'path 'lily :namespace :work)
+                 (jerky/get 'path 'taskspace 'root :namespace :work)))
 
-  ;;---
-  ;; General (Non-Per-Domain) Config...
-  ;;---
+    ;;------------------------------
+    ;; Configuration
+    ;;------------------------------
 
-  (taskspace/keybind/doom)
+    ;;---
+    ;; General (Non-Per-Domain) Config...
+    ;;---
 
-  ;;---
-  ;; "Home" Domain
-  ;;---
-  (let* ((group :home) ; taskspace "group" == jerky "namespace"
-         (group-str (str:normalize:symbol->string group)))
+    (taskspace/keybind/doom)
 
-    ;; Alias our function here in case we want to redefine it later.
-    ;; We'll just have to redefine it instead of edit the taskspace settings again.
-    (defalias 'sss:taskspace/generate.home 'sss:taskspace/generate)
+    ;;---
+    ;; "Home" Domain
+    ;;---
+    (let* ((group :home) ; taskspace "group" == jerky "namespace"
+           (group-str (str:normalize:symbol->string group)))
 
-    (spy:secret/if "config/taskspace.el"
-        '(:skip "Skipping some `taskspace' :home configuration..."
-          :eval "")
-      ;; Add taskspace paths to jerky for info.
-      (jerky/set 'path 'taskspace 'notes
-                 :namespace group
-                 :value (path:abs:dir
-                         (jerky/get 'path 'lily :namespace group)
-                         "taskspace"
-                         (str:normalize:symbol->string group))
-                 :docstr (format "directory for %s taskspace notes" group-str))
-      (jerky/set 'path 'taskspace 'root
-                 :namespace group
-                 :value (jerky/get 'path 'taskspace :namespace group)
-                 :docstr (format "directory for %s taskspace data/files" group-str))
+      ;; Alias our function here in case we want to redefine it later.
+      ;; We'll just have to redefine it instead of edit the taskspace settings again.
+      (defalias 'sss:taskspace/generate.home 'sss:taskspace/generate)
 
-      ;; And create our `:home' group custom settings.
-      (defvar sss:taskspace/custom.home
-        `((:type/notes      :noteless)
-          (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
-          (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
-          (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
-          (:file/new/generate ((".projectile" "") ;; projectile: empty file
-                               ;; notes.org: setup with org header snippet
-                               ;; ready to go
-                               ((-t//config :group :file/notes)
-                                sss:taskspace/generate.home))))
-        "Custom settings for my `:home' taskspace group.")
+      (spy:secret/if "config/taskspace.el"
+          '(:skip "Skipping some `taskspace' :home configuration..."
+            :eval "")
+        ;; Add taskspace paths to jerky for info.
+        (jerky/set 'path 'taskspace 'notes
+                   :namespace group
+                   :value (path:abs:dir
+                           (jerky/get 'path 'lily :namespace group)
+                           "taskspace"
+                           (str:normalize:symbol->string group))
+                   :docstr (format "directory for %s taskspace notes" group-str))
+        (jerky/set 'path 'taskspace 'root
+                   :namespace group
+                   :value (jerky/get 'path 'taskspace :namespace group)
+                   :docstr (format "directory for %s taskspace data/files" group-str))
 
-      ;; Set an over-arching taskspace DLV for whole work dir.
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'taskspace 'root :namespace group))
-      ;; Set a dir-local-var for home taskspace folders.
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'taskspace 'notes :namespace group))
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'org 'journal :namespace group)))
+        ;; And create our `:home' group custom settings.
+        (defvar sss:taskspace/custom.home
+          `((:type/notes      :noteless)
+            (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
+            (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
+            (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
+            (:file/new/generate ((".projectile" "") ;; projectile: empty file
+                                 ;; notes.org: setup with org header snippet
+                                 ;; ready to go
+                                 ((-t//config :group :file/notes)
+                                  sss:taskspace/generate.home))))
+          "Custom settings for my `:home' taskspace group.")
 
-    )
-  ;; /"Home" Domain
+        ;; Set an over-arching taskspace DLV for whole work dir.
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'taskspace 'root :namespace group))
+        ;; Set a dir-local-var for home taskspace folders.
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'taskspace 'notes :namespace group))
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'org 'journal :namespace group)))
 
-
-  ;;---
-  ;; "Work" Domain
-  ;;---
-  (let* ((group :work) ; taskspace "group" == jerky "namespace"
-         (group-str (str:normalize:symbol->string group)))
-
-    ;; Alias our function here in case we want to redefine it later.
-    ;; We'll just have to redefine it instead of edit the taskspace settings again.
-    (defalias 'sss:taskspace/generate.work 'sss:taskspace/generate)
-
-    (spy:secret/if "config/taskspace.el"
-        '(:skip "Skipping some `taskspace' :work configuration..."
-          :eval "")
-      ;; Add taskspace paths to jerky for info.
-      (jerky/set 'path 'taskspace 'notes
-                 :namespace group
-                 :value (path:abs:dir
-                         (jerky/get 'path 'lily :namespace group)
-                         "taskspace"
-                         (str:normalize:symbol->string group))
-                 :docstr (format "directory for %s taskspace notes" group-str))
-      (jerky/set 'path 'taskspace 'root
-                 :namespace group
-                 :value (jerky/get 'path 'taskspace :namespace group)
-                 :docstr (format "directory for %s taskspace data/files" group-str))
-
-      ;; And create our `:work' group custom settings.
-      (defvar sss:taskspace/custom.work
-        `((:type/notes      :noteless)
-          (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
-          (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
-          (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
-          (:file/new/generate ((".projectile" "") ;; projectile: empty file
-                               ;; notes.org: setup with org header snippet
-                               ;; ready to go
-                               ((-t//config :group :file/notes)
-                                sss:taskspace/generate.work))))
-        "Custom settings for my `:work' taskspace group.")
-
-      ;; Set a dir-local-var for home taskspace folders.
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'taskspace 'root :namespace group))
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'taskspace 'notes :namespace group))
-      (taskspace/group/dlv group
-                           (jerky/get 'path 'org 'journal :namespace group))))
+      )
+    ;; /"Home" Domain
 
 
-  ;;------------------------------
-  ;; Groups
-  ;;------------------------------
+    ;;---
+    ;; "Work" Domain
+    ;;---
+    (let* ((group :work) ; taskspace "group" == jerky "namespace"
+           (group-str (str:normalize:symbol->string group)))
 
-  (customize-set-variable 'taskspace/groups
-                          '((:work    "Work Taskspace" sss:taskspace/custom.work)
-                            (:home    "Home Taskspace" sss:taskspace/custom.home)
-                            (:default "Defaults"       taskspace/group/default))))
+      ;; Alias our function here in case we want to redefine it later.
+      ;; We'll just have to redefine it instead of edit the taskspace settings again.
+      (defalias 'sss:taskspace/generate.work 'sss:taskspace/generate)
+
+      (spy:secret/if "config/taskspace.el"
+          '(:skip "Skipping some `taskspace' :work configuration..."
+            :eval "")
+        ;; Add taskspace paths to jerky for info.
+        (jerky/set 'path 'taskspace 'notes
+                   :namespace group
+                   :value (path:abs:dir
+                           (jerky/get 'path 'lily :namespace group)
+                           "taskspace"
+                           (str:normalize:symbol->string group))
+                   :docstr (format "directory for %s taskspace notes" group-str))
+        (jerky/set 'path 'taskspace 'root
+                   :namespace group
+                   :value (jerky/get 'path 'taskspace :namespace group)
+                   :docstr (format "directory for %s taskspace data/files" group-str))
+
+        ;; And create our `:work' group custom settings.
+        (defvar sss:taskspace/custom.work
+          `((:type/notes      :noteless)
+            (:format/datetime (spy:datetime/format.get 'iso-8601 'short))
+            (:dir/tasks (jerky/get 'path 'taskspace 'root :namespace ,group))
+            (:dir/notes (jerky/get 'path 'taskspace 'notes :namespace ,group))
+            (:file/new/generate ((".projectile" "") ;; projectile: empty file
+                                 ;; notes.org: setup with org header snippet
+                                 ;; ready to go
+                                 ((-t//config :group :file/notes)
+                                  sss:taskspace/generate.work))))
+          "Custom settings for my `:work' taskspace group.")
+
+        ;; Set a dir-local-var for home taskspace folders.
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'taskspace 'root :namespace group))
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'taskspace 'notes :namespace group))
+        (taskspace/group/dlv group
+                             (jerky/get 'path 'org 'journal :namespace group))))
+
+
+    ;;------------------------------
+    ;; Groups
+    ;;------------------------------
+
+    (customize-set-variable 'taskspace/groups
+                            '((:work    "Work Taskspace" sss:taskspace/custom.work)
+                              (:home    "Home Taskspace" sss:taskspace/custom.home)
+                              (:default "Defaults"       taskspace/group/default)))))
 
 
 ;;------------------------------------------------------------------------------

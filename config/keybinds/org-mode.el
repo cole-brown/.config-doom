@@ -82,7 +82,8 @@
 
 (defun sss:keybinds/org-journal ()
   "Run the org-journal keybinds."
-  (when (jerky/namespace/has :work)
+  (when (and (jerky/namespace/has :work)
+             (jerky/get 'path 'org 'journal :namespace :work))
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :work dir local variable(s).
@@ -116,7 +117,8 @@
                                                                                          #'org-journal-search-forever nil))))))))
 
   ;; Insert :home journal shortcuts if appropriate.
-  (when (jerky/namespace/has :home)
+  (when (and (jerky/namespace/has :home)
+             (jerky/get 'path 'org 'journal :namespace :home))
     ;; Add `:home' namespaced org-journal stuff.
     (when (featurep! :lang org +journal)
       ;; Insert :home dir local variable(s).

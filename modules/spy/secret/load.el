@@ -23,13 +23,13 @@
 
 FEATURE should be list of keyword/symbols for `imp:load'.
 
-FILE should be filepath relative to secret's root directory.
+FILE should be filepath relative to secret's load directory.
 
 CALLER should be a string of calling function's name.
 
 Returns nil/non-nil for loading success.
 Outputs warning to `mis0' warning buffer if secret fail validation."
-  (let* ((plist (spy:secret:validate file)))
+  (let* ((plist (spy:secret:validate :load file)))
     (if-let* ((plist plist)
               (success   (plist-get plist :success))
               (path/load (plist-get plist :path/file/load)))

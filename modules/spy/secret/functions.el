@@ -61,7 +61,8 @@ Returns nil if no secrets ID for this system."
   "Validate that secrets exist for this system.
 
 PATH/TYPE should be one of:
-  - `:root'   - FILEPATH is relative to root secret directory.
+  - `:root'   - FILEPATH is relative to secret directory.
+  - `:load'   - FILEPATH is relative to root init/load secret directory.
   - `:system' - FILEPATH is relative to system's secret directory.
 
 FILEPATH should not include file extension. \".el\" will be appended!
@@ -75,7 +76,8 @@ Validate that:
          reason
          (hash           (spy:secret:hash))
          (id             (spy:secret:id))
-         (path/root      (spy:secret:path/load)) ;; Root for Emacs init purposes.
+         (path/root      (spy:secret:path/root))
+         (path/load      (spy:secret:path/load))
          (path/system    (spy:secret:path/system))
          path/file/load
          path/file/name)
@@ -85,6 +87,8 @@ Validate that:
     ;;------------------------------
     (cond ((eq path/type :root)
            (setq path/file/load (path:join path/root filepath)))
+          ((eq path/type :load)
+           (setq path/file/load (path:join path/load filepath)))
           ((eq path/type :system)
            (setq path/file/load (path:join path/system filepath)))
           ;; Unknown PATH/TYPE.
@@ -92,7 +96,7 @@ Validate that:
            (setq success nil
                  reason (format "Unknown PATH/TYPE `%S'; expected one of: %S"
                                 path/type
-                                '(:root :system)))))
+                                '(:root :load :system)))))
 
     ;;------------------------------
     ;; Check for validity.
@@ -126,6 +130,14 @@ Validate that:
                              id
                              path/root)))
 
+       ((or (null path/load)
+            (not (stringp path/load)))
+        (setq success nil
+              reason (format "Secrets %s for this system (%s) is invalid: %s"
+                             "load directory"
+                             id
+                             path/load)))
+
        ((or (null path/system)
             (not (stringp path/system)))
         (setq success nil
@@ -134,7 +146,6 @@ Validate that:
                              id
                              path/system)))
 
-       ;; Does secret root dir even exist?
        ((not (file-directory-p path/root))
         (setq success nil
               reason (format "Secrets %s for this system (%s) does not exist: %s"
@@ -142,8 +153,14 @@ Validate that:
                              id
                              path/root)))
 
-       ;; Does system's secret dir even exist?
-       ((not (file-directory-p path/system))
+       ((not (file-directory-p path/load))
+        (setq success nil
+              reason (format "Secrets %s for this system (%s) does not exist: %s"
+                             "load directory"
+                             id
+                             path/load)))
+
+      ((not (file-directory-p path/system))
         (setq success nil
               reason (format "Secrets %s for this system (%s) does not exist: %s"
                              "system directory"
@@ -175,10 +192,11 @@ Validate that:
           :hash            hash
           :id              id
           :path/dir/root   path/root
+          :path/dir/load   path/load
           :path/dir/system path/system
           :path/file/load  path/file/load
           :path/file/name  path/file/name)))
-;; (spy:secret:validate "init")
+;; (spy:secret:validate :load "init")
 
 
 ;;------------------------------------------------------------------------------
@@ -193,7 +211,7 @@ The system is considered to have secrets if:
   - It has an ID.
   - And it has a secrets 'init.el' file."
   (condition-case _
-      (not (null (plist-get (spy:secret:validate "init") :success)))
+      (not (null (plist-get (spy:secret:validate :load "init") :success)))
     (error nil)))
 ;; (spy:secret/has)
 

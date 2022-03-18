@@ -82,7 +82,7 @@
                    :date "2021"
                    :type "vm"
                    :description "Windows 10 VM"
-                   :path/secret/root (path:canonicalize user-emacs-directory ".." "secret"))
+                   :path/secret/root (path:canonicalize user-emacs-directory ".." ".secret.d"))
 
 
 ;;------------------------------

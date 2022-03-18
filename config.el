@@ -119,7 +119,7 @@
 ;; Currently, need to configure my secrets before anything else.
 ;; TODO: move some stuff to init, use secrets config for /after/ non-secret
 ;; config is done?
-(spy:secret/config)
+(spy:secret:config)
 
 
 ;;------------------------------------------------------------------------------

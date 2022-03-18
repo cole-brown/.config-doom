@@ -14,7 +14,7 @@
 ;;   - A hash & id for this computer.
 ;;   - A valid root init.el for secrets.
 ;; secrets/init.el will do the per-computer stuff.
-(spy:secret/init)
+(spy:secret:init)
 
 
 (imp:provide :dot-emacs 'init 'secrets)

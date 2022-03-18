@@ -18,6 +18,39 @@
 ;; Helper Functions for Loading Files
 ;;------------------------------------------------------------------------------
 
+;; TODO: Move to nub or mis or str?
+;;   - Probably str?
+(defun int<spy>:secret:plist:pretty-string (plist)
+  "Pretty print plist to string."
+  (let ((plist-too (copy-sequence plist))
+        (width/key 0)
+        output)
+
+    ;; Figure out format width.
+    (while plist
+      (let ((key (pop plist))
+            (_ (pop plist))) ;; Don't care about value (yet).
+        (setq width/key (max width/key
+                             (length (symbol-name key))))))
+
+    ;; Format each line.
+    (let ((fmt/line (concat "  " ;; leading indent
+                            "%" (number-to-string width/key) "S"
+                            " "
+                            "%S")))
+      (while plist-too
+        (let ((key (pop plist-too))
+              (value (pop plist-too)))
+          (push (format fmt/line key value) output))))
+
+    ;; Combine lines and output.
+    (mapconcat #'identity
+               (nreverse output)
+               "\n")))
+;; (spy:secret:validate :load "init")
+;; (int<spy>:secret:plist:pretty-string (spy:secret:validate :load "init"))
+
+
 (defun int<spy>:secret:validate-and-load (caller feature file)
   "Load FEATURE from FILE for CALLER function.
 
@@ -47,7 +80,7 @@ Outputs warning to `mis0' warning buffer if secret fail validation."
                                         "\n")
                              "[SKIP]"
                              file
-                             (pp-to-string plist))
+                             (int<spy>:secret:plist:pretty-string plist))
       ;; Failure Return Value
       nil)))
 

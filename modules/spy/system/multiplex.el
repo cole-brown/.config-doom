@@ -188,12 +188,12 @@ If UNIQUE-ID is nil, use this system's ID."
 ;; (spy:system:path/rel (spy:system/unique-id "jeff" "2020" "compy"))
 
 
-(defun spy:system/path (root unique-id)
+(defun spy:system:path/abs (root unique-id)
   "Generate a path to where the secrets file should be, based
 on the UNIQUE-ID of the system and the ROOT path.
 "
   (path:abs:dir root (spy:system:path/rel unique-id)))
-;; (spy:system/path "c:/foo" ":bar")
+;; (spy:system:path/abs "c:/foo" ":bar")
 
 
 ;;------------------------------------------------------------------------------
@@ -353,7 +353,7 @@ DEBUG - if non-nil, just print out stuff instead of setting it into Jerky."
       ;; just wherever.
       (spy:system/set :hash hash
                       :keys (list 'path 'secret 'system)
-                      :value  (spy:system/path path/secret/init.abs id)
+                      :value  (spy:system:path/abs path/secret/init.abs id)
                       :docstr description))))
 ;; (spy:system/define :debug t
 ;;                    :hash "123456-abcdef"

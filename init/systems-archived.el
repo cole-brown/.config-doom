@@ -35,5 +35,5 @@
   ;; just wherever.
   (spy:system/set :hash hash
                   :keys (list 'path 'secret id)
-                  :value  (spy:system/path path/doom.abs id)
+                  :value  (spy:system:path/abs path/doom.abs id)
                   :docstr "2013 work desktop PC - Windows 7"))

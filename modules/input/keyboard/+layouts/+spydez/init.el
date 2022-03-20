@@ -54,6 +54,17 @@
     ;; │ Keys                           │
     ;; └────────────────────────────────┘
 
+    ;; Unbind from `evil-change'.
+    :n "c" :layout:common:undefined
+
+    ;; Unbind from `evil-backward-char'.
+    ;; TODO: Also exists in a lot of other keymaps.
+    :n "h" :layout:common:undefined
+
+    ;; Unbind from `evil-ex-search-next'.
+    ;; TODO: Also exists in some magit keymaps.
+    :n "n" :layout:common:undefined
+
     ;; Unbind from `evil-repeat-pop'.
     :n "C-." :layout:common:undefined
 
@@ -74,6 +85,7 @@
     ;; Unbind from `suspend-frame', which takes over "C-z" when `evil-emacs-state' gets unbound.
     "C-z" :layout:common:undefined
 
+
     ;; ╔════════════════════════════════════════════════════════════════╗
     ;; ║ Keymap: evil-snipe-mode-map / evil-snipe-local-mode-map        ║
     ;; ╚════════════════════════════════════════════════════════════════╝
@@ -87,8 +99,9 @@
      ;; Doom or General or someone will complain if bound keys are not
      ;; unbound before being used for prefixes...
 
-     ;; Unbind 's' from snipe.
-     :nvm "s" :layout:common:undefined)
+     ;; Unbind 's' and 't' from snipe.
+     :nvm "s" :layout:common:undefined
+     :nvm "t" :layout:common:undefined)
 
 
     ;; ╔════════════════════════════════════════════════════════════════╗
@@ -138,6 +151,20 @@
      :m  "v"  :layout:evil:state-visual-char-wise
      :m  "V"  :layout:evil:state-visual-line-wise)
 
+
+    ;; ┌────────────────────────────────┐
+    ;; │ Undo                           │
+    ;; └────────────────────────────────┘
+    (:after undo-tree
+     :n "h" #'undo-tree-undo
+     :n "n" #'undo-tree-redo
+     :n "t" #'undo-tree-visualize
+     :n "c" #'undo-tree-switch-branch
+
+     ;; TODO: Keybinds for these maps:
+     ;; `undo-tree-visualizer-selection-mode-map'
+     ;; `undo-tree-visualizer-mode-map'
+     )
 
     ;; ┌────────────────────────────────┐
     ;; │ Movement                       │

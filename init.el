@@ -80,6 +80,8 @@
        ;;    chunks to accidental "new to evil mode and forgot I wasn't in
        ;;    insert state" typing.
        ;;undo              ; persistent, smarter undo for your inevitable mistakes
+       ;; [2022-03-19] Try out Undo-Tree.
+       (undo +tree)              ; persistent, smarter undo for your inevitable mistakes
 
        vc                ; version-control and Emacs, sitting in a tree
 

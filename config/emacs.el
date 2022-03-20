@@ -66,6 +66,22 @@
                         "Increase the size of the *Messages* buffer.")
 
 
+;;------------------------------
+;; Undo
+;;------------------------------
+;; Ok; technically not Emacs Itself since I'm using `undo-tree' package, but...
+;; it replaces Emacs undo.
+;;
+;; Keybinds are in "keybinds/undo-tree.el"
+;;
+;; (use-package! undo-tree
+;;   ;;--------------------
+;;   :config
+;;   ;;--------------------
+;;   )
+
+
+
 ;;------------------------------------------------------------------------------
 ;; File Time Formats
 ;;------------------------------------------------------------------------------

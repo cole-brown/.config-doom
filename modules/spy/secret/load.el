@@ -91,7 +91,7 @@ Outputs warning to `mis0' warning buffer if secret fail validation."
 (defun spy:secret:init ()
   "Load secret's root init.el."
   (int<spy>:secret:validate-and-load "spy:secret:init"
-                                     '(:secret init)
+                                     '(:dot-secret init)
                                       "init"))
 ;; (spy:secret:init)
 
@@ -103,7 +103,7 @@ Outputs warning to `mis0' warning buffer if secret fail validation."
 (defun spy:secret:config ()
   "Configure this system's secrets."
   (int<spy>:secret:validate-and-load "spy:secret:config"
-                                     '(:secret config)
+                                     '(:dot-secret config)
                                       "config"))
 ;; (spy:secret:config)
 

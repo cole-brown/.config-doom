@@ -31,10 +31,8 @@
 ;; Load it!
 ;;------------------------------------------------------------------------------
 
-;; Always load `taskspace' unless specifically removed.
-(unless (featurep! -taskspace)
-  (imp:load :feature  '(:taskspace taskspace)
-            :filename "taskspace"))
+(imp:load :feature  '(:taskspace taskspace)
+          :filename "taskspace")
 
 ;;------------------------------------------------------------------------------
 ;; The End.

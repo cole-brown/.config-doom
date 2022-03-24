@@ -37,7 +37,7 @@
 
         ;; Invoke commands from other buffers
         :desc "shelldon send region" "p" #'shelldon-send-region
-        :desc "shelldon send line"   "u" #'shelldon-send-line)))
+        :desc "shelldon send line"   "u" #'shelldon-send-line-at-point)))
 
 
 ;;------------------------------------------------------------------------------

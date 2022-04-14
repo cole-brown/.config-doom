@@ -54,8 +54,7 @@ Uses ICON-COLOR's font to color the icon character.
 
 [2022-02-04] https://gist.github.com/mbuczko/e15d61363d31cf78ff17427072e0c325"
   ;; Only bother propertizing if we need to.
-  (let ((properties
-         output))
+  (let (properties)
     (when-let ((color:icon (plist-get plist :color:icon)))
       ;; figure out font or color to use?
       ;; Figure out what to call to propertize string w/ color/font.

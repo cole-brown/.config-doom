@@ -33,7 +33,7 @@
 ;;------------------------------
 
 ;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
-;; (test<keyboard>:layout:unbind :eval :spydez :evil
+;; (debug<keyboard>:layout:unbind :sexpr-pp :spydez :evil
 (keyboard:layout:unbind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `keyboard:layout:map!'.
@@ -124,8 +124,7 @@
 ;; NEW: ESDF position keys (shifted-WASD left-hand, index on home key)
 ;;------------------------------
 ;; TODO [2021-06-29]: Trying out new binds - revert if necessary.
-;; (test<keyboard>:layout:bind :bind :eval ; :pp-sexpr
-;;                             :spydez :evil
+;; (debug<keyboard>:layout:bind :sexpr-pp :spydez :evil
 (keyboard:layout:bind :spydez :evil
   ;; Keybinds for the `:spydez' layout: a big list of inputs to
   ;; `keyboard:layout:map!'.
@@ -322,7 +321,7 @@
       ;; Magit: Unbind Keys
       ;;------------------------------
       ;; (keyboard:layout:bind :spydez :evil
-      (test<keyboard>:layout:bind :pp-sexpr ; :eval
+      (debug<keyboard>:layout:bind :sexpr-pp ; :eval
           :spydez :evil
         ;; Keybinds for the `:spydez' layout: a big list of inputs to
         ;; `keyboard:layout:map!'.
@@ -371,7 +370,7 @@
       ;; Magit: Bind Keys
       ;;------------------------------
       ;; (keyboard:layout:bind :spydez :evil
-      (test<keyboard>:layout:bind :pp-sexpr ; :eval
+      (debug<keyboard>:layout:bind :sexpr-pp ; :eval
           :spydez :evil
         ;; Keybinds for the `:spydez' layout: a big list of inputs to
         ;; `keyboard:layout:map!'.
@@ -617,7 +616,7 @@
         ;; ╠═ END: magit-log-mode-map ═╣
         ;; ╚═══════════════════════════╝
 
-        ) ;; /`test<keyboard>:layout:bind', or possibly `keyboard:layout:bind'
+        ) ;; /`debug<keyboard>:layout:bind', or possibly `keyboard:layout:bind'
       ;; <EVAL-THIS kbd="C-x C-e">
       ) ;; /set `states' from `evil-collection'.
     ;; </EVAL-THIS>

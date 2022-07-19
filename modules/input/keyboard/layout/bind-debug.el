@@ -40,7 +40,7 @@
 
 (defun debug<keyboard>:layout:bind (eval/sexpr layout type keybind-map)
   "Allows changing an `keyboard:layout:bind' to
-`debug<keyboard>:layout:bind', running, and testing its keybinds.
+`debug<keyboard>:layout:running', bind, and testing its keybinds.
 
 EVAL/RETURN should be:
   - For evaluating/applying layout: `:eval'
@@ -57,23 +57,23 @@ Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.
 
 Calls:
-  - `keyboard:layout:unbind'
-  - `keyboard:layout:bind'
-  - `keyboard:layout:config'
+  - `int<keyboard>:layout:unbind'
+  - `int<keyboard>:layout:bind'
+  - `int<keyboard>:layout:config'
   - `int<keyboard>:layout:activate'
 
 For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
   (declare (indent 3))
 
   (let* ((func/name "debug<keyboard>:layout:bind")
-         (registrar :temp) ;; Do all this work in the temp registrar.
+         (registrar :debug) ;; Do all this work in the temp registrar.
          (state/current (int<keyboard>:registrar:get registrar :state))
          (state/desired :init)
          (state/valids (int<keyboard>:registration:state:valid? state/desired))
          (state/transition/valid? (int<keyboard>:registration:state/transition:valid? registrar state/desired :no-error))
          (no-eval (cond ((eq eval/sexpr :eval)
                          nil)
-                        ((memq eval/sexpr '(:sexpr :pp-sexpr))
+                        ((memq eval/sexpr '(:sexpr :sexpr-pp))
                          t)
                         (t
                          (int<keyboard>:output :error
@@ -82,6 +82,11 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                                                  "got: %S")
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
+
+    ;; Make it easier to debug output sexprs via replacing a
+    ;; `keyboard:layout:bind' to `debug<keyboard>:layout:running'.
+    (when no-eval
+      (keyboard:layout:clear registrar))
 
     (int<keyboard>:debug func/name
         '(:registering)
@@ -140,19 +145,19 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
         (let (return-value)
           ;; Apply the keybinds.
-          (keyboard:layout:bind layout type keybind-map)
+          (int<keyboard>:layout:bind registrar layout type keybind-map)
 
           ;;---
           ;; Since we're testing this block, always continue on to config & activation.
           ;;---
 
           ;; Config the keybinds.
-          (keyboard:layout:config bind/unbind layout)
+          (int<keyboard>:layout:config registrar :bind layout)
 
           ;; Activate the keybinds.
           (setq return-value
-                (int<keyboard>:layout:activate registrar bind/unbind (list type) no-eval))
-          (when (eq eval/sexpr :pp-sexpr)
+                (int<keyboard>:layout:activate registrar :bind (list type) no-eval))
+          (when (eq eval/sexpr :sexpr-pp)
             (pp-macroexpand-expression return-value))
           return-value)))))
 
@@ -176,23 +181,23 @@ Does not run unless current registration state is `:active'.
   - That is: does not run temp blocks during Emacs/Doom start-up.
 
 Calls:
-  - `keyboard:layout:unbind'
-  - `keyboard:layout:bind'
-  - `keyboard:layout:config'
+  - `int<keyboard>:layout:unbind'
+  - `int<keyboard>:layout:bind'
+  - `int<keyboard>:layout:config'
   - `int<keyboard>:layout:activate'
 
 For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
   (declare (indent 3))
 
   (let* ((func/name "debug<keyboard>:layout:unbind")
-         (registrar :temp) ;; Do all this work in the temp registrar.
+         (registrar :debug) ;; Do all this work in the temp registrar.
          (state/current (int<keyboard>:registrar:get registrar :state))
          (state/desired :init)
          (state/valids (int<keyboard>:registration:state:valid? state/desired))
          (state/transition/valid? (int<keyboard>:registration:state/transition:valid? registrar state/desired :no-error))
          (no-eval (cond ((eq eval/sexpr :eval)
                          nil)
-                        ((memq eval/sexpr '(:sexpr :pp-sexpr))
+                        ((memq eval/sexpr '(:sexpr :sexpr-pp))
                          t)
                         (t
                          (int<keyboard>:output :error
@@ -201,6 +206,11 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
                                                  "got: %S")
                                                '(:eval :sexpr)
                                                eval/sexpr)))))
+
+    ;; Make it easier to debug output sexprs via replacing a
+    ;; `keyboard:layout:bind' to `debug<keyboard>:layout:running'.
+    (when no-eval
+      (keyboard:layout:clear registrar))
 
     (int<keyboard>:debug func/name
         '(:registering)
@@ -256,19 +266,19 @@ For a complete activation of a keyboard layout, see `keyboard:layout:apply'."
 
         (let (return-value)
           ;; Apply the unbinds.
-          (keyboard:layout:unbind layout type keybind-map)
+          (int<keyboard>:layout:unbind registrar layout type keybind-map)
 
           ;;---
           ;; Since we're testing this block, always continue on to config & activation.
           ;;---
 
           ;; Config the keybinds.
-          (keyboard:layout:config bind/unbind layout)
+          (int<keyboard>:layout:config registrar :unbind layout)
 
           ;; Activate the keybinds.
           (setq return-value
-                (int<keyboard>:layout:activate registrar bind/unbind (list type) no-eval))
-          (when (eq eval/sexpr :pp-sexpr)
+                (int<keyboard>:layout:activate registrar :unbind (list type) no-eval))
+          (when (eq eval/sexpr :sexpr-pp)
             (pp-macroexpand-expression return-value))
           return-value)))))
 
@@ -408,8 +418,12 @@ Overrides any current active layout with the new LAYOUT."
 ;; (keyboard:layout:clear)
 
 
-(defun keyboard:layout:clear ()
+(defun keyboard:layout:clear (&optional registrar)
   "Clear the saved state, keybinds and unbinds.
+
+REGISTRAR can be:
+  - nil - Clear both registrars.
+  - `:actual' or `:debug' to clear just that registrar.
 
 Sets to nil:
   - `(int<keyboard>:registrar:get registrar :keybinds)'
@@ -419,26 +433,33 @@ For e.g. resetting after a bad testing command. You will have to
 add back in all keybinds you want."
   (interactive)
   (int<keyboard>:cmd:run
-   ;; Reset all registrars or just one given registrar?
-   ;;  - Both if no input, one if input?
-   ;; Let's just go with reset all of them for now.
-   (dolist (registrar (mapcar (lambda (registrar-assoc)
-                                "Get registrar keywords."
-                                (car registrar-assoc))
-                              int<keyboard>:registrars))
-     (int<keyboard>:registrar:set registrar :state nil)
-     (int<keyboard>:registrar:set registrar :unbinds nil)
-     (int<keyboard>:registrar:set registrar :keybinds nil)
-     (message (mapconcat #'identity
-                         '("registrar: %S"
-                           "  - state:    %S"
-                           "  - keybinds: %S"
-                           "  - unbinds:  %S")
-                         "\n")
-              registrar
-              (int<keyboard>:registrar:get registrar :state)
-              (int<keyboard>:registrar:get registrar :unbinds)
-              (int<keyboard>:registrar:get registrar :keybinds)))))
+   ;; Reset which registrars?
+   ;;  - Both if no input, one if input.
+   (let ((registrars (cond ((null registrar)
+                           (mapcar (lambda (registrar-assoc)
+                                  "Get registrar keywords."
+                                  (car registrar-assoc))
+                                int<keyboard>:registrars))
+                          ((int<keyboard>:registrar:valid? registrar)
+                           (list registrar))
+                          (t
+                           (error "keyboard:layout:clear: Unknown REGISTRAR `%S'!")))))
+
+     ;; Let's just go with reset all of them for now.
+     (dolist (registrar/clear registrars)
+       (int<keyboard>:registrar:set registrar/clear :state nil)
+       (int<keyboard>:registrar:set registrar/clear :unbinds nil)
+       (int<keyboard>:registrar:set registrar/clear :keybinds nil)
+       (message (mapconcat #'identity
+                           '("registrar: %S"
+                             "  - state:    %S"
+                             "  - keybinds: %S"
+                             "  - unbinds:  %S")
+                           "\n")
+                registrar/clear
+                (int<keyboard>:registrar:get registrar/clear :state)
+                (int<keyboard>:registrar:get registrar/clear :unbinds)
+                (int<keyboard>:registrar:get registrar/clear :keybinds))))))
 
 
 ;;------------------------------------------------------------------------------
